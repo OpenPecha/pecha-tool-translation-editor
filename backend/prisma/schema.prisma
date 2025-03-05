@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String       @id @default(uuid())
+  username    String       @unique
+  email       String       @unique
+  password    String
+  documents   Doc[]        @relation("UserDocs") // A user can have multiple documents
+  permissions Permission[] // A user can have multiple permissions
+}
+
+model Doc {
+  id                     String       @id @default(uuid())   // Unique identifier for the document
+  identifier             String       @unique                // Ensures each document has a unique identifier
+  docs_prosemirror_delta Json?                               // Nullable array of objects
+  docs_y_doc_state       Bytes                               // Binary data for Yjs document state
+  createdAt              DateTime     @default(now())        // Timestamp when the document is created
+  updatedAt              DateTime     @updatedAt            // Auto-updated timestamp
+  ownerId                String?                             // Optional owner of the document
+  owner                  User?       @relation("UserDocs", fields: [ownerId], references: [id], onDelete: Cascade)
+  permissions            Permission[] // A document can have multiple permission entries
+}
+
+model Permission {
+  id         String   @id @default(uuid())
+  docId      String
+  userId     String
+  canRead    Boolean  @default(true)
+  canWrite   Boolean  @default(false)
+
+  doc        Doc      @relation(fields: [docId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([docId, userId]) // Prevent duplicate permissions for the same document-user pair
+}
