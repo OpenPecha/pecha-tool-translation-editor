@@ -18,8 +18,9 @@ app.use(cors());
 
 const server = http.createServer(app);
 const WEBSOCKET_PORT=process.env.WEBSOCKET_PORT || 1234
-const wss = new WebSocket.Server({ server,clientTracking:true,
-  maxPayload: 1024 * 1024 * 10 },)
+const wss = new WebSocket.Server({ server,
+  clientTracking:true,
+  maxPayload: 1024 * 1024 * 50 },)
  
 
 const client=createClient()
@@ -257,18 +258,15 @@ app.get("/documents/:id", authenticateToken, async (req, res) => {
 
 
 const clients = new Set();
-const getYDoc = (docName, userId) =>
+const getYDoc = (docName, userId) => 
   map.setIfUndefined(utils.docs, docName, () => {
-    const doc = new WSSharedDoc(docName, userId)
-    doc.gc = true
-
+    const doc = new WSSharedDoc(docName, userId);
+    doc.gc = false; // Disable garbage collection for large docs
     if (utils.persistence !== null) {
-      utils.persistence.bindState(docName, doc)
+      utils.persistence.bindState(docName, doc);
     }
-
-    utils.docs.set(docName, doc)
-    return doc
-  })
+    return doc;
+  });
   wss.on("connection", async (ws, request) => {
     const injectedWS = ws;
     injectedWS.binaryType = "arraybuffer";

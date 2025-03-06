@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { WebsocketProvider } from 'y-websocket'
 import * as Y from 'yjs'
-
+import {Awareness} from 'y-protocols/awareness.js'
 const YjsContext = React.createContext({})
 
 const { Provider, Consumer } = YjsContext
@@ -23,7 +23,7 @@ const YjsProvider = ({  children }) => {
     const [ydoc, setYDoc] = useState(null)
     const [yText, setYText] = useState(null)
     const [online,setOnline] = useState(true)    
-
+    const awarenessProtocol = { Awareness }
     const createYjsProvider = (docIdentifier:string|null) => {
         let identifier = docIdentifier
         let ydocInstance = null
@@ -43,8 +43,12 @@ const YjsProvider = ({  children }) => {
         }
   
         // eslint-disable-next-line no-restricted-globals
-        const provider = new WebsocketProvider(CLIENT_WEBSOCKET_URL, identifier, ydocInstance, {params: { token: localStorage.getItem('token') || '' }})
-  
+        const provider = new WebsocketProvider(CLIENT_WEBSOCKET_URL, identifier, ydocInstance, {
+          params: { token: localStorage.getItem('token') || '' },
+          WebSocketPolyfill: WebSocket, // Ensure compatibility
+          resyncInterval:1000, // Retry failed connections
+          awareness: new awarenessProtocol.Awareness(ydocInstance) // Better connection tracking
+        });
         // provider.awareness.on('change', () => {
         //   setSharedUsers([...provider.awareness.getStates()])
         // })
