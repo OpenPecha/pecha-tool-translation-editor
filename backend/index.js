@@ -22,14 +22,9 @@ const wss = new WebSocket.Server({ server,
   clientTracking:true,
   maxPayload: 1024 * 1024 * 50 },)
  
-const redisConfig = {
-    socket: {
-      host: process.env.REDIS_HOST ,
-      port: process.env.REDIS_PORT,
-    },
-    password: process.env.REDIS_PASSWORD || null,
-  };
-const client=createClient(redisConfig)
+const client=createClient({
+  url:process.env.REDIS_URL
+})
 
 client.connect().then(()=>console.log('redis connected')).catch(e=>{
     console.error('error with redis connection')
