@@ -6,10 +6,11 @@
   "scripts": {
   "dev": "vite",
   "build": "vite build",
-  "start": "vite preview",
+  "start": "vite preview --port 10000",
   "lint": "eslint .",
-  "preview": "vite preview"
-},
+  "preview": "vite preview --port 10000"
+}
+,
   "dependencies": {
     "axios": "^1.8.1",
     "codemirror": "^5.63.0",
