@@ -134,7 +134,6 @@ app.post("/token", async (req, res) => {
   // Create a new document
   app.post("/documents", authenticateToken, async (req, res) => {
     const { identifier, docs_prosemirror_delta, docs_y_doc_state } = req.body;
-    console.log(identifier)
     const doc = getYDoc(identifier, req.user.id)
     const state = Y.encodeStateAsUpdate(doc)
     const delta = doc.getText(identifier).toDelta()
@@ -260,7 +259,6 @@ app.put("/documents/:id", authenticateToken, async (req, res) => {
 app.post("/documents/:id/permissions", authenticateToken, async (req, res) => {
     let { userId, canRead, canWrite } = req.body;
     const documentId = req.params.id;
-    console.log(documentId)
     
     try {
       // Check if the document exists

@@ -49,7 +49,7 @@ const YjsProvider = ({ children }) => {
         const provider = new WebsocketProvider(CLIENT_WEBSOCKET_URL, identifier, ydocInstance, {
             params: { token: localStorage.getItem('token') || '' },
             WebSocketPolyfill: WebSocket,
-            resyncInterval: 1000,
+            resyncInterval: 4000,
             awareness: new awarenessProtocol.Awareness(ydocInstance)
         });
 
