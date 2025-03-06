@@ -18,7 +18,7 @@ app.use(cors());
 
 const server = http.createServer(app);
 const WEBSOCKET_PORT=process.env.WEBSOCKET_PORT || 1234
-const wss = new WebSocket.Server({ port: WEBSOCKET_PORT,clientTracking:true,
+const wss = new WebSocket.Server({ server,clientTracking:true,
   maxPayload: 1024 * 1024 * 10 },)
  
 
