@@ -34,7 +34,7 @@ const YjsProvider = ({ children }) => {
             setYDoc(ydocInstance)
         }
 
-        const yTextInstance = ydocInstance.getText(docIdentifier)
+        const yTextInstance = ydocInstance.getXmlFragment("content") // Ensure XmlFragment
         setYText(yTextInstance)
 
         // NEW: Create a shared Y.js Array for storing comments

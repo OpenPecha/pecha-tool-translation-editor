@@ -1,76 +1,60 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
-import Quill from "quill";
-import QuillCursors from "quill-cursors";
-import { QuillBinding } from "y-quill";
-import { useAuth } from "../contexts/AuthContext";
+import React, { useContext, useEffect, useState } from "react";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import { Collaboration } from "@tiptap/extension-collaboration";
+import { CollaborationCursor } from "@tiptap/extension-collaboration-cursor";
 import YjsContext from "../hook/yjsProvider";
 import Toolbar from "./Toolbar";
 import Permissions from "./Permissions";
-import "quill/dist/quill.snow.css";
-
-Quill.register("modules/cursors", QuillCursors);
-
-let fonts = Quill.import("attributors/style/font");
-fonts.whitelist = ["initial", "sans-serif", "serif", "monospace", "monlam"];
-Quill.register(fonts, true);
 
 function Editor({ documentId }) {
-  const editorRef = useRef(null);
-  const quillRef = useRef(null);
-  const { clearYjsProvider, toggleConnection, online, yText, yjsProvider, yComments } = useContext(YjsContext);
+  const { clearYjsProvider, toggleConnection, online, yjsProvider, ydoc } = useContext(YjsContext);
   const [synced, setSynced] = useState(false);
-  const [charLength, setLength] = useState(0);
+  const [charLength, setCharLength] = useState(0);
+
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Collaboration.configure({ document: ydoc  }),
+      CollaborationCursor.configure({ provider: yjsProvider, user: { name: "User", color: "#ff0000" } }),
+    ],
+    editorProps: {
+      attributes: {
+        class: "prose prose-lg focus:outline-none h-[400px] border p-2",
+      },
+    },
+    onUpdate: ({ editor }) => {
+      setCharLength(editor.storage.characterCount.characters());
+    },
+  });
 
   useEffect(() => {
-    const quill = new Quill(editorRef.current, {
-      theme: "snow",
-      modules: {
-        toolbar: { container: "#toolbar" },
-        cursors: { transformOnTextChange: false },
-        history: { delay: 2000, maxStack: 500 },
-      },
-      placeholder: "Start collaborating...",
-    });
-
-    quillRef.current = quill;
-    new QuillBinding(yText, quill, yjsProvider?.awareness);
-    
-    quill.on("text-change", () => {
-      setLength(quill.getLength());
-    });
-
-
-    yjsProvider?.on("sync", (isSynced) => {
+    if (!yjsProvider) return;
+    yjsProvider.on("sync", (isSynced) => {
+      console.log("synced", isSynced);
       setSynced(isSynced);
-      setLength(quill.getLength());
     });
 
-    return () => {
-      clearYjsProvider();
-    };
-  }, []);
-
-  
+    return () => clearYjsProvider();
+  }, [yjsProvider]);
 
   return (
-    <div className="flex ">
-    <div>
-      <button onClick={toggleConnection} style={{ marginBottom: "10px" }}>
-        {online ? "Connected" : "Disconnected"}
-      </button>
-      <div>{synced ? "Synced" : "Not Synced"}</div>
-      <div>Char count: {charLength}</div>
-      <Toolbar />
-      {!synced && <div>Loading...</div>}
-      <div className="relative">
-      <div ref={editorRef} style={{ height: "400px", marginTop: "10px", display: !synced ? "none" : "" }} />
-    
+    <div className="flex">
+      <div>
+        <button onClick={toggleConnection} className="mb-2 p-2 border rounded">
+          {online ? "Connected" : "Disconnected"}
+        </button>
+        <div>{synced ? "Synced" : "Not Synced"}</div>
+        <div>Char count: {charLength}</div>
+        {!synced && <div>Loading...</div>}
+        <div className="relative">
+          {editor && <EditorContent editor={editor} />}
+        </div>
+        <Permissions documentId={documentId} />
       </div>
-      <Permissions documentId={documentId} />
+      <div className="comment-container w-1/4">
+        <h4>Comments</h4>
       </div>
-    <div className="comment-container w-1/4">
-    <h4>Comments</h4>
-    </div>
     </div>
   );
 }

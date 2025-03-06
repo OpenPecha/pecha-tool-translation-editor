@@ -216,7 +216,7 @@ app.get("/documents/:id", authenticateToken, async (req, res) => {
     if (document.docs_y_doc_state) {
       const ydoc = new Y.Doc();
       Y.applyUpdate(ydoc, document.docs_y_doc_state);
-      delta = ydoc.getText("prosemirror").toDelta(); // Convert to Quill-compatible Delta
+      delta = ydoc.getXmlFragment("content").toDelta(); // Convert to Quill-compatible Delta
     } else if (document.docs_prosemirror_delta) {
       delta = document.docs_prosemirror_delta;
     }
@@ -344,10 +344,9 @@ const getYDoc = (docName, userId) =>
             console.log(`Error adding user ${userId} to document ${identifier}: ${err.message}`);
           }
         } else {
-          console.log(`Creating new document in DB for: ${identifier}`);
   
           const state = Y.encodeStateAsUpdate(doc);
-          const delta = doc.getText("prosemirror").toDelta();
+          const delta = doc.getXmlFragment("content").toDelta();
   
           await prisma.doc.create({
             data: {
@@ -411,9 +410,9 @@ const getYDoc = (docName, userId) =>
     // **Send Initial Document State**
     {
       const encoder = utils.encoding.createEncoder();
-      utils.encoding.writeVarUint(encoder, utils.messageSync);
-      utils.syncProtocol.writeSyncStep1(encoder, doc);
-      utils.send(doc, injectedWS, utils.encoding.toUint8Array(encoder));
+utils.encoding.writeVarUint(encoder, utils.messageSync);
+utils.syncProtocol.writeSyncStep1(encoder, doc);
+utils.send(doc, injectedWS, utils.encoding.toUint8Array(encoder));
   
       const awarenessStates = doc.awareness.getStates();
       if (awarenessStates.size > 0) {
