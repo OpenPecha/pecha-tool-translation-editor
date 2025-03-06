@@ -34,7 +34,11 @@ function Editor() {
                   [{ 'align': [] }],
                   ['clean']
                 ],
-                cursors: { transformOnTextChange: true }
+                cursors: { transformOnTextChange: false },
+                history:{
+                  delay: 2000,
+                  maxStack: 500,
+                }
               },
               placeholder: 'Start collaborating...',
             });
@@ -50,14 +54,18 @@ function Editor() {
             quillRef.current = quill;
             new QuillBinding(yText, quill, yjsProvider?.awareness);
             editorContainer?.addEventListener("scroll", handleScroll);
-            quill.on("text-change", updateCharacterCount);
+            let timeout;
+  quill.on('text-change', () => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      setLength(quill.getLength()); // Update char count with delay
+    }, 500);
+  });
             yjsProvider?.on("sync", (isSynced) => {
                 setSynced(isSynced)
             });
             console.log(yjsProvider)
-            function updateCharacterCount() {
-                setLength(quill.getLength());
-            }
+           
             // **Yjs Content Load Detection**
             
             return () => {
