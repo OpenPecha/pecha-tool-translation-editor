@@ -70,9 +70,9 @@ const DocumentList = () => {
   };
 
   return (
-    <div className="document-list-container">
+    <div className="document-list-container ">
       <div className="document-list-header">
-        <h1>My Documents</h1>
+        <h1 >My Documents</h1>
         <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
           Create New Document
         </button>

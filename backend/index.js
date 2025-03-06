@@ -229,7 +229,7 @@ app.get("/documents/:id", authenticateToken, async (req, res) => {
 
   
   // Update a document
-  app.put("/documents/:id", authenticateToken, async (req, res) => {
+app.put("/documents/:id", authenticateToken, async (req, res) => {
     const { docs_prosemirror_delta, docs_y_doc_state } = req.body;
     try {
       const document = await prisma.doc.findUnique({ where: { id: req.params.id } });
@@ -254,6 +254,48 @@ app.get("/documents/:id", authenticateToken, async (req, res) => {
       res.json(updatedDocument);
     } catch (error) {
       res.status(500).json({ error: "Error updating document" });
+    }
+  });
+
+app.post("/documents/:id/permissions", authenticateToken, async (req, res) => {
+    let { userId, canRead, canWrite } = req.body;
+    const documentId = req.params.id;
+    console.log(documentId)
+    
+    try {
+      // Check if the document exists
+      canRead = canRead === "true" || canRead === true;
+      canWrite = canWrite === "true" || canWrite === true;
+      const document = await prisma.doc.findUnique({ where: { id: documentId } });
+      if (!document) return res.status(404).json({ error: "Document not found" });
+  
+      // Ensure the requesting user is the owner of the document
+      if (document.ownerId !== req.user.id) {
+        return res.status(403).json({ error: "You do not have permission to modify this document" });
+      }
+  
+      // Check if the user already has permissions
+      const existingPermission = await prisma.permission.findFirst({
+        where: { docId: documentId, userId }
+      });
+  
+      if (existingPermission) {
+        // Update existing permission
+        await prisma.permission.update({
+          where: { id: existingPermission.id },
+          data: { canRead, canWrite }
+        });
+      } else {
+        // Create a new permission entry
+        await prisma.permission.create({
+          data: { docId: documentId, userId, canRead, canWrite }
+        });
+      }
+  
+      res.json({ message: "Permission granted successfully" });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Error granting permission" });
     }
   });
 

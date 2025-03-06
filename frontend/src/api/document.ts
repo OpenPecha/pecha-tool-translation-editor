@@ -35,3 +35,28 @@ const server_url = import.meta.env.VITE_SERVER_URL;
     } finally {
     }
   };
+
+  export const updatePermission = async (id, userId, canRead, canWrite, token) => {
+    try {
+      const formData = new URLSearchParams();
+      formData.append('userId', userId);
+      formData.append('canRead', canRead);
+      formData.append('canWrite', canWrite);
+      const response = await fetch(`${server_url}/documents/${id}/permissions`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        },
+        body: formData
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to update permission");
+      }
+  
+      return await response.json();
+    } catch (error) {
+      console.error("Error updating permission:", error);
+    }
+  };
+  

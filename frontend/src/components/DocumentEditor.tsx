@@ -31,8 +31,7 @@ const RealTimeEditor = () => {
 
   return (
     <>
-    <div>name: {doc?.identifier}</div>
-    <Editor />
+    <Editor documentId={id}/>
     </>
   );
 };
