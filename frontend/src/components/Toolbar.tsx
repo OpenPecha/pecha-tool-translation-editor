@@ -21,8 +21,8 @@ const Toolbar = () => {
         <button className="ql-blockquote" />
         <button className="ql-code-block" />
         <button className="ql-link" />
-        <button className="ql-image" />
-        <button className="ql-video" />
+        {/* <button className="ql-image" /> */}
+        {/* <button className="ql-video" /> */}
         <button className="ql-formula" />
       </span>
       <span className="ql-formats">

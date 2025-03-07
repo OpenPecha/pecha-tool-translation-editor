@@ -1,26 +1,23 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import Quill from "quill";
-import QuillCursors from "quill-cursors";
 import { QuillBinding } from "y-quill";
 import { useAuth } from "../contexts/AuthContext";
 import YjsContext from "../hook/yjsProvider";
 import Toolbar from "./Toolbar";
 import Permissions from "./Permissions";
 import "quill/dist/quill.snow.css";
+import quill_import from "./quillExtension";
+import { createComment } from "../api/comment";
 
-Quill.register("modules/cursors", QuillCursors);
-
-let fonts = Quill.import("attributors/style/font");
-fonts.whitelist = ["initial", "sans-serif", "serif", "monospace", "monlam"];
-Quill.register(fonts, true);
+quill_import()
 
 function Editor({ documentId }) {
   const editorRef = useRef(null);
   const quillRef = useRef(null);
   const { clearYjsProvider, toggleConnection, online, yText, yjsProvider, yComments } = useContext(YjsContext);
   const [synced, setSynced] = useState(false);
-  const [charLength, setLength] = useState(0);
-
+  const { currentUser,token } = useAuth();
+  
   useEffect(() => {
     const quill = new Quill(editorRef.current, {
       theme: "snow",
@@ -28,6 +25,10 @@ function Editor({ documentId }) {
         toolbar: { container: "#toolbar" },
         cursors: { transformOnTextChange: false },
         history: { delay: 2000, maxStack: 500 },
+        counter: {
+          container: '#counter',
+          unit: 'character'
+        }
       },
       placeholder: "Start collaborating...",
     });
@@ -35,21 +36,42 @@ function Editor({ documentId }) {
     quillRef.current = quill;
     new QuillBinding(yText, quill, yjsProvider?.awareness);
     
-    quill.on("text-change", () => {
-      setLength(quill.getLength());
-    });
-
+    
 
     yjsProvider?.on("sync", (isSynced) => {
       setSynced(isSynced);
-      setLength(quill.getLength());
     });
 
+
+    document.querySelector(".ql-editor")?.addEventListener("click", function (event) {
+      let target = event.target;
+      if (target.classList.contains("custom-comment")) {
+        alert(`Comment ID: ${target.getAttribute("data-id")}
+    Comment: ${target.getAttribute("data-comment")}`);
+      }
+    });
     return () => {
       clearYjsProvider();
     };
   }, []);
 
+  async function addComment() {
+    var range =  quillRef.current.getSelection();
+    const comment=prompt("Enter your comment")
+    const end=range.index+range.length;
+    const created_comment=await createComment(documentId, currentUser.id, comment,range.index, end, token);
+    console.log(created_comment)
+    if(created_comment.id){
+
+      if (range) {
+        let commentId = "comment-" + Date.now(); // Unique ID
+        quillRef.current.formatText(range.index, range.length, "comment", {
+          id: commentId,
+          text: comment,
+        });
+      }
+    }
+  }
   
 
   return (
@@ -59,14 +81,14 @@ function Editor({ documentId }) {
         {online ? "Connected" : "Disconnected"}
       </button>
       <div>{synced ? "Synced" : "Not Synced"}</div>
-      <div>Char count: {charLength}</div>
+      <button onClick={addComment}>comment</button>
+      <Permissions documentId={documentId} />
       <Toolbar />
       {!synced && <div>Loading...</div>}
       <div className="relative">
       <div ref={editorRef} style={{ height: "400px", marginTop: "10px", display: !synced ? "none" : "" }} />
-    
+      <div id="counter">0 characters</div>
       </div>
-      <Permissions documentId={documentId} />
       </div>
     <div className="comment-container w-1/4">
     <h4>Comments</h4>
