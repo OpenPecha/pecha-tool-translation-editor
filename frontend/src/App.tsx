@@ -9,7 +9,7 @@ import { YjsProvider } from './lib/yjsProvider';
 // Protected route component
 const ProtectedRoute = ({ children }) => {
     const { currentUser, loading } = useAuth();
-  
+    console.log(currentUser)
     if (loading) {
       return <div className="loading">Loading...</div>;
     }
@@ -27,17 +27,17 @@ const ProtectedRoute = ({ children }) => {
         <Navbar />
         <div className="container">
           <Routes>
-
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route 
+          <Route 
               path="/" 
               element={
                 <ProtectedRoute>
                   <DocumentList />
-                </ProtectedRoute>
+              </ProtectedRoute>
               } 
             />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+
             <Route 
               path="/documents/:id" 
               element={

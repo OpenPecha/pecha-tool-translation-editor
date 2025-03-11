@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useStore } from '../store';
@@ -10,6 +10,8 @@ const Login = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
+  const { currentUser, loading } = useAuth();
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -20,7 +22,6 @@ const Login = () => {
     try {
       const result = await login(username, password);
 
-     
       setUsername(username)
       if (result.success) {
         navigate('/');
@@ -34,6 +35,13 @@ const Login = () => {
       setIsLoading(false);
     }
   };
+
+  useEffect(()=>{
+   if(currentUser){
+     navigate('/')
+   }
+  },[currentUser])
+
 
   return (
     <div className="auth-container">

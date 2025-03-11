@@ -14,7 +14,7 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="navbar-brand">
-        <Link to="/">CodeCollab</Link>
+        <Link to="/">Pecha Editor</Link>
       </div>
       <div className="navbar-menu">
         {currentUser ? (
