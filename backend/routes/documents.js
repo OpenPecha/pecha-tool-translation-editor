@@ -1,21 +1,26 @@
 const express = require("express");
 const authenticate = require("../middleware/authenticate");
 const { PrismaClient } = require("@prisma/client");
+const Y = require('yjs')
+const moment=require("moment")
 
 
 const prisma = new PrismaClient();
 const router = express.Router();
 
 
-module.exports =(getYDoc) =>{
+module.exports =(getYDoc,client) =>{
 
   // Create a new document
   router.post("/", authenticate, async (req, res) => {
-    const { identifier, docs_prosemirror_delta, docs_y_doc_state } = req.body;
+    const { identifier } = req.body;
+    if(!identifier) return res.status(400).json({ error: "Missing required fields" });
     const doc = getYDoc(identifier, req.user.id)
+    
     const state = Y.encodeStateAsUpdate(doc)
     const delta = doc.getText(identifier).toDelta()
     try {
+
       const document = await prisma.doc.create({
         data: {
           identifier,

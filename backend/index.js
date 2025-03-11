@@ -6,7 +6,6 @@ const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const { createClient} =require('redis')
 const http = require("http");
-const moment=require("moment")
 const WebSocket = require("ws");
 const map = require('lib0/map')
 const Y = require('yjs')
@@ -49,7 +48,7 @@ const getYDoc = (docName, userId) =>
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); 
 app.use("/comments", commentsRoutes);
-app.use("/documents", documentsRoutes(getYDoc));
+app.use("/documents", documentsRoutes(getYDoc,client));
 const pingTimeout = 30000
 const clients = new Set();
 
