@@ -9,6 +9,7 @@ import "quill/dist/quill.snow.css";
 import quill_import from "./quillExtension";
 import { createComment, fetchComments } from "../api/comment";
 import Comments from "./Comments";
+import OverlayLoading from "./OverlayLoading";
 
 quill_import();
 
@@ -89,10 +90,12 @@ function Editor({ documentId }) {
     <div className="flex">
       <div className="editor-container w-3/4">
         <div>{synced ? "Synced" : "Not Synced"}</div>
+        <div className="flex justify-between items-center mb-3">
         <button onClick={addComment}>Comment</button>
         <Permissions documentId={documentId} />
+        </div>
         <Toolbar />
-        {!synced && <div>Loading...</div>}
+        <OverlayLoading isLoading={!synced}/>
         <div className="relative">
           <div ref={editorRef} style={{ height: "400px", marginTop: "10px", display: !synced ? "none" : "" }} />
           <div id="counter">0 characters</div>

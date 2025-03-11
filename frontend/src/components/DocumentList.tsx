@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { fetchDocuments } from '../api/document';
+import { deleteDocument, fetchDocuments } from '../api/document';
 
 const server_url = import.meta.env.VITE_SERVER_URL;
 
@@ -63,11 +63,8 @@ const DocumentList = () => {
       setError('Network error');
     }
   };
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleString();
-  };
+  
+  
 
   return (
     <div className="document-list-container ">
@@ -89,16 +86,7 @@ const DocumentList = () => {
       ) : (
         <div className="document-grid">
           {documents.map(doc => (
-            <Link to={`/documents/${doc.id}`} className="document-card" key={doc.id}>
-              <div className="document-card-header">
-                <h3>{doc.identifier}</h3>
-              </div>
-              <div className="document-card-footer">
-                <span className="document-date">
-                  Last updated: {formatDate(doc.updatedAt)}
-                </span>
-              </div>
-            </Link>
+            <EachDocument doc={doc} key={doc.id} setDocuments={setDocuments}/>
           ))}
         </div>
       )}
@@ -140,5 +128,42 @@ const DocumentList = () => {
     </div>
   );
 };
+
+
+function EachDocument({doc,setDocuments}){
+  const { token } = useAuth();
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString();
+  };
+  const handleDelete = async () => {
+     let permission= confirm('Enter your password to delete the document')
+      if(permission){
+        try{ 
+          let deleted=await deleteDocument(doc.id,token)
+          setDocuments((prev) => prev.filter((d) => d.id !== doc.id));
+          console.log(deleted)
+        }
+        catch(e){ console.log(e)}
+  };
+};
+
+return <div>
+  <Link to={`/documents/${doc.id}`} className="document-card" key={doc.id}>
+<div className="document-card-header">
+  <h3>{doc.identifier}</h3>
+</div>
+<div className="document-card-footer">
+  <span className="document-date">
+    Last updated: {formatDate(doc.updatedAt)}
+  </span>
+</div>
+</Link>
+<button onClick={handleDelete}>delete</button>
+</div>
+
+}
+
 
 export default DocumentList;

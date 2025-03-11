@@ -59,4 +59,21 @@ const server_url = import.meta.env.VITE_SERVER_URL;
       console.error("Error updating permission:", error);
     }
   };
-  
+  export const deleteDocument = async (id:string,token:string) => {
+    try {
+      const response = await fetch(`${server_url}/documents/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data;
+      }
+        } catch (error) {
+            console.log(error)
+    } finally {
+    }
+  };

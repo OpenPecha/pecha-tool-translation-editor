@@ -138,6 +138,26 @@ module.exports =(getYDoc,client) =>{
       res.status(500).json({ error: "Error updating document" });
     }
   });
+  // delete a document
+  router.delete("/:id", authenticate, async (req, res) => {
+    try {
+      const document = await prisma.doc.findUnique({ where: { id: req.params.id } });
+      if (!document) return res.status(404).json({ error: "Document not found" });
+  
+      if (document.ownerId !== req.user.id) {
+        return res.status(403).json({ error: "You do not have permission to delete this document" });
+      }
+  
+      await prisma.doc.delete({ where: { id: document.id } });
+      await prisma.permission.deleteMany({ where: { docId: document.id } });
+      await client.del(`${document.id}:info`);
+  
+      res.json({ message: "Document deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Error deleting document" });
+    }
+  });
+ 
 
   router.post("/:id/permissions", authenticate, async (req, res) => {
     let { userId, canRead, canWrite } = req.body;
