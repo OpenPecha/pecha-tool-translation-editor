@@ -35,6 +35,17 @@ client.connect().then(()=>console.log('redis connected')).catch(e=>{
     console.error('error with redis connection')
 })
 
+
+const getYDoc = (docName, userId) => 
+  map.setIfUndefined(utils.docs, docName, () => {
+    const doc = new WSSharedDoc(docName, userId);
+    doc.gc = false; // Disable garbage collection for large docs
+    if (utils.persistence !== null) {
+      utils.persistence.bindState(docName, doc);
+    }
+    return doc;
+  });
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); 
 app.use("/comments", commentsRoutes);
@@ -118,15 +129,6 @@ const messageListener = (conn, doc, message) => {
   
 
 
-const getYDoc = (docName, userId) => 
-  map.setIfUndefined(utils.docs, docName, () => {
-    const doc = new WSSharedDoc(docName, userId);
-    doc.gc = false; // Disable garbage collection for large docs
-    if (utils.persistence !== null) {
-      utils.persistence.bindState(docName, doc);
-    }
-    return doc;
-  });
   wss.on("connection", async (ws, request) => {
     const injectedWS = ws;
     injectedWS.binaryType = "arraybuffer";
