@@ -188,9 +188,15 @@ module.exports =(getYDoc,client) =>{
         });
       } else {
         // Create a new permission entry
-        await prisma.permission.create({
-          data: { docId: documentId, userId, canRead, canWrite }
-        });
+        try{
+
+          await prisma.permission.create({
+            data: { docId: documentId, userId, canRead, canWrite }
+          });
+        } catch (error) {
+          console.error(error);
+          return res.status(500).json({ error: "user doesnt exist" });
+        }
       }
   
       res.json({ message: "Permission granted successfully" });

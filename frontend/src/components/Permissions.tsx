@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 function Permissions({ documentId }) {
     const [showModal, setShowModal] = useState(false);
+    const [error,setError] = useState(null);
     const [userId, setUserId] = useState("");
     const [canRead, setCanRead] = useState(false);
     const [canWrite, setCanWrite] = useState(false);
@@ -13,14 +14,17 @@ function Permissions({ documentId }) {
         try {
             const response = await updatePermission(documentId, userId, canRead, canWrite, token);
             if (response) {
-                console.log("Permission updated successfully:", response);
-                setShowModal(false);
+                if(response.error) {
+                    setError(response.error)
+                }else{
+                    console.log("Permission updated successfully:", response);
+                    setShowModal(false);
+                }
             }
         } catch (error) {
             console.error("Failed to update permission", error);
         }
     };
-
     return (
         <>
             {/* Grant Permission Button */}
@@ -30,7 +34,7 @@ function Permissions({ documentId }) {
 
             {/* Permission Modal */}
             {showModal && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
                     <div className="bg-white p-6 rounded-lg shadow-lg w-96">
                         <h3 className="text-lg font-semibold mb-4">Grant Permission</h3>
                         <input
@@ -40,6 +44,7 @@ function Permissions({ documentId }) {
                             onChange={(e) => setUserId(e.target.value)}
                             className="w-full border p-2 rounded-md mb-4"
                         />
+                        {error && <p className="text-red-500 text-sm mb-4">the email is invalid</p>}
                         <div className="flex items-center gap-2 mb-2">
                             <input
                                 type="checkbox"
