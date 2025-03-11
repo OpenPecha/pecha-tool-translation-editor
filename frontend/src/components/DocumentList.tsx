@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { deleteDocument, fetchDocuments } from '../api/document';
+import { MdDelete } from "react-icons/md";
 
 const server_url = import.meta.env.VITE_SERVER_URL;
 
@@ -160,7 +161,7 @@ return <div>
   </span>
 </div>
 </Link>
-<button onClick={handleDelete}>delete</button>
+<button onClick={handleDelete}><MdDelete/></button>
 </div>
 
 }

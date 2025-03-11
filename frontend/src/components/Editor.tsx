@@ -97,7 +97,7 @@ function Editor({ documentId }) {
         <Toolbar />
         <OverlayLoading isLoading={!synced}/>
         <div className="relative">
-          <div ref={editorRef} style={{ height: "400px", marginTop: "10px", display: !synced ? "none" : "" }} />
+          <div ref={editorRef} style={{ height: "400px", marginTop: "10px" }} />
           <div id="counter">0 characters</div>
         </div>
       </div>
