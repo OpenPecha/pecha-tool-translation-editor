@@ -8,7 +8,7 @@ const server_url = import.meta.env.VITE_SERVER_URL;
  */
 export const fetchComments = async (docId: string, token: string) => {
   try {
-    const response = await fetch(`${server_url}/comments?docId=${docId}`, {
+    const response = await fetch(`${server_url}/comments/${docId}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
