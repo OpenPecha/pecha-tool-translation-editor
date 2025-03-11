@@ -7,6 +7,8 @@ const prisma = new PrismaClient();
 const router = express.Router();
 
 
+module.exports =(getYDoc) =>{
+
   // Create a new document
   router.post("/", authenticate, async (req, res) => {
     const { identifier, docs_prosemirror_delta, docs_y_doc_state } = req.body;
@@ -173,4 +175,5 @@ const router = express.Router();
     }
   });
 
-module.exports = router;
+  return router;
+}

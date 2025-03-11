@@ -1,7 +1,7 @@
 import React, { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import 'quill/dist/quill.snow.css';
-import YjsContext from '../hook/yjsProvider';
+import YjsContext from '../lib/yjsProvider';
 import Editor from './Editor';
 import { fetchDocument } from '../api/document';
 import { useAuth } from '../contexts/AuthContext';

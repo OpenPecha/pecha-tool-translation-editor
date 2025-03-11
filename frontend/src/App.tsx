@@ -5,7 +5,7 @@ import Login from './components/Login';
 import Register from './components/Register';
 import DocumentList from './components/DocumentList';
 import DocumentEditor from './components/DocumentEditor';
-import { YjsProvider } from './hook/yjsProvider';
+import { YjsProvider } from './lib/yjsProvider';
 
 // Protected route component
 const ProtectedRoute = ({ children }) => {

@@ -38,8 +38,9 @@ client.connect().then(()=>console.log('redis connected')).catch(e=>{
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); 
 app.use("/comments", commentsRoutes);
-app.use("/documents", documentsRoutes);
+app.use("/documents", documentsRoutes(getYDoc));
 const pingTimeout = 30000
+const clients = new Set();
 
 
 const messageListener = (conn, doc, message) => {
@@ -117,7 +118,6 @@ const messageListener = (conn, doc, message) => {
   
 
 
-const clients = new Set();
 const getYDoc = (docName, userId) => 
   map.setIfUndefined(utils.docs, docName, () => {
     const doc = new WSSharedDoc(docName, userId);
@@ -184,7 +184,6 @@ const getYDoc = (docName, userId) =>
   
     ws.on("message", async (message) => {
       messageListener(injectedWS, doc, new Uint8Array(message));
-  
       clients.add(ws);
       for (const client of clients) {
         if (client !== ws && client.readyState === WebSocket.OPEN) {
@@ -214,6 +213,7 @@ const getYDoc = (docName, userId) =>
   
     ws.on("close", async () => {
       utils.closeConn(doc, injectedWS);
+      console.log("disconnected")
       clearInterval(pingInterval);
     });
   

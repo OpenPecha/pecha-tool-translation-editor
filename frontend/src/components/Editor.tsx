@@ -2,12 +2,13 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import Quill from "quill";
 import { QuillBinding } from "y-quill";
 import { useAuth } from "../contexts/AuthContext";
-import YjsContext from "../hook/yjsProvider";
+import YjsContext from "../lib/yjsProvider";
 import Toolbar from "./Toolbar";
 import Permissions from "./Permissions";
 import "quill/dist/quill.snow.css";
 import quill_import from "./quillExtension";
 import { createComment } from "../api/comment";
+import Comments from "./Comments";
 
 quill_import()
 
@@ -60,11 +61,10 @@ function Editor({ documentId }) {
     const comment=prompt("Enter your comment")
     const end=range.index+range.length;
     const created_comment=await createComment(documentId, currentUser.id, comment,range.index, end, token);
-    console.log(created_comment)
     if(created_comment.id){
 
       if (range) {
-        let commentId = "comment-" + Date.now(); // Unique ID
+        let commentId = created_comment.id; // Unique ID
         quillRef.current.formatText(range.index, range.length, "comment", {
           id: commentId,
           text: comment,
@@ -90,8 +90,8 @@ function Editor({ documentId }) {
       <div id="counter">0 characters</div>
       </div>
       </div>
-    <div className="comment-container w-1/4">
-    <h4>Comments</h4>
+      <div className="comment-container w-1/4">
+      <Comments documentId={documentId} token={token} />
     </div>
     </div>
   );

@@ -57,6 +57,8 @@ const YjsProvider = ({ children }) => {
     }
 
     const clearYjsProvider = () => {
+        ydoc?.destroy()
+        yjsProvider?.disconnect()
         setYjsProvider(null)
         setYDoc(null)
         setYText(null)

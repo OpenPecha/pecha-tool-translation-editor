@@ -15,6 +15,9 @@ router.get("/",authenticate, async (req, res) => {
             comments = await prisma.comment.findMany({
                 where: { docId },
                 include: { user: true, childComments: true },
+                orderBy:{
+                    createdAt:'desc'
+                }
             });
         } else {
             comments = await prisma.comment.findMany({ include: { user: true, childComments: true } });
@@ -34,9 +37,8 @@ router.get("/:docId",authenticate, async (req, res) => {
 
         const comments = await prisma.comment.findMany({
             where: { docId },
-            include: { user: true, childComments: true },
+            include: { user: true, childComments: true }
         });
-
         res.json(comments);
     } catch (error) {
         console.error(error);
