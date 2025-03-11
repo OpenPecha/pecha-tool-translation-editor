@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { deleteDocument, fetchDocuments } from '../api/document';
 import { MdDelete } from "react-icons/md";
+import { CiCirclePlus } from 'react-icons/ci';
 
 const server_url = import.meta.env.VITE_SERVER_URL;
 
@@ -69,10 +70,10 @@ const DocumentList = () => {
 
   return (
     <div className="document-list-container ">
-      <div className="document-list-header">
-        <h1 >My Documents</h1>
-        <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
-          Create New Document
+      <div className="flex gap-2 pb-3">
+        <h1 >My Pechas</h1>
+        <button className="flex gap-2 items-center rounded-xl uppercase" onClick={() => setShowCreateModal(true)}>
+        <CiCirclePlus  size={30}/>
         </button>
       </div>
 
@@ -97,7 +98,7 @@ const DocumentList = () => {
         <div className="modal-overlay">
           <div className="modal">
             <div className="modal-header">
-              <h2>Create New Document</h2>
+              <h2>Document</h2>
               <button className="modal-close" onClick={() => setShowCreateModal(false)}>
                 &times;
               </button>
@@ -138,8 +139,10 @@ function EachDocument({doc,setDocuments}){
     const date = new Date(dateString);
     return date.toLocaleString();
   };
-  const handleDelete = async () => {
-     let permission= confirm('Enter your password to delete the document')
+  const handleDelete = async (e) => {
+    e.preventDefault(); // Prevent navigation
+        e.stopPropagation();
+     let permission= confirm(' delete the document ?')
       if(permission){
         try{ 
           let deleted=await deleteDocument(doc.id,token)
@@ -153,7 +156,9 @@ function EachDocument({doc,setDocuments}){
 return <div>
   <Link to={`/documents/${doc.id}`} className="document-card" key={doc.id}>
 <div className="document-card-header">
-  <h3>{doc.identifier}</h3>
+  <h3 className='text-xl font-semibold capitalize'>{doc.identifier}</h3>
+<button onClick={handleDelete}   className="z-20 p-2 rounded-md transition-all duration-200 hover:bg-red-500 hover:text-white hover:scale-110"
+  ><MdDelete/></button>
 </div>
 <div className="document-card-footer">
   <span className="document-date">
@@ -161,7 +166,6 @@ return <div>
   </span>
 </div>
 </Link>
-<button onClick={handleDelete}><MdDelete/></button>
 </div>
 
 }

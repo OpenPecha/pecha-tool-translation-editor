@@ -22,7 +22,7 @@ model Doc {
   id                     String       @id @default(uuid())   // Unique identifier for the document
   identifier             String       @unique                // Ensures each document has a unique identifier
   docs_prosemirror_delta Json?                               // Nullable array of objects
-  docs_y_doc_state       Bytes                               // Binary data for Yjs document state
+  docs_y_doc_state       Bytes?                               // Binary data for Yjs document state
   createdAt              DateTime     @default(now())        // Timestamp when the document is created
   updatedAt              DateTime     @updatedAt            // Auto-updated timestamp
   ownerId                String?                             // Optional owner of the document
