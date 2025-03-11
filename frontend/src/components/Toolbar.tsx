@@ -1,6 +1,7 @@
 import React from "react";
+import { FaCommentDots } from "react-icons/fa";
 
-const Toolbar = () => {
+const Toolbar = ({addComment}) => {
   return (
     <div id="toolbar">
       <span className="ql-formats">
@@ -70,6 +71,11 @@ const Toolbar = () => {
       </span>
       <span className="ql-formats">
         <button className="ql-clean" />
+      </span>
+      <span className="ql-formats">
+        <button className="ql-comment" onClick={addComment} >
+          <FaCommentDots/>
+        </button>
       </span>
     </div>
   );

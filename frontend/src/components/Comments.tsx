@@ -20,14 +20,17 @@ function Comments({ comments }) {
 
 function Comment({ comment }) {
   const handleClickComment = () => {
-    const targetElement = document.querySelector(`[data-id="${comment.id}"]`);
+    const targetElement = document.querySelectorAll(`[data-id="${comment.id}"]`);
     if (targetElement) {
-      targetElement.scrollIntoView({ behavior: "smooth", block: "center" });
-      targetElement.style.transition = "background-color 0.5s ease";
-      targetElement.style.backgroundColor = "yellow";
+      targetElement[0].scrollIntoView({ behavior: "smooth", block: "center" });
+      targetElement.forEach((el) => {
+        el.style.transition = "background-color 0.5s ease";
+        el.style.backgroundColor = "yellow";
+      });
 
       setTimeout(() => {
-        targetElement.style.backgroundColor = "lightyellow";
+        targetElement.forEach(el=>
+          el.style.backgroundColor = "lightyellow")
       }, 1500);
     }
   };
