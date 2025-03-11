@@ -160,10 +160,12 @@ module.exports =(getYDoc,client) =>{
  
 
   router.post("/:id/permissions", authenticate, async (req, res) => {
-    let { userId, canRead, canWrite } = req.body;
+    let { email, canRead, canWrite } = req.body;
     const documentId = req.params.id;
-    
     try {
+      let user=await prisma.user.findFirst({where:{email}})
+      if(!user) return res.status(404).json({ error: "User not found" });
+      const userId = user.id;
       // Check if the document exists
       canRead = canRead === "true" || canRead === true;
       canWrite = canWrite === "true" || canWrite === true;

@@ -36,10 +36,10 @@ const server_url = import.meta.env.VITE_SERVER_URL;
     }
   };
 
-  export const updatePermission = async (id, userId, canRead, canWrite, token) => {
+  export const updatePermission = async (id, email, canRead, canWrite, token) => {
     try {
       const formData = new URLSearchParams();
-      formData.append('userId', userId);
+      formData.append('email', email);
       formData.append('canRead', canRead);
       formData.append('canWrite', canWrite);
       const response = await fetch(`${server_url}/documents/${id}/permissions`, {
