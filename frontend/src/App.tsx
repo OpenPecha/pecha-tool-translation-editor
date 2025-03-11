@@ -9,7 +9,6 @@ import { YjsProvider } from './lib/yjsProvider';
 // Protected route component
 const ProtectedRoute = ({ children }) => {
     const { currentUser, loading } = useAuth();
-    console.log(currentUser)
     if (loading) {
       return <div className="loading">Loading...</div>;
     }
