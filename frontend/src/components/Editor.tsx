@@ -12,7 +12,7 @@ import Comments from "./Comments";
 import OverlayLoading from "./OverlayLoading";
 quill_import();
 
-function Editor({ documentId }) {
+function Editor({ documentId,isEditable }:{documentId:string,isEditable:boolean}) {
   const editorRef = useRef(null);
   const quillRef = useRef(null);
   const { clearYjsProvider, toggleConnection, online, yText, yjsProvider } = useContext(YjsContext);
@@ -29,6 +29,7 @@ function Editor({ documentId }) {
         history: { delay: 2000, maxStack: 500 },
         counter: { container: "#counter", unit: "character" },
       },
+      readOnly: !isEditable,
       placeholder: "Start collaborating...",
     });
 
@@ -84,7 +85,32 @@ function Editor({ documentId }) {
       console.error("Error adding comment:", error);
     }
   }
+  async function addSuggestion() {
+    const range = quillRef.current.getSelection();
+    if (!range) return;
 
+    const suggestion = prompt("Enter your suggestion");
+    if (!suggestion) return;
+
+    const end = range.index + range.length;
+
+    try {
+      // const createdComment = await createComment(documentId, currentUser.id, commentText, range.index, end, token);
+      
+      // if (createdComment.id) {
+        // 🔥 Update the Quill editor to highlight the text
+        quillRef.current.formatText(range.index, range.length, "suggest", {
+          id: Math.random().toString(36).substring(7),
+          text: suggestion,
+        });
+
+        // 🔥 Update the comments list dynamically
+        // setComments((prev) => [createdComment, ...prev]); // Add new comment to the top
+      // }
+    } catch (error) {
+      console.error("Error adding comment:", error);
+    }
+  }
   return (
     <div className="flex">
       <div className="editor-container w-3/4">
@@ -92,10 +118,10 @@ function Editor({ documentId }) {
         <div>online: {synced ? "🟢" : "🔴"}</div>
         <Permissions documentId={documentId} />
         </div>
-        <Toolbar addComment={addComment} />
+        <Toolbar addComment={addComment} addSuggestion={addSuggestion} />
         {/* <OverlayLoading isLoading={!synced}/> */}
         <div className="relative">
-          <div ref={editorRef} style={{ height: "400px", marginTop: "10px" }} />
+          <div ref={editorRef} style={{ height: "400px", marginTop: "10px",fontFamily:"Monlam",fontSize:18}} />
           <div id="counter">0 characters</div>
         </div>
       </div>

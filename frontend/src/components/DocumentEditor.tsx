@@ -8,16 +8,22 @@ import { useAuth } from '../contexts/AuthContext';
 // import useYdoc from '../hook/useYdoc';
 
 
-const RealTimeEditor = () => {
+const RealTimeEditor = ({docId}:{docId:string | undefined}) => {
   const { id } = useParams();
   const { createYjsProvider, yjsProvider, ydoc, yText, clearYjsProvider } = useContext(YjsContext)
-  const { token } = useAuth();
+  const { token,currentUser } = useAuth();
   const [doc, setDoc] = useState(null);
-  
-  const roomId = id;
+  const [isEditable, setIsEditable] = useState(false);
+  const roomId = docId ?? id;
   useEffect(() => {
-    fetchDocument(id,token).then((doc) => {
-      console.log('hi')
+    fetchDocument(roomId,token).then((doc) => {
+      if(doc?.permissions){
+        doc?.permissions.find((permission) => {
+          if(permission.userId === currentUser.id){
+            setIsEditable(true)
+          }
+        })
+      }
       setDoc(doc)
       createYjsProvider(roomId);
     })
@@ -27,11 +33,11 @@ const RealTimeEditor = () => {
 
   
 
-  if (!ydoc||!yjsProvider||!yText) return null;
+  if (!ydoc||!yjsProvider||!yText ||!id ) return null;
 
   return (
     <>
-    <Editor documentId={id}/>
+    <Editor documentId={id} isEditable={isEditable}/>
     </>
   );
 };

@@ -82,6 +82,7 @@ module.exports =(getYDoc,client) =>{
       id:true,
       identifier:true,
       ownerId:true,
+      permissions:true
     } });
 
     if (!document) return res.status(404).json({ error: "Document not found" });
