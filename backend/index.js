@@ -1,5 +1,8 @@
 require("dotenv").config();
 const express = require("express");
+// const swaggerUi = require("swagger-ui-express");
+// const swaggerJsdoc = require("swagger-jsdoc");
+const oas = require("express-oas-generator");
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -11,13 +14,12 @@ const map = require('lib0/map')
 const Y = require('yjs')
 const { WSSharedDoc, utils } = require('./services')
 const commentsRoutes = require("./routes/comments");
+const suggestsRoutes = require("./routes/suggests");
 const documentsRoutes = require("./routes/documents");
 const authenticateToken = require("./middleware/authenticate");
-
 const prisma = new PrismaClient();
 const app = express();
 const SECRET_KEY = process.env.SECRET_KEY || "super-secret-key";
-
 app.use(cors());
 
 const server = http.createServer(app);
@@ -48,6 +50,7 @@ const getYDoc = (docName, userId) =>
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); 
 app.use("/comments", commentsRoutes);
+app.use("/suggests", suggestsRoutes);
 app.use("/documents", documentsRoutes(getYDoc,client));
 const pingTimeout = 30000
 const clients = new Set();
@@ -83,7 +86,7 @@ const messageListener = (conn, doc, message) => {
   }
 }
 // Token route (for testing) 
-  app.post("/token", async (req, res) => {
+app.post("/token", async (req, res) => {
     const { username, password } = req.body;
   
     const user = await prisma.user.findUnique({ where: { username } });

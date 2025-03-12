@@ -30,6 +30,7 @@ export const AuthProvider = ({ children }) => {
 
         if (response.ok) {
           const userData = await response.json();
+          localStorage.setItem('user', JSON.stringify(userData));
           setCurrentUser(userData);
           setUsername(userData.username)
         } else {

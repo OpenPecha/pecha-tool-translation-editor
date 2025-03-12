@@ -1,9 +1,9 @@
 import React from "react";
-import { FaCommentDots } from "react-icons/fa";
+import { FaCommentDots, FaHighlighter } from "react-icons/fa";
 
-const Toolbar = ({addComment,addSuggestion}) => {
+const Toolbar = ({addComment,addSuggestion,id}) => {
   return (
-    <div id="toolbar">
+    <div id={id}>
       <span className="ql-formats">
         <select className="ql-font">
           <option value="sans-serif" selected>Sans-serif</option>
@@ -73,13 +73,11 @@ const Toolbar = ({addComment,addSuggestion}) => {
         <button className="ql-clean" />
       </span>
       <span className="ql-formats">
-        <button className="ql-comment" onClick={addComment} >
+        <button className="ql-comment" onClick={addComment}>
           <FaCommentDots/>
         </button>
-      </span>
-      <span className="ql-formats">
-        <button className="ql-suggest" onClick={addSuggestion} >
-          Suggest
+        <button className="ql-suggestion" onClick={addSuggestion}>
+          <FaHighlighter/>
         </button>
       </span>
     </div>

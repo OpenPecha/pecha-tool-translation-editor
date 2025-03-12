@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Navbar from './components/Navbar';
 import Login from './components/Login';
@@ -24,7 +24,7 @@ const ProtectedRoute = ({ children }) => {
     return (
       <div className="app">
         <Navbar />
-        <div className="container">
+        <div className="home-wrapper">
           <Routes>
           <Route 
               path="/" 
@@ -41,9 +41,7 @@ const ProtectedRoute = ({ children }) => {
               path="/documents/:id" 
               element={
                 <ProtectedRoute>
-                  <YjsProvider>
-                  <DocumentEditor />
-                  </YjsProvider>
+                  <EditorWrapper/>
                 </ProtectedRoute>
               } 
             />
@@ -61,4 +59,18 @@ const ProtectedRoute = ({ children }) => {
     </AuthProvider> 
   }
   
+
+  function  EditorWrapper(){
+    const { id } = useParams();
+    return (
+      <div className='flex'>
+      <YjsProvider >
+        <DocumentEditor docId={id}/>
+      </YjsProvider>
+      {/* <YjsProvider >
+        <DocumentEditor docId={"aa0ed610-0fa4-4f5f-96d4-16b100fe6b31-1"}/>
+      </YjsProvider > */}
+      </div>
+    )
+  }
   export default App;

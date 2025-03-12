@@ -40,3 +40,141 @@
 .read-the-docs {
   color: #888;
 }
+
+.suggested-text {
+  background-color: rgba(255, 220, 0, 0.2);
+  border-bottom: 1px dashed #FFA000;
+  cursor: pointer;
+  position: relative;
+}
+
+.ql-suggestion-container {
+  position: absolute;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  padding: 12px;
+  z-index: 100;
+  max-width: 300px;
+  display: none;
+}
+
+.suggestion-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #666;
+}
+
+.suggestion-content {
+  margin-bottom: 12px;
+}
+
+.suggestion-content h4 {
+  margin: 8px 0 4px 0;
+  font-size: 13px;
+  color: #333;
+}
+
+.suggestion-content p {
+  margin: 0;
+  padding: 4px;
+  background: #f9f9f9;
+  border-radius: 3px;
+}
+
+.suggested-text p {
+  background: #fffacd;
+}
+
+.suggestion-votes {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.suggestion-votes button {
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.suggestion-votes button:hover {
+  background: #f0f0f0;
+}
+
+.suggestion-actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.suggestion-actions button {
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.accept-suggestion {
+  background: #4CAF50;
+  color: white;
+  border: none;
+}
+
+.reject-suggestion {
+  background: none;
+  border: 1px solid #ccc;
+}
+
+.suggestion-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  width: 400px;
+}
+
+.suggestion-dialog h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.suggestion-dialog textarea {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 12px;
+  min-height: 80px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.suggestion-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.suggestion-buttons button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#submit-suggestion {
+  background: #4CAF50;
+  color: white;
+  border: none;
+}
+
+#cancel-suggestion {
+  background: none;
+  border: 1px solid #ccc;
+}

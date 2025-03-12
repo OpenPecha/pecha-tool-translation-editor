@@ -57,8 +57,10 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  height:50px;
+  margin-bottom: 5px;
 }
+
 
 .navbar a {
   color: white;
