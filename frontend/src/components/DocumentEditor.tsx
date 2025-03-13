@@ -11,12 +11,12 @@ import { useAuth } from '../contexts/AuthContext';
 const RealTimeEditor = ({docId}:{docId:string | undefined}) => {
   const { id } = useParams();
   const { createYjsProvider, yjsProvider, ydoc, yText, clearYjsProvider } = useContext(YjsContext)
-  const { token,currentUser } = useAuth();
+  const { currentUser } = useAuth();
   const [doc, setDoc] = useState(null);
   const [isEditable, setIsEditable] = useState(false);
   const roomId = docId ?? id;
   useEffect(() => {
-    fetchDocument(roomId,token).then((doc) => {
+    fetchDocument(roomId).then((doc) => {
       if(doc?.permissions){
         doc?.permissions.find((permission) => {
           if(permission.userId === currentUser.id){

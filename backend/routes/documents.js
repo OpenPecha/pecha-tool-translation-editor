@@ -56,7 +56,7 @@ module.exports =(getYDoc,client) =>{
     try {
       const documents = await prisma.doc.findMany({
         where: {
-          OR: [
+          AND: [
             { ownerId: req.user.id },
             { permissions: { some: { userId: req.user.id, canRead: true } } },
           ],
@@ -172,7 +172,6 @@ module.exports =(getYDoc,client) =>{
       canWrite = canWrite === "true" || canWrite === true;
       const document = await prisma.doc.findUnique({ where: { id: documentId } });
       if (!document) return res.status(404).json({ error: "Document not found" });
-  
       // Ensure the requesting user is the owner of the document
       if (document.ownerId !== req.user.id) {
         return res.status(403).json({ error: "You do not have permission to modify this document" });

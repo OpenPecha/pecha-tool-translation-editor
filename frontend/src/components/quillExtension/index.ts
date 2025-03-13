@@ -92,7 +92,6 @@ function showSuggestionBubble(event, data) {
   console.log(data)
 
   const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
-  const token = localStorage.getItem("token") || "";
 
   // Create suggestion items
   const suggestionItems = data.map(suggestion => {
@@ -161,8 +160,7 @@ function showSuggestionBubble(event, data) {
           let start = data[0].initial_start_offset;
           let end = data[0].initial_end_offset;
           let currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-          let token = localStorage.getItem("token") || "";
-          createSuggest(threadId, documentId, currentUser.id, newSuggestion, start, end, token)
+          createSuggest(threadId, documentId, currentUser.id, newSuggestion, start, end)
               .then(response => {
                 console.log(response)
                   alert("Suggestion submitted!");

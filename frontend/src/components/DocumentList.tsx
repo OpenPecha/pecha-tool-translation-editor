@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { deleteDocument, fetchDocuments } from '../api/document';
+import { createDocument, deleteDocument, fetchDocuments } from '../api/document';
 import { MdDelete } from "react-icons/md";
 import { CiCirclePlus } from 'react-icons/ci';
 
-const server_url = import.meta.env.VITE_SERVER_URL;
 
 const DocumentList = () => {
   const [documents, setDocuments] = useState([]);
@@ -13,7 +12,6 @@ const DocumentList = () => {
   const [error, setError] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newDocIdentifier, setNewDocIdentifier] = useState('');
-  const { token } = useAuth();
   const navigate = useNavigate();
 
  
@@ -21,7 +19,7 @@ const DocumentList = () => {
   useEffect(() => {
     async function fetch(){
       try{
-        let documents = await fetchDocuments(token);
+        let documents = await fetchDocuments();
         setDocuments(documents)
         setIsLoading(false)
       }catch(e){
@@ -30,36 +28,25 @@ const DocumentList = () => {
       }
     }
     fetch();
-  }, [token]);
+  }, []);
 
-  const createDocument = async () => {
+  const createDoc = async () => {
     if (!newDocIdentifier) {
       return;
     }
 
     try {
-      const response = await fetch(`${server_url}/documents`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          identifier: newDocIdentifier,
-          docs_prosemirror_delta: {},
-          docs_y_doc_state: new Uint8Array()
-        })
-      });
-
-      if (response.ok) {
-        const newDoc = await response.json();
-        setShowCreateModal(false);
+     createDocument(newDocIdentifier).then(
+      response=>{
         setNewDocIdentifier('');
-        navigate(`/documents/${newDoc.id}`);
-      } else {
-        const data = await response.json();
-        setError(data.detail || 'Failed to create document');
+        setShowCreateModal(false);
+        navigate(`/documents/${response.id}`);
       }
+     ).catch(e=>{console.log(e)
+      const data = e.response.data;
+      setError(data.detail || 'Failed to create document');
+     })
+
     } catch (error) {
       console.error('Error creating document:', error);
       setError('Network error');
@@ -120,7 +107,7 @@ const DocumentList = () => {
               <button className="btn btn-secondary" onClick={() => setShowCreateModal(false)}>
                 Cancel
               </button>
-              <button className="btn btn-primary" onClick={createDocument} disabled={!newDocIdentifier}>
+              <button className="btn btn-primary" onClick={createDoc} disabled={!newDocIdentifier}>
                 Create
               </button>
             </div>
@@ -133,7 +120,6 @@ const DocumentList = () => {
 
 
 function EachDocument({doc,setDocuments}){
-  const { token } = useAuth();
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -145,9 +131,10 @@ function EachDocument({doc,setDocuments}){
      let permission= confirm(' delete the document ?')
       if(permission){
         try{ 
-          let deleted=await deleteDocument(doc.id,token)
-          setDocuments((prev) => prev.filter((d) => d.id !== doc.id));
-          console.log(deleted)
+          let deleted=await deleteDocument(doc.id)
+          if(deleted?.id){
+            setDocuments((prev) => prev.filter((d) => d.id !== doc.id));
+          }
         }
         catch(e){ console.log(e)}
   };

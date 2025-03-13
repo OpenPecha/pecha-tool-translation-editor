@@ -1,3 +1,5 @@
+import { getHeaders } from "./utils";
+
 const server_url = import.meta.env.VITE_SERVER_URL;
 
 /**
@@ -6,12 +8,10 @@ const server_url = import.meta.env.VITE_SERVER_URL;
  * @param {string} token - The authentication token
  * @returns {Promise<any>} - The list of comments
  */
-export const fetchComments = async (docId: string, token: string) => {
+export const fetchComments = async (docId: string) => {
   try {
     const response = await fetch(`${server_url}/comments/${docId}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
+      headers: getHeaders(),
     });
 
     if (!response.ok) throw new Error("Failed to fetch comments");
@@ -31,9 +31,7 @@ export const fetchComments = async (docId: string, token: string) => {
 export const fetchComment = async (commentId: string, token: string) => {
   try {
     const response = await fetch(`${server_url}/comments/${commentId}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
+      headers: getHeaders(),
     });
 
     if (!response.ok) throw new Error("Failed to fetch comment");
@@ -61,16 +59,12 @@ export const createComment = async (
   content: string,
   startOffset: number,
   endOffset: number,
-  token: string,
   parentCommentId?: string
 ) => {
   try {
     const response = await fetch(`${server_url}/comments`, {
       method: "POST",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
+      headers: getHeaders(),
       body: JSON.stringify({
         docId,
         userId,
@@ -96,14 +90,11 @@ export const createComment = async (
  * @param {string} token - The authentication token
  * @returns {Promise<any>} - The updated comment
  */
-export const updateComment = async (commentId: string, content: string, token: string) => {
+export const updateComment = async (commentId: string, content: string) => {
   try {
     const response = await fetch(`${server_url}/comments/${commentId}`, {
       method: "PUT",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
+      headers: getHeaders(),
       body: JSON.stringify({ content }),
     });
 
@@ -121,13 +112,11 @@ export const updateComment = async (commentId: string, content: string, token: s
  * @param {string} token - The authentication token
  * @returns {Promise<void>}
  */
-export const deleteComment = async (commentId: string, token: string) => {
+export const deleteComment = async (commentId: string) => {
   try {
     const response = await fetch(`${server_url}/comments/${commentId}`, {
       method: "DELETE",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-      },
+      headers: getHeaders(),
     });
 
     if (!response.ok) throw new Error("Failed to delete comment");

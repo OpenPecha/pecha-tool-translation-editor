@@ -8,11 +8,12 @@ function Permissions({ documentId }) {
     const [email, setEmail] = useState("");
     const [canRead, setCanRead] = useState(false);
     const [canWrite, setCanWrite] = useState(false);
-    const { token } = useAuth();
 
     const handleGrantPermission = async () => {
         try {
-            const response = await updatePermission(documentId, email, canRead, canWrite, token);
+            let canread=canRead?"true":"false";
+            let canwrite=canWrite?"true":"false";
+            const response = await updatePermission(documentId, email, canread, canwrite);
             if (response) {
                 if(response.error) {
                     setError(response.error)
@@ -24,7 +25,7 @@ function Permissions({ documentId }) {
                 }
             }
         } catch (error) {
-            console.error("Failed to update permission", error);
+            console.error(error);
         }
     };
 
@@ -49,7 +50,7 @@ function Permissions({ documentId }) {
                             onChange={(e) => setEmail(e.target.value)}
                             className="w-full border p-2 rounded-md mb-4"
                         />
-                        {error && <p className="text-red-500 text-sm mb-4">the email is invalid</p>}
+                        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
                         <div className="flex items-center gap-2 mb-2">
                             <input
                                 type="checkbox"

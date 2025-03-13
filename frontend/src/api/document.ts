@@ -1,11 +1,11 @@
+import { getHeaders } from "./utils";
+
 const server_url = import.meta.env.VITE_SERVER_URL;
  
- export const fetchDocuments = async (token:string) => {
+ export const fetchDocuments = async () => {
     try {
       const response = await fetch(`${server_url}/documents`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: getHeaders()
       });
 
       if (response.ok) {
@@ -18,12 +18,10 @@ const server_url = import.meta.env.VITE_SERVER_URL;
     }
   };
 
-  export const fetchDocument = async (id:string,token:string) => {
+  export const fetchDocument = async (id:string) => {
     try {
       const response = await fetch(`${server_url}/documents/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: getHeaders()
       });
 
       if (response.ok) {
@@ -36,36 +34,41 @@ const server_url = import.meta.env.VITE_SERVER_URL;
     }
   };
 
-  export const updatePermission = async (id, email, canRead, canWrite, token) => {
+  export const createDocument= async (identifier:string) => {
+    const response = await fetch(`${server_url}/documents`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({
+        identifier: identifier,
+        docs_prosemirror_delta: {},
+        docs_y_doc_state: new Uint8Array()
+      })
+    });
+     return response.json();
+  }
+
+
+  export const updatePermission = async (id:string, email:string, canRead:string, canWrite:string) => {
     try {
-      const formData = new URLSearchParams();
-      formData.append('email', email);
-      formData.append('canRead', canRead);
-      formData.append('canWrite', canWrite);
       const response = await fetch(`${server_url}/documents/${id}/permissions`, {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`
-        },
-        body: formData
+        headers: getHeaders(),
+        body: JSON.stringify({
+          email,
+          canRead,
+          canWrite
+        })
       });
-  
-      if (!response.ok) {
-        throw new Error("Failed to update permission");
-      }
-  
-      return await response.json();
+      const data = await response.json();
+      return data;
     } catch (error) {
-      console.error("Error updating permission:", error);
-      return {error:error};
+      return {error: error?.message}
     }
   };
-  export const deleteDocument = async (id:string,token:string) => {
+  export const deleteDocument = async (id:string) => {
     try {
       const response = await fetch(`${server_url}/documents/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
+        headers: getHeaders(),
         method: 'DELETE'
       });
 
@@ -75,6 +78,5 @@ const server_url = import.meta.env.VITE_SERVER_URL;
       }
         } catch (error) {
             console.log(error)
-    } finally {
     }
   };

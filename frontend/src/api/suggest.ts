@@ -1,17 +1,16 @@
+import { getHeaders } from "./utils";
+
 const server_url = import.meta.env.VITE_SERVER_URL;
 
 /**
  * Fetch all suggests for a specific document
  * @param {string} docId - The document ID
- * @param {string} token - The authentication token
  * @returns {Promise<any>} - The list of suggests
  */
-export const fetchSuggests = async (docId: string, token: string) => {
+export const fetchSuggests = async (docId: string) => {
   try {
     const response = await fetch(`${server_url}/suggests/${docId}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
+      headers: getHeaders(),
     });
 
     if (!response.ok) throw new Error("Failed to fetch suggests");
@@ -25,15 +24,12 @@ export const fetchSuggests = async (docId: string, token: string) => {
 /**
  * Fetch a specific suggests by ID
  * @param {string} id - The suggests ID
- * @param {string} token - The authentication token
  * @returns {Promise<any>} - The suggests data
  */
-export const fetchSuggest = async (id: string, token: string) => {
+export const fetchSuggest = async (id: string) => {
   try {
     const response = await fetch(`${server_url}/suggest/${id}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
+      headers:getHeaders()
     });
 
     if (!response.ok) throw new Error("Failed to fetch suggest");
@@ -51,7 +47,6 @@ export const fetchSuggest = async (id: string, token: string) => {
  * @param {string} content - The suggests text
  * @param {number} startOffset - The initial start offset
  * @param {number} endOffset - The initial end offset
- * @param {string} token - The authentication token
  * @returns {Promise<any>} - The created suggests
  */
 export const createSuggest = async (
@@ -61,15 +56,11 @@ export const createSuggest = async (
   content: string,
   startOffset: number,
   endOffset: number,
-  token: string,
 ) => {
   try {
     const response = await fetch(`${server_url}/suggests`, {
       method: "POST",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
+      headers: getHeaders(),
       body: JSON.stringify({
         docId,
         userId,
@@ -77,7 +68,6 @@ export const createSuggest = async (
         initial_start_offset: startOffset,
         initial_end_offset: endOffset,
         threadId,
-        token
       }),
     });
     if (!response.ok) throw new Error("Failed to create suggest");
@@ -92,17 +82,13 @@ export const createSuggest = async (
  * Update an existing suggests
  * @param {string} id - The suggest ID
  * @param {string} content - The updated content
- * @param {string} token - The authentication token
  * @returns {Promise<any>} - The updated suggest
  */
-export const updateSuggest = async (id: string,threadId:string, content: string, token: string) => {
+export const updateSuggest = async (id: string,threadId:string, content: string) => {
   try {
     const response = await fetch(`${server_url}/suggests/${id}`, {
       method: "PUT",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
+      headers:getHeaders(),
       body: JSON.stringify({ content,threadId}),
     });
 
@@ -117,16 +103,13 @@ export const updateSuggest = async (id: string,threadId:string, content: string,
 /**
  * Delete a suggest
  * @param {string} id - The suggest ID
- * @param {string} token - The authentication token
  * @returns {Promise<void>}
  */
-export const deleteSuggest = async (id: string, token: string) => {
+export const deleteSuggest = async (id: string) => {
   try {
     const response = await fetch(`${server_url}/suggests/${id}`, {
       method: "DELETE",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-      },
+      headers: getHeaders(),
     });
 
     if (!response.ok) throw new Error("Failed to delete suggests");
@@ -138,7 +121,9 @@ export const deleteSuggest = async (id: string, token: string) => {
 
 export const fetchSuggestsByThread = async (threadId: string) => {
   try {
-    const response = await fetch(`${server_url}/suggests/thread/${threadId}`);
+    const response = await fetch(`${server_url}/suggests/thread/${threadId}`,{
+      headers:getHeaders()
+    });
     return response.json();
   }
   catch (error) {

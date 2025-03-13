@@ -21,7 +21,7 @@ function Editor({ documentId,isEditable }:{documentId:string,isEditable:boolean}
   const counterId = "counter-container"+"-"+Math.random().toString(36).substring(7);
 
   const { clearYjsProvider, toggleConnection, online, yText, yjsProvider } = useContext(YjsContext);
-  const { currentUser, token } = useAuth();
+  const { currentUser } = useAuth();
   const [synced, setSynced] = useState(false);
   const [comments, setComments] = useState([]); // 🔥 Store comments in Editor
   const [suggestions, setSuggestions] = useState([]); // 🔥 Store comments in Editor
@@ -59,7 +59,7 @@ function Editor({ documentId,isEditable }:{documentId:string,isEditable:boolean}
   // 🔥 Fetch comments
   const loadComments = async () => {
     try {
-      const data = await fetchComments(documentId, token);
+      const data = await fetchComments(documentId);
       setComments(data);
     } catch (error) {
       console.error("Error fetching comments:", error);
@@ -67,7 +67,7 @@ function Editor({ documentId,isEditable }:{documentId:string,isEditable:boolean}
   };
   const loadSuggestions = async () => {
     try {
-      const data = await fetchSuggests(documentId, token);
+      const data = await fetchSuggests(documentId);
       setSuggestions(data);
     } catch (error) {
       console.error("Error fetching comments:", error);
@@ -84,7 +84,7 @@ function Editor({ documentId,isEditable }:{documentId:string,isEditable:boolean}
     const end = range.index + range.length;
 
     try {
-      const createdComment = await createComment(documentId, currentUser.id, commentText, range.index, end, token);
+      const createdComment = await createComment(documentId, currentUser.id, commentText, range.index, end);
       
       if (createdComment.id) {
         // 🔥 Update the Quill editor to highlight the text
@@ -111,7 +111,7 @@ function Editor({ documentId,isEditable }:{documentId:string,isEditable:boolean}
     const id= Math.random().toString(36).substring(7);
     const threadId=id;
     try {
-      const createdSuggestion = await createSuggest(threadId,documentId, currentUser.id, suggestion, range.index, end, token);
+      const createdSuggestion = await createSuggest(threadId,documentId, currentUser.id, suggestion, range.index, end);
       if (createdSuggestion.id) {
         // 🔥 Update the Quill editor to highlight the text
         quillRef.current.formatText(range.index, range.length, "suggest", {

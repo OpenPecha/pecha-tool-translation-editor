@@ -94,7 +94,7 @@ app.post("/token", async (req, res) => {
       return res.status(401).json({ detail: "Invalid username or password" });
     }
   
-    const token = jwt.sign({ id: user.id }, SECRET_KEY, { expiresIn: "30m" });
+    const token = jwt.sign({ id: user.id }, SECRET_KEY, { expiresIn: process.env.AUTH_EXPIRY || "1d" });
     res.json({ access_token: token, token_type: "bearer" });
   });
   app.post("/register", async (req, res) => {
@@ -176,6 +176,7 @@ app.post("/token", async (req, res) => {
               identifier,
               docs_prosemirror_delta: delta,
               docs_y_doc_state: state,
+              ownerId: userId,
             },
           });
         }
