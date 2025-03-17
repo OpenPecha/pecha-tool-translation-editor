@@ -67,9 +67,9 @@ const ProtectedRoute = ({ children }) => {
       <YjsProvider >
         <DocumentEditor docId={id}/>
       </YjsProvider>
-      {/* <YjsProvider >
+      <YjsProvider >
         <DocumentEditor docId={"aa0ed610-0fa4-4f5f-96d4-16b100fe6b31-1"}/>
-      </YjsProvider > */}
+      </YjsProvider >
       </div>
     )
   }
