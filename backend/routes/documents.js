@@ -65,6 +65,10 @@ module.exports =(getYDoc,client) =>{
           id:true,
           identifier:true,
           ownerId:true,
+          permissions:true,
+          language:true,
+          isRoot:true,
+          translations:true,
           updatedAt:true
         }
       });
@@ -82,7 +86,10 @@ module.exports =(getYDoc,client) =>{
       id:true,
       identifier:true,
       ownerId:true,
-      permissions:true
+      permissions:true,
+      language:true,
+      isRoot:true,
+      translations:true
     } });
 
     if (!document) return res.status(404).json({ error: "Document not found" });
@@ -208,5 +215,150 @@ module.exports =(getYDoc,client) =>{
     }
   });
 
+  // Update document's root relationship and root status
+  router.patch("/:id", authenticate, async (req, res) => {
+    try {
+      const { rootId, isRoot, translations } = req.body;
+      const documentId = req.params.id;
+
+      // Check if the document exists
+      const document = await prisma.doc.findUnique({ 
+        where: { id: documentId },
+        include: { 
+          root: true,
+          translations: true
+        }
+      });
+      
+      if (!document) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+
+      // Check permissions
+      if (document.ownerId !== req.user.id) {
+        const permission = await prisma.permission.findFirst({
+          where: { docId: documentId, userId: req.user.id, canWrite: true },
+        });
+        if (!permission) {
+          return res.status(403).json({ error: "No edit access" });
+        }
+      }
+
+      // Validate the request
+      if (rootId && isRoot) {
+        return res.status(400).json({ 
+          error: "A document cannot be both a root and a translation" 
+        });
+      }
+
+      // If translations array is provided and document is not a root, reject
+      if (translations && !document.isRoot && !isRoot) {
+        return res.status(400).json({ 
+          error: "Only root documents can have translations" 
+        });
+      }
+
+      // If rootId is provided, verify it exists
+      if (rootId) {
+        const rootDoc = await prisma.doc.findUnique({ 
+          where: { id: rootId }
+        });
+
+        if (!rootDoc) {
+          return res.status(404).json({ error: "Root document not found" });
+        }
+
+        if (!rootDoc.isRoot) {
+          return res.status(400).json({ 
+            error: "Target document is not a root document" 
+          });
+        }
+      }
+
+      // If translations array is provided, verify all documents exist
+      if (translations && Array.isArray(translations)) {
+        const translationDocs = await prisma.doc.findMany({
+          where: {
+            id: {
+              in: translations
+            }
+          }
+        });
+
+        if (translationDocs.length !== translations.length) {
+          return res.status(400).json({ 
+            error: "One or more translation documents not found" 
+          });
+        }
+
+        // Check if any of these documents are roots or already translations
+        const invalidDocs = translationDocs.filter(doc => 
+          doc.isRoot || doc.rootId !== null
+        );
+
+        if (invalidDocs.length > 0) {
+          return res.status(400).json({ 
+            error: "Some documents are already roots or translations",
+            invalidDocs: invalidDocs.map(d => d.id)
+          });
+        }
+      }
+
+      // Prepare the update data
+      const updateData = {
+        rootId: rootId || null,
+        isRoot: isRoot ?? (rootId ? false : document.isRoot)
+      };
+
+      // Update the document and its translations in a transaction
+      const updatedDocument = await prisma.$transaction(async (tx) => {
+        // Update the main document
+        const updated = await tx.doc.update({
+          where: { id: documentId },
+          data: updateData,
+          include: {
+            root: true,
+            translations: true
+          }
+        });
+
+        // If translations array is provided and document is/will be a root,
+        // update all translation documents
+        if (translations && Array.isArray(translations) && (document.isRoot || isRoot)) {
+          await tx.doc.updateMany({
+            where: {
+              id: {
+                in: translations
+              }
+            },
+            data: {
+              rootId: documentId,
+              isRoot: false
+            }
+          });
+
+          // Fetch the updated document with all relationships
+          return await tx.doc.findUnique({
+            where: { id: documentId },
+            include: {
+              root: true,
+              translations: true
+            }
+          });
+        }
+
+        return updated;
+      });
+
+      res.json({
+        success: true,
+        data: updatedDocument
+      });
+    } catch (error) {
+      console.error("Error updating document:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   return router;
-}
+};

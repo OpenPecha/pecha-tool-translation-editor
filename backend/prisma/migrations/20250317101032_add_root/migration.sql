@@ -1,0 +1,7 @@
+-- AlterTable
+ALTER TABLE "Doc" ADD COLUMN     "isRoot" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "language" TEXT NOT NULL DEFAULT 'bo',
+ADD COLUMN     "rootId" TEXT;
+
+-- AddForeignKey
+ALTER TABLE "Doc" ADD CONSTRAINT "Doc_rootId_fkey" FOREIGN KEY ("rootId") REFERENCES "Doc"("id") ON DELETE CASCADE ON UPDATE CASCADE;

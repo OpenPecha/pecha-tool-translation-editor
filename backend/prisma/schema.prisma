@@ -22,12 +22,17 @@ model User {
 model Doc {
   id                     String       @id @default(uuid())   // Unique identifier for the document
   identifier             String       @unique                // Ensures each document has a unique identifier
-  docs_prosemirror_delta Json?                               // Nullable array of objects
-  docs_y_doc_state       Bytes?                               // Binary data for Yjs document state
+  docs_prosemirror_delta Json?                              // Nullable array of objects
+  docs_y_doc_state       Bytes?                             // Binary data for Yjs document state
+  language               String       @default("bo")                     // Language of the document content
+  isRoot                 Boolean      @default(false)       // Whether this is a root text
+  rootId                 String?                            // ID of the root document if this is a translation
+  root                   Doc?         @relation("Translations", fields: [rootId], references: [id], onDelete: Cascade)
+  translations           Doc[]        @relation("Translations")  // One root can have multiple translations
   createdAt              DateTime     @default(now())        // Timestamp when the document is created
   updatedAt              DateTime     @updatedAt            // Auto-updated timestamp
   ownerId                String?                             // Optional owner of the document
-  owner                  User?       @relation("UserDocs", fields: [ownerId], references: [id], onDelete: Cascade)
+  owner                  User?        @relation("UserDocs", fields: [ownerId], references: [id], onDelete: Cascade)
   permissions            Permission[] // A document can have multiple permission entries
   comments               Comment[]    // A document can have multiple comments
   suggestions            Suggestion[] @relation("suggested_on")// A document can have multiple suggestions
@@ -46,7 +51,7 @@ model Permission {
   @@unique([docId, userId]) // Prevent duplicate permissions for the same document-user pair
 }
 
-model Comment{
+model Comment {
   id         String   @id @default(uuid())
   docId      String
   userId     String
@@ -62,7 +67,7 @@ model Comment{
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model Suggestion{
+model Suggestion {
   id         String   @id @default(uuid())
   threadId   String?
   docId      String

@@ -18,7 +18,7 @@ const suggestsRoutes = require("./routes/suggests");
 const documentsRoutes = require("./routes/documents");
 // const graphRoutes = require("./routes/graph");
 // const glossaryRoutes = require("./routes/glossary");
-
+const textsRoutes = require("./routes/texts");
 
 const authenticateToken = require("./middleware/authenticate");
 const prisma = new PrismaClient();
@@ -58,6 +58,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/comments", commentsRoutes);
 app.use("/suggests", suggestsRoutes);
 app.use("/documents", documentsRoutes(getYDoc,client));
+app.use("/texts", textsRoutes);
 const pingTimeout = 30000
 const clients = new Set();
 

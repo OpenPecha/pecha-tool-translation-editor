@@ -126,13 +126,10 @@ function Editor({ documentId,isEditable }:{documentId:string,isEditable:boolean}
     }
   }
   return (
-    <div className="flex w-full flex-1 h-full overflow-scroll">
+    <div className="flex w-full flex-1 h-full ">
       <div className="editor-container">
-        <div className="flex justify-between items-center mb-3">
-        <div>online: {synced ? "🟢" : "🔴"}</div>
-        <Permissions documentId={documentId} />
-        </div>
-        <Toolbar id={toolbarId} addComment={addComment} addSuggestion={addSuggestion} />
+        {/* <Permissions documentId={documentId} /> */}
+        <Toolbar id={toolbarId} addComment={addComment} addSuggestion={addSuggestion} synced={synced} />
         {/* <OverlayLoading isLoading={!synced}/> */}
         <div className="relative max-h-[calc(100vh-100px)] overflow-y-auto">
           <div ref={editorRef} style={{  marginTop: "10px",fontFamily:"Monlam",fontSize:18}} />

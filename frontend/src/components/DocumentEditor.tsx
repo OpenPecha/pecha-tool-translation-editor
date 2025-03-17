@@ -36,9 +36,7 @@ const RealTimeEditor = ({docId}:{docId:string | undefined}) => {
   if (!ydoc||!yjsProvider||!yText ||!roomId ) return null;
 
   return (
-    <>
     <Editor documentId={roomId} isEditable={isEditable}/>
-    </>
   );
 };
 

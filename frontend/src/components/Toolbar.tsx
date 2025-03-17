@@ -1,9 +1,11 @@
 import React from "react";
 import { FaCommentDots, FaHighlighter } from "react-icons/fa";
 
-const Toolbar = ({addComment,addSuggestion,id}) => {
+const Toolbar = ({addComment,addSuggestion,id, synced}) => {
   return (
     <div id={id}>
+
+      <span>{synced ? "🟢" : "🔴"}</span>
       <span className="ql-formats">
         <select className="ql-font">
           <option value="sans-serif" selected>Sans-serif</option>

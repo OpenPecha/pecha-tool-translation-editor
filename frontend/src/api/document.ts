@@ -15,6 +15,7 @@ const server_url = import.meta.env.VITE_SERVER_URL;
         } catch (error) {
             console.log(error)
     } finally {
+      console.log('finally')
     }
   };
 
@@ -80,3 +81,31 @@ const server_url = import.meta.env.VITE_SERVER_URL;
             console.log(error)
     }
   };
+
+interface UpdateDocumentParams {
+  isRoot?: boolean;
+  rootId?: string | null;
+}
+
+export const updateDocument = async (id: string, data: UpdateDocumentParams) => {
+  try {
+    const response = await fetch(`${server_url}/documents/${id}`, {
+      method: 'PATCH',
+      headers: getHeaders(),
+      body: JSON.stringify(data)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to update document');
+    }
+
+    const updatedData = await response.json();
+    return updatedData.data;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+    throw new Error('Failed to update document');
+  }
+}

@@ -30,7 +30,7 @@ function Permissions({ documentId }) {
     };
 
     return (
-        <>
+        <span>
             {/* Grant Permission Button */}
             <button onClick={() => setShowModal(true)} className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition">
             <span className="flex items-center gap-2">
@@ -85,7 +85,7 @@ function Permissions({ documentId }) {
                     </div>
                 </div>
             )}
-        </>
+        </span>
     );
 }
 
