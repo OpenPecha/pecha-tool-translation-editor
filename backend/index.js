@@ -16,6 +16,10 @@ const { WSSharedDoc, utils } = require('./services')
 const commentsRoutes = require("./routes/comments");
 const suggestsRoutes = require("./routes/suggests");
 const documentsRoutes = require("./routes/documents");
+const graphRoutes = require("./routes/graph");
+const glossaryRoutes = require("./routes/glossary");
+
+
 const authenticateToken = require("./middleware/authenticate");
 const prisma = new PrismaClient();
 const app = express();
@@ -49,6 +53,8 @@ const getYDoc = (docName, userId) =>
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); 
+app.use("/graph", graphRoutes);
+app.use("/glossary", glossaryRoutes);
 app.use("/comments", commentsRoutes);
 app.use("/suggests", suggestsRoutes);
 app.use("/documents", documentsRoutes(getYDoc,client));
