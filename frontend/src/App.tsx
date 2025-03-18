@@ -7,7 +7,10 @@ import DocumentList from './components/DocumentList';
 import DocumentEditor from './components/DocumentEditor';
 import { YjsProvider } from './lib/yjsProvider';
 import { useCurrentDoc } from './hooks/useCurrentDoc';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import Quill from 'quill';
+import useScrollHook from './hooks/useScrollHook';
+import SyncOptions from './components/SyncOptions';
 
 interface Translation {
   id: string;
@@ -68,10 +71,10 @@ function App() {
 function EditorWrapper(){
   const { id } = useParams();
   const { currentDoc, loading, error } = useCurrentDoc(id);
-  
   const translations = useMemo(() => currentDoc?.translations ?? [], [currentDoc?.translations]);
-
- 
+  const quill1Ref = useRef<HTMLDivElement>(null);
+  const quill2Ref = useRef<HTMLDivElement>(null);
+  const { syncMode, setSyncMode } = useScrollHook(quill1Ref, quill2Ref);
 
   if (loading) {
     return <div className="loading">Loading...</div>;
@@ -83,17 +86,20 @@ function EditorWrapper(){
 
   
   return (
+    <>
+     <SyncOptions syncMode={syncMode} setSyncMode={setSyncMode} />
       <div className='flex'>
         <YjsProvider >
-          <DocumentEditor docId={id}/>
+          <DocumentEditor docId={id} editorRef={quill1Ref}/>
         </YjsProvider>
-        <RenderTranslationEditor translations={translations} />
+        <RenderTranslationEditor translations={translations} editorRef={quill2Ref} />
       </div>
+    </>
   )
 }
 
 
-function RenderTranslationEditor({ translations }: { translations: Translation[] }) {
+function RenderTranslationEditor({ translations, editorRef }: { translations: Translation[] ,editorRef:React.RefObject<HTMLDivElement>}) {
   const [selectedTranslationId, setSelectedTranslationId] = useState<string | null>(null);
   const isTranslationAvailable = translations.length > 0;
 
@@ -118,7 +124,7 @@ function RenderTranslationEditor({ translations }: { translations: Translation[]
     <div className='flex w-full flex-1 flex-col'>
        {/* <button onClick={() => setSelectedTranslationId(null)}>close Translation</button> */}
       <YjsProvider key={selectedTranslationId}>
-        <DocumentEditor docId={selectedTranslationId} />
+        <DocumentEditor docId={selectedTranslationId}   editorRef={editorRef}/>
       </YjsProvider>
     </div>
     );

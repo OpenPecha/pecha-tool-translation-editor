@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useId, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState, forwardRef } from "react";
 import Quill from "quill";
 import { QuillBinding } from "y-quill";
 import { useAuth } from "../contexts/AuthContext";
@@ -13,10 +13,8 @@ import OverlayLoading from "./OverlayLoading";
 import { createSuggest, fetchSuggests } from "../api/suggest";
 quill_import();
 
-function Editor({ documentId,isEditable }:{documentId:string,isEditable:boolean}) {
-  const editorRef = useRef(null);
-  const quillRef = useRef(null);
-
+const Editor = ({ documentId,isEditable, quillRef }:{documentId:string,isEditable:boolean,quillRef:any}) => {
+  const editorRef=useRef(null);
   const toolbarId = "toolbar-container"+"-"+Math.random().toString(36).substring(7);
   const counterId = "counter-container"+"-"+Math.random().toString(36).substring(7);
 
@@ -26,8 +24,8 @@ function Editor({ documentId,isEditable }:{documentId:string,isEditable:boolean}
   const [comments, setComments] = useState([]); // 🔥 Store comments in Editor
   const [suggestions, setSuggestions] = useState([]); // 🔥 Store comments in Editor
 
-  useEffect(() => {
-    const quill = new Quill(editorRef.current, {
+  useEffect(() => {``
+    const quill = new Quill(editorRef?.current, {
       theme: "snow",
       modules: {
         toolbar: { container: `#${toolbarId}` },
@@ -38,12 +36,11 @@ function Editor({ documentId,isEditable }:{documentId:string,isEditable:boolean}
       },
       readOnly: !isEditable,
       placeholder: "Start collaborating...",
-
+      className: "overflow-y-auto h-full"
     });
 
     quillRef.current = quill;
     new QuillBinding(yText, quill, yjsProvider?.awareness);
-
     yjsProvider?.on("sync", (isSynced) => {
       setSynced(isSynced);
     });
@@ -126,12 +123,12 @@ function Editor({ documentId,isEditable }:{documentId:string,isEditable:boolean}
     }
   }
   return (
-    <div className="flex w-full flex-1 h-full ">
+    <div className="flex w-full flex-1 h-full " >
       <div className="editor-container">
         {/* <Permissions documentId={documentId} /> */}
         <Toolbar id={toolbarId} addComment={addComment} addSuggestion={addSuggestion} synced={synced} />
         {/* <OverlayLoading isLoading={!synced}/> */}
-        <div className="relative max-h-[calc(100vh-100px)] overflow-y-auto">
+        <div className="relative h-[calc(100vh-100px)] ">
           <div ref={editorRef} style={{  marginTop: "10px",fontFamily:"Monlam",fontSize:18}} />
           <div id={`${counterId}`}>0 characters</div>
         </div>
@@ -143,6 +140,6 @@ function Editor({ documentId,isEditable }:{documentId:string,isEditable:boolean}
       </div> */}
     </div>
   );
-}
+};
 
 export default Editor;

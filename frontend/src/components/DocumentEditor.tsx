@@ -8,11 +8,10 @@ import { useAuth } from '../contexts/AuthContext';
 // import useYdoc from '../hook/useYdoc';
 
 
-const RealTimeEditor = ({docId}:{docId:string | undefined}) => {
+const RealTimeEditor = ({docId ,editorRef}:{docId:string | undefined,editorRef:React.RefObject<HTMLDivElement>}) => {
   const { id } = useParams();
   const { createYjsProvider, yjsProvider, ydoc, yText, clearYjsProvider } = useContext(YjsContext)
   const { currentUser } = useAuth();
-  const [doc, setDoc] = useState(null);
   const [isEditable, setIsEditable] = useState(false);
   const roomId = docId ?? id;
   useEffect(() => {
@@ -21,10 +20,10 @@ const RealTimeEditor = ({docId}:{docId:string | undefined}) => {
         doc?.permissions.find((permission) => {
           if(permission.userId === currentUser.id){
             setIsEditable(true)
+            
           }
         })
       }
-      setDoc(doc)
       createYjsProvider(roomId);
     })
     // const yUndoManager = new Y.UndoManager(yText);
@@ -32,11 +31,9 @@ const RealTimeEditor = ({docId}:{docId:string | undefined}) => {
   }, []);
 
   
-
   if (!ydoc||!yjsProvider||!yText ||!roomId ) return null;
-
   return (
-    <Editor documentId={roomId} isEditable={isEditable}/>
+    <Editor documentId={roomId} isEditable={isEditable} quillRef={editorRef}/>
   );
 };
 
