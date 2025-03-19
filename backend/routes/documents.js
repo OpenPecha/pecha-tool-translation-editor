@@ -106,7 +106,8 @@ module.exports = (getYDoc, client) => {
       permissions:true,
       language:true,
       isRoot:true,
-      translations:true
+      translations:true,
+      docs_prosemirror_delta:true
     } });
 
     if (!document) return res.status(404).json({ error: "Document not found" });

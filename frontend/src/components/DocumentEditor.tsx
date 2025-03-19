@@ -20,7 +20,6 @@ const RealTimeEditor = ({docId ,editorRef}:{docId:string | undefined,editorRef:R
         doc?.permissions.find((permission) => {
           if(permission.userId === currentUser.id){
             setIsEditable(true)
-            
           }
         })
       }

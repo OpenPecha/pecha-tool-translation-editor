@@ -11,6 +11,7 @@ import { createComment, fetchComments } from "../api/comment";
 import Comments from "./Comments";
 import OverlayLoading from "./OverlayLoading";
 import { createSuggest, fetchSuggests } from "../api/suggest";
+import { fetchDocument } from "../api/document";
 quill_import();
 
 const Editor = ({ documentId,isEditable, quillRef }:{documentId:string,isEditable:boolean,quillRef:any}) => {
@@ -24,7 +25,7 @@ const Editor = ({ documentId,isEditable, quillRef }:{documentId:string,isEditabl
   const [comments, setComments] = useState([]); // 🔥 Store comments in Editor
   const [suggestions, setSuggestions] = useState([]); // 🔥 Store comments in Editor
 
-  useEffect(() => {``
+  useEffect(() => {
     const quill = new Quill(editorRef?.current, {
       theme: "snow",
       modules: {
@@ -43,6 +44,19 @@ const Editor = ({ documentId,isEditable, quillRef }:{documentId:string,isEditabl
     new QuillBinding(yText, quill, yjsProvider?.awareness);
     yjsProvider?.on("sync", (isSynced) => {
       setSynced(isSynced);
+      if(isSynced){
+        var plainText = quill.getText();
+        console.log('plaintext',plainText)
+        if(plainText.trim().length===0){
+          console.log('text is empty')
+          fetchDocument(documentId).then((doc) => {
+            quill.setContents(doc.docs_prosemirror_delta)
+          })
+          // quill.setText("Start collaborating...");      
+        }else{
+          console.log('text is not empty')
+        }
+      }
     });
 
     // Fetch comments when the editor loads
