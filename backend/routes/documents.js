@@ -24,7 +24,7 @@ module.exports = (getYDoc, client) => {
   // Create a new document
   router.post("/", authenticate, upload.single("file"), async (req, res) => {
     try {
-      const { identifier } = req.body;
+      const { identifier ,isRoot, rootId } = req.body;
       if (!identifier) return res.status(400).json({ error: "Missing identifier in query params" });
       const textContent = req.file.buffer.toString("utf-8");
 
@@ -45,6 +45,8 @@ module.exports = (getYDoc, client) => {
           ownerId: req.user.id,
           docs_y_doc_state: state,
           docs_prosemirror_delta: delta,
+          isRoot:isRoot === 'true',
+          rootId:rootId ?? null
         },
       });
 
@@ -86,7 +88,12 @@ module.exports = (getYDoc, client) => {
           language:true,
           isRoot:true,
           translations:true,
-          updatedAt:true
+          updatedAt:true,
+          root:{
+            select:{
+              identifier:true
+            }
+          }
         },
         orderBy:{
           isRoot:'desc'
