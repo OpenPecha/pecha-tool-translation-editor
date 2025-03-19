@@ -1,4 +1,4 @@
-import { getHeaders } from "./utils";
+import { getHeaders, getHeadersMultipart } from "./utils";
 
 const server_url = import.meta.env.VITE_SERVER_URL;
  
@@ -29,25 +29,29 @@ const server_url = import.meta.env.VITE_SERVER_URL;
         const data = await response.json();
         return data;
       }
-        } catch (error) {
-            console.log(error)
-    } finally {
+      throw new Error('Failed to fetch document');
+    } catch (error) {
+      console.log(error);
+      throw error;
     }
   };
 
-  export const createDocument= async (identifier:string) => {
+  export const createDocument = async (formData: FormData) => {
     const response = await fetch(`${server_url}/documents`, {
       method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({
-        identifier: identifier,
-        docs_prosemirror_delta: {},
-        docs_y_doc_state: new Uint8Array()
-      })
+      headers: {
+        ...getHeadersMultipart()
+        // Don't set Content-Type header, it will be automatically set with the boundary
+      },
+      body: formData
     });
-     return response.json();
-  }
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(error || 'Failed to create document');
+    }
 
+    return response.json();
+  }
 
   export const updatePermission = async (id:string, email:string, canRead:string, canWrite:string) => {
     try {
@@ -63,7 +67,10 @@ const server_url = import.meta.env.VITE_SERVER_URL;
       const data = await response.json();
       return data;
     } catch (error) {
-      return {error: error?.message}
+      if (error instanceof Error) {
+        return { error: error.message };
+      }
+      return { error: 'Failed to update permission' };
     }
   };
   export const deleteDocument = async (id:string) => {

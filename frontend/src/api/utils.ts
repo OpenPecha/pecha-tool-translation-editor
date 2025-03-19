@@ -1,9 +1,15 @@
-export  const getHeaders = ()=> {
-    
-    const token = localStorage.getItem('token') || ''
-    const header={'Authorization': `Bearer ${token}`,
-        "Content-Type": "application/json",
-    }
+type CustomHeaders = Record<string, string>;
 
-    return header
-}
+const getBaseHeaders = (): CustomHeaders => {
+  const token = localStorage.getItem('token') || '';
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+};
+
+export const getHeaders = (): CustomHeaders => ({
+  ...getBaseHeaders(),
+  'Content-Type': 'application/json',
+});
+
+export const getHeadersMultipart = (): CustomHeaders => getBaseHeaders();

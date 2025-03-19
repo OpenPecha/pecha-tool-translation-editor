@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { createDocument, deleteDocument, updateDocument, fetchDocuments } from '../api/document';
@@ -105,6 +105,8 @@ const DocumentList = () => {
   const [error, setError] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newDocIdentifier, setNewDocIdentifier] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -125,17 +127,23 @@ const DocumentList = () => {
   const createDoc = async () => {
     if (!newDocIdentifier) return;
 
-    createDocument(newDocIdentifier)
-      .then(response => {
-        setNewDocIdentifier('');
-        setShowCreateModal(false);
-        navigate(`/documents/${response.id}`);
-      })
-      .catch(e => {
-        console.error('Error creating document:', e);
-        const data = e.response?.data;
-        setError(data?.detail ?? 'Failed to create document');
-      });
+    const formData = new FormData();
+    formData.append('identifier', newDocIdentifier);
+    if (selectedFile) {
+      formData.append('file', selectedFile);
+    }
+
+    try {
+      const response = await createDocument(formData);
+      setNewDocIdentifier('');
+      setSelectedFile(null);
+      setShowCreateModal(false);
+      navigate(`/documents/${response.id}`);
+    } catch (error: unknown) {
+      console.error('Error creating document:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create document';
+      setError(errorMessage);
+    }
   };
 
   const renderContent = () => {
@@ -187,7 +195,7 @@ const DocumentList = () => {
               </button>
             </div>
             <div className="modal-body">
-              <div className="form-group">
+              <div className="form-group mb-4">
                 <label htmlFor="docIdentifier">Document Identifier</label>
                 <input
                   type="text"
@@ -195,15 +203,35 @@ const DocumentList = () => {
                   value={newDocIdentifier}
                   onChange={(e) => setNewDocIdentifier(e.target.value)}
                   placeholder="Enter document identifier"
+                  className="w-full p-2 border rounded"
                   required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="fileInput">Upload File (Optional)</label>
+                <input
+                  type="file"
+                  id="fileInput"
+                  ref={fileInputRef}
+                  onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                  className="w-full p-2 border rounded"
+                  accept=".txt,.md"
                 />
               </div>
             </div>
             <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={() => setShowCreateModal(false)}>
+              <button 
+                type="button" 
+                className="btn btn-secondary" 
+                onClick={() => setShowCreateModal(false)}
+              >
                 Cancel
               </button>
-              <button className="btn btn-primary" onClick={createDoc} disabled={!newDocIdentifier}>
+              <button 
+                type="button" 
+                className="btn btn-primary"
+                onClick={createDoc}
+              >
                 Create
               </button>
             </div>
