@@ -176,9 +176,9 @@ const DocumentList = () => {
   };
 
   return (
-    <div className="document-list-container">
+    <div className="p-4 ">
       <div className="flex gap-2 pb-3">
-        <h1>My Pechas</h1>
+        <h1>Pechas</h1>
         <button className="flex gap-2 items-center rounded-xl uppercase" onClick={() => setShowCreateModal(true)}>
           <CiCirclePlus size={30}/>
         </button>
@@ -265,7 +265,9 @@ function EachDocument({ doc, setDocuments, documents }: EachDocumentProps) {
     if (permission) {
       try {
         const deleted = await deleteDocument(doc.id);
-        if (deleted?.id) {
+        if (deleted.message) {
+          console.log('Document deleted:', deleted);
+          console.log('documents', documents)
           setDocuments((prev: Document[]) => prev.filter((d: Document) => d.id !== doc.id));
         }
       } catch (e) {

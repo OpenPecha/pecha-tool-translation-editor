@@ -92,9 +92,11 @@ function EditorWrapper() {
   }
 
   return (
-    <div className="p-4">
+    <div className="px-4">
       {selectedTranslationId && (
+        <div className="absolute bottom-0 right-0 bg-gray-100 z-10">
         <SyncOptions syncMode={syncMode} setSyncMode={setSyncMode} />
+        </div>
       )}
       <div className="flex">
         <YjsProvider>

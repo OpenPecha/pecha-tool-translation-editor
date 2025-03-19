@@ -46,7 +46,6 @@ const Editor = ({ documentId,isEditable, quillRef }:{documentId:string,isEditabl
       setSynced(isSynced);
       if(isSynced){
         var plainText = quill.getText();
-        console.log('plaintext',plainText)
         if(plainText.trim().length===0){
           console.log('text is empty')
           fetchDocument(documentId).then((doc) => {
@@ -85,32 +84,7 @@ const Editor = ({ documentId,isEditable, quillRef }:{documentId:string,isEditabl
     }
   };
   // 🔥 Add a new comment
-  async function addComment() {
-    const range = quillRef.current.getSelection();
-    if (!range) return;
-
-    const commentText = prompt("Enter your comment");
-    if (!commentText) return;
-
-    const end = range.index + range.length;
-
-    try {
-      const createdComment = await createComment(documentId, currentUser.id, commentText, range.index, end);
-      
-      if (createdComment.id) {
-        // 🔥 Update the Quill editor to highlight the text
-        quillRef.current.formatText(range.index, range.length, "comment", {
-          id: createdComment.id,
-          suggestions:suggestions
-        });
-
-        // 🔥 Update the comments list dynamically
-        setComments((prev) => [createdComment, ...prev]); // Add new comment to the top
-      }
-    } catch (error) {
-      console.error("Error adding comment:", error);
-    }
-  }
+ 
   async function addSuggestion() {
     const range = quillRef.current.getSelection();
     if (!range) return;
@@ -140,9 +114,9 @@ const Editor = ({ documentId,isEditable, quillRef }:{documentId:string,isEditabl
     <div className="flex w-full flex-1 h-full " >
       <div className="editor-container">
         {/* <Permissions documentId={documentId} /> */}
-        <Toolbar id={toolbarId} addComment={addComment} addSuggestion={addSuggestion} synced={synced} />
+        <Toolbar id={toolbarId}  addSuggestion={addSuggestion} synced={synced} />
         {/* <OverlayLoading isLoading={!synced}/> */}
-        <div className="relative h-[calc(100vh-100px)] ">
+        <div className="relative h-[calc(100vh-130px)] ">
           <div ref={editorRef} style={{  marginTop: "10px",fontFamily:"Monlam",fontSize:18}} />
           <div id={`${counterId}`}>0 characters</div>
         </div>

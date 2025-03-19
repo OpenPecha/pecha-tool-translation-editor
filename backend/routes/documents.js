@@ -87,6 +87,9 @@ module.exports = (getYDoc, client) => {
           isRoot:true,
           translations:true,
           updatedAt:true
+        },
+        orderBy:{
+          isRoot:'desc'
         }
       });
       res.json(documents);
