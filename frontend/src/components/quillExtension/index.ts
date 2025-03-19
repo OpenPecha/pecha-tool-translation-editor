@@ -1,7 +1,7 @@
 import Quill from "quill";
 import QuillCursors from "quill-cursors";
 import TextSuggestionModule from "./suggestionModule";
-import { createSuggest, fetchSuggestsByThread } from "../../api/suggest";
+import { createSuggest, deleteSuggest, fetchSuggestsByThread } from "../../api/suggest";
 const Inline = Quill.import("blots/inline");
 
 
@@ -37,6 +37,9 @@ class SuggestionBlot extends Inline {
         super.format(name, value);
       }
     }
+    delete() {
+      this.domNode.replaceWith(document.createTextNode(this.domNode.innerText));
+  }
   }
 
 function createBubbleMenu() {
@@ -58,7 +61,6 @@ const suggestionBubble = createBubbleMenu();
 
 function showSuggestionBubble(event, data) {
   if (!data || data.length === 0) return;
-  console.log(data)
 
   const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
 
@@ -75,6 +77,11 @@ function showSuggestionBubble(event, data) {
               </div>
               <div style="font-size: 12px; color: gray;">
                   Added on: ${createdAt}
+                   <button class="delete-suggestion-btn" data-id="${suggestion.id}" 
+                      style="background: #ff4d4d; color: white; border: none; border-radius: 3px; 
+                      padding: 2px 5px; font-size: 11px; cursor: pointer;">
+                      Delete
+                  </button>
               </div>
           </div>
       `;
@@ -119,6 +126,26 @@ function showSuggestionBubble(event, data) {
           document.removeEventListener("click", hideBubble);
       }
   });
+  document.querySelectorAll('.delete-suggestion-btn').forEach(button => {
+    button.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const suggestionId = this.getAttribute('data-id');
+        deleteSuggest(suggestionId).then(response => {
+          console.log(response, data.length)
+          if(data.length===1){
+            const suggestionSpan = document.querySelector(`span.suggestion[data-id="${data[0].threadId}"]`);
+                if (suggestionSpan) {
+                    const blot = Quill.find(suggestionSpan);
+                    if (blot && blot instanceof SuggestionBlot) {
+                        blot.delete(); // Remove the mark if it's the last suggestion
+                    }
+                }
+          }
+      suggestionBubble.style.display = "none"; // Close bubble after submission
+        })
+        .catch(error => console.error("Error submitting suggestion:", error));
+    });
+});
 
   // Handle submission
   document.getElementById("submitSuggestionBtn").addEventListener("click", () => {
@@ -139,6 +166,7 @@ function showSuggestionBubble(event, data) {
       }
   });
 }
+
 
 
 
