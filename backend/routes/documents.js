@@ -2,24 +2,42 @@ const express = require("express");
 const authenticate = require("../middleware/authenticate");
 const { PrismaClient } = require("@prisma/client");
 const Y = require('yjs')
-const moment=require("moment")
-
+const moment = require("moment")
+const multer = require('multer');
+const fs = require('fs').promises;
 
 const prisma = new PrismaClient();
 const router = express.Router();
+const upload = multer({
+  storage: multer.memoryStorage(), // Keeps file in memory, not saved on disk
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype !== "text/plain") {
+      return cb(new Error("Only .txt files are allowed"));
+    }
+    cb(null, true);
+  },
+});
 
-
-module.exports =(getYDoc,client) =>{
+module.exports = (getYDoc, client) => {
 
   // Create a new document
-  router.post("/", authenticate, async (req, res) => {
-    const { identifier } = req.body;
-    if(!identifier) return res.status(400).json({ error: "Missing required fields" });
-    const doc = getYDoc(identifier, req.user.id)
-    
-    const state = Y.encodeStateAsUpdate(doc)
-    const delta = doc.getText(identifier).toDelta()
+  router.post("/", authenticate, upload.single("file"), async (req, res) => {
     try {
+      const { identifier } = req.body;
+      if (!identifier) return res.status(400).json({ error: "Missing identifier in query params" });
+      const textContent = req.file.buffer.toString("utf-8");
+
+      const doc = getYDoc(identifier, req.user.id);
+      // Update the Y.doc with file content
+      const ytext = doc.getText(identifier);
+      if (textContent) {
+        ytext.delete(0, ytext.length);
+        ytext.insert(0, textContent);
+      }
+
+      const state = Y.encodeStateAsUpdate(doc);
+      const delta = ytext.toDelta();
 
       const document = await prisma.doc.create({
         data: {
@@ -29,7 +47,7 @@ module.exports =(getYDoc,client) =>{
           docs_prosemirror_delta: delta,
         },
       });
-  
+
       await prisma.permission.create({
         data: {
           docId: document.id,
@@ -38,19 +56,18 @@ module.exports =(getYDoc,client) =>{
           canWrite: true,
         },
       });
-  
+
       await client.hSet(`${document.id}:info`, {
         created: moment().toISOString(),
         updated: moment().toISOString(),
       });
-  
+
       res.status(201).json(document);
     } catch (error) {
-      console.log(error)
-      res.status(500).json({ error: "Error creating document"+error });
+      res.status(500).json({ error: "Error creating document: " + error });
     }
   });
-  
+
   // Get all documents for the user
   router.get("/", authenticate, async (req, res) => {
     try {
@@ -77,7 +94,7 @@ module.exports =(getYDoc,client) =>{
       res.status(500).json({ error: "Error fetching documents" });
     }
   });
-  
+
   // Get a specific document
   // Get a specific document and return its content
   router.get("/:id", authenticate, async (req, res) => {
@@ -106,7 +123,7 @@ module.exports =(getYDoc,client) =>{
     if (document.docs_y_doc_state) {
       const ydoc = new Y.Doc();
       Y.applyUpdate(ydoc, document.docs_y_doc_state);
-      delta = ydoc.getText("prosemirror").toDelta(); // Convert to Quill-compatible Delta
+      delta = ydoc.getText(document.identifier).toDelta(); // Convert to Quill-compatible Delta
     } else if (document.docs_prosemirror_delta) {
       delta = document.docs_prosemirror_delta;
     }

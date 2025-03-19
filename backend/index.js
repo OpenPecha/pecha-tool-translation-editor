@@ -154,16 +154,25 @@ app.post("/token", async (req, res) => {
     }
   
     let doc = getYDoc(identifier, userId);
-  
     try {
       if (userId) {
-        const docObject = await prisma.doc.findUnique({ where: { id: identifier } });
+        const docObject = await prisma.doc.findUnique({ 
+          where: { id: identifier },
+          select: {
+            docs_y_doc_state: true,
+            docs_prosemirror_delta: true
+          }
+        });
   
         if (docObject) {
-  
+          
+
           // Apply stored Y.Doc state if it exists
           if (docObject.docs_y_doc_state) {
             Y.applyUpdate(doc, docObject.docs_y_doc_state);
+            // Log the content after applying the update
+           
+           
           }
   
           try {
@@ -179,7 +188,6 @@ app.post("/token", async (req, res) => {
   
           await prisma.doc.create({
             data: {
-              id: identifier,
               identifier,
               docs_prosemirror_delta: delta,
               docs_y_doc_state: state,
@@ -225,7 +233,6 @@ app.post("/token", async (req, res) => {
   
     ws.on("close", async () => {
       utils.closeConn(doc, injectedWS);
-      console.log("disconnected")
       clearInterval(pingInterval);
     });
   
@@ -237,13 +244,15 @@ app.post("/token", async (req, res) => {
       pingReceived = true;
     });
   
-    // **Send Initial Document State**
+    // Send Initial Document State
     {
       const encoder = utils.encoding.createEncoder();
       utils.encoding.writeVarUint(encoder, utils.messageSync);
       utils.syncProtocol.writeSyncStep1(encoder, doc);
-      utils.send(doc, injectedWS, utils.encoding.toUint8Array(encoder));
-  
+      const message = utils.encoding.toUint8Array(encoder);
+      
+      utils.send(doc, injectedWS, message);
+
       const awarenessStates = doc.awareness.getStates();
       if (awarenessStates.size > 0) {
         const encoder1 = utils.encoding.createEncoder();
