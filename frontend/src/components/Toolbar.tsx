@@ -3,8 +3,10 @@ import { FaCommentDots } from "react-icons/fa";
 
 const Toolbar = ({addSuggestion,id, synced}) => {
   return (
-    <div id={id}>
-
+    <div id={id} style={{
+      border:"none",
+      paddingTop: "10px"
+    }}>
       <span>{synced ? "🟢" : "🔴"}</span>
       <span className="ql-formats">
         <select className="ql-font">

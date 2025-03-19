@@ -29,7 +29,7 @@ const Editor = ({ documentId,isEditable, quillRef }:{documentId:string,isEditabl
     const quill = new Quill(editorRef?.current, {
       theme: "snow",
       modules: {
-        toolbar: { container: `#${toolbarId}` },
+        toolbar: { container: `#${toolbarId}`},
         cursors: { transformOnTextChange: false },
         history: { delay: 2000, maxStack: 500 },
         counter: { container: `#${counterId}`, unit: "character" },
