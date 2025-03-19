@@ -133,17 +133,19 @@ const DocumentList = () => {
       formData.append('file', selectedFile);
     }
 
-    try {
-      const response = await createDocument(formData);
-      setNewDocIdentifier('');
-      setSelectedFile(null);
-      setShowCreateModal(false);
-      navigate(`/documents/${response.id}`);
-    } catch (error: unknown) {
-      console.error('Error creating document:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to create document';
-      setError(errorMessage);
-    }
+   
+      createDocument(formData).then(response=>{
+  setNewDocIdentifier('');
+  setSelectedFile(null);
+  setShowCreateModal(false);
+  navigate(`/documents/${response.id}`);
+      }
+      ).catch(error=>{
+        console.error('Error creating document:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Failed to create document';
+        setError(errorMessage);
+      });
+      
   };
 
   const renderContent = () => {
