@@ -1,10 +1,11 @@
-import React from "react";
-import { FaCommentDots } from "react-icons/fa";
+import React, { useState } from "react";
+import { FaCommentDots, FaHistory } from "react-icons/fa";
 import { GrDocumentTxt } from "react-icons/gr";
+import { useQuillHistory } from "../contexts/HistoryContext";
+import QuillHistoryControls from "./QuillHistoryControls";
 
 const Toolbar = ({addSuggestion,id, synced,quill}) => {
-
-
+  const [openHistory, setOpenHistory] = useState(false);
   const exportText = () => {
     if (quill) {
       const text = quill.getText();
@@ -18,6 +19,7 @@ const Toolbar = ({addSuggestion,id, synced,quill}) => {
   };
 
   return (
+    <>
     <div id={id} style={{
       border:"none",
       paddingTop: "10px"
@@ -101,7 +103,19 @@ const Toolbar = ({addSuggestion,id, synced,quill}) => {
           <FaCommentDots/>
         </button>
       </span>
+      <span className="ql-formats">
+        <button className="ql-history" onClick={()=>setOpenHistory(!openHistory)}>
+          <FaHistory/>
+        </button>
+      </span>
     </div>
+    {
+  openHistory &&
+      <div>
+     <QuillHistoryControls />
+ </div>
+    }
+ </>
   );
 };
 

@@ -12,6 +12,7 @@ import Comments from "./Comments";
 import OverlayLoading from "./OverlayLoading";
 import { createSuggest, fetchSuggests } from "../api/suggest";
 import { fetchDocument } from "../api/document";
+import { useQuillHistory } from "../contexts/HistoryContext";
 quill_import();
 
 const Editor = ({ documentId,isEditable, quillRef }:{documentId:string,isEditable:boolean,quillRef:any}) => {
@@ -24,7 +25,8 @@ const Editor = ({ documentId,isEditable, quillRef }:{documentId:string,isEditabl
   const [synced, setSynced] = useState(false);
   const [comments, setComments] = useState([]); // 🔥 Store comments in Editor
   const [suggestions, setSuggestions] = useState([]); // 🔥 Store comments in Editor
-
+  const [lastContent, setLastContent] = useState("");
+  const { registerQuill } = useQuillHistory();
   useEffect(() => {
     const quill = new Quill(editorRef?.current, {
       theme: "snow",
@@ -41,6 +43,7 @@ const Editor = ({ documentId,isEditable, quillRef }:{documentId:string,isEditabl
     });
 
     quillRef.current = quill;
+    registerQuill(quill);
     new QuillBinding(yText, quill, yjsProvider?.awareness);
     yjsProvider?.on("sync", (isSynced) => {
       setSynced(isSynced);
@@ -61,6 +64,25 @@ const Editor = ({ documentId,isEditable, quillRef }:{documentId:string,isEditabl
     // Fetch comments when the editor loads
     loadComments();
     loadSuggestions();
+    let currentContentLength = quill.getLength();
+    quill.on('text-change', function(delta, oldDelta, source) {
+      if (source === 'user') {
+        // Check if this operation would delete all content
+        
+        // If the change would reduce content to just the newline character (empty editor)
+        if (quill.getLength() <= 1) {
+          // You can add your confirmation logic here
+          const shouldDelete = confirm('Are you sure you want to delete all content?');
+          
+          if (!shouldDelete) {
+            // Undo the change by replacing with old content
+            quill.setContents(oldDelta);
+          }
+        }
+        // Update our tracking variable
+        currentContentLength = quill.getLength();
+      }
+    });
     return () => {
       clearYjsProvider();
     };

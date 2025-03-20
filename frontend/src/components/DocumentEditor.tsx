@@ -5,6 +5,8 @@ import YjsContext from '../lib/yjsProvider';
 import Editor from './Editor';
 import { fetchDocument } from '../api/document';
 import { useAuth } from '../contexts/AuthContext';
+import { QuillHistoryProvider } from '../contexts/HistoryContext';
+import QuillHistoryControls from './QuillHistoryControls';
 // import useYdoc from '../hook/useYdoc';
 
 
@@ -32,7 +34,10 @@ const RealTimeEditor = ({docId ,editorRef}:{docId:string | undefined,editorRef:R
   
   if (!ydoc||!yjsProvider||!yText ||!roomId ) return null;
   return (
-    <Editor documentId={roomId} isEditable={isEditable} quillRef={editorRef}/>
+    <QuillHistoryProvider docId={roomId} maxVersions={50}>
+        <Editor documentId={roomId} isEditable={isEditable} quillRef={editorRef}/>
+       
+    </QuillHistoryProvider>
   );
 };
 
