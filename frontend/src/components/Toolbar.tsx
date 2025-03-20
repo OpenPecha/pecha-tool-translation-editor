@@ -1,7 +1,22 @@
 import React from "react";
 import { FaCommentDots } from "react-icons/fa";
+import { GrDocumentTxt } from "react-icons/gr";
 
-const Toolbar = ({addSuggestion,id, synced}) => {
+const Toolbar = ({addSuggestion,id, synced,quill}) => {
+
+
+  const exportText = () => {
+    if (quill) {
+      const text = quill.getText();
+      const blob = new Blob([text], { type: "text/plain" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "exported_text.txt";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+  };
+
   return (
     <div id={id} style={{
       border:"none",
@@ -21,6 +36,11 @@ const Toolbar = ({addSuggestion,id, synced}) => {
         <button className="ql-italic" />
         <button className="ql-underline" />
         <button className="ql-strike" />
+      </span>
+      <span className="ql-formats">
+      <button onClick={exportText} >
+      <GrDocumentTxt />
+      </button>
       </span>
       {/* <span className="ql-formats">
         <button className="ql-blockquote" />

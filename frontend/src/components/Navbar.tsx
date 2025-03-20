@@ -12,7 +12,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white shadow-md px-6 py-2 flex justify-between items-center">
+    <nav className="bg-white shadow-sm px-6 py-2 flex justify-between items-center">
       {/* Logo and Brand */}
       <div className="flex items-center gap-3">
         <img src="/icon/icon.png" width={28} className="object-contain" />

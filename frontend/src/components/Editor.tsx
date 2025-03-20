@@ -111,16 +111,14 @@ const Editor = ({ documentId,isEditable, quillRef }:{documentId:string,isEditabl
     }
   }
   return (
-    <div className="flex w-full flex-1 h-full " >
-      <div className="editor-container">
+    <div className="w-full flex-1 h-full " >
         {/* <Permissions documentId={documentId} /> */}
-        <Toolbar id={toolbarId}  addSuggestion={addSuggestion} synced={synced} />
+        <Toolbar id={toolbarId}  addSuggestion={addSuggestion} synced={synced} quill={quillRef.current} />
         {/* <OverlayLoading isLoading={!synced}/> */}
         <div className="relative h-[calc(100vh-130px)] ">
           <div ref={editorRef} style={{  marginTop: "10px",fontFamily:"Monlam",fontSize:18}} />
           <div id={`${counterId}`}>0 characters</div>
         </div>
-      </div>
 
       {/* 🔥 Pass comments and update function to Comments */}
       {/* <div className="comment-container w-1/4">
