@@ -4,7 +4,7 @@ import { GrDocumentTxt } from "react-icons/gr";
 import { useQuillHistory } from "../contexts/HistoryContext";
 import QuillHistoryControls from "./QuillHistoryControls";
 
-const Toolbar = ({addSuggestion,id, synced,quill}) => {
+const Toolbar = ({ addSuggestion, id, synced, quill }) => {
   const [openHistory, setOpenHistory] = useState(false);
   const exportText = () => {
     if (quill) {
@@ -19,15 +19,20 @@ const Toolbar = ({addSuggestion,id, synced,quill}) => {
   };
 
   return (
-    <>
-    <div id={id} style={{
-      border:"none",
-      paddingTop: "10px"
-    }}>
+    <div
+      id={id}
+      style={{
+        border: "none",
+        paddingTop: "10px",
+        position: "relative",
+      }}
+    >
       <span>{synced ? "🟢" : "🔴"}</span>
       <span className="ql-formats">
         <select className="ql-font">
-          <option value="sans-serif" selected>Sans-serif</option>
+          <option value="sans-serif" selected>
+            Sans-serif
+          </option>
           <option value="serif">Serif</option>
           <option value="monospace">Monospace</option>
           <option value="monlam">Monlam</option> {/* Custom font */}
@@ -40,17 +45,17 @@ const Toolbar = ({addSuggestion,id, synced,quill}) => {
         <button className="ql-strike" />
       </span>
       <span className="ql-formats">
-      <button onClick={exportText} >
-      <GrDocumentTxt />
-      </button>
+        <button onClick={exportText}>
+          <GrDocumentTxt />
+        </button>
       </span>
       {/* <span className="ql-formats">
         <button className="ql-blockquote" />
         <button className="ql-code-block" />
         <button className="ql-link" /> */}
-        {/* <button className="ql-image" /> */}
-        {/* <button className="ql-video" /> */}
-        {/* <button className="ql-formula" />
+      {/* <button className="ql-image" /> */}
+      {/* <button className="ql-video" /> */}
+      {/* <button className="ql-formula" />
       </span> */}
       {/* <span className="ql-formats">
         <select className="ql-header">
@@ -100,22 +105,23 @@ const Toolbar = ({addSuggestion,id, synced,quill}) => {
       </span> */}
       <span className="ql-formats">
         <button className="ql-suggestion" onClick={addSuggestion}>
-          <FaCommentDots/>
+          <FaCommentDots />
         </button>
       </span>
       <span className="ql-formats">
-        <button className="ql-history" onClick={()=>setOpenHistory(!openHistory)}>
-          <FaHistory/>
+        <button
+          className="ql-history"
+          onClick={() => setOpenHistory(!openHistory)}
+        >
+          <FaHistory />
         </button>
       </span>
+      {openHistory && (
+        <div className="absolute bg-gray-100 z-10 top-10 right-0">
+          <QuillHistoryControls />
+        </div>
+      )}
     </div>
-    {
-  openHistory &&
-      <div>
-     <QuillHistoryControls />
- </div>
-    }
- </>
   );
 };
 
