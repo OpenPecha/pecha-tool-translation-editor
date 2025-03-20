@@ -26,14 +26,16 @@ module.exports = (getYDoc, client) => {
     try {
       const { identifier ,isRoot, rootId } = req.body;
       if (!identifier) return res.status(400).json({ error: "Missing identifier in query params" });
-      const textContent = req.file.buffer.toString("utf-8");
-
+      
       const doc = getYDoc(identifier, req.user.id);
       // Update the Y.doc with file content
       const ytext = doc.getText(identifier);
-      if (textContent) {
-        ytext.delete(0, ytext.length);
-        ytext.insert(0, textContent);
+      if(req?.file){
+        const textContent = req.file.buffer.toString("utf-8");
+        if (textContent) {
+          ytext.delete(0, ytext.length);
+          ytext.insert(0, textContent);
+        }
       }
 
       const state = Y.encodeStateAsUpdate(doc);

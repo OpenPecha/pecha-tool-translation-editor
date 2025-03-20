@@ -133,14 +133,14 @@ function RenderTranslationEditor({
   if (!selectedTranslationId)
     return (
       <div className="translation-selector px-4 bg-gray-100">
-        <label htmlFor="translationSelect" className="mr-2">
+        {/* <label htmlFor="translationSelect" className="mr-2">
           Select Translation:
-        </label>
+        </label> */}
         <select
           id="translationSelect"
           value={selectedTranslationId ?? ""}
           onChange={(e) => setSelectedTranslationId(e.target.value)}
-          className="p-2 border rounded"
+          className="p-2 border rounded mt-4"
         >
           <option value="">Select a translation</option>
           {translations.map((translation: Translation) => (
