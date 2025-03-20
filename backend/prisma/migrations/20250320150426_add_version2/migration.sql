@@ -1,0 +1,2 @@
+-- AddForeignKey
+ALTER TABLE "Version" ADD CONSTRAINT "Version_docId_fkey" FOREIGN KEY ("docId") REFERENCES "Doc"("id") ON DELETE CASCADE ON UPDATE CASCADE;

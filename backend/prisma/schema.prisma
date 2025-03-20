@@ -14,69 +14,79 @@ model User {
   password    String
   documents   Doc[]        @relation("UserDocs") // A user can have multiple documents
   permissions Permission[] // A user can have multiple permissions
-  comments    Comment[]    // A user can have multiple comments
-  suggestions Suggestion[] @relation("suggested_by")// A user can have multiple suggestions
+  comments    Comment[] // A user can have multiple comments
+  suggestions Suggestion[] @relation("suggested_by") // A user can have multiple suggestions
   createdAt   DateTime     @default(now())
 }
 
 model Doc {
-  id                     String       @id @default(uuid())   // Unique identifier for the document
-  identifier             String       @unique                // Ensures each document has a unique identifier
-  docs_prosemirror_delta Json?                              // Nullable array of objects
-  docs_y_doc_state       Bytes?                             // Binary data for Yjs document state
-  language               String       @default("bo")                     // Language of the document content
-  isRoot                 Boolean      @default(false)       // Whether this is a root text
-  rootId                 String?                            // ID of the root document if this is a translation
+  id                     String       @id @default(uuid()) // Unique identifier for the document
+  identifier             String       @unique // Ensures each document has a unique identifier
+  docs_prosemirror_delta Json? // Nullable array of objects
+  docs_y_doc_state       Bytes? // Binary data for Yjs document state
+  language               String       @default("bo") // Language of the document content
+  isRoot                 Boolean      @default(false) // Whether this is a root text
+  rootId                 String? // ID of the root document if this is a translation
   root                   Doc?         @relation("Translations", fields: [rootId], references: [id], onDelete: Cascade)
-  translations           Doc[]        @relation("Translations")  // One root can have multiple translations
-  createdAt              DateTime     @default(now())        // Timestamp when the document is created
-  updatedAt              DateTime     @updatedAt            // Auto-updated timestamp
-  ownerId                String?                             // Optional owner of the document
+  translations           Doc[]        @relation("Translations") // One root can have multiple translations
+  createdAt              DateTime     @default(now()) // Timestamp when the document is created
+  updatedAt              DateTime     @updatedAt // Auto-updated timestamp
+  ownerId                String? // Optional owner of the document
   owner                  User?        @relation("UserDocs", fields: [ownerId], references: [id], onDelete: Cascade)
   permissions            Permission[] // A document can have multiple permission entries
-  comments               Comment[]    // A document can have multiple comments
-  suggestions            Suggestion[] @relation("suggested_on")// A document can have multiple suggestions
+  comments               Comment[] // A document can have multiple comments
+  suggestions            Suggestion[] @relation("suggested_on") // A document can have multiple suggestions
+  versions               Version[] // A document can have multiple versions
 }
 
 model Permission {
-  id         String   @id @default(uuid())
-  docId      String
-  userId     String
-  canRead    Boolean  @default(true)
-  canWrite   Boolean  @default(false)
+  id       String  @id @default(uuid())
+  docId    String
+  userId   String
+  canRead  Boolean @default(true)
+  canWrite Boolean @default(false)
 
-  doc        Doc      @relation(fields: [docId], references: [id], onDelete: Cascade)
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  doc  Doc  @relation(fields: [docId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([docId, userId]) // Prevent duplicate permissions for the same document-user pair
 }
 
 model Comment {
-  id         String   @id @default(uuid())
-  docId      String
-  userId     String
-  content    String
-  parentComment Comment? @relation("parentComment",fields: [parentCommentId], references: [id])
-  parentCommentId String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  childComments Comment[] @relation("parentComment")
-  initial_start_offset      Int
-  initial_end_offset        Int
-  doc        Doc      @relation(fields: [docId], references: [id], onDelete: Cascade)
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                   String    @id @default(uuid())
+  docId                String
+  userId               String
+  content              String
+  parentComment        Comment?  @relation("parentComment", fields: [parentCommentId], references: [id])
+  parentCommentId      String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  childComments        Comment[] @relation("parentComment")
+  initial_start_offset Int
+  initial_end_offset   Int
+  doc                  Doc       @relation(fields: [docId], references: [id], onDelete: Cascade)
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Suggestion {
-  id         String   @id @default(uuid())
-  threadId   String?
-  docId      String
-  userId     String
-  content    String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  initial_start_offset      Int
-  initial_end_offset        Int
-  doc        Doc      @relation("suggested_on",fields: [docId], references: [id], onDelete: Cascade)
-  user       User     @relation("suggested_by",fields: [userId], references: [id], onDelete: Cascade)
+  id                   String   @id @default(uuid())
+  threadId             String?
+  docId                String
+  userId               String
+  content              String
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  initial_start_offset Int
+  initial_end_offset   Int
+  doc                  Doc      @relation("suggested_on", fields: [docId], references: [id], onDelete: Cascade)
+  user                 User     @relation("suggested_by", fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Version {
+  id        String   @id @default(uuid()) // Unique identifier
+  doc       Doc      @relation(fields: [docId], references: [id], onDelete: Cascade)
+  docId     String // Document identifier
+  label     String // Version label (e.g., "Auto-save", "Manual Save")
+  timestamp DateTime @default(now()) // When the version was saved
+  content   Json // Quill delta contents stored as JSON
 }
