@@ -121,6 +121,9 @@ const closeConn = (doc, conn) => {
             console.log(e)
           }
         } else {
+          const deltaChanged = JSON.stringify(existingDoc.docs_prosemirror_delta) !== JSON.stringify(delta);
+          const stateChanged = !equalUint8Arrays(existingDoc.docs_y_doc_state, state);
+          if (deltaChanged || stateChanged) {
           try {
             console.log('updated database')
             await prisma.doc.update({
@@ -136,8 +139,15 @@ const closeConn = (doc, conn) => {
             console.log(e)
           }
         }
+        }
       }
     },
+  }
+
+
+  const equalUint8Arrays = (a, b) => {
+    if (a.length !== b.length) return false;
+    return a.every((val, i) => val === b[i]);
   }
 
 module.exports = {

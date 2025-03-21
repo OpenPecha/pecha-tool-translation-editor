@@ -13,6 +13,8 @@ import {
   deleteVersion as deleteVersionAPI,
 } from "../api/version";
 
+const AUTOSAVE_INTERVAL = 900000; // 15min
+
 // Create the context
 const QuillHistoryContext = createContext();
 
@@ -37,7 +39,7 @@ export const QuillHistoryProvider = ({
   const [versions, setVersions] = useState([]);
   const [currentVersionId, setCurrentVersionId] = useState(null);
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(false);
-  const [autoSaveInterval, setAutoSaveInterval] = useState(5000);
+  const [autoSaveInterval, setAutoSaveInterval] = useState(AUTOSAVE_INTERVAL);
   const [intervalId, setIntervalId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
