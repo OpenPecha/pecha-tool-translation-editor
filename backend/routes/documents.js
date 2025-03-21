@@ -95,7 +95,8 @@ module.exports = (getYDoc, client) => {
             select:{
               identifier:true
             }
-          }
+          },
+          rootId:true
         },
         orderBy:{
           isRoot:'desc'
@@ -248,7 +249,7 @@ module.exports = (getYDoc, client) => {
   // Update document's root relationship and root status
   router.patch("/:id", authenticate, async (req, res) => {
     try {
-      const { rootId, isRoot, translations } = req.body;
+      const { rootId, isRoot, translations, identifier } = req.body;
       const documentId = req.params.id;
 
       // Check if the document exists
@@ -337,7 +338,8 @@ module.exports = (getYDoc, client) => {
       // Prepare the update data
       const updateData = {
         rootId: rootId || null,
-        isRoot: isRoot ?? (rootId ? false : document.isRoot)
+        isRoot: isRoot ?? (rootId ? false : document.isRoot),
+        identifier: identifier || document.identifier
       };
 
       // Update the document and its translations in a transaction
@@ -363,7 +365,8 @@ module.exports = (getYDoc, client) => {
             },
             data: {
               rootId: documentId,
-              isRoot: false
+              isRoot: false,
+              identifier: identifier || document.identifier
             }
           });
 
@@ -371,7 +374,7 @@ module.exports = (getYDoc, client) => {
           return await tx.doc.findUnique({
             where: { id: documentId },
             include: {
-              root: true,
+              root: true, 
               translations: true
             }
           });

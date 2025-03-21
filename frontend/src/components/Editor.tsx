@@ -168,13 +168,13 @@ const Editor = ({
         synced={synced}
         quill={quillRef.current}
       />
-      <OverlayLoading isLoading={showOverlay} />
       <div className="relative h-[calc(100vh-130px)] ">
         <div
           ref={editorRef}
           style={{ marginTop: "10px", fontFamily: "Monlam", fontSize: 18 }}
         />
         <div id={`${counterId}`}>0 characters</div>
+        <OverlayLoading isLoading={showOverlay} />
       </div>
 
       {/* 🔥 Pass comments and update function to Comments */}

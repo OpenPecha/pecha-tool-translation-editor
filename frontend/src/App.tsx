@@ -95,7 +95,7 @@ function EditorWrapper() {
     <div className="px-4">
       {selectedTranslationId && (
         <div className="absolute bottom-0 right-0 bg-gray-100 z-10">
-        <SyncOptions syncMode={syncMode} setSyncMode={setSyncMode} />
+          <SyncOptions syncMode={syncMode} setSyncMode={setSyncMode} />
         </div>
       )}
       <div className="flex">
@@ -132,23 +132,23 @@ function RenderTranslationEditor({
   if (!isTranslationAvailable) return null;
   if (!selectedTranslationId)
     return (
-      <div className="translation-selector px-4 bg-gray-100">
-        {/* <label htmlFor="translationSelect" className="mr-2">
-          Select Translation:
-        </label> */}
-        <select
-          id="translationSelect"
-          value={selectedTranslationId ?? ""}
-          onChange={(e) => setSelectedTranslationId(e.target.value)}
-          className="p-2 border rounded mt-4"
-        >
-          <option value="">Select a translation</option>
+      <div className="w-[20vw] bg-gray-100">
+        <h3 className="text-lg font-semibold mb-4 px-4 py-2 bg-gray-300 text-gray-700">
+          Select a Translation
+        </h3>
+        <div className="px-4">
           {translations.map((translation: Translation) => (
-            <option key={translation.id} value={translation.id}>
+            <button
+              key={translation.id}
+              onClick={() => setSelectedTranslationId(translation.id)}
+              className="w-full cursor-pointer text-left p-2 border rounded mt-4 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              type="button"
+              aria-label={`Select translation ${translation.identifier}`}
+            >
               {translation.identifier}
-            </option>
+            </button>
           ))}
-        </select>
+        </div>
       </div>
     );
   return (

@@ -92,6 +92,7 @@ const server_url = import.meta.env.VITE_SERVER_URL;
 interface UpdateDocumentParams {
   isRoot?: boolean;
   rootId?: string | null;
+  identifier?: string;
 }
 
 export const updateDocument = async (id: string, data: UpdateDocumentParams) => {

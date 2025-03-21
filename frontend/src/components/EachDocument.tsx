@@ -42,13 +42,26 @@ export default function EachDocument({
     }
   };
 
-  const handleUpdate = async (isRoot: boolean, rootId: string | null) => {
+  const handleUpdate = async (
+    isRoot: boolean,
+    rootId: string | null,
+    identifier: string
+  ) => {
     try {
-      const updatedDoc = await updateDocument(doc.id, { isRoot, rootId });
+      const updatedDoc = await updateDocument(doc.id, {
+        isRoot,
+        rootId,
+        identifier,
+      });
       setDocuments((prev: Document[]) =>
         prev.map((d: Document) =>
           d.id === doc.id
-            ? { ...d, isRoot: updatedDoc.isRoot, rootId: updatedDoc.rootId }
+            ? {
+                ...d,
+                isRoot: updatedDoc.isRoot,
+                rootId: updatedDoc.rootId,
+                identifier: updatedDoc.identifier,
+              }
             : d
         )
       );
