@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { FaCommentDots, FaHistory } from "react-icons/fa";
 import { GrDocumentTxt } from "react-icons/gr";
 import { useQuillHistory } from "../contexts/HistoryContext";
 import QuillHistoryControls from "./QuillHistoryControls";
 
 const Toolbar = ({ addSuggestion, id, synced, quill }) => {
+  const historyRef = useRef(null);
   const [openHistory, setOpenHistory] = useState(false);
   const exportText = () => {
     if (quill) {
@@ -17,6 +18,24 @@ const Toolbar = ({ addSuggestion, id, synced, quill }) => {
       URL.revokeObjectURL(a.href);
     }
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (historyRef.current && !historyRef.current.contains(event.target)) {
+        setOpenHistory(false);
+      }
+    };
+
+    if (openHistory) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [openHistory]);
 
   return (
     <div
@@ -117,7 +136,10 @@ const Toolbar = ({ addSuggestion, id, synced, quill }) => {
         </button>
       </span>
       {openHistory && (
-        <div className="absolute bg-gray-100 z-10 top-10 right-0">
+        <div
+          ref={historyRef}
+          className="absolute bg-gray-100 z-10 top-10 right-0"
+        >
           <QuillHistoryControls />
         </div>
       )}
