@@ -1,9 +1,20 @@
 import { useState } from "react";
 
+interface Document {
+  id: string;
+  isRoot: boolean;
+  rootId: string | null;
+  identifier: string;
+}
+
 interface EditModalProps {
   doc: Document;
   onClose: () => void;
-  onUpdate: (isRoot: boolean, rootId: string | null) => Promise<void>;
+  onUpdate: (
+    isRoot: boolean,
+    rootId: string | null,
+    identifier: string | null
+  ) => Promise<void>;
   documents: Document[];
 }
 const EditModal: React.FC<EditModalProps> = ({
