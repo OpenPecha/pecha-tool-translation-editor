@@ -63,7 +63,7 @@ const DocumentList = () => {
   return (
     <div className="p-4">
       <div className="flex gap-2 pb-3">
-        <h1 className="text-lg font-bold">Create</h1>
+        <h1 className="text-lg font-bold ">Create</h1>
         <button
           className="flex gap-2 items-center rounded-xl uppercase"
           onClick={() => setShowCreateModal(true)}

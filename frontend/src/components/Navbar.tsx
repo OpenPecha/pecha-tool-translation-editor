@@ -15,8 +15,16 @@ const Navbar = () => {
     <nav className="bg-white shadow-sm px-6 py-2 flex justify-between items-center">
       {/* Logo and Brand */}
       <div className="flex items-center gap-3">
-        <img src="/icon/icon.png" width={28} className="object-contain" />
-        <Link to="/" className="text-xl font-semibold text-gray-700 hover:text-gray-900 transition">
+        <img
+          alt="icon"
+          src="/icon/icon.png"
+          width={28}
+          className="object-contain"
+        />
+        <Link
+          to="/"
+          className="text-xl font-semibold text-gray-700 hover:text-gray-900 transition"
+        >
           Pecha Editor
         </Link>
       </div>
@@ -26,7 +34,10 @@ const Navbar = () => {
         {currentUser ? (
           <>
             <span className="text-gray-700 text-sm">
-              Hi, <span className="capitalize font-medium text-gray-900">{currentUser.username}</span>
+              Hi,{" "}
+              <span className="capitalize font-medium text-gray-900">
+                {currentUser.username}
+              </span>
             </span>
             <button
               onClick={handleLogout}

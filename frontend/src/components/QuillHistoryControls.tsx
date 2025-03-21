@@ -1,22 +1,12 @@
-// src/components/QuillHistoryControls.js
-
 import React, { useState } from "react";
 import { useQuillHistory } from "../contexts/HistoryContext";
-import { IoMdSave } from "react-icons/io";
-import { SiTicktick } from "react-icons/si";
-import { MdDelete } from "react-icons/md";
+import { Switch } from "./ui/switch";
+import { Button } from "./ui/button";
+import VersionList from "./VersionList";
 
 const QuillHistoryControls = () => {
-  const {
-    versions,
-    currentVersionId,
-    autoSaveEnabled,
-    saveVersion,
-    loadVersion,
-    deleteVersion,
-    createNamedSnapshot,
-    toggleAutoSave,
-  } = useQuillHistory();
+  const { autoSaveEnabled, saveVersion, createNamedSnapshot, toggleAutoSave } =
+    useQuillHistory();
 
   const [snapshotName, setSnapshotName] = useState("");
 
@@ -27,100 +17,49 @@ const QuillHistoryControls = () => {
       setSnapshotName("");
     }
   };
-
-  const formatDate = (isoString) => {
-    return new Date(isoString).toLocaleString();
-  };
-
   return (
-    <div className="quill-history-controls p-2 border rounded">
-      {/* Save controls */}
-      <div className="mb-2">
-        <form
-          onSubmit={handleCreateSnapshot}
-          className="flex items-center gap-2 "
-        >
+    <div className="p-4 border rounded bg-white shadow-md w-72">
+      {/* Auto Versioning Section */}
+      <div className="flex justify-between mb-4">
+        <h4 className=" flex-1 text-sm font-semibold mb-2">Auto versioning</h4>
+        <Switch
+          checked={autoSaveEnabled}
+          onCheckedChange={toggleAutoSave}
+          style={{
+            backgroundColor: autoSaveEnabled ? "black" : "#ccc",
+            color: autoSaveEnabled ? "#fff" : "#000",
+            width: "40px",
+          }}
+        />
+      </div>
+
+      {/* Manual Versioning Section */}
+      <div className="mb-4">
+        <h4 className="text-sm font-semibold mb-2">Manual versioning</h4>
+
+        <form onSubmit={handleCreateSnapshot} className="flex gap-2">
           <input
             type="text"
             value={snapshotName}
             onChange={(e) => setSnapshotName(e.target.value)}
             placeholder="Version name"
-            className=" p-2 flex-grow"
+            className="p-2 border rounded flex-grow text-xs"
           />
-          <button
+          <Button
             type="submit"
-            className=" rounded"
+            className="px-3 py-2 rounded text-xs"
+            style={{
+              backgroundColor: "#000",
+              color: "#fff",
+              width: "50px",
+            }}
             disabled={!snapshotName.trim()}
           >
-            <IoMdSave />
-          </button>
+            Create
+          </Button>
         </form>
-
-        <div className="flex items-center mx-1 my-1">
-          <input
-            type="checkbox"
-            id="auto-save"
-            checked={autoSaveEnabled}
-            onChange={toggleAutoSave}
-            className="mr-2"
-          />
-          <label className="text-xs" htmlFor="auto-save ">
-            auto-save
-          </label>
-        </div>
       </div>
-
-      {/* Versions list */}
-      <div className="versions-list">
-        <h4 className="font-bold mb-2">Versions</h4>
-        {versions.length === 0 ? (
-          <p className="text-gray-500">No saved versions yet</p>
-        ) : (
-          <div className="max-h-60 overflow-y-auto border">
-            {versions
-              .slice()
-              .reverse()
-              .map((version) => (
-                <div
-                  key={version.id}
-                  className={`p-1 flex justify-between items-center border-b hover:bg-gray-100 ${
-                    version.id === currentVersionId ? "bg-blue-100" : ""
-                  }`}
-                >
-                  <div>
-                    <div className="font-medium">{version.label}</div>
-                    <div className="text-xs text-gray-500">
-                      {formatDate(version.timestamp)}
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => loadVersion(version.id)}
-                      disabled={version.id === currentVersionId}
-                      className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm"
-                    >
-                      <SiTicktick />
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (
-                          window.confirm(
-                            "Are you sure you want to delete this version?"
-                          )
-                        ) {
-                          deleteVersion(version.id);
-                        }
-                      }}
-                      className="px-2 py-1 bg-red-100 rounded hover:bg-red-200 text-sm"
-                    >
-                      <MdDelete />
-                    </button>
-                  </div>
-                </div>
-              ))}
-          </div>
-        )}
-      </div>
+      <VersionList />
     </div>
   );
 };

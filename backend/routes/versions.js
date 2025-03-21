@@ -14,6 +14,10 @@ router.get("/:docId", authenticate, async (req, res) => {
     const { docId } = req.params;
     const versions = await prisma.version.findMany({
       where: { docId },
+      select:{label:true,
+        id:true,
+        timestamp:true
+      },
       orderBy: { timestamp: "desc" },
     });
 
