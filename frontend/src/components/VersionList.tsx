@@ -19,7 +19,7 @@ function VersionList() {
   };
   return (
     <div className="versions-list">
-      <h4 className="font-bold mb-2">Versions</h4>
+      <h4 className="font-bold mb-2 text-xs">Versions</h4>
       {versions.length === 0 ? (
         <p className="text-gray-500">No saved versions yet</p>
       ) : (
@@ -30,20 +30,21 @@ function VersionList() {
             .map((version) => (
               <div
                 key={version.id}
-                className={`p-1 flex justify-between items-center border-b hover:bg-gray-100 ${
+                className={`px-2  flex justify-between items-center border-b hover:bg-gray-100 ${
                   version.id === currentVersionId ? "bg-blue-100" : ""
                 }`}
               >
                 <div>
-                  <div className="font-medium">{version.label}</div>
-                  <div className="text-xs text-gray-500">
+                  <div className="font-sm">{version.label}</div>
+                  {/* <div className="text-xs text-gray-500">
                     {formatDate(version.timestamp)}
-                  </div>
+                  </div> */}
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={() => loadVersion(version.id)}
                     disabled={version.id === currentVersionId}
+                    title="Load version"
                     className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm"
                   >
                     <SiTicktick />
@@ -58,6 +59,7 @@ function VersionList() {
                         deleteVersion(version.id);
                       }
                     }}
+                    title="Delete version"
                     className="px-2 py-1 bg-red-100 rounded hover:bg-red-200 text-sm"
                   >
                     <MdDelete />

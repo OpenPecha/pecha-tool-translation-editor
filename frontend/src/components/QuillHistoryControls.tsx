@@ -21,7 +21,7 @@ const QuillHistoryControls = () => {
     <div className="p-4 border rounded bg-white shadow-md w-72">
       {/* Auto Versioning Section */}
       <div className="flex justify-between mb-4">
-        <h4 className=" flex-1 text-sm font-semibold mb-2">Auto versioning</h4>
+        <h4 className=" flex-1 text-xs font-semibold mb-2">Auto</h4>
         <Switch
           checked={autoSaveEnabled}
           onCheckedChange={toggleAutoSave}
@@ -35,19 +35,17 @@ const QuillHistoryControls = () => {
 
       {/* Manual Versioning Section */}
       <div className="mb-4">
-        <h4 className="text-sm font-semibold mb-2">Manual versioning</h4>
-
         <form onSubmit={handleCreateSnapshot} className="flex gap-2">
           <input
             type="text"
             value={snapshotName}
             onChange={(e) => setSnapshotName(e.target.value)}
             placeholder="Version name"
-            className="p-2 border rounded flex-grow text-xs"
+            className="px-2 border rounded flex-grow text-xs"
           />
           <Button
             type="submit"
-            className="px-3 py-2 rounded text-xs"
+            className="px-3 py-2 rounded text-xs "
             style={{
               backgroundColor: "#000",
               color: "#fff",
