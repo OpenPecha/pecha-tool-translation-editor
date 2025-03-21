@@ -141,8 +141,14 @@ function useScrollHook(
 
       if (currentBlockIndex >= 0 && currentBlockIndex < targetBlocks.length) {
         const targetBlock = targetBlocks[currentBlockIndex] as HTMLElement;
+        const overlay = document.createElement("div");
+        overlay.style.position = "absolute";
+        overlay.style.backgroundColor = "rgba(255, 255, 0, 0.3)";
+        overlay.style.pointerEvents = "none";
+        overlay.style.transition = "opacity 0.3s ease";
+        overlay.style.zIndex = "9999"; // Make sure it’s on top
 
-        // First, scroll the block into view
+        // Create the overlay div
         targetBlock.scrollIntoView({ behavior: "auto" });
 
         // Then adjust scrollTop to match source's relative position
@@ -153,6 +159,36 @@ function useScrollHook(
           const adjustment = currentOffset - sourceRelativePosition;
 
           targetEditor.scrollTop += adjustment;
+
+          // Wait for next frame after scrollTop adjustment
+          requestAnimationFrame(() => {
+            // Now that scrolling is done, get updated position
+            const finalRect = targetBlock.getBoundingClientRect();
+            const finalScrollTop =
+              window.pageYOffset || document.documentElement.scrollTop;
+            const finalScrollLeft =
+              window.pageXOffset || document.documentElement.scrollLeft;
+
+            // Set overlay position and style
+            overlay.style.top = `${finalRect.top + finalScrollTop}px`;
+            overlay.style.left = `${finalRect.left + finalScrollLeft}px`;
+            overlay.style.width = `${finalRect.width}px`;
+            overlay.style.height = `${finalRect.height}px`;
+            overlay.style.padding = "20px";
+
+            // Append overlay to body
+            document.body.appendChild(overlay);
+
+            // Fade out and remove overlay
+            setTimeout(() => {
+              overlay.style.opacity = "0";
+              setTimeout(() => {
+                if (overlay.parentNode) {
+                  overlay.parentNode.removeChild(overlay);
+                }
+              }, 300);
+            }, 2000);
+          });
         });
       }
 

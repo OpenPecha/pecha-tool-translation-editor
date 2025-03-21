@@ -94,7 +94,7 @@ function EditorWrapper() {
   return (
     <div className="px-4">
       {selectedTranslationId && (
-        <div className="absolute bottom-0 right-0 bg-gray-100 z-10">
+        <div className="absolute bottom-0 right-0 bg-gray-100 z-40">
           <SyncOptions syncMode={syncMode} setSyncMode={setSyncMode} />
         </div>
       )}
