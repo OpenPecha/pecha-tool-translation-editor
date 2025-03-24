@@ -76,7 +76,7 @@ const Toolbar = ({ addSuggestion, id, synced, quill }) => {
       {/* <button className="ql-video" /> */}
       {/* <button className="ql-formula" />
       </span> */}
-      {/* <span className="ql-formats">
+      <span className="ql-formats">
         <select className="ql-header">
           <option value="1" />
           <option value="2" />
@@ -86,7 +86,7 @@ const Toolbar = ({ addSuggestion, id, synced, quill }) => {
           <option value="6" />
           <option selected />
         </select>
-      </span> */}
+      </span>
       {/* <span className="ql-formats">
         <select className="ql-list">
           <option value="ordered" />
