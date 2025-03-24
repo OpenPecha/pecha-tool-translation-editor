@@ -89,6 +89,7 @@ module.exports = (getYDoc, client) => {
           permissions:true,
           language:true,
           isRoot:true,
+          isPublic:true,
           translations:true,
           updatedAt:true,
           root:{
@@ -108,6 +109,41 @@ module.exports = (getYDoc, client) => {
     }
   });
 
+  router.get("/public", authenticate, async (req, res) => {
+    try {
+      const documents = await prisma.doc.findMany({
+        where: {
+          AND: [
+            { ownerId: { not: req.user.id} },
+            { isPublic: true },
+          ],
+        },
+        select:{
+          id:true,
+          identifier:true,
+          ownerId:true,
+          permissions:true,
+          language:true,
+          isRoot:true,
+          isPublic:true,
+          translations:true,
+          updatedAt:true,
+          root:{
+            select:{
+              identifier:true
+            }
+          },
+          rootId:true
+        },
+        orderBy:{
+          isRoot:'desc'
+        }
+      });
+      res.json(documents);
+    } catch (error) {
+      res.status(500).json({ error: "Error fetching documents" });
+    }
+  });
   // Get a specific document
   // Get a specific document and return its content
   router.get("/:id", authenticate, async (req, res) => {
@@ -119,6 +155,7 @@ module.exports = (getYDoc, client) => {
       permissions:true,
       language:true,
       isRoot:true,
+      isPublic:true,
       translations:true,
       docs_prosemirror_delta:true
     } });
@@ -129,7 +166,7 @@ module.exports = (getYDoc, client) => {
       const permission = await prisma.permission.findFirst({
         where: { docId: document.id, userId: req.user.id, canRead: true },
       });
-      if (!permission) return res.status(403).json({ error: "No access" });
+      if (!permission && !document.isPublic) return res.status(403).json({ error: "No access" });
     }
 
     // Decode Y.js state (if stored as Uint8Array) and convert to Delta
@@ -249,7 +286,7 @@ module.exports = (getYDoc, client) => {
   // Update document's root relationship and root status
   router.patch("/:id", authenticate, async (req, res) => {
     try {
-      const { rootId, isRoot, translations, identifier } = req.body;
+      const { rootId, isRoot, translations, identifier, isPublic } = req.body;
       const documentId = req.params.id;
 
       // Check if the document exists
@@ -339,7 +376,8 @@ module.exports = (getYDoc, client) => {
       const updateData = {
         rootId: rootId || null,
         isRoot: isRoot ?? (rootId ? false : document.isRoot),
-        identifier: identifier || document.identifier
+        identifier: identifier || document.identifier,
+        isPublic: isPublic ?? document.isPublic
       };
 
       // Update the document and its translations in a transaction

@@ -17,11 +17,6 @@ export default function EachDocument({
 }: EachDocumentProps) {
   const [showEditModal, setShowEditModal] = useState(false);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString();
-  };
-
   const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -45,13 +40,15 @@ export default function EachDocument({
   const handleUpdate = async (
     isRoot: boolean,
     rootId: string | null,
-    identifier: string
+    identifier: string,
+    isPublic: boolean
   ) => {
     try {
       const updatedDoc = await updateDocument(doc.id, {
         isRoot,
         rootId,
         identifier,
+        isPublic,
       });
       setDocuments((prev: Document[]) =>
         prev.map((d: Document) =>
@@ -61,6 +58,7 @@ export default function EachDocument({
                 isRoot: updatedDoc.isRoot,
                 rootId: updatedDoc.rootId,
                 identifier: updatedDoc.identifier,
+                isPublic: updatedDoc.isPublic,
               }
             : d
         )
@@ -99,16 +97,18 @@ export default function EachDocument({
             >
               <MdEdit />
             </button>
-            <button
-              onClick={handleDelete}
-              className="z-20 p-2 rounded-md transition-all duration-200 hover:bg-red-500 hover:text-white hover:scale-110"
-            >
-              <MdDelete />
-            </button>
+            {!doc.isPublic && (
+              <button
+                onClick={handleDelete}
+                className="z-20 p-2 rounded-md transition-all duration-200 hover:bg-red-500 hover:text-white hover:scale-110"
+              >
+                <MdDelete />
+              </button>
+            )}
           </div>
         </div>
         <div className="mt-2 text-sm text-gray-500">
-          <span>Last updated: {formatDate(doc.updatedAt)}</span>
+          <span>{doc.isPublic ? "Public" : "Private"}</span>
         </div>
       </Link>
 

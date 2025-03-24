@@ -26,6 +26,7 @@ model Doc {
   docs_y_doc_state       Bytes? // Binary data for Yjs document state
   language               String       @default("bo") // Language of the document content
   isRoot                 Boolean      @default(false) // Whether this is a root text
+  isPublic               Boolean      @default(false) // Whether this document is public
   rootId                 String? // ID of the root document if this is a translation
   root                   Doc?         @relation("Translations", fields: [rootId], references: [id], onDelete: Cascade)
   translations           Doc[]        @relation("Translations") // One root can have multiple translations

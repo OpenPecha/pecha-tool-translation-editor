@@ -13,7 +13,8 @@ interface EditModalProps {
   onUpdate: (
     isRoot: boolean,
     rootId: string | null,
-    identifier: string | null
+    identifier: string | null,
+    isPublic: boolean | null
   ) => Promise<void>;
   documents: Document[];
 }
@@ -26,13 +27,14 @@ const EditModal: React.FC<EditModalProps> = ({
   const [isRoot, setIsRoot] = useState(doc.isRoot);
   const [rootId, setRootId] = useState(doc.rootId);
   const [identifier, setIdentifier] = useState(doc.identifier);
+  const [isPublic, setIsPublic] = useState(doc.isPublic);
   const [isUpdating, setIsUpdating] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsUpdating(true);
     try {
-      await onUpdate(isRoot, rootId, identifier);
+      await onUpdate(isRoot, rootId, identifier, isPublic);
       onClose();
     } catch (error) {
       console.error("Error updating document:", error);
@@ -87,6 +89,20 @@ const EditModal: React.FC<EditModalProps> = ({
                   }}
                 />
                 Is Root Document
+              </label>
+            </div>
+            <div className="mb-4">
+              <label
+                htmlFor="isPublicCheckbox"
+                className="flex items-center gap-2"
+              >
+                <input
+                  id="isPublicCheckbox"
+                  type="checkbox"
+                  checked={isPublic}
+                  onChange={(e) => setIsPublic(e.target.checked)}
+                />
+                Is Public Document
               </label>
             </div>
             {!isRoot && (
