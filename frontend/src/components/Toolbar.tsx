@@ -1,10 +1,18 @@
 import React, { useEffect, useRef, useState } from "react";
-import { FaCommentDots, FaHistory } from "react-icons/fa";
+import { FaCommentDots, FaHistory, FaObjectGroup } from "react-icons/fa";
 import { GrDocumentTxt } from "react-icons/gr";
 import { useQuillHistory } from "../contexts/HistoryContext";
 import QuillHistoryControls from "./QuillHistoryControls";
+import Permissions from "./Permissions";
 
-const Toolbar = ({ addSuggestion, id, synced, quill }) => {
+const Toolbar = ({
+  addSuggestion,
+  id,
+  synced,
+  quill,
+  updateLineNumbers,
+  documentId,
+}) => {
   const historyRef = useRef(null);
   const [openHistory, setOpenHistory] = useState(false);
   const exportText = () => {
@@ -37,6 +45,27 @@ const Toolbar = ({ addSuggestion, id, synced, quill }) => {
     };
   }, [openHistory]);
 
+  const handleSectionCreation = () => {
+    if (quill) {
+      const range = quill.getSelection();
+      if (range) {
+        const [startBlot] = quill.getLine(range.index);
+        const [endBlot] = quill.getLine(range.index + range.length);
+
+        // Get all lines between start and end
+        let currentBlot = startBlot;
+        while (currentBlot) {
+          if (currentBlot.domNode.tagName === "P") {
+            currentBlot.domNode.setAttribute("data-type", "section");
+          }
+
+          if (currentBlot === endBlot) break;
+          currentBlot = currentBlot.next;
+        }
+      }
+    }
+    updateLineNumbers();
+  };
   return (
     <div
       id={id}
@@ -119,9 +148,11 @@ const Toolbar = ({ addSuggestion, id, synced, quill }) => {
           <option value="huge" />
         </select>
       </span> */}
-      {/* <span className="ql-formats">
-        <button className="ql-clean" />
-      </span> */}
+      <span className="ql-formats">
+        <button className="ql-sect" onClick={handleSectionCreation}>
+          <FaObjectGroup />
+        </button>
+      </span>
       <span className="ql-formats">
         <button className="ql-suggestion" onClick={addSuggestion}>
           <FaCommentDots />
@@ -134,6 +165,9 @@ const Toolbar = ({ addSuggestion, id, synced, quill }) => {
         >
           <FaHistory />
         </button>
+      </span>
+      <span className="ql-formats">
+        <Permissions documentId={documentId} />
       </span>
       {openHistory && (
         <div
