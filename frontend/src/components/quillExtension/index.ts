@@ -99,7 +99,6 @@ function showSuggestionBubble(event, data) {
       const suggestionId = this.getAttribute("data-id");
       deleteSuggest(suggestionId)
         .then((response) => {
-          console.log(response, data.length);
           if (data.length === 1) {
             const suggestionSpan = document.querySelector(
               `span.suggestion[data-id="${data[0].threadId}"]`
@@ -139,7 +138,6 @@ function showSuggestionBubble(event, data) {
           end
         )
           .then((response) => {
-            console.log(response);
             alert("Suggestion submitted!");
             suggestionBubble.style.display = "none"; // Close bubble after submission
           })

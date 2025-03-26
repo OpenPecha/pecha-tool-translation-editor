@@ -1,26 +1,19 @@
 require("dotenv").config();
 const express = require("express");
-// const swaggerUi = require("swagger-ui-express");
-// const swaggerJsdoc = require("swagger-jsdoc");
-const oas = require("express-oas-generator");
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
-// const { createClient} =require('redis')
 const http = require("http");
 const WebSocket = require("ws");
 const map = require("lib0/map");
 const Y = require("yjs");
-const { WSSharedDoc, utils } = require("./services");
+const { WSSharedDoc, utils, messageListener } = require("./services");
 const commentsRoutes = require("./routes/comments");
 const suggestsRoutes = require("./routes/suggests");
 const versionsRoutes = require("./routes/versions");
 const documentsRoutes = require("./routes/documents");
-// const graphRoutes = require("./routes/graph");
-// const glossaryRoutes = require("./routes/glossary");
 const textsRoutes = require("./routes/texts");
-
 const authenticateToken = require("./middleware/authenticate");
 const prisma = new PrismaClient();
 const app = express();
@@ -34,14 +27,6 @@ const wss = new WebSocket.Server({
   maxPayload: 1024 * 1024 * 50,
 });
 
-// const client=createClient({
-//   url:process.env.REDIS_URL
-// })
-
-// client.connect().then(()=>console.log('redis connected')).catch(e=>{
-//     console.error('error with redis connection')
-// })
-
 const getYDoc = (docName, userId) =>
   map.setIfUndefined(utils.docs, docName, () => {
     const doc = new WSSharedDoc(docName, userId);
@@ -54,8 +39,6 @@ const getYDoc = (docName, userId) =>
 
 app.use(express.json({ limit: "50mb" })); // Increase JSON payload limit
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
-// app.use("/graph", graphRoutes);
-// app.use("/glossary", glossaryRoutes);
 app.use("/comments", commentsRoutes);
 app.use("/suggests", suggestsRoutes);
 app.use("/versions", versionsRoutes);
@@ -64,35 +47,6 @@ app.use("/texts", textsRoutes);
 const pingTimeout = 30000;
 const clients = new Set();
 
-const messageListener = (conn, doc, message) => {
-  try {
-    const encoder = utils.encoding.createEncoder();
-    const decoder = utils.decoding.createDecoder(message);
-    const messageType = utils.decoding.readVarUint(decoder);
-
-    // eslint-disable-next-line default-casec
-    switch (messageType) {
-      case utils.messageSync:
-        utils.encoding.writeVarUint(encoder, utils.messageSync);
-        utils.syncProtocol.readSyncMessage(decoder, encoder, doc, null);
-        if (utils.encoding.length(encoder) > 1) {
-          utils.send(doc, conn, utils.encoding.toUint8Array(encoder));
-        }
-
-        break;
-      case utils.messageAwareness:
-        utils.awarenessProtocol.applyAwarenessUpdate(
-          doc.awareness,
-          utils.decoding.readVarUint8Array(decoder),
-          conn
-        );
-        break;
-    }
-  } catch (error) {
-    console.error(error);
-    doc.emit("error", [error]);
-  }
-};
 // Token route (for testing)
 app.post("/token", async (req, res) => {
   const { username, password } = req.body;
@@ -317,18 +271,7 @@ async function addMemberAsViewer(identifier, userId) {
     throw error;
   }
 }
-// async function broadcastUserList(id) {
-//     if(!id) return null
-//     const users = await client.sMembers(id);
 
-//     const message = JSON.stringify({ type: "user_list", users });
-
-//     wss.clients.forEach((client) => {
-//         if (client.readyState === WebSocket.OPEN) {
-//             client.send(message);
-//         }
-//     });
-// }
 const PORT = process.env.PORT || 8000;
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

@@ -72,7 +72,6 @@ module.exports = (getYDoc) => {
   // Get all documents for the user
   router.get("/", authenticate, async (req, res) => {
     try {
-      console.log(req.user.id);
       const documents = await prisma.doc.findMany({
         where: {
           OR: [

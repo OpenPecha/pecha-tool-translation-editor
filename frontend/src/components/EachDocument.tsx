@@ -26,8 +26,6 @@ export default function EachDocument({
       try {
         const deleted = await deleteDocument(doc.id);
         if (deleted.message) {
-          console.log("Document deleted:", deleted);
-          console.log("documents", documents);
           setDocuments((prev: Document[]) =>
             prev.filter((d: Document) => d.id !== doc.id)
           );

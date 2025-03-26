@@ -29,7 +29,6 @@ function useScrollHook(
       const targetEditor = target.root;
 
       const selector = getQuerySelector(htmlTag);
-      console.log("selector", selector);
       const sourceBlocks = Array.from(sourceEditor.querySelectorAll(selector));
       const targetBlocks = Array.from(targetEditor.querySelectorAll(selector));
 

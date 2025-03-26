@@ -44,7 +44,6 @@ function PermissionModal({ documentId, setShowModal }) {
         if (response.error) {
           setError(response.error);
         } else {
-          console.log("Permission updated successfully:", response);
           setShowModal(false);
           setError(null);
           setEmail("");
