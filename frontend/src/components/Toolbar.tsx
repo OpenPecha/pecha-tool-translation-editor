@@ -138,14 +138,14 @@ const Toolbar = ({ addSuggestion, id, synced, quill, documentId }) => {
         <select className="ql-color" />
         <select className="ql-background" />
       </span> */}
-      {/* <span className="ql-formats">
+      <span className="ql-formats">
         <select className="ql-size">
           <option value="small" />
           <option selected />
           <option value="large" />
           <option value="huge" />
         </select>
-      </span> */}
+      </span>
       <span className="ql-formats">
         <button className="ql-sect" onClick={handleSectionCreation}>
           <FaObjectGroup />
