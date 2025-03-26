@@ -3,6 +3,7 @@ import { deleteDocument, updateDocument } from "../api/document";
 import { Link } from "react-router-dom";
 import { MdDelete, MdEdit } from "react-icons/md";
 import EditModal from "./EditModal";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface EachDocumentProps {
   readonly doc: Document;
@@ -16,7 +17,7 @@ export default function EachDocument({
   documents,
 }: EachDocumentProps) {
   const [showEditModal, setShowEditModal] = useState(false);
-
+  const { currentUser } = useAuth();
   const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -67,7 +68,7 @@ export default function EachDocument({
       console.error("Error updating document:", error);
     }
   };
-
+  const isOwner = doc.ownerId === currentUser?.id;
   return (
     <div>
       <Link
@@ -85,27 +86,29 @@ export default function EachDocument({
               {doc.root ? `(${doc.root.identifier})` : ""}
             </span>
           </h3>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setShowEditModal(true);
-              }}
-              className="z-20 p-2 rounded-md transition-all duration-200 hover:bg-blue-500 hover:text-white hover:scale-110"
-              title="Edit Document"
-            >
-              <MdEdit />
-            </button>
-            {!doc.isPublic && (
+          {isOwner && (
+            <div className="flex items-center gap-2">
               <button
-                onClick={handleDelete}
-                className="z-20 p-2 rounded-md transition-all duration-200 hover:bg-red-500 hover:text-white hover:scale-110"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowEditModal(true);
+                }}
+                className="z-20 p-2 rounded-md transition-all duration-200 hover:bg-blue-500 hover:text-white hover:scale-110"
+                title="Edit Document"
               >
-                <MdDelete />
+                <MdEdit />
               </button>
-            )}
-          </div>
+              {!doc.isPublic && (
+                <button
+                  onClick={handleDelete}
+                  className="z-20 p-2 rounded-md transition-all duration-200 hover:bg-red-500 hover:text-white hover:scale-110"
+                >
+                  <MdDelete />
+                </button>
+              )}
+            </div>
+          )}
         </div>
         <div className="mt-2 text-sm text-gray-500">
           <span>{doc.isPublic ? "Public" : "Private"}</span>
