@@ -3,6 +3,14 @@ import { debounce } from "lodash";
 
 const LineNumberVirtualized = ({ editorRef, quill }) => {
   const lineNumbersRef = useRef<HTMLDivElement>(null);
+  const [lineNumbers, setLineNumbers] = useState<
+    Array<{
+      number: number;
+      top: number;
+      height: number;
+      lineHeight?: string;
+    }>
+  >([]);
 
   const updateLineNumbers = useCallback(() => {
     if (!lineNumbersRef.current) return;
@@ -13,7 +21,12 @@ const LineNumberVirtualized = ({ editorRef, quill }) => {
     const paragraphs = editorElement.getElementsByTagName("p");
     if (!paragraphs.length) return;
 
-    lineNumbersRef.current.innerHTML = "";
+    const newLineNumbers: Array<{
+      number: number;
+      top: number;
+      height: number;
+      lineHeight?: string;
+    }> = [];
 
     let lineNumber = 1;
     let groupType: string | null = null;
@@ -22,23 +35,16 @@ const LineNumberVirtualized = ({ editorRef, quill }) => {
     let isGrouping = false;
 
     const editorRect = editorElement.getBoundingClientRect();
-    const editorScrollTop = editorElement.scrollTop; // Get scroll position of editor
+    const editorScrollTop = editorElement.scrollTop;
 
     const flushGroup = () => {
       if (!isGrouping) return;
 
-      const span = document.createElement("span");
-      span.textContent = lineNumber.toString();
-      span.classList.add("line-number");
-      span.style.top = `${groupTopOffset}px`;
-      span.style.height = `${groupHeight}px`;
-      span.style.display = "flex";
-      span.style.alignItems = "flex-start";
-      span.style.justifyContent = "center";
-      span.style.paddingTop = "0";
-      span.style.lineHeight = "1";
-
-      lineNumbersRef.current!.appendChild(span);
+      newLineNumbers.push({
+        number: lineNumber,
+        top: groupTopOffset,
+        height: groupHeight,
+      });
       lineNumber++;
 
       groupType = null;
@@ -57,7 +63,7 @@ const LineNumberVirtualized = ({ editorRef, quill }) => {
       const rects = Array.from(range.getClientRects());
       if (rects.length === 0) return;
 
-      const paraTop = rects[0].top - editorRect.top + editorScrollTop; // Adjust by scrollTop
+      const paraTop = rects[0].top - editorRect.top + editorScrollTop;
       const paraHeight = rects.reduce((sum, rect) => sum + rect.height, 0);
 
       if (currentType === groupType && currentType !== null) {
@@ -71,21 +77,22 @@ const LineNumberVirtualized = ({ editorRef, quill }) => {
           groupHeight = paraHeight;
           isGrouping = true;
         } else {
-          const span = document.createElement("span");
-          span.textContent = lineNumber.toString();
-          span.classList.add("line-number");
-          span.style.top = `${paraTop}px`;
-          span.style.height = `${paraHeight}px`;
-          span.style.lineHeight = `${paraHeight}px`;
-
-          lineNumbersRef.current!.appendChild(span);
+          newLineNumbers.push({
+            number: lineNumber,
+            top: paraTop,
+            height: paraHeight,
+            lineHeight: `${paraHeight}px`,
+          });
           lineNumber++;
         }
       }
     });
 
     flushGroup();
-    lineNumbersRef.current.style.height = `${editorElement.scrollHeight}px`;
+    if (lineNumbersRef.current) {
+      lineNumbersRef.current.style.height = `${editorElement.scrollHeight}px`;
+    }
+    setLineNumbers(newLineNumbers);
   }, [editorRef, quill]);
 
   useEffect(() => {
@@ -102,7 +109,6 @@ const LineNumberVirtualized = ({ editorRef, quill }) => {
         if (lineNumbersRef.current) {
           lineNumbersRef.current.style.transform = `translateY(${-editorContainer.scrollTop}px)`;
         }
-        // Update line numbers on scroll
         debouncedUpdateLineNumbers();
       });
     }
@@ -118,7 +124,27 @@ const LineNumberVirtualized = ({ editorRef, quill }) => {
     };
   }, [editorRef, quill, updateLineNumbers]);
 
-  return <div ref={lineNumbersRef} className="line-numbers mt-[5px]" />;
+  return (
+    <div ref={lineNumbersRef} className="line-numbers mt-[5px]">
+      {lineNumbers.map((lineNum, index) => (
+        <span
+          key={index}
+          className="line-number"
+          style={{
+            top: `${lineNum.top}px`,
+            height: `${lineNum.height}px`,
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "center",
+            paddingTop: "0",
+            lineHeight: lineNum.lineHeight || "1",
+          }}
+        >
+          {lineNum.number}
+        </span>
+      ))}
+    </div>
+  );
 };
 
 export default LineNumberVirtualized;
