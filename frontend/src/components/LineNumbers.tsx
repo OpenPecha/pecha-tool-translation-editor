@@ -63,7 +63,7 @@ const LineNumberVirtualized = ({ editorRef, quill }) => {
       const rects = Array.from(range.getClientRects());
       if (rects.length === 0) return;
 
-      const paraTop = rects[0].top - editorRect.top + editorScrollTop;
+      const paraTop = rects[0].top - editorRect.top + editorScrollTop + 10;
       const paraHeight = rects.reduce((sum, rect) => sum + rect.height, 0);
 
       if (currentType === groupType && currentType !== null) {
@@ -133,11 +133,6 @@ const LineNumberVirtualized = ({ editorRef, quill }) => {
           style={{
             top: `${lineNum.top}px`,
             height: `${lineNum.height}px`,
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "center",
-            paddingTop: "0",
-            lineHeight: lineNum.lineHeight || "1",
           }}
         >
           {lineNum.number}

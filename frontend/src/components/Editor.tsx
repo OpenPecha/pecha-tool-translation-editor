@@ -185,8 +185,6 @@ const Editor = ({
       />
       <div className="relative h-[calc(100vh-130px)]">
         <div className="editor-container w-full h-full flex relative  overflow-hidden">
-          {/* <div ref={lineNumbersRef} className="line-numbers mt-[14px]" /> */}
-
           <LineNumberVirtualized quill={quill} editorRef={editorRef} />
           <div
             ref={editorRef}
