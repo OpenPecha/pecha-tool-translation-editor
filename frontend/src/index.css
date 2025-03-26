@@ -422,7 +422,7 @@ body {
   font-family: monospace;
   line-height: 1.5;
   user-select: none;
-  z-index: 9999;
+  z-index: 1;
   overflow: hidden;
   pointer-events: none;
   white-space: pre;
