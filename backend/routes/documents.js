@@ -19,7 +19,7 @@ const upload = multer({
   },
 });
 
-module.exports = (getYDoc, client) => {
+module.exports = (getYDoc) => {
   // Create a new document
   router.post("/", authenticate, upload.single("file"), async (req, res) => {
     try {
@@ -61,11 +61,6 @@ module.exports = (getYDoc, client) => {
           canRead: true,
           canWrite: true,
         },
-      });
-
-      await client.hSet(`${document.id}:info`, {
-        created: moment().toISOString(),
-        updated: moment().toISOString(),
       });
 
       res.status(201).json(document);
@@ -213,10 +208,6 @@ module.exports = (getYDoc, client) => {
         data: { docs_prosemirror_delta, docs_y_doc_state },
       });
 
-      await client.hSet(`${document.id}:info`, {
-        updated: moment().toISOString(),
-      });
-
       res.json(updatedDocument);
     } catch (error) {
       res.status(500).json({ error: "Error updating document" });
@@ -239,7 +230,6 @@ module.exports = (getYDoc, client) => {
 
       await prisma.doc.delete({ where: { id: document.id } });
       await prisma.permission.deleteMany({ where: { docId: document.id } });
-      await client.del(`${document.id}:info`);
 
       res.json({ message: "Document deleted successfully" });
     } catch (error) {
@@ -328,11 +318,9 @@ module.exports = (getYDoc, client) => {
           },
         });
         if (!permission) {
-          return res
-            .status(403)
-            .json({
-              error: "You do not have permission to edit this document",
-            });
+          return res.status(403).json({
+            error: "You do not have permission to edit this document",
+          });
         }
       }
 
