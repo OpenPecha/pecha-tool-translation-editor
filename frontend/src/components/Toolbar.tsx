@@ -5,14 +5,7 @@ import { useQuillHistory } from "../contexts/HistoryContext";
 import QuillHistoryControls from "./QuillHistoryControls";
 import Permissions from "./Permissions";
 
-const Toolbar = ({
-  addSuggestion,
-  id,
-  synced,
-  quill,
-  updateLineNumbers,
-  documentId,
-}) => {
+const Toolbar = ({ addSuggestion, id, synced, quill, documentId }) => {
   const historyRef = useRef(null);
   const [openHistory, setOpenHistory] = useState(false);
   const exportText = () => {
@@ -64,7 +57,6 @@ const Toolbar = ({
         }
       }
     }
-    updateLineNumbers();
   };
   return (
     <div

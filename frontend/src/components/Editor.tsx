@@ -11,6 +11,7 @@ import OverlayLoading from "./OverlayLoading";
 import { createSuggest, fetchSuggests } from "../api/suggest";
 import { fetchDocument } from "../api/document";
 import { useQuillHistory } from "../contexts/HistoryContext";
+import LineNumberVirtualized from "./LineNumbers";
 quill_import();
 
 const debounce = (func: Function, wait: number) => {
@@ -46,6 +47,7 @@ const Editor = ({
   quillRef: any;
 }) => {
   const editorRef = useRef(null);
+  const [quill, setQuill] = useState(null);
   const lineNumbersRef = useRef(null);
   const toolbarId =
     "toolbar-container" + "-" + Math.random().toString(36).substring(7);
@@ -62,96 +64,6 @@ const Editor = ({
   const [lastContent, setLastContent] = useState("");
   const { registerQuill } = useQuillHistory();
 
-  const updateLineNumbers = (quill: Quill) => {
-    if (!lineNumbersRef.current) return;
-
-    const editorElement = editorRef.current?.querySelector(".ql-editor");
-    if (!editorElement) return;
-
-    const paragraphs = editorElement.getElementsByTagName("p");
-    if (!paragraphs.length) return;
-
-    lineNumbersRef.current.innerHTML = "";
-
-    let lineNumber = 1;
-    let groupType: string | null = null;
-    let groupTopOffset = 0;
-    let groupHeight = 0;
-    let isGrouping = false;
-
-    const editorRect = editorElement.getBoundingClientRect();
-
-    const flushGroup = () => {
-      if (!isGrouping) return;
-
-      const span = document.createElement("span");
-      span.textContent = lineNumber.toString();
-      span.classList.add("line-number");
-      span.style.top = `${groupTopOffset}px`;
-      span.style.height = `${groupHeight}px`;
-      span.style.display = "flex";
-      span.style.alignItems = "flex-start";
-      span.style.justifyContent = "center";
-      span.style.paddingTop = "0";
-      span.style.lineHeight = "1";
-
-      lineNumbersRef.current!.appendChild(span);
-      lineNumber++;
-
-      groupType = null;
-      groupTopOffset = 0;
-      groupHeight = 0;
-      isGrouping = false;
-    };
-
-    Array.from(paragraphs).forEach((paragraph, index) => {
-      // Skip empty paragraphs
-      if (paragraph.textContent?.trim().length === 0) return;
-
-      const currentType = paragraph.getAttribute("data-type");
-
-      const range = document.createRange();
-      range.selectNodeContents(paragraph);
-      const rects = Array.from(range.getClientRects());
-      if (rects.length === 0) return;
-
-      const paraTop = rects[0].top - editorRect.top;
-      const paraHeight = rects.reduce((sum, rect) => sum + rect.height, 0);
-
-      if (currentType === groupType && currentType !== null) {
-        groupHeight += paraHeight;
-      } else {
-        flushGroup();
-
-        if (currentType) {
-          const editorRect2 = editorElement.getBoundingClientRect();
-
-          range.selectNodeContents(paragraph);
-          const rects = Array.from(range.getClientRects());
-          const p_top = rects[0].top - editorRect2.top;
-
-          groupType = currentType;
-          groupTopOffset = p_top;
-          groupHeight = paraHeight;
-          isGrouping = true;
-        } else {
-          const span = document.createElement("span");
-          span.textContent = lineNumber.toString();
-          span.classList.add("line-number");
-          span.style.top = `${paraTop}px`;
-          span.style.height = `${paraHeight}px`;
-          span.style.lineHeight = `${paraHeight}px`;
-
-          lineNumbersRef.current!.appendChild(span);
-          lineNumber++;
-        }
-      }
-    });
-
-    flushGroup();
-    lineNumbersRef.current.style.height = `${editorElement.scrollHeight}px`;
-  };
-
   useEffect(() => {
     const quill = new Quill(editorRef?.current, {
       theme: "snow",
@@ -165,25 +77,12 @@ const Editor = ({
       placeholder: "Start collaborating...",
       className: "overflow-y-auto h-full ",
     });
+    setQuill(quill);
 
-    quillRef.current = quill;
     registerQuill(quill);
     new QuillBinding(yText, quill, yjsProvider?.awareness);
 
-    const throttledUpdateLineNumbers = throttle(() => {
-      requestAnimationFrame(() => updateLineNumbers(quill));
-    }, 100);
-
-    updateLineNumbers(quill);
-
     const editorContainer = editorRef.current?.querySelector(".ql-editor");
-    if (editorContainer) {
-      editorContainer.addEventListener("scroll", () => {
-        if (lineNumbersRef.current) {
-          lineNumbersRef.current.style.transform = `translateY(${-editorContainer.scrollTop}px)`;
-        }
-      });
-    }
 
     yjsProvider?.on("sync", (isSynced) => {
       setSynced(isSynced);
@@ -218,17 +117,10 @@ const Editor = ({
         }
         currentContentLength = quill.getLength();
       }
-      throttledUpdateLineNumbers();
     });
-
-    const debouncedUpdateLineNumbers = debounce(() => {
-      updateLineNumbers(quill);
-    }, 1000);
-    window.addEventListener("resize", debouncedUpdateLineNumbers);
 
     return () => {
       clearYjsProvider();
-      window.removeEventListener("resize", debouncedUpdateLineNumbers);
     };
   }, []);
 
@@ -249,16 +141,6 @@ const Editor = ({
       console.error("Error fetching comments:", error);
     }
   };
-  const addSection = () => {
-    if (quillRef.current) {
-      const range = quillRef.current.getSelection(true);
-      if (range) {
-        const sectionId = uuidv4();
-        quillRef.current.format("sect", { id: sectionId });
-      }
-    }
-  };
-  // 🔥 Add a new comment
 
   async function addSuggestion() {
     const range = quillRef.current.getSelection();
@@ -281,7 +163,7 @@ const Editor = ({
       );
       if (createdSuggestion.id) {
         // 🔥 Update the Quill editor to highlight the text
-        quillRef.current.formatText(range.index, range.length, "suggest", {
+        quill.formatText(range.index, range.length, "suggest", {
           id: threadId,
         });
 
@@ -298,13 +180,14 @@ const Editor = ({
         id={toolbarId}
         addSuggestion={addSuggestion}
         synced={synced}
-        quill={quillRef.current}
-        updateLineNumbers={updateLineNumbers}
+        quill={quill}
         documentId={documentId}
       />
       <div className="relative h-[calc(100vh-130px)]">
         <div className="editor-container w-full h-full flex relative  overflow-hidden">
-          <div ref={lineNumbersRef} className="line-numbers mt-[14px]" />
+          {/* <div ref={lineNumbersRef} className="line-numbers mt-[14px]" /> */}
+
+          <LineNumberVirtualized quill={quill} editorRef={editorRef} />
           <div
             ref={editorRef}
             className="editor-content"

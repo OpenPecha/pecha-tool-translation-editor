@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, SetStateAction } from "react";
 import { fetchDocuments } from "../api/document";
 import { CiCirclePlus } from "react-icons/ci";
 import EachDocument from "./EachDocument";
 import DocumentCreateModal from "./DocumentCreateModal";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Document {
   id: string;
@@ -33,33 +34,6 @@ const DocumentList = () => {
     fetchDocs();
   }, []);
 
-  const renderContent = () => {
-    if (isLoading) {
-      return <div className="text-center py-4">Loading documents...</div>;
-    }
-
-    if (documents.length === 0) {
-      return (
-        <div className="text-center py-8">
-          <p>You don't have any documents yet. Create one to get started!</p>
-        </div>
-      );
-    }
-
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {documents.map((doc) => (
-          <EachDocument
-            key={doc.id}
-            doc={doc}
-            setDocuments={setDocuments}
-            documents={documents}
-          />
-        ))}
-      </div>
-    );
-  };
-
   return (
     <div className="p-4">
       <div className="flex gap-2 pb-3">
@@ -77,7 +51,11 @@ const DocumentList = () => {
           {error}
         </div>
       )}
-      {renderContent()}
+      <List
+        documents={documents}
+        isLoading={isLoading}
+        setDocuments={setDocuments}
+      />
       {showCreateModal && (
         <DocumentCreateModal
           documents={documents}
@@ -85,6 +63,67 @@ const DocumentList = () => {
         />
       )}
     </div>
+  );
+};
+
+const List = ({
+  documents,
+  isLoading,
+  setDocuments,
+}: {
+  documents: Document[];
+  isLoading: boolean;
+  setDocuments: Dispatch<SetStateAction<Document[]>>;
+}) => {
+  const { currentUser } = useAuth();
+  const sharedDocuments = documents.filter((document) => {
+    return document.ownerId !== currentUser?.id;
+  });
+  const ownDocuments = documents.filter((d) => d.ownerId === currentUser?.id);
+  if (isLoading) {
+    return <div className="text-center py-4">Loading documents...</div>;
+  }
+
+  if (documents.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p>You don't have any documents yet. Create one to get started!</p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {ownDocuments.map((doc) => {
+          return (
+            <EachDocument
+              key={doc.id}
+              doc={doc}
+              setDocuments={setDocuments}
+              documents={documents}
+            />
+          );
+        })}
+      </div>
+      {sharedDocuments?.length > 0 && (
+        <>
+          <h1 className="text-lg font-bold mt-4">Shared</h1>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+            {sharedDocuments.map((doc) => {
+              return (
+                <EachDocument
+                  key={doc.id}
+                  doc={doc}
+                  setDocuments={setDocuments}
+                  documents={sharedDocuments}
+                />
+              );
+            })}
+          </div>
+        </>
+      )}
+    </>
   );
 };
 
