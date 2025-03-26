@@ -321,10 +321,18 @@ module.exports = (getYDoc, client) => {
       // Check permissions
       if (document.ownerId !== req.user.id) {
         const permission = await prisma.permission.findFirst({
-          where: { docId: documentId, userId: req.user.id, canWrite: true },
+          where: {
+            docId: documentId,
+            userId: req.user.id,
+            canWrite: true,
+          },
         });
         if (!permission) {
-          return res.status(403).json({ error: "No edit access" });
+          return res
+            .status(403)
+            .json({
+              error: "You do not have permission to edit this document",
+            });
         }
       }
 

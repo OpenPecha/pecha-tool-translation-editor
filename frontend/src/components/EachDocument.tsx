@@ -68,7 +68,12 @@ export default function EachDocument({
       console.error("Error updating document:", error);
     }
   };
-  const isOwner = doc.ownerId === currentUser?.id;
+  const hasPermission =
+    doc.ownerId === currentUser?.id ||
+    doc.permissions.some(
+      (permission) =>
+        permission.userId === currentUser?.id && permission.canWrite === true
+    );
   return (
     <div>
       <Link
@@ -86,7 +91,7 @@ export default function EachDocument({
               {doc.root ? `(${doc.root.identifier})` : ""}
             </span>
           </h3>
-          {isOwner && (
+          {hasPermission && (
             <div className="flex items-center gap-2">
               <button
                 onClick={(e) => {

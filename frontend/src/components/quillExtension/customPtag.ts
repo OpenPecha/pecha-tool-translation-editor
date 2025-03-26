@@ -21,7 +21,13 @@ export class CustomParagraph extends Block {
   format(name, value) {
     if (name === "custom-paragraph") {
       if (value) {
-        this.domNode.setAttribute("data-type", value);
+        // Only set attribute if it doesn't already exist
+        if (!this.domNode.hasAttribute("data-type")) {
+          this.domNode.setAttribute("data-type", value);
+        } else {
+          // If attribute exists, remove it to toggle off
+          this.domNode.removeAttribute("data-type");
+        }
       } else {
         this.domNode.removeAttribute("data-type");
       }

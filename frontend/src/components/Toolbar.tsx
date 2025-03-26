@@ -39,6 +39,7 @@ const Toolbar = ({ addSuggestion, id, synced, quill, documentId }) => {
   }, [openHistory]);
 
   const handleSectionCreation = () => {
+    console.log("handleSectionCreation");
     if (quill) {
       const range = quill.getSelection();
       if (range) {
@@ -49,7 +50,12 @@ const Toolbar = ({ addSuggestion, id, synced, quill, documentId }) => {
         let currentBlot = startBlot;
         while (currentBlot) {
           if (currentBlot.domNode.tagName === "P") {
-            currentBlot.domNode.setAttribute("data-type", "section");
+            console.log("currentBlot", currentBlot);
+            if (currentBlot.domNode.hasAttribute("data-type")) {
+              currentBlot.domNode.removeAttribute("data-type");
+            } else {
+              currentBlot.domNode.setAttribute("data-type", "section");
+            }
           }
 
           if (currentBlot === endBlot) break;

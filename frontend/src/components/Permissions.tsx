@@ -12,8 +12,8 @@ function Permissions({ documentId }) {
 
   const handleGrantPermission = async () => {
     try {
-      let canread = canRead ? "true" : "false";
-      let canwrite = canWrite ? "true" : "false";
+      const canread = canWrite || canRead ? "true" : "false";
+      const canwrite = canWrite ? "true" : "false";
       const response = await updatePermission(
         documentId,
         email,
@@ -61,8 +61,9 @@ function Permissions({ documentId }) {
             <div className="flex items-center gap-2 mb-2">
               <input
                 type="checkbox"
-                checked={canRead}
+                checked={canWrite || canRead}
                 onChange={(e) => setCanRead(e.target.checked)}
+                disabled={canWrite}
                 className="w-4 h-4"
               />
               <label className="text-gray-700">Can Read</label>
@@ -71,7 +72,12 @@ function Permissions({ documentId }) {
               <input
                 type="checkbox"
                 checked={canWrite}
-                onChange={(e) => setCanWrite(e.target.checked)}
+                onChange={(e) => {
+                  setCanWrite(e.target.checked);
+                  if (e.target.checked) {
+                    setCanRead(true);
+                  }
+                }}
                 className="w-4 h-4"
               />
               <label className="text-gray-700">Can Write</label>
