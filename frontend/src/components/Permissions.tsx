@@ -13,7 +13,7 @@ function Permissions({ documentId }: { readonly documentId: string }) {
       {/* Grant Permission Button */}
       <button
         onClick={() => setShowModal(true)}
-        className="bg-blue-500  px-4 py-2 rounded-md hover:bg-blue-600 transition"
+        className="py-2 rounded-md  transition"
       >
         <FaShare />
       </button>
@@ -112,8 +112,8 @@ function PermissionModal({
             onClick={handleGrantPermission}
             className=" px-4 py-2   rounded-md hover:bg-green-600 transition flex-1"
           >
-            save
             <MdSaveAs />
+            save
           </Button>
           <Button
             onClick={() => {

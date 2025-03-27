@@ -8,9 +8,9 @@ function OverlayLoading({ isLoading }) {
       style={{
         opacity: 0.4,
       }}
-      className="absolute inset-0 flex items-center justify-center bg-gray-800  z-30"
+      className="absolute inset-0 flex items-center justify-center   z-30"
     >
-      <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-white"></div>
+      <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-black"></div>
     </div>
   );
 }

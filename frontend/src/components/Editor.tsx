@@ -6,36 +6,14 @@ import YjsContext from "../lib/yjsProvider";
 import Toolbar from "./Toolbar";
 import "quill/dist/quill.snow.css";
 import quill_import from "./quillExtension";
-import { createComment, fetchComments } from "../api/comment";
+import { fetchComments } from "../api/comment";
 import OverlayLoading from "./OverlayLoading";
-import { createSuggest, fetchSuggests } from "../api/suggest";
+import { fetchSuggests } from "../api/suggest";
 import { fetchDocument } from "../api/document";
 import { useQuillHistory } from "../contexts/HistoryContext";
 import LineNumberVirtualized from "./LineNumbers";
+import SuggestionModal from "./SuggestionModal";
 quill_import();
-
-const debounce = (func: Function, wait: number) => {
-  let timeout: NodeJS.Timeout;
-  return function executedFunction(...args: any[]) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-};
-
-const throttle = (func: Function, limit: number) => {
-  let inThrottle: boolean;
-  return function (...args: any[]) {
-    if (!inThrottle) {
-      func(...args);
-      inThrottle = true;
-      setTimeout(() => (inThrottle = false), limit);
-    }
-  };
-};
 
 const Editor = ({
   documentId,
@@ -48,7 +26,6 @@ const Editor = ({
 }) => {
   const editorRef = useRef(null);
   const [quill, setQuill] = useState<Quill | null>(null);
-  const lineNumbersRef = useRef(null);
   const toolbarId =
     "toolbar-container" + "-" + Math.random().toString(36).substring(7);
   const counterId =
@@ -56,12 +33,9 @@ const Editor = ({
 
   const { clearYjsProvider, toggleConnection, online, yText, yjsProvider } =
     useContext(YjsContext);
-  const { currentUser } = useAuth();
   const [synced, setSynced] = useState(false);
   const [showOverlay, setShowOverlay] = useState(true);
-  const [comments, setComments] = useState([]); // 🔥 Store comments in Editor
-  const [suggestions, setSuggestions] = useState([]); // 🔥 Store comments in Editor
-  const [lastContent, setLastContent] = useState("");
+  const [showSuggestionModal, setShowSuggestionModal] = useState(false);
   const { registerQuill } = useQuillHistory();
 
   useEffect(() => {
@@ -97,8 +71,6 @@ const Editor = ({
     });
 
     // Fetch comments when the editor loads
-    loadComments();
-    loadSuggestions();
     quill.on("text-change", function (delta, oldDelta, source) {
       if (source === "user") {
         if (quill.getLength() <= 1) {
@@ -112,73 +84,26 @@ const Editor = ({
         }
       }
     });
+    quill.on("selection-change", (range) => {
+      setCurrentRange(range);
+    });
 
     return () => {
       clearYjsProvider();
     };
   }, []);
 
-  // 🔥 Fetch comments
-  const loadComments = async () => {
-    try {
-      const data = await fetchComments(documentId);
-      setComments(data);
-    } catch (error) {
-      console.error("Error fetching comments:", error);
-    }
-  };
-  const loadSuggestions = async () => {
-    try {
-      const data = await fetchSuggests(documentId);
-      setSuggestions(data);
-    } catch (error) {
-      console.error("Error fetching comments:", error);
-    }
-  };
-
-  async function addSuggestion() {
-    const range = quillRef.current.getSelection();
-    if (!range) return;
-
-    const suggestion = prompt("Enter your suggestion");
-    if (!suggestion) return;
-
-    const end = range.index + range.length;
-    const id = Math.random().toString(36).substring(7);
-    const threadId = id;
-    try {
-      const createdSuggestion = await createSuggest(
-        threadId,
-        documentId,
-        currentUser.id,
-        suggestion,
-        range.index,
-        end
-      );
-      if (createdSuggestion.id) {
-        // 🔥 Update the Quill editor to highlight the text
-        quill.formatText(range.index, range.length, "suggest", {
-          id: threadId,
-        });
-
-        // 🔥 Update the comments list dynamically
-        // setComments((prev) => [createdComment, ...prev]); // Add new comment to the top
-      }
-    } catch (error) {
-      console.error("Error adding comment:", error);
-    }
-  }
   return (
-    <div className="w-full flex-1 h-full">
+    <div className="w-full relative flex-1 h-full">
       <Toolbar
         id={toolbarId}
-        addSuggestion={addSuggestion}
+        addSuggestion={() => setShowSuggestionModal((p) => !p)}
         synced={synced}
         quill={quill}
         documentId={documentId}
       />
-      <div className="relative h-[calc(100vh-130px)]">
-        <div className="editor-container w-full h-full flex relative  overflow-hidden">
+      <div className="relative h-[calc(100dvh-52px)]">
+        <div className="editor-container w-full h-full flex relative overflow-hidden ">
           <LineNumberVirtualized
             quill={quill}
             editorRef={editorRef}
@@ -186,14 +111,26 @@ const Editor = ({
           />
           <div
             ref={editorRef}
-            className="editor-content"
-            style={{ marginTop: "10px", fontFamily: "Monlam", fontSize: 18 }}
+            className="editor-content flex-1"
+            style={{ fontFamily: "Monlam", fontSize: 18 }}
           />
         </div>
         <OverlayLoading isLoading={showOverlay} />
-        <div id={`${counterId}`}>0 characters</div>
+        <div
+          className="absolute bottom-2 right-2 bg-white rounded-lg shadow-md px-4 py-2 text-gray-600 text-sm border border-gray-200"
+          id={`${counterId}`}
+        >
+          0 characters
+        </div>
       </div>
-
+      {showSuggestionModal && (
+        <SuggestionModal
+          quill={quill}
+          documentId={documentId}
+          range={currentRange}
+          setShowSuggestionModal={setShowSuggestionModal}
+        />
+      )}
       {/* 🔥 Pass comments and update function to Comments */}
       {/* <div className="comment-container w-1/4">
         <Comments  comments={comments}  />

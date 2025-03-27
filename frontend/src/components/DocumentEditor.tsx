@@ -15,6 +15,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { QuillHistoryProvider } from "../contexts/HistoryContext";
 import QuillHistoryControls from "./QuillHistoryControls";
 // import useYdoc from '../hook/useYdoc';
+import "../editor.css";
 
 const RealTimeEditor = ({
   docId,

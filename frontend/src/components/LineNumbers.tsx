@@ -2,6 +2,8 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import { debounce } from "lodash";
 import { useParams } from "react-router-dom";
 
+const offsetTop = 6;
+
 const LineNumberVirtualized = ({ editorRef, quill, documentId }) => {
   const lineNumbersRef = useRef<HTMLDivElement>(null);
   const [lineNumbers, setLineNumbers] = useState<
@@ -64,7 +66,8 @@ const LineNumberVirtualized = ({ editorRef, quill, documentId }) => {
       const rects = Array.from(range.getClientRects());
       if (rects.length === 0) return;
 
-      const paraTop = rects[0].top - editorRect.top + editorScrollTop + 10;
+      const paraTop =
+        rects[0].top - editorRect.top + editorScrollTop + offsetTop;
       const paraHeight = rects.reduce((sum, rect) => sum + rect.height, 0);
 
       if (currentType === groupType && currentType !== null) {
@@ -164,7 +167,9 @@ const LineNumberVirtualized = ({ editorRef, quill, documentId }) => {
   return (
     <div
       ref={lineNumbersRef}
-      className={`line-numbers mt-[5px] ${isRoot ? "quill-1" : "quill-2"}`}
+      className={`line-numbers mt-[5px]  h-full ${
+        isRoot ? "quill-1" : "quill-2"
+      }`}
     >
       {lineNumbers.map((lineNum, index) => (
         <span

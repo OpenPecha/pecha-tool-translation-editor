@@ -76,9 +76,6 @@ const List = ({
   setDocuments: Dispatch<SetStateAction<Document[]>>;
 }) => {
   const { currentUser } = useAuth();
-  const sharedDocuments = documents.filter((document) => {
-    return document.ownerId !== currentUser?.id;
-  });
   const ownDocuments = documents.filter((d) => d.ownerId === currentUser?.id);
   if (isLoading) {
     return <div className="text-center py-4">Loading documents...</div>;
@@ -93,37 +90,18 @@ const List = ({
   }
 
   return (
-    <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {ownDocuments.map((doc) => {
-          return (
-            <EachDocument
-              key={doc.id}
-              doc={doc}
-              setDocuments={setDocuments}
-              documents={documents}
-            />
-          );
-        })}
-      </div>
-      {sharedDocuments?.length > 0 && (
-        <>
-          <h1 className="text-lg font-bold mt-4">Shared</h1>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-            {sharedDocuments.map((doc) => {
-              return (
-                <EachDocument
-                  key={doc.id}
-                  doc={doc}
-                  setDocuments={setDocuments}
-                  documents={sharedDocuments}
-                />
-              );
-            })}
-          </div>
-        </>
-      )}
-    </>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {documents.map((doc) => {
+        return (
+          <EachDocument
+            key={doc.id}
+            doc={doc}
+            setDocuments={setDocuments}
+            documents={documents}
+          />
+        );
+      })}
+    </div>
   );
 };
 

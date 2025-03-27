@@ -7,10 +7,10 @@ import DocumentList from "./components/DocumentList";
 import DocumentEditor from "./components/DocumentEditor";
 import { YjsProvider } from "./lib/yjsProvider";
 import { useCurrentDoc } from "./hooks/useCurrentDoc";
-import { useState, useEffect, useMemo, useRef } from "react";
-import useScrollHook from "./hooks/useScrollHook";
+import { useState, useMemo, useRef } from "react";
 
 import MenuDrawer from "./components/MenuDrawer";
+import { Button } from "./components/ui/button";
 
 interface Translation {
   id: string;
@@ -33,7 +33,7 @@ const ProtectedRoute = ({ children }) => {
 
 function AppContent() {
   return (
-    <div className="app">
+    <div className="flex flex-col h-full">
       <Navbar />
       <Routes>
         <Route
@@ -91,11 +91,11 @@ function EditorWrapper() {
     return <div className="error">{error}</div>;
   }
   return (
-    <div className="px-4">
+    <>
       {selectedTranslationId && (
         <MenuDrawer quill1Ref={quill1Ref} quill2Ref={quill2Ref} />
       )}
-      <div className="flex">
+      <div className="flex px-2">
         <YjsProvider>
           <DocumentEditor docId={id} editorRef={quill1Ref} />
         </YjsProvider>
@@ -106,7 +106,7 @@ function EditorWrapper() {
           setSelectedTranslationId={setSelectedTranslationId}
         />
       </div>
-    </div>
+    </>
   );
 }
 
@@ -126,25 +126,21 @@ function RenderTranslationEditor({
   if (!isTranslationAvailable) return null;
   if (!selectedTranslationId)
     return (
-      <div className="w-[20vw] bg-gray-50 shadow-lg rounded-lg overflow-hidden">
+      <div className=" mt-3 bg-gray-50 shadow-lg rounded-lg overflow-hidden">
         <h3 className="text-xl font-bold px-6 py-4 bg-gray-100 text-gray-800 border-b border-gray-200">
           Select a Translation
         </h3>
-        <div className="p-6 space-y-3">
+        <div className=" p-2">
           {translations.map((translation: Translation) => (
-            <button
+            <Button
               key={translation.id}
               onClick={() => setSelectedTranslationId(translation.id)}
-              className="w-full text-left px-4 py-3 rounded-lg transition-colors duration-200
-                bg-white hover:bg-gray-50 border border-gray-200 
-                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                shadow-sm hover:shadow
-                text-gray-700 hover:text-gray-900"
               type="button"
+              className="cursor-pointer"
               aria-label={`Select translation ${translation.identifier}`}
             >
               {translation.identifier}
-            </button>
+            </Button>
           ))}
         </div>
       </div>

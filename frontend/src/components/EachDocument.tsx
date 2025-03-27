@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import { MdDelete, MdEdit } from "react-icons/md";
 import EditModal from "./EditModal";
 import { useAuth } from "@/contexts/AuthContext";
+import { Badge } from "./ui/badge";
+import { isTibetan } from "@/lib/isTibetan";
 
 interface EachDocumentProps {
   readonly doc: Document;
@@ -18,6 +20,7 @@ export default function EachDocument({
 }: EachDocumentProps) {
   const [showEditModal, setShowEditModal] = useState(false);
   const { currentUser } = useAuth();
+  const isShared = doc.ownerId !== currentUser?.id;
   const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -72,6 +75,7 @@ export default function EachDocument({
       (permission) =>
         permission.userId === currentUser?.id && permission.canWrite === true
     );
+
   return (
     <div>
       <Link
@@ -80,13 +84,13 @@ export default function EachDocument({
         key={doc.id}
       >
         <div className="flex justify-between items-center mb-2">
-          <h3 className="text-xl font-semibold">
-            <span className="capitalize">{doc.identifier}</span>{" "}
-            <span className="text-sm text-gray-500">
-              {doc.isRoot ? "(root)" : ""}
-            </span>
-            <span className="text-sm text-gray-500">
-              {doc.root ? `(${doc.root.identifier})` : ""}
+          <h3 className="text-xl font-semibold truncate">
+            <span
+              className={`capitalize ${
+                isTibetan("བོད་ལ་") ? "font-monlam" : "font-sans"
+              }`}
+            >
+              {doc.identifier}
             </span>
           </h3>
           {hasPermission && (
@@ -102,7 +106,7 @@ export default function EachDocument({
               >
                 <MdEdit />
               </button>
-              {!doc.isPublic && (
+              {!isShared && (
                 <button
                   onClick={handleDelete}
                   className="z-20 p-2 rounded-md transition-all duration-200 hover:bg-red-500 hover:text-white hover:scale-110"
@@ -113,8 +117,10 @@ export default function EachDocument({
             </div>
           )}
         </div>
-        <div className="mt-2 text-sm text-gray-500">
-          <span>{doc.isPublic ? "Public" : "Private"}</span>
+        <div className="mt-2 text-sm text-gray-500 flex gap-2">
+          {isShared && <Badge variant="outline">Shared</Badge>}
+          {doc.isRoot && <Badge>Root</Badge>}
+          {doc.root && <Badge variant="outline">{doc.root.identifier}</Badge>}
         </div>
       </Link>
 
