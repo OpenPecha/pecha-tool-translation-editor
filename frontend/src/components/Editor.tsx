@@ -37,6 +37,7 @@ const Editor = ({
   const [showOverlay, setShowOverlay] = useState(true);
   const [showSuggestionModal, setShowSuggestionModal] = useState(false);
   const { registerQuill } = useQuillHistory();
+  const [currentRange, setCurrentRange] = useState<Range | null>(null);
 
   useEffect(() => {
     const quill = new Quill(editorRef?.current, {
