@@ -121,24 +121,25 @@ function RenderTranslationEditor({
   selectedTranslationId: string | null;
   setSelectedTranslationId: (id: string) => void;
 }) {
-  // const [selectedTranslationId, setSelectedTranslationId] = useState<
-  //   string | null
-  // >(null);
   const isTranslationAvailable = translations.length > 0;
 
   if (!isTranslationAvailable) return null;
   if (!selectedTranslationId)
     return (
-      <div className="w-[20vw] bg-gray-100">
-        <h3 className="text-lg font-semibold mb-4 px-4 py-2 bg-gray-300 text-gray-700">
+      <div className="w-[20vw] bg-gray-50 shadow-lg rounded-lg overflow-hidden">
+        <h3 className="text-xl font-bold px-6 py-4 bg-gray-100 text-gray-800 border-b border-gray-200">
           Select a Translation
         </h3>
-        <div className="px-4">
+        <div className="p-6 space-y-3">
           {translations.map((translation: Translation) => (
             <button
               key={translation.id}
               onClick={() => setSelectedTranslationId(translation.id)}
-              className="w-full cursor-pointer text-left p-2 border rounded mt-4 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full text-left px-4 py-3 rounded-lg transition-colors duration-200
+                bg-white hover:bg-gray-50 border border-gray-200 
+                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                shadow-sm hover:shadow
+                text-gray-700 hover:text-gray-900"
               type="button"
               aria-label={`Select translation ${translation.identifier}`}
             >
@@ -149,8 +150,7 @@ function RenderTranslationEditor({
       </div>
     );
   return (
-    <div className="flex w-full flex-1 flex-col">
-      {/* <button onClick={() => setSelectedTranslationId(null)}>close Translation</button> */}
+    <div className="flex w-full flex-1 flex-col bg-white rounded-lg shadow-lg overflow-hidden">
       <YjsProvider key={selectedTranslationId}>
         <DocumentEditor docId={selectedTranslationId} editorRef={editorRef} />
       </YjsProvider>
