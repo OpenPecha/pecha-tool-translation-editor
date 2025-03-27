@@ -93,7 +93,7 @@ const Toolbar = ({
   };
 
   return (
-    <div className="absolute top-0 right-0 w-full flex items-center">
+    <div className="absolute top-0 right-0 w-full flex items-center ">
       <button
         onClick={() => setIsToolbarOpen(!isToolbarOpen)}
         className="p-2 hover:bg-gray-100 rounded-md z-10 absolute right-2 bg-gray-100 border border-gray-200 top-1.5"
@@ -117,7 +117,7 @@ const Toolbar = ({
           borderRadius: "0.375rem",
           boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
           alignItems: "center",
-          zIndex: 50,
+          zIndex: 200,
           width: "100%",
           paddingLeft: "40px",
           paddingBottom: "10px",
@@ -201,14 +201,14 @@ const Toolbar = ({
         >
           <FaArrowLeft />
         </button>
-        <div className="flex items-center gap-2">
+        {/* <div className="flex items-center gap-2">
           <span className="ql-formats">
             <button className="ql-bold" />
             <button className="ql-italic" />
             <button className="ql-underline" />
             <button className="ql-strike" />
           </span>
-        </div>
+        </div> */}
       </div>
     </div>
   );
