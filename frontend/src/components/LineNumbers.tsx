@@ -2,7 +2,7 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import { debounce } from "lodash";
 import { useParams } from "react-router-dom";
 
-const offsetTop = 6;
+const offsetTop = 0;
 
 const LineNumberVirtualized = ({ editorRef, quill, documentId }) => {
   const lineNumbersRef = useRef<HTMLDivElement>(null);
