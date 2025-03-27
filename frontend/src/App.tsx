@@ -150,7 +150,7 @@ function RenderTranslationEditor({
       </div>
     );
   return (
-    <div className="flex w-full flex-1 flex-col bg-white rounded-lg shadow-lg overflow-hidden">
+    <div className="flex w-full flex-1 flex-col  overflow-hidden">
       <YjsProvider key={selectedTranslationId}>
         <DocumentEditor docId={selectedTranslationId} editorRef={editorRef} />
       </YjsProvider>
