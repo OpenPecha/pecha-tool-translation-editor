@@ -8,10 +8,9 @@ import DocumentEditor from "./components/DocumentEditor";
 import { YjsProvider } from "./lib/yjsProvider";
 import { useCurrentDoc } from "./hooks/useCurrentDoc";
 import { useState, useEffect, useMemo, useRef } from "react";
-import Quill from "quill";
 import useScrollHook from "./hooks/useScrollHook";
-import SyncOptions from "./components/SyncOptions";
-import TagOptions from "./components/TagOptions";
+
+import MenuDrawer from "./components/MenuDrawer";
 
 interface Translation {
   id: string;
@@ -79,12 +78,7 @@ function EditorWrapper() {
   );
   const quill1Ref = useRef<HTMLDivElement>(null);
   const quill2Ref = useRef<HTMLDivElement>(null);
-  const [selectedHtmlTag, setSelectedHtmlTag] = useState<string>("p");
-  const { syncMode, setSyncMode } = useScrollHook(
-    quill1Ref,
-    quill2Ref,
-    selectedHtmlTag
-  );
+
   const [selectedTranslationId, setSelectedTranslationId] = useState<
     string | null
   >(null);
@@ -96,19 +90,10 @@ function EditorWrapper() {
   if (error) {
     return <div className="error">{error}</div>;
   }
-
   return (
     <div className="px-4">
       {selectedTranslationId && (
-        <TagOptions
-          selectedHtmlTag={selectedHtmlTag}
-          setSelectedHtmlTag={setSelectedHtmlTag}
-        />
-      )}
-      {selectedTranslationId && (
-        <div className="absolute bottom-0 right-0 bg-gray-100 z-10">
-          <SyncOptions syncMode={syncMode} setSyncMode={setSyncMode} />
-        </div>
+        <MenuDrawer quill1Ref={quill1Ref} quill2Ref={quill2Ref} />
       )}
       <div className="flex">
         <YjsProvider>

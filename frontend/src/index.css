@@ -424,11 +424,11 @@ body {
   user-select: none;
   z-index: 1;
   overflow: hidden;
-  pointer-events: none;
   white-space: pre;
 }
 .line-number {
   position: absolute;
+  cursor: pointer;
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;

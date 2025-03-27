@@ -47,7 +47,7 @@ const Editor = ({
   quillRef: any;
 }) => {
   const editorRef = useRef(null);
-  const [quill, setQuill] = useState(null);
+  const [quill, setQuill] = useState<Quill | null>(null);
   const lineNumbersRef = useRef(null);
   const toolbarId =
     "toolbar-container" + "-" + Math.random().toString(36).substring(7);
@@ -78,19 +78,15 @@ const Editor = ({
       className: "overflow-y-auto h-full ",
     });
     setQuill(quill);
-
+    quillRef.current = quill;
     registerQuill(quill);
     new QuillBinding(yText, quill, yjsProvider?.awareness);
-
-    const editorContainer = editorRef.current?.querySelector(".ql-editor");
-
-    yjsProvider?.on("sync", (isSynced) => {
+    yjsProvider?.on("sync", (isSynced: boolean) => {
       setSynced(isSynced);
       if (isSynced) {
         setShowOverlay(false);
-        var plainText = quill.getText();
+        const plainText = quill.getText();
         if (plainText.trim().length === 0) {
-          console.log("text is empty");
           fetchDocument(documentId).then((doc) => {
             quill.setContents(doc.docs_prosemirror_delta);
           });
@@ -103,7 +99,6 @@ const Editor = ({
     // Fetch comments when the editor loads
     loadComments();
     loadSuggestions();
-    let currentContentLength = quill.getLength();
     quill.on("text-change", function (delta, oldDelta, source) {
       if (source === "user") {
         if (quill.getLength() <= 1) {
@@ -115,7 +110,6 @@ const Editor = ({
             quill.setContents(oldDelta);
           }
         }
-        currentContentLength = quill.getLength();
       }
     });
 
@@ -185,7 +179,11 @@ const Editor = ({
       />
       <div className="relative h-[calc(100vh-130px)]">
         <div className="editor-container w-full h-full flex relative  overflow-hidden">
-          <LineNumberVirtualized quill={quill} editorRef={editorRef} />
+          <LineNumberVirtualized
+            quill={quill}
+            editorRef={editorRef}
+            documentId={documentId}
+          />
           <div
             ref={editorRef}
             className="editor-content"

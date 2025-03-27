@@ -3,12 +3,12 @@ import React, { useEffect, useRef, useState } from "react";
 
 function useScrollHook(
   quill1Ref: React.RefObject<Quill>,
-  quill2Ref: React.RefObject<Quill>,
-  htmlTag: string
+  quill2Ref: React.RefObject<Quill>
 ) {
   const ignoreScrollEvents = useRef(false);
   const lastClickY = useRef<number | null>(null);
   const [syncMode, setSyncMode] = useState<"scroll" | "click" | "none">("none");
+  const [htmlTag, setSelectedHtmlTag] = useState<string>("p");
 
   const getQuerySelector = (tag: string) => {
     if (tag === "b") return "strong";
@@ -159,7 +159,6 @@ function useScrollHook(
       handleClick(event, quill1, quill2);
     const clickHandler2 = (event: MouseEvent) =>
       handleClick(event, quill2, quill1);
-
     if (syncMode === "scroll") {
       quill1.root.addEventListener("scroll", scrollHandler1);
       quill2.root.addEventListener("scroll", scrollHandler2);
@@ -176,7 +175,7 @@ function useScrollHook(
     };
   }, [syncMode, htmlTag]);
 
-  return { syncMode, setSyncMode };
+  return { syncMode, setSyncMode, setSelectedHtmlTag, htmlTag };
 }
 
 export default useScrollHook;

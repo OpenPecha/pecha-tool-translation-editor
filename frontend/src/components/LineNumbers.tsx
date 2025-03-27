@@ -1,7 +1,8 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { debounce } from "lodash";
+import { useParams } from "react-router-dom";
 
-const LineNumberVirtualized = ({ editorRef, quill }) => {
+const LineNumberVirtualized = ({ editorRef, quill, documentId }) => {
   const lineNumbersRef = useRef<HTMLDivElement>(null);
   const [lineNumbers, setLineNumbers] = useState<
     Array<{
@@ -124,8 +125,47 @@ const LineNumberVirtualized = ({ editorRef, quill }) => {
     };
   }, [editorRef, quill, updateLineNumbers]);
 
+  const isRoot = documentId === useParams().id;
+
+  const handleClickOnLineNumber = (e: React.MouseEvent<HTMLSpanElement>) => {
+    const lineNumber = (e.target as HTMLSpanElement).textContent;
+    if (!lineNumber) return;
+
+    // Get current editor's container and clicked element's position
+    const currentEditor = editorRef?.current?.querySelector(".ql-editor");
+    const clickedSpan = e.target as HTMLSpanElement;
+    const clickedTop = parseFloat(clickedSpan.style.top);
+    const currentScrollTop = currentEditor?.scrollTop || 0;
+    const viewportOffset = clickedTop - currentScrollTop;
+
+    // Get the other editor's line numbers container
+    const otherClass = isRoot ? "quill-2" : "quill-1";
+    const otherLineNumbers = document.querySelector(`.${otherClass}`);
+    if (!otherLineNumbers) return;
+
+    // Find matching line number span in other editor
+    const targetSpan = Array.from(
+      otherLineNumbers.getElementsByClassName("line-number")
+    ).find((span) => span.textContent === lineNumber);
+
+    if (targetSpan) {
+      // Get the other editor's container
+      const otherEditor = otherLineNumbers
+        .closest(".editor-container")
+        ?.querySelector(".ql-editor");
+      if (otherEditor) {
+        // Calculate scroll position to maintain same relative position
+        const targetTop = parseFloat((targetSpan as HTMLElement).style.top);
+        otherEditor.scrollTop = targetTop - viewportOffset;
+      }
+    }
+  };
+
   return (
-    <div ref={lineNumbersRef} className="line-numbers mt-[5px]">
+    <div
+      ref={lineNumbersRef}
+      className={`line-numbers mt-[5px] ${isRoot ? "quill-1" : "quill-2"}`}
+    >
       {lineNumbers.map((lineNum, index) => (
         <span
           key={index}
@@ -134,6 +174,7 @@ const LineNumberVirtualized = ({ editorRef, quill }) => {
             top: `${lineNum.top}px`,
             height: `${lineNum.height}px`,
           }}
+          onClick={handleClickOnLineNumber}
         >
           {lineNum.number}
         </span>

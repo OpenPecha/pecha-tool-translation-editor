@@ -1,5 +1,5 @@
 function TagOptions({
-  selectedHtmlTag,
+  selectedHtmlTag = "p",
   setSelectedHtmlTag,
 }: {
   selectedHtmlTag: string;
@@ -13,24 +13,28 @@ function TagOptions({
     { label: "Bold", value: "b" },
     { label: "Italic", value: "i" },
   ];
+
   return (
-    <div className="space-x-4">
-      {tags.map((tag) => (
-        <div key={tag.value} className="inline-flex items-center">
-          <input
-            type="radio"
-            id={`tag-${tag.value}`}
-            name="htmlTag"
-            value={tag.value}
-            checked={selectedHtmlTag === tag.value}
-            onChange={(e) => setSelectedHtmlTag(e.target.value)}
-            className="form-radio h-4 w-4 text-blue-600"
-          />
-          <label htmlFor={`tag-${tag.value}`} className="ml-2 text-gray-700">
-            {tag.label}
-          </label>
-        </div>
-      ))}
+    <div className="flex flex-col gap-2 mt-2">
+      <label className="text-sm font-medium text-gray-700">
+        Select element to sync
+      </label>
+      <div className="relative">
+        <select
+          value={selectedHtmlTag}
+          onChange={(e) => setSelectedHtmlTag(e.target.value)}
+          className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        >
+          {tags.map((tag) => (
+            <option key={tag.value} value={tag.value}>
+              {tag.label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <p className="text-xs text-gray-500">
+        Clicking will sync the selected element type between documents
+      </p>
     </div>
   );
 }
