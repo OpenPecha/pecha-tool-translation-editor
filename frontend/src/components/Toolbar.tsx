@@ -100,7 +100,6 @@ const Toolbar = ({
           }}
         >
           <div className="flex items-center gap-4 flex-1">
-            <span>{synced ? "🟢" : "🔴"}</span>
             <span className="ql-formats">
               <select className="ql-font">
                 <option value="sans-serif" selected>
@@ -175,6 +174,13 @@ const Toolbar = ({
                 <GrDocumentTxt />
               </button>
             </span>
+          </div>
+          <div>
+            {synced ? (
+              "🟢"
+            ) : (
+              <span className="text-xs text-gray-400 italic"> saving... </span>
+            )}
           </div>
         </div>,
         document.getElementById("toolbar-container")!
