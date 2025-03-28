@@ -1,12 +1,14 @@
 import { createSuggest } from "@/api/suggest";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEditor } from "@/contexts/EditorContext";
 import React, { useState } from "react";
 
-function SuggestionModal({ quill, documentId, setShowSuggestionModal, range }) {
+function SuggestionModal({ documentId, setShowSuggestionModal, range }) {
   const [suggestionText, setSuggestionText] = useState("");
   const [isSuggestion, setIsSuggestion] = useState(true);
   const [currentRange, setCurrentRange] = useState<Range | null>(range);
-
+  const { getQuill } = useEditor();
+  const quill = getQuill(documentId);
   const { currentUser } = useAuth();
   async function addSuggestion() {
     if (!currentRange) return;

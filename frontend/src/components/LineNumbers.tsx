@@ -1,10 +1,11 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { debounce } from "lodash";
 import { useParams } from "react-router-dom";
+import { useEditor } from "@/contexts/EditorContext";
 
 const offsetTop = 0;
 
-const LineNumberVirtualized = ({ editorRef, quill, documentId }) => {
+const LineNumberVirtualized = ({ editorRef, documentId }) => {
   const lineNumbersRef = useRef<HTMLDivElement>(null);
   const [lineNumbers, setLineNumbers] = useState<
     Array<{
@@ -14,7 +15,8 @@ const LineNumberVirtualized = ({ editorRef, quill, documentId }) => {
       lineHeight?: string;
     }>
   >([]);
-
+  const { getQuill } = useEditor();
+  const quill = getQuill(documentId);
   const updateLineNumbers = useCallback(() => {
     if (!lineNumbersRef.current) return;
 

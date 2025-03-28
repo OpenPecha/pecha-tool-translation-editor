@@ -92,18 +92,22 @@ function showSuggestionBubble(event, data) {
     .map((suggestion) => {
       const createdAt = new Date(suggestion.createdAt).toLocaleString();
       return `
-          <div style="border-bottom: 1px solid #ddd; padding: 8px 0;">
-              <div style="font-weight: bold; color: #007BFF;">
-                  ${suggestion.user.username}
+          <div style="padding: 4px 0; display: flex; flex-direction: column; gap: 2px;">
+              <div style="display: flex; align-items: center; gap: 4px;">
+                  <span style="font-weight: 500; font-size: 13px; color: #444;">
+                      ${suggestion.user.username}
+                  </span>
+                  <span style="font-size: 11px; color: #666;">
+                      ${createdAt}
+                  </span>
               </div>
-              <div style="color: #333;">
-                  "${suggestion.content}"
+              <div style="font-size: 12px; color: #333; margin-bottom: 2px;">
+                  ${suggestion.content}
               </div>
-              <div style="font-size: 12px; color: gray;">
-                  Added on: ${createdAt}
-                   <button class="delete-suggestion-btn" data-id="${suggestion.id}" 
-                      style="background: #ff4d4d; color: white; border: none; border-radius: 3px; 
-                      padding: 2px 5px; font-size: 11px; cursor: pointer;">
+              <div style="display: flex; justify-content: flex-end;">
+                  <button class="delete-suggestion-btn" data-id="${suggestion.id}" 
+                      style="background: none; border: none; color: #666; font-size: 11px; 
+                      cursor: pointer; padding: 2px;">
                       Delete
                   </button>
               </div>
@@ -114,30 +118,34 @@ function showSuggestionBubble(event, data) {
 
   // Generate the suggestion bubble content
   suggestionBubble.innerHTML = `
-      <div style="max-height: 200px; overflow-y: auto; padding-bottom: 10px;">
+      <div style="max-height: 150px; overflow-y: auto; padding: 4px; min-width: 200px; max-width: 250px;">
           ${suggestionItems}
       </div>
-      <textarea id="newSuggestionInput" placeholder="Write a new suggestion..." 
-          style="width: 100%; height: 50px; border: 1px solid #ccc; padding: 5px; border-radius: 5px;">
-      </textarea>
-      <button id="submitSuggestionBtn" 
-          style="margin-top: 5px; width: 100%; padding: 8px; background: #007BFF; color: white; border: none; border-radius: 5px; cursor: pointer;">
-          Submit Suggestion
-      </button>
+      <div style="border-top: 1px solid #eee; padding: 4px;">
+          <textarea id="newSuggestionInput" placeholder="Add a suggestion..." 
+              style="width: 100%; height: 32px; border: 1px solid #ddd; padding: 4px; 
+              border-radius: 3px; font-size: 12px; resize: none;">
+          </textarea>
+          <button id="submitSuggestionBtn" 
+              style="margin-top: 4px; width: 100%; padding: 4px; background: #1a73e8; 
+              color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 12px;">
+              Submit
+          </button>
+      </div>
   `;
 
   // Positioning logic
-  const bubbleWidth = 300;
-  const bubbleHeight = 250;
-  let left = event.pageX + 10;
-  let top = event.pageY + 10;
+  const bubbleWidth = 250;
+  const bubbleHeight = 200;
+  let left = event.pageX + 5;
+  let top = event.pageY + 5;
 
   // Ensure bubble stays within the viewport
   if (left + bubbleWidth > window.innerWidth) {
-    left = window.innerWidth - bubbleWidth - 20;
+    left = window.innerWidth - bubbleWidth - 10;
   }
   if (top + bubbleHeight > window.innerHeight) {
-    top = window.innerHeight - bubbleHeight - 20;
+    top = window.innerHeight - bubbleHeight - 10;
   }
 
   suggestionBubble.style.display = "block";

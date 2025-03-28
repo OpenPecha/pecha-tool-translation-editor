@@ -1,11 +1,4 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "quill/dist/quill.snow.css";
 import YjsContext from "../lib/yjsProvider";
@@ -13,17 +6,9 @@ import Editor from "./Editor";
 import { fetchDocument } from "../api/document";
 import { useAuth } from "../contexts/AuthContext";
 import { QuillHistoryProvider } from "../contexts/HistoryContext";
-import QuillHistoryControls from "./QuillHistoryControls";
-// import useYdoc from '../hook/useYdoc';
 import "../editor.css";
 
-const RealTimeEditor = ({
-  docId,
-  editorRef,
-}: {
-  docId: string | undefined;
-  editorRef: React.RefObject<HTMLDivElement>;
-}) => {
+const RealTimeEditor = ({ docId }: { docId: string | undefined }) => {
   const { id } = useParams();
   const { createYjsProvider, yjsProvider, ydoc, yText, clearYjsProvider } =
     useContext(YjsContext);
@@ -41,17 +26,16 @@ const RealTimeEditor = ({
       }
       createYjsProvider(roomId);
     });
+    return () => {
+      clearYjsProvider();
+    };
     // const yUndoManager = new Y.UndoManager(yText);
   }, []);
 
   if (!ydoc || !yjsProvider || !yText || !roomId) return null;
   return (
     <QuillHistoryProvider docId={roomId} maxVersions={50}>
-      <Editor
-        documentId={roomId}
-        isEditable={isEditable}
-        quillRef={editorRef}
-      />
+      <Editor documentId={roomId} isEditable={isEditable} />
     </QuillHistoryProvider>
   );
 };

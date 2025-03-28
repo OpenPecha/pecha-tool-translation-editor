@@ -9,25 +9,20 @@ import {
 import { GrDocumentTxt } from "react-icons/gr";
 import QuillHistoryControls from "./QuillHistoryControls";
 import Permissions from "./Permissions";
+import { useEditor } from "@/contexts/EditorContext";
 
 interface ToolbarProps {
   addSuggestion: () => void;
   id: string;
   synced: boolean;
-  quill: any;
   documentId: string;
 }
 
-const Toolbar = ({
-  addSuggestion,
-  id,
-  synced,
-  quill,
-  documentId,
-}: ToolbarProps) => {
+const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
   const historyRef = useRef<HTMLDivElement>(null);
   const [openHistory, setOpenHistory] = useState(false);
-
+  const { getQuill } = useEditor();
+  const quill = getQuill(documentId);
   const exportText = () => {
     if (quill) {
       const text = quill.getText();
@@ -92,8 +87,6 @@ const Toolbar = ({
       {createPortal(
         <div
           id={id}
-          onMouseEnter={() => setMouseOverToolbar(true)}
-          onMouseLeave={() => setMouseOverToolbar(false)}
           style={{
             display: showToolbar ? "flex" : "none",
             opacity: showToolbar ? 1 : 0,

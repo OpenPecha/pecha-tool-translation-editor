@@ -14,19 +14,17 @@ import { useQuillHistory } from "../contexts/HistoryContext";
 import LineNumberVirtualized from "./LineNumbers";
 import SuggestionModal from "./SuggestionModal";
 import TableOfContent from "./TableOfContent";
+import { useEditor } from "@/contexts/EditorContext";
 quill_import();
 
 const Editor = ({
   documentId,
   isEditable,
-  quillRef,
 }: {
   documentId: string;
   isEditable: boolean;
-  quillRef: any;
 }) => {
   const editorRef = useRef(null);
-  const [quill, setQuill] = useState<Quill | null>(null);
   const toolbarId =
     "toolbar-container" + "-" + Math.random().toString(36).substring(7);
   const counterId =
@@ -38,9 +36,11 @@ const Editor = ({
   const [showOverlay, setShowOverlay] = useState(true);
   const [showSuggestionModal, setShowSuggestionModal] = useState(false);
   const { registerQuill } = useQuillHistory();
+  const { registerQuill: registerQuill2, unregisterQuill: unregisterQuill2 } =
+    useEditor();
   const [currentRange, setCurrentRange] = useState<Range | null>(null);
-
   useEffect(() => {
+    const editorId = documentId;
     const quill = new Quill(editorRef?.current, {
       theme: "snow",
       modules: {
@@ -53,9 +53,8 @@ const Editor = ({
       placeholder: "Start collaborating...",
       className: "overflow-y-auto h-full ",
     });
-    setQuill(quill);
-    quillRef.current = quill;
     registerQuill(quill);
+    registerQuill2(editorId, quill);
     new QuillBinding(yText, quill, yjsProvider?.awareness);
     yjsProvider?.on("sync", (isSynced: boolean) => {
       setSynced(isSynced);
@@ -71,7 +70,6 @@ const Editor = ({
         }
       }
     });
-
     // Fetch comments when the editor loads
     quill.on("text-change", function (delta, oldDelta, source) {
       if (source === "user") {
@@ -92,6 +90,7 @@ const Editor = ({
 
     return () => {
       clearYjsProvider();
+      unregisterQuill2("editor" + editorId);
     };
   }, []);
 
@@ -101,14 +100,12 @@ const Editor = ({
         id={toolbarId}
         addSuggestion={() => setShowSuggestionModal((p) => !p)}
         synced={synced}
-        quill={quill}
         documentId={documentId}
       />
       {/* <TableOfContent quill={quill} /> */}
       <div className="relative h-full">
         <div className="editor-container w-full h-full flex relative overflow-hidden ">
           <LineNumberVirtualized
-            quill={quill}
             editorRef={editorRef}
             documentId={documentId}
           />
@@ -128,7 +125,6 @@ const Editor = ({
       </div>
       {showSuggestionModal && (
         <SuggestionModal
-          quill={quill}
           documentId={documentId}
           range={currentRange}
           setShowSuggestionModal={setShowSuggestionModal}

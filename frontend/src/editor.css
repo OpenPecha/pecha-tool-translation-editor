@@ -81,7 +81,7 @@
     opacity: 0.6;
   }
 
-  .suggestion {
-    color:blue;    
+  [data-id].suggestion {
+    color: blue;
     cursor: pointer;
   }
