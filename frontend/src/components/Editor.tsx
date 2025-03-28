@@ -13,6 +13,7 @@ import { fetchDocument } from "../api/document";
 import { useQuillHistory } from "../contexts/HistoryContext";
 import LineNumberVirtualized from "./LineNumbers";
 import SuggestionModal from "./SuggestionModal";
+import TableOfContent from "./TableOfContent";
 quill_import();
 
 const Editor = ({
@@ -103,7 +104,8 @@ const Editor = ({
         quill={quill}
         documentId={documentId}
       />
-      <div className="relative h-[calc(100dvh-52px)]">
+      {/* <TableOfContent quill={quill} /> */}
+      <div className="relative h-full">
         <div className="editor-container w-full h-full flex relative overflow-hidden ">
           <LineNumberVirtualized
             quill={quill}

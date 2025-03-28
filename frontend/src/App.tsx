@@ -33,7 +33,7 @@ const ProtectedRoute = ({ children }) => {
 
 function AppContent() {
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-[#fafbfd]">
       <Navbar />
       <Routes>
         <Route
@@ -95,7 +95,8 @@ function EditorWrapper() {
       {selectedTranslationId && (
         <MenuDrawer quill1Ref={quill1Ref} quill2Ref={quill2Ref} />
       )}
-      <div className="flex px-2">
+      <div id="toolbar-container"></div>
+      <div className="flex px-2  h-[calc(100dvh-52px)]">
         <YjsProvider>
           <DocumentEditor docId={id} editorRef={quill1Ref} />
         </YjsProvider>
