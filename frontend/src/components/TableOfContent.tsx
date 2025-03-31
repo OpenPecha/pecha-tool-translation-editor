@@ -23,7 +23,6 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
   useEffect(() => {
     const extractHeadings = () => {
       if (!quill) return;
-      console.log(quill);
 
       const headingElements = quill.root.querySelectorAll(
         "h1, h2, h3, h4, h5, h6"

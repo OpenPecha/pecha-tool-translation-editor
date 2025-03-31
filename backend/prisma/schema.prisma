@@ -15,7 +15,6 @@ model User {
   documents   Doc[]        @relation("UserDocs") // A user can have multiple documents
   permissions Permission[] // A user can have multiple permissions
   comments    Comment[] // A user can have multiple comments
-  suggestions Suggestion[] @relation("suggested_by") // A user can have multiple suggestions
   createdAt   DateTime     @default(now())
 }
 
@@ -36,7 +35,6 @@ model Doc {
   owner                  User?        @relation("UserDocs", fields: [ownerId], references: [id], onDelete: Cascade)
   permissions            Permission[] // A document can have multiple permission entries
   comments               Comment[] // A document can have multiple comments
-  suggestions            Suggestion[] @relation("suggested_on") // A document can have multiple suggestions
   versions               Version[] // A document can have multiple versions
 }
 
@@ -55,6 +53,7 @@ model Permission {
 
 model Comment {
   id                   String    @id @default(uuid())
+  threadId             String?
   docId                String
   userId               String
   content              String
@@ -67,21 +66,23 @@ model Comment {
   initial_end_offset   Int
   doc                  Doc       @relation(fields: [docId], references: [id], onDelete: Cascade)
   user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  is_suggestion        Boolean   @default(false)
+  suggested_text       String?
 }
 
-model Suggestion {
-  id                   String   @id @default(uuid())
-  threadId             String?
-  docId                String
-  userId               String
-  content              String
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-  initial_start_offset Int
-  initial_end_offset   Int
-  doc                  Doc      @relation("suggested_on", fields: [docId], references: [id], onDelete: Cascade)
-  user                 User     @relation("suggested_by", fields: [userId], references: [id], onDelete: Cascade)
-}
+// model Suggestion {
+//   id                   String   @id @default(uuid())
+//   threadId             String?
+//   docId                String
+//   userId               String
+//   content              String
+//   createdAt            DateTime @default(now())
+//   updatedAt            DateTime @updatedAt
+//   initial_start_offset Int
+//   initial_end_offset   Int
+//   doc                  Doc      @relation("suggested_on", fields: [docId], references: [id], onDelete: Cascade)
+//   user                 User     @relation("suggested_by", fields: [userId], references: [id], onDelete: Cascade)
+// }
 
 model Version {
   id        String   @id @default(uuid()) // Unique identifier

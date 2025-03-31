@@ -20,6 +20,7 @@
     "codemirror": "^5.63.0",
     "lodash": "^4.17.21",
     "lucide-react": "^0.483.0",
+    "mitt": "^3.0.1",
     "quill": "^2.0.3",
     "quill-cursors": "^4.0.4",
     "react": "^19.0.0",

@@ -1,18 +1,15 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import Quill from "quill";
 import { QuillBinding } from "y-quill";
-import { useAuth } from "../contexts/AuthContext";
 import YjsContext from "../lib/yjsProvider";
 import Toolbar from "./Toolbar";
 import "quill/dist/quill.snow.css";
 import quill_import from "./quillExtension";
-import { fetchComments } from "../api/comment";
 import OverlayLoading from "./OverlayLoading";
-import { fetchSuggests } from "../api/suggest";
 import { fetchDocument } from "../api/document";
 import { useQuillHistory } from "../contexts/HistoryContext";
 import LineNumberVirtualized from "./LineNumbers";
-import SuggestionModal from "./SuggestionModal";
+import CommentModal from "./CommentModal";
 import TableOfContent from "./TableOfContent";
 import { useEditor } from "@/contexts/EditorContext";
 quill_import();
@@ -34,7 +31,7 @@ const Editor = ({
     useContext(YjsContext);
   const [synced, setSynced] = useState(false);
   const [showOverlay, setShowOverlay] = useState(true);
-  const [showSuggestionModal, setShowSuggestionModal] = useState(false);
+  const [showCommentModal, setShowCommentModal] = useState(false);
   const { registerQuill } = useQuillHistory();
   const { registerQuill: registerQuill2, unregisterQuill: unregisterQuill2 } =
     useEditor();
@@ -98,7 +95,7 @@ const Editor = ({
     <div className="w-full relative flex-1 h-full">
       <Toolbar
         id={toolbarId}
-        addSuggestion={() => setShowSuggestionModal((p) => !p)}
+        addSuggestion={() => setShowCommentModal((p) => !p)}
         synced={synced}
         documentId={documentId}
       />
@@ -123,11 +120,11 @@ const Editor = ({
           0 characters
         </div>
       </div>
-      {showSuggestionModal && (
-        <SuggestionModal
+      {showCommentModal && (
+        <CommentModal
           documentId={documentId}
           range={currentRange}
-          setShowSuggestionModal={setShowSuggestionModal}
+          setShowCommentModal={setShowCommentModal}
         />
       )}
       {/* 🔥 Pass comments and update function to Comments */}

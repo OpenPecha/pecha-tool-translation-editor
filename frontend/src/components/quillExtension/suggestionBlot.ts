@@ -1,15 +1,11 @@
+import emitter from "@/services/eventBus";
 import Quill from "quill";
 const Inline = Quill.import("blots/inline");
-import {
-  createSuggest,
-  deleteSuggest,
-  fetchSuggestsByThread,
-} from "../../api/suggest";
 
 class SuggestionBlot extends Inline {
-  static blotName = "suggest";
+  static blotName = "comment";
   static tagName = "span";
-  static className = "suggestion";
+  static className = "comments";
 
   static create(value) {
     let node = super.create();
@@ -26,9 +22,28 @@ class SuggestionBlot extends Inline {
     // Otherwise add the new suggestion
     node.setAttribute("data-id", value.id);
     node.addEventListener("click", (event) => {
-      fetchSuggestsByThread(value.id).then((data) => {
-        showSuggestionBubble(event, data);
-      });
+      // Positioning logic
+      const bubbleWidth = 250;
+      const bubbleHeight = 200;
+      let left = event.pageX + 5;
+      let top = event.pageY + 5;
+
+      // Ensure bubble stays within the viewport
+      if (left + bubbleWidth > window.innerWidth) {
+        left = window.innerWidth - bubbleWidth - 10;
+      }
+      if (top + bubbleHeight > window.innerHeight) {
+        top = window.innerHeight - bubbleHeight - 10;
+      }
+
+      let __data = {
+        id: value.id,
+        position: {
+          top: top,
+          left: left,
+        },
+      };
+      emitter.emit("showCommentBubble", __data);
     });
 
     return node;

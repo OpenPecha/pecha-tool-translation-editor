@@ -7,7 +7,8 @@ import { fetchDocument } from "../api/document";
 import { useAuth } from "../contexts/AuthContext";
 import { QuillHistoryProvider } from "../contexts/HistoryContext";
 import "../editor.css";
-
+import CommentBubble from "./CommentBubble";
+import { CommentProvider } from "@/contexts/CommentContext";
 const RealTimeEditor = ({ docId }: { docId: string | undefined }) => {
   const { id } = useParams();
   const { createYjsProvider, yjsProvider, ydoc, yText, clearYjsProvider } =
@@ -35,7 +36,10 @@ const RealTimeEditor = ({ docId }: { docId: string | undefined }) => {
   if (!ydoc || !yjsProvider || !yText || !roomId) return null;
   return (
     <QuillHistoryProvider docId={roomId} maxVersions={50}>
-      <Editor documentId={roomId} isEditable={isEditable} />
+      <CommentProvider>
+        <Editor documentId={roomId} isEditable={isEditable} />
+        <CommentBubble />
+      </CommentProvider>
     </QuillHistoryProvider>
   );
 };
