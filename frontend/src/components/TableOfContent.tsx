@@ -1,6 +1,5 @@
 import { useEditor } from "@/contexts/EditorContext";
 import { MAX_HEADING_LEVEL } from "@/../config";
-import Quill from "quill";
 import React, { useState, useEffect } from "react";
 import { FaList } from "react-icons/fa";
 import { Button } from "./ui/button";
@@ -97,18 +96,29 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
             </button>
           </div>
           <nav>
-            {headings.map((heading, index) => (
-              <button
-                key={heading.id}
-                onClick={() => scrollToHeading(index)}
-                className={`block w-full text-left py-2 px-${
-                  heading.level * 2
-                } text-sm hover:bg-gray-100 truncate`}
-                style={{ paddingLeft: `${heading.level * 0.5}rem` }}
-              >
-                {heading.text}
-              </button>
-            ))}
+            {headings.map((heading, index) => {
+              if (!heading.text?.trim()) return null;
+              return (
+                <button
+                  key={heading.id}
+                  onClick={() => scrollToHeading(index)}
+                  className={`block w-full text-left py-2 text-sm hover:bg-gray-100 truncate`}
+                  style={{
+                    paddingLeft: `${heading.level * 0.5}rem`,
+                    fontSize: `${Math.max(
+                      0.75,
+                      1.1 - (heading.level - 1) * 0.1
+                    )}rem`,
+                    fontWeight:
+                      heading.level === 1
+                        ? 600
+                        : Math.max(400, 500 - (heading.level - 1) * 50),
+                  }}
+                >
+                  {heading.text}
+                </button>
+              );
+            })}
           </nav>
         </div>
       </div>
