@@ -42,6 +42,7 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({
     });
 
     // Set up focus tracking
+    setActiveEditor(id);
     quill.on("selection-change", (range, oldRange, source) => {
       if (range) {
         setActiveEditor(id);
