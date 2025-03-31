@@ -1,24 +1,59 @@
 import Quill from "quill";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import CommentBlot from "./quillExtension/suggestionBlot";
 import { createComment, deleteComment } from "@/api/comment";
 import { useAuth } from "@/contexts/AuthContext";
 import { useComment } from "@/contexts/CommentContext";
+import { IoClose } from "react-icons/io5";
+import { FaTrash } from "react-icons/fa";
+import { BiUser } from "react-icons/bi";
+
+interface User {
+  id: string;
+  username: string;
+}
+
+interface Comment {
+  id: string;
+  docId: string;
+  threadId: string;
+  initial_start_offset: number;
+  initial_end_offset: number;
+  user: User;
+  content: string;
+  suggested_text?: string;
+  createdAt: string;
+}
+
+interface StyleProps {
+  position: "absolute";
+  left: number;
+  top: number;
+  background: string;
+  border: string;
+  padding: string;
+  boxShadow: string;
+  zIndex: number;
+  borderRadius: string;
+  maxHeight: string;
+  maxWidth: string;
+  minWidth: string;
+  overflowY: "auto";
+}
 
 const CommentBubble = () => {
-  const bubbleRef = useRef(null);
+  const bubbleRef = useRef<HTMLDivElement>(null);
   const { isModalOpen, position, commentThread, setIsModalOpen } = useComment();
   const [newComment, setNewComment] = useState("");
   const [isSuggestion, setIsSuggestion] = useState(false);
   const [suggestedText, setSuggestedText] = useState("");
   const { currentUser } = useAuth();
-  // Close bubble when clicked outside
 
-  const handleDelete = (id, onlyComment) => {
+  const handleDelete = (id: string, onlyComment: boolean): void => {
     deleteComment(id)
       .then(() => {
         if (onlyComment) {
-          const suggestionSpan = document.querySelector(
+          const suggestionSpan = document.querySelector<HTMLSpanElement>(
             `span.suggestion[data-id="${id}"]`
           );
           if (suggestionSpan) {
@@ -33,7 +68,7 @@ const CommentBubble = () => {
       .catch((error) => console.error("Error deleting comment:", error));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (): void => {
     if (!newComment.trim()) return;
     if (isSuggestion && !suggestedText.trim()) {
       alert("Please enter suggested text");
@@ -41,7 +76,7 @@ const CommentBubble = () => {
     }
 
     const comment = commentThread?.[0];
-    if (!comment) return;
+    if (!comment || !currentUser) return;
 
     createComment(
       comment.docId,
@@ -65,19 +100,19 @@ const CommentBubble = () => {
 
   if (!isModalOpen || !commentThread || commentThread.length === 0) return null;
 
-  const style = {
+  const style: StyleProps = {
     position: "absolute",
     left: position.left,
     top: position.top,
     background: "#fff",
-    border: "1px solid #ccc",
-    padding: "8px",
-    boxShadow: "0px 2px 10px rgba(0,0,0,0.1)",
+    border: "1px solid #e5e7eb",
+    padding: "6px",
+    boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
     zIndex: 1000,
-    borderRadius: "5px",
-    maxHeight: "250px",
-    maxWidth: "250px",
-    minWidth: "200px",
+    borderRadius: "8px",
+    maxHeight: "400px",
+    maxWidth: "320px",
+    minWidth: "280px",
     overflowY: "auto",
   };
 
@@ -87,7 +122,12 @@ const CommentBubble = () => {
         style={{
           display: "flex",
           justifyContent: "flex-end",
-          marginBottom: "8px",
+          marginBottom: "4px",
+          position: "sticky",
+          top: 0,
+          background: "#fff",
+          padding: "2px",
+          zIndex: 2,
         }}
       >
         <button
@@ -96,99 +136,187 @@ const CommentBubble = () => {
             background: "none",
             border: "none",
             color: "#666",
-            fontSize: "16px",
             cursor: "pointer",
             padding: "2px",
-            lineHeight: "1",
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            transition: "all 0.2s",
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.backgroundColor = "#f3f4f6";
+            e.currentTarget.style.color = "#1f2937";
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.backgroundColor = "transparent";
+            e.currentTarget.style.color = "#666";
           }}
         >
-          ×
+          <IoClose size={16} />
         </button>
       </div>
-      {commentThread.map((comment) => (
-        <div
-          key={comment.id}
-          style={{
-            padding: "4px 0",
-            display: "flex",
-            flexDirection: "column",
-            gap: "2px",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-            <span style={{ fontWeight: 500, fontSize: "13px", color: "#444" }}>
-              {comment.user.username}
-            </span>
-            <span style={{ fontSize: "11px", color: "#666" }}>
-              {new Date(comment.createdAt).toLocaleString()}
-            </span>
-          </div>
-          <div style={{ fontSize: "12px", color: "#333", marginBottom: "2px" }}>
-            {comment.content}
-          </div>
-          {comment.suggested_text && (
+      <div style={{ maxHeight: "250px", overflowY: "auto", padding: "0 4px" }}>
+        {commentThread.map((comment: Comment) => (
+          <div
+            key={comment.id}
+            style={{
+              padding: "6px",
+              display: "flex",
+              gap: "8px",
+              borderBottom: "1px solid #f3f4f6",
+            }}
+          >
             <div
               style={{
-                fontSize: "12px",
-                color: "#3b82f6",
-                backgroundColor: "#eff6ff",
-                padding: "3px 6px",
-                borderRadius: "3px",
-                marginBottom: "2px",
+                width: "24px",
+                height: "24px",
+                borderRadius: "50%",
+                backgroundColor: "#e2e8f0",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
               }}
             >
-              Suggestion: "{comment.suggested_text}"
+              <BiUser size={14} color="#64748b" />
             </div>
-          )}
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <button
-              onClick={() =>
-                handleDelete(comment.id, commentThread.length === 1)
-              }
-              style={{
-                background: "none",
-                border: "none",
-                color: "#666",
-                fontSize: "11px",
-                cursor: "pointer",
-                padding: "2px",
-              }}
-            >
-              Delete
-            </button>
+
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  marginBottom: "2px",
+                }}
+              >
+                <span
+                  style={{
+                    fontWeight: 600,
+                    fontSize: "12px",
+                    color: "#1f2937",
+                  }}
+                >
+                  {comment.user.username}
+                </span>
+                <span
+                  style={{
+                    fontSize: "10px",
+                    color: "#6b7280",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {new Date(comment.createdAt).toLocaleString()}
+                </span>
+              </div>
+
+              <div
+                style={{
+                  fontSize: "12px",
+                  color: "#374151",
+                  marginBottom: "4px",
+                  wordBreak: "break-word",
+                }}
+              >
+                {comment.content}
+              </div>
+
+              {comment.suggested_text && (
+                <div
+                  style={{
+                    fontSize: "11px",
+                    color: "#2563eb",
+                    backgroundColor: "#eff6ff",
+                    padding: "4px 8px",
+                    borderRadius: "4px",
+                    marginBottom: "4px",
+                    border: "1px solid #bfdbfe",
+                  }}
+                >
+                  <span style={{ fontWeight: 500 }}>Suggestion:</span> "
+                  {comment.suggested_text}"
+                </div>
+              )}
+
+              <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                <button
+                  onClick={() =>
+                    handleDelete(comment.id, commentThread.length === 1)
+                  }
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#ef4444",
+                    fontSize: "11px",
+                    fontWeight: 500,
+                    cursor: "pointer",
+                    padding: "2px 6px",
+                    borderRadius: "4px",
+                    transition: "background 0.2s",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "3px",
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = "#fee2e2";
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
+                >
+                  <FaTrash size={10} />
+                  Delete
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
 
       {/* Comment input */}
-      <div style={{ borderTop: "1px solid #eee", padding: "4px" }}>
+      <div
+        style={{
+          borderTop: "1px solid #e5e7eb",
+          padding: "6px",
+          position: "sticky",
+          bottom: 0,
+          background: "#fff",
+          zIndex: 2,
+        }}
+      >
         <textarea
           placeholder="Add a comment..."
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
           style={{
             width: "100%",
-            height: "32px",
-            border: "1px solid #ddd",
+            height: "28px",
+            border: "1px solid #e5e7eb",
             padding: "4px",
-            borderRadius: "3px",
+            borderRadius: "4px",
             fontSize: "12px",
             resize: "none",
           }}
         />
         <div
-          style={{ display: "flex", alignItems: "center", marginTop: "4px" }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            marginTop: "4px",
+            gap: "2px",
+          }}
         >
           <input
             type="checkbox"
             id="isSuggestionCheckbox"
             checked={isSuggestion}
             onChange={(e) => setIsSuggestion(e.target.checked)}
-            style={{ marginRight: "4px" }}
+            style={{ margin: 0 }}
           />
           <label
             htmlFor="isSuggestionCheckbox"
-            style={{ fontSize: "12px", color: "#444" }}
+            style={{ fontSize: "11px", color: "#4b5563" }}
           >
             suggest
           </label>
@@ -201,10 +329,10 @@ const CommentBubble = () => {
               onChange={(e) => setSuggestedText(e.target.value)}
               style={{
                 width: "100%",
-                height: "32px",
-                border: "1px solid #ddd",
+                height: "28px",
+                border: "1px solid #e5e7eb",
                 padding: "4px",
-                borderRadius: "3px",
+                borderRadius: "4px",
                 fontSize: "12px",
                 resize: "none",
               }}
@@ -217,12 +345,14 @@ const CommentBubble = () => {
             marginTop: "4px",
             width: "100%",
             padding: "4px",
-            background: "#1a73e8",
+            background: "#2563eb",
             color: "white",
             border: "none",
-            borderRadius: "3px",
+            borderRadius: "4px",
             cursor: "pointer",
             fontSize: "12px",
+            fontWeight: 500,
+            transition: "background 0.2s",
           }}
         >
           Submit
