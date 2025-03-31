@@ -1,3 +1,4 @@
+import { useEditor } from "@/contexts/EditorContext";
 import Quill from "quill";
 import React, { useState, useEffect } from "react";
 import { FaList } from "react-icons/fa";
@@ -9,12 +10,15 @@ interface Heading {
 }
 
 interface TableOfContentProps {
-  quill?: Quill;
+  documentId: string;
 }
 
-const TableOfContent: React.FC<TableOfContentProps> = ({ quill }) => {
+const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [headings, setHeadings] = useState<Heading[]>([]);
+  const { getQuill } = useEditor();
+
+  const quill = getQuill(documentId);
 
   useEffect(() => {
     const extractHeadings = () => {

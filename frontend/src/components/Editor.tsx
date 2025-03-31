@@ -102,7 +102,7 @@ const Editor = ({
         synced={synced}
         documentId={documentId}
       />
-      {/* <TableOfContent quill={quill} /> */}
+      {/* <TableOfContent documentId={documentId} /> */}
       <div className="relative h-full">
         <div className="editor-container w-full h-full flex relative overflow-hidden ">
           <LineNumberVirtualized

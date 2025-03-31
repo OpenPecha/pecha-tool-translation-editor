@@ -21,7 +21,7 @@ interface ToolbarProps {
 const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
   const historyRef = useRef<HTMLDivElement>(null);
   const [openHistory, setOpenHistory] = useState(false);
-  const { getQuill } = useEditor();
+  const { getQuill, activeEditor } = useEditor();
   const quill = getQuill(documentId);
   const exportText = () => {
     if (quill) {
@@ -34,7 +34,6 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
       URL.revokeObjectURL(a.href);
     }
   };
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -80,8 +79,7 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
       }
     }
   };
-  const [mouseOverToolbar, setMouseOverToolbar] = useState(false);
-  const showToolbar = quill?.hasFocus() || mouseOverToolbar;
+  const showToolbar = activeEditor === documentId;
   return (
     <>
       {createPortal(
