@@ -1,7 +1,9 @@
 import { useEditor } from "@/contexts/EditorContext";
+import { MAX_HEADING_LEVEL } from "@/../config";
 import Quill from "quill";
 import React, { useState, useEffect } from "react";
 import { FaList } from "react-icons/fa";
+import { Button } from "./ui/button";
 
 interface Heading {
   text: string;
@@ -19,14 +21,19 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
   const { getQuill } = useEditor();
 
   const quill = getQuill(documentId);
-
+  const generateList = () => {
+    let list = "h1";
+    for (let i = 2; i <= MAX_HEADING_LEVEL; i++) {
+      //genetate list
+      list += `,h${i}`;
+    }
+    return list;
+  };
   useEffect(() => {
     const extractHeadings = () => {
       if (!quill) return;
-
-      const headingElements = quill.root.querySelectorAll(
-        "h1, h2, h3, h4, h5, h6"
-      );
+      let list = generateList();
+      const headingElements = quill.root.querySelectorAll(list);
       const headingsData: Heading[] = Array.from(headingElements).map(
         (heading, index) => ({
           text: heading.textContent || "",
@@ -56,9 +63,8 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
 
   const scrollToHeading = (index: number) => {
     if (!quill) return;
-    const headingElements = quill.root.querySelectorAll(
-      "h1, h2, h3, h4, h5, h6"
-    );
+    let list = generateList();
+    const headingElements = quill.root.querySelectorAll(list);
     const element = headingElements[index];
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
@@ -67,13 +73,13 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
 
   return (
     <>
-      <button
+      <Button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-20 left-4 p-3 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 z-10"
+        className="absolute top-3 right-4 p-3  z-10"
         aria-label="Table of Contents"
       >
         <FaList className="w-5 h-5" />
-      </button>
+      </Button>
 
       <div
         className={`fixed inset-y-0 left-0 w-64 bg-white shadow-xl transform transition-transform duration-300 ease-in-out z-20 ${

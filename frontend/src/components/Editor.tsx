@@ -41,7 +41,17 @@ const Editor = ({
     const quill = new Quill(editorRef?.current, {
       theme: "snow",
       modules: {
-        toolbar: { container: `#${toolbarId}` },
+        toolbar: {
+          container: `#${toolbarId}`,
+          handlers: {
+            headerN: function (value) {
+              const range = quill.getSelection();
+              if (range) {
+                quill.format("headerN", value || false);
+              }
+            },
+          },
+        },
         cursors: { transformOnTextChange: false },
         history: { delay: 2000, maxStack: 500 },
         counter: { container: `#${counterId}`, unit: "character" },
@@ -99,7 +109,7 @@ const Editor = ({
         synced={synced}
         documentId={documentId}
       />
-      {/* <TableOfContent documentId={documentId} /> */}
+      <TableOfContent documentId={documentId} />
       <div className="relative h-full">
         <div className="editor-container w-full h-full flex relative overflow-hidden ">
           <LineNumberVirtualized

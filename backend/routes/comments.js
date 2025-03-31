@@ -53,6 +53,9 @@ router.get("/thread/:threadId", authenticate, async (req, res) => {
   const comments = await prisma.comment.findMany({
     where: { threadId },
     include: { user: true, childComments: true },
+    orderBy: {
+      createdAt: "desc",
+    },
   });
   res.json(comments);
 });

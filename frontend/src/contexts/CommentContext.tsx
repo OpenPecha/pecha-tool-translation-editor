@@ -59,15 +59,14 @@ export const CommentProvider = ({ children }: CommentProviderProps) => {
       setIsModalOpen(true);
       setPosition(data.position);
       fetchCommentsByThreadId(data.id).then((comments) => {
-        console.log("comments", comments);
         setCommentThread(comments);
       });
     };
 
-    emitter.on("showCommentBubble", openHandler);
+    emitter?.on("showCommentBubble", openHandler);
 
     return () => {
-      emitter.off("showCommentBubble", openHandler);
+      emitter?.off("showCommentBubble", openHandler);
     };
   }, []);
 

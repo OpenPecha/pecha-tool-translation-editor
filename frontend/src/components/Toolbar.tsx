@@ -1,15 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import {
-  FaCommentDots,
-  FaHistory,
-  FaObjectGroup,
-  FaArrowLeft,
-} from "react-icons/fa";
+import { FaCommentDots, FaHistory, FaObjectGroup } from "react-icons/fa";
 import { GrDocumentTxt } from "react-icons/gr";
 import QuillHistoryControls from "./QuillHistoryControls";
 import Permissions from "./Permissions";
 import { useEditor } from "@/contexts/EditorContext";
+import HeaderDropdown from "./quillExtension/HeaderDropdown";
 
 interface ToolbarProps {
   addSuggestion: () => void;
@@ -55,6 +51,34 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
     };
   }, [openHistory]);
 
+  useEffect(() => {
+    const dropdown = document.querySelector(".ql-headerN");
+    const quill = getQuill(documentId); // your custom Quill getter
+
+    if (dropdown && quill) {
+      const handleChange = (e: Event) => {
+        const value = (e.target as HTMLSelectElement).value;
+        if (value === "") {
+          quill.format("headerN", false); // Clear format
+        } else {
+          quill.format("headerN", parseInt(value));
+        }
+      };
+
+      dropdown.addEventListener("change", handleChange);
+      return () => dropdown.removeEventListener("change", handleChange);
+    }
+  }, [documentId]);
+
+  const handleHeadingChange = (value: string | number) => {
+    if (value === "") {
+      // Apply normal text
+      quill.format("header", false);
+    } else {
+      // Apply custom header
+      quill.format(`header${value}`, true);
+    }
+  };
   const handleSectionCreation = () => {
     if (quill) {
       const range = quill.getSelection();
@@ -101,8 +125,11 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
                 <option value="monlam">Monlam</option> {/* Custom font */}
               </select>
             </span>
-
             <span className="ql-formats">
+              <HeaderDropdown defaultValue="" onChange={handleHeadingChange} />
+            </span>
+
+            {/* <span className="ql-formats">
               <select className="ql-header">
                 <option value="1" />
                 <option value="2" />
@@ -110,9 +137,11 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
                 <option value="4" />
                 <option value="5" />
                 <option value="6" />
+
                 <option selected />
               </select>
-            </span>
+            </span> */}
+
             <span className="ql-formats">
               <select className="ql-size">
                 <option value="small" />
