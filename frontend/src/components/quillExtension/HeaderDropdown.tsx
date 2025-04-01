@@ -14,7 +14,6 @@ const HeaderDropdown = ({
 }: HeaderDropdownProps) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-
   const levels = Array.from({ length: maxLevel }, (_, i) => i + 1);
 
   useEffect(() => {

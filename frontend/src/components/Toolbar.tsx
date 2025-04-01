@@ -18,7 +18,7 @@ interface ToolbarProps {
 const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
   const historyRef = useRef<HTMLDivElement>(null);
   const [openHistory, setOpenHistory] = useState(false);
-  const { getQuill, activeEditor } = useEditor();
+  const { getQuill, activeEditor, activeQuill } = useEditor();
   const [currentHeader, setCurrentHeader] = useState<string | number>("");
   const quill = getQuill(documentId);
   const exportText = () => {
@@ -55,7 +55,6 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
 
   useEffect(() => {
     const dropdown = document.querySelector(".ql-headerN");
-    const quill = getQuill(documentId); // your custom Quill getter
 
     if (dropdown && quill) {
       const handleChange = (e: Event) => {
