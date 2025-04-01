@@ -1,19 +1,18 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { MAX_HEADING_LEVEL } from "@/../config";
 
 interface HeaderDropdownProps {
   onChange: (value: string | number) => void;
-  defaultValue?: string | number;
+  value: string | number;
   maxLevel?: number;
 }
 
 const HeaderDropdown = ({
   onChange,
-  defaultValue = "",
+  value,
   maxLevel = MAX_HEADING_LEVEL,
 }: HeaderDropdownProps) => {
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState<string | number>(defaultValue);
   const ref = useRef<HTMLDivElement>(null);
 
   const levels = Array.from({ length: maxLevel }, (_, i) => i + 1);
@@ -28,9 +27,8 @@ const HeaderDropdown = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSelect = (value: string | number) => {
-    setSelected(value);
-    onChange(value);
+  const handleSelect = (val: string | number) => {
+    onChange(val);
     setOpen(false);
   };
 
@@ -54,7 +52,7 @@ const HeaderDropdown = ({
         aria-label="Select heading level"
         tabIndex={0}
       >
-        {selected === "" ? "Normal" : `H${selected}`}
+        {value === "" ? "Normal" : `H${value}`}
         <span className="text-gray-400" aria-hidden="true">
           ▾
         </span>
@@ -66,11 +64,11 @@ const HeaderDropdown = ({
         >
           <li
             className={`px-3 py-1 hover:bg-gray-100 cursor-pointer ${
-              selected === "" ? "bg-gray-100" : ""
+              value === "" ? "bg-gray-100" : ""
             }`}
             onClick={() => handleSelect("")}
             role="option"
-            aria-selected={selected === ""}
+            aria-selected={value === ""}
             tabIndex={0}
           >
             Normal
@@ -79,11 +77,11 @@ const HeaderDropdown = ({
             <li
               key={level}
               className={`px-3 py-1 hover:bg-gray-100 cursor-pointer ${
-                selected === level ? "bg-gray-100" : ""
+                value === level ? "bg-gray-100" : ""
               }`}
               onClick={() => handleSelect(level)}
               role="option"
-              aria-selected={selected === level}
+              aria-selected={value === level}
               tabIndex={0}
             >
               H{level}

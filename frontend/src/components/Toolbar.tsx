@@ -6,6 +6,7 @@ import QuillHistoryControls from "./QuillHistoryControls";
 import Permissions from "./Permissions";
 import { useEditor } from "@/contexts/EditorContext";
 import HeaderDropdown from "./quillExtension/HeaderDropdown";
+import { MAX_HEADING_LEVEL } from "@/../config";
 
 interface ToolbarProps {
   addSuggestion: () => void;
@@ -18,6 +19,7 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
   const historyRef = useRef<HTMLDivElement>(null);
   const [openHistory, setOpenHistory] = useState(false);
   const { getQuill, activeEditor } = useEditor();
+  const [currentHeader, setCurrentHeader] = useState<string | number>("");
   const quill = getQuill(documentId);
   const exportText = () => {
     if (quill) {
@@ -68,6 +70,32 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
       dropdown.addEventListener("change", handleChange);
       return () => dropdown.removeEventListener("change", handleChange);
     }
+    if (!quill) return;
+
+    const handleSelectionChange = (range: any) => {
+      if (range) {
+        const format = quill.getFormat(range);
+        // Check for custom headers
+        for (let i = 1; i <= MAX_HEADING_LEVEL + 1; i++) {
+          const key_name = `header${i}`;
+
+          if (format[key_name]) {
+            setCurrentHeader(i);
+            return;
+          }
+        }
+        // fallback to default Quill header if no custom match
+        if (format.header) {
+          setCurrentHeader(format.header);
+        } else {
+          setCurrentHeader("");
+        }
+      }
+    };
+    quill.on("selection-change", handleSelectionChange);
+    return () => {
+      quill.off("selection-change", handleSelectionChange);
+    };
   }, [documentId]);
 
   const handleHeadingChange = (value: string | number) => {
@@ -126,7 +154,10 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
               </select>
             </span>
             <span className="ql-formats">
-              <HeaderDropdown defaultValue="" onChange={handleHeadingChange} />
+              <HeaderDropdown
+                value={currentHeader}
+                onChange={handleHeadingChange}
+              />
             </span>
 
             {/* <span className="ql-formats">

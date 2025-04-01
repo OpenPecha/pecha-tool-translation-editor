@@ -110,8 +110,8 @@ const Editor = ({
         documentId={documentId}
       />
       <TableOfContent documentId={documentId} />
-      <div className="relative h-full">
-        <div className="editor-container w-full h-full flex relative overflow-hidden ">
+      <div className="relative h-full flex justify-center">
+        <div className="editor-container w-full max-w-[816px]  h-full flex relative overflow-hidden ">
           <LineNumberVirtualized
             editorRef={editorRef}
             documentId={documentId}

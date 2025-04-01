@@ -1,8 +1,10 @@
+import React, { useState, useEffect } from "react";
+import { ChevronRight, ChevronDown } from "lucide-react";
+import { Button } from "./ui/button";
+import { FaList, FaArrowCircleLeft } from "react-icons/fa";
 import { useEditor } from "@/contexts/EditorContext";
 import { MAX_HEADING_LEVEL } from "@/../config";
-import React, { useState, useEffect } from "react";
-import { FaList } from "react-icons/fa";
-import { Button } from "./ui/button";
+import { cn } from "@/lib/utils";
 
 interface Heading {
   text: string;
@@ -17,38 +19,47 @@ interface TableOfContentProps {
 const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [headings, setHeadings] = useState<Heading[]>([]);
+  const [expandedSections, setExpandedSections] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null);
   const { getQuill } = useEditor();
 
   const quill = getQuill(documentId);
+
   const generateList = () => {
-    let list = "h1";
-    for (let i = 2; i <= MAX_HEADING_LEVEL; i++) {
-      //genetate list
-      list += `,h${i}`;
-    }
-    return list;
+    return Array.from(
+      { length: MAX_HEADING_LEVEL },
+      (_, i) => `h${i + 1}`
+    ).join(",");
   };
+
   useEffect(() => {
     const extractHeadings = () => {
       if (!quill) return;
-      let list = generateList();
-      const headingElements = quill.root.querySelectorAll(list);
+      const headingElements = quill.root.querySelectorAll(generateList());
       const headingsData: Heading[] = Array.from(headingElements).map(
-        (heading, index) => ({
-          text: heading.textContent || "",
-          level: parseInt(heading.tagName[1]),
-          id: `heading-${index}`,
-        })
+        (heading, index) => {
+          const id = `heading-${index}`;
+          heading.setAttribute("id", id);
+          return {
+            text: heading.textContent || "",
+            level: parseInt(heading.tagName[1]),
+            id,
+          };
+        }
       );
 
       setHeadings(headingsData);
+      const initialExpanded: { [key: string]: boolean } = {};
+      headingsData.forEach((h) => {
+        if (h.level === 1 || h.level === 2) initialExpanded[h.id] = true;
+      });
+      setExpandedSections(initialExpanded);
     };
 
     extractHeadings();
-
-    // Create a MutationObserver to watch for changes in the editor
     const observer = new MutationObserver(extractHeadings);
-
     if (quill) {
       observer.observe(quill.root, {
         childList: true,
@@ -56,76 +67,134 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
         characterData: true,
       });
     }
-
     return () => observer.disconnect();
   }, [quill]);
 
-  const scrollToHeading = (index: number) => {
+  const scrollToHeading = (id: string) => {
     if (!quill) return;
-    let list = generateList();
-    const headingElements = quill.root.querySelectorAll(list);
-    const element = headingElements[index];
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
+    const el = quill.root.querySelector(`#${id}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+      setActiveHeadingId(id);
     }
+  };
+
+  const toggleExpand = (id: string) => {
+    setExpandedSections((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const renderTOC = () => {
+    if (!headings.length)
+      return (
+        <div className="text-sm italic text-gray-400">No headings found</div>
+      );
+
+    return (
+      <div className="space-y-1">
+        {headings.map((heading, index) => {
+          const isNested = heading.level > 1;
+          const hasChildren =
+            index < headings.length - 1 &&
+            headings[index + 1].level > heading.level;
+          const isExpanded = expandedSections[heading.id];
+          const isActive = activeHeadingId === heading.id;
+
+          let isVisible = true;
+          for (let i = 0; i < index; i++) {
+            const potentialParent = headings[i];
+            if (
+              potentialParent.level < heading.level &&
+              headings
+                .slice(i + 1, index)
+                .every((h) => h.level > potentialParent.level)
+            ) {
+              if (!expandedSections[potentialParent.id]) {
+                isVisible = false;
+                break;
+              }
+            }
+          }
+
+          if (!isVisible || !heading.text.trim()) return null;
+
+          return (
+            <div
+              key={heading.id}
+              className={cn(
+                "text-sm py-1.5 px-2 rounded transition-colors",
+                isNested ? "text-slate-700" : "font-medium text-slate-900",
+                isActive
+                  ? "bg-violet-100 text-violet-700 border-l-2 border-violet-700"
+                  : "hover:bg-gray-100"
+              )}
+              style={{ paddingLeft: `${(heading.level - 1) * 16}px` }}
+            >
+              <div className="flex items-center">
+                {hasChildren && (
+                  <button
+                    className="mr-1 p-0.5 rounded-sm hover:bg-violet-200"
+                    onClick={() => toggleExpand(heading.id)}
+                    aria-label={
+                      isExpanded ? "Collapse section" : "Expand section"
+                    }
+                  >
+                    {isExpanded ? (
+                      <ChevronDown className="h-4 w-4 text-violet-600" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4 text-violet-600" />
+                    )}
+                  </button>
+                )}
+                <button
+                  onClick={() => scrollToHeading(heading.id)}
+                  className={cn(
+                    "text-left truncate flex-1",
+                    isActive && "font-semibold"
+                  )}
+                >
+                  {heading.text}
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
   };
 
   return (
     <>
       <Button
         onClick={() => setIsOpen(!isOpen)}
-        className="absolute top-3 right-4 p-3  z-10"
-        aria-label="Table of Contents"
+        className="absolute top-3 right-4 p-3 z-10"
+        aria-label="Toggle Table of Contents"
       >
         <FaList className="w-5 h-5" />
       </Button>
 
       <div
-        className={`fixed inset-y-0 left-0 w-64 bg-white shadow-xl transform transition-transform duration-300 ease-in-out z-20 ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={cn(
+          "absolute inset-y-0 left-0 w-64 bg-white shadow-xl transition-transform duration-300 ease-in-out z-20",
+          isOpen ? "translate-x-0 " : "-translate-x-full hidden"
+        )}
       >
-        <div className="p-4">
+        <div className="p-4 h-full flex flex-col">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold">Table of Contents</h3>
             <button
               onClick={() => setIsOpen(false)}
               className="text-gray-500 hover:text-gray-700"
             >
-              ✕
+              <FaArrowCircleLeft className="w-5 h-5" />
             </button>
+            <h3 className="text-lg font-semibold">Table of Contents</h3>
           </div>
-          <nav>
-            {headings.map((heading, index) => {
-              if (!heading.text?.trim()) return null;
-              return (
-                <button
-                  key={heading.id}
-                  onClick={() => scrollToHeading(index)}
-                  className={`block w-full text-left py-2 text-sm hover:bg-gray-100 truncate`}
-                  style={{
-                    paddingLeft: `${heading.level * 0.5}rem`,
-                    fontSize: `${Math.max(
-                      0.75,
-                      1.1 - (heading.level - 1) * 0.1
-                    )}rem`,
-                    fontWeight:
-                      heading.level === 1
-                        ? 600
-                        : Math.max(400, 500 - (heading.level - 1) * 50),
-                  }}
-                >
-                  {heading.text}
-                </button>
-              );
-            })}
-          </nav>
+          <div className="overflow-y-auto flex-grow">{renderTOC()}</div>
         </div>
       </div>
 
       {isOpen && (
         <div
-          className="fixed inset-0  bg-opacity-50 z-10"
+          className="fixed inset-0  bg-opacity-30 z-10"
           onClick={() => setIsOpen(false)}
         />
       )}
