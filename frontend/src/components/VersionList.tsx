@@ -1,3 +1,4 @@
+import { getVersionDiff } from "@/api/version";
 import { useQuillHistory } from "@/contexts/HistoryContext";
 import React from "react";
 import { MdDelete } from "react-icons/md";
@@ -17,6 +18,12 @@ function VersionList() {
   const formatDate = (isoString) => {
     return new Date(isoString).toLocaleString();
   };
+
+  const handleVersionClick = async (versionId: string) => {
+    const diff = await getVersionDiff(versionId);
+    console.log(diff);
+  };
+
   return (
     <div className="versions-list">
       <h4 className="font-bold mb-2 text-xs">Versions</h4>
@@ -30,6 +37,7 @@ function VersionList() {
             .map((version) => (
               <div
                 key={version.id}
+                onClick={() => handleVersionClick(version.id)}
                 className={`px-2  flex justify-between items-center border-b hover:bg-gray-100 ${
                   version.id === currentVersionId ? "bg-blue-100" : ""
                 }`}

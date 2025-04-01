@@ -2,6 +2,7 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import { debounce } from "lodash";
 import { useParams } from "react-router-dom";
 import { useEditor } from "@/contexts/EditorContext";
+import LineNumberMenu from "./LineNumberMenu";
 
 const offsetTop = 0;
 
@@ -167,27 +168,56 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
   };
 
   return (
-    <div
-      ref={lineNumbersRef}
-      className={`line-numbers mt-[5px]  h-full ${
-        isRoot ? "quill-1" : "quill-2"
-      }`}
-    >
-      {lineNumbers.map((lineNum, index) => (
-        <span
-          key={index}
-          className="line-number"
-          style={{
-            top: `${lineNum.top}px`,
-            height: `${lineNum.height}px`,
-          }}
-          onClick={handleClickOnLineNumber}
-        >
-          {lineNum.number}
-        </span>
-      ))}
-    </div>
+    <>
+      <div
+        ref={lineNumbersRef}
+        className={`line-numbers mt-[5px]  h-full ${
+          isRoot ? "quill-1" : "quill-2"
+        }`}
+      >
+        {lineNumbers.map((lineNum, index) => (
+          <EachLineNumber
+            key={index}
+            lineNumber={lineNum.number}
+            position={lineNum}
+            documentId={documentId}
+            onCLick={handleClickOnLineNumber}
+          />
+        ))}
+      </div>
+    </>
   );
 };
+
+function EachLineNumber({ lineNumber, position, documentId, onCLick }) {
+  const [menuVisible, setMenuVisible] = useState(false);
+  const handleContextMenu = (e: React.MouseEvent<HTMLSpanElement>) => {
+    e.preventDefault();
+    setMenuVisible(true);
+  };
+  return (
+    <>
+      <span
+        onContextMenu={handleContextMenu}
+        style={{
+          top: `${position.top}px`,
+          height: `${position.height}px`,
+        }}
+        onClick={onCLick}
+        className="line-number"
+      >
+        {lineNumber}
+      </span>
+      {menuVisible && (
+        <LineNumberMenu
+          documentId={documentId}
+          position={position}
+          lineNumber={lineNumber}
+          onClose={() => setMenuVisible(false)}
+        />
+      )}
+    </>
+  );
+}
 
 export default LineNumberVirtualized;

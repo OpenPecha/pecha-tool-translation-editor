@@ -121,10 +121,10 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
             <div
               key={heading.id}
               className={cn(
-                "text-sm py-1.5 px-2 rounded transition-colors",
+                "text-sm py-1.5 pl-2    transition-colors ",
                 isNested ? "text-slate-700" : "font-medium text-slate-900",
                 isActive
-                  ? "bg-violet-100 text-violet-700 border-l-2 border-violet-700"
+                  ? "  border-l-2 border-violet-700"
                   : "hover:bg-gray-100"
               )}
               style={{ paddingLeft: `${(heading.level - 1) * 16}px` }}
@@ -132,24 +132,24 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
               <div className="flex items-center">
                 {hasChildren && (
                   <button
-                    className="mr-1 p-0.5 rounded-sm hover:bg-violet-200"
+                    className="mr-1 p-0.5 cursor-pointer rounded-sm hover:bg-violet-200"
                     onClick={() => toggleExpand(heading.id)}
                     aria-label={
                       isExpanded ? "Collapse section" : "Expand section"
                     }
                   >
                     {isExpanded ? (
-                      <ChevronDown className="h-4 w-4 text-violet-600" />
+                      <ChevronDown className="h-4 w-4 text-blue-600" />
                     ) : (
-                      <ChevronRight className="h-4 w-4 text-violet-600" />
+                      <ChevronRight className="h-4 w-4 text-blue-600" />
                     )}
                   </button>
                 )}
                 <button
                   onClick={() => scrollToHeading(heading.id)}
                   className={cn(
-                    "text-left truncate flex-1",
-                    isActive && "font-semibold"
+                    "text-left truncate flex-1 cursor-pointer",
+                    isActive && "font-semibold pl-2"
                   )}
                 >
                   {heading.text}
@@ -166,8 +166,10 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
     <>
       <Button
         onClick={() => setIsOpen(!isOpen)}
-        className="absolute top-3 right-4 p-3 z-10"
+        className="absolute top-3 left-4 p-3 z-10"
         aria-label="Toggle Table of Contents"
+        size="sm"
+        variant="outline"
       >
         <FaList className="w-5 h-5" />
       </Button>

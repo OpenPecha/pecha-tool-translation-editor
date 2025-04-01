@@ -29,9 +29,12 @@ export const fetchVersions = async (docId: string) => {
  */
 export const fetchVersion = async (versionId: string) => {
   try {
-    const response = await fetch(`${server_url}/versions/version/${versionId}`, {
-      headers: getHeaders(),
-    });
+    const response = await fetch(
+      `${server_url}/versions/version/${versionId}`,
+      {
+        headers: getHeaders(),
+      }
+    );
 
     if (!response.ok) {
       throw new Error("Failed to fetch version");
@@ -50,12 +53,16 @@ export const fetchVersion = async (versionId: string) => {
  * @param label - Name for the version (e.g., "Auto-save", "Manual Save")
  * @param content - Quill delta JSON content
  */
-export const createVersion = async (docId: string, label: string, content: any) => {
+export const createVersion = async (
+  docId: string,
+  label: string,
+  content: any
+) => {
   try {
     const response = await fetch(`${server_url}/versions`, {
       method: "POST",
       headers: {
-        ...getHeaders()
+        ...getHeaders(),
       },
       body: JSON.stringify({ docId, label, content }),
     });
@@ -79,14 +86,17 @@ export const createVersion = async (docId: string, label: string, content: any) 
  */
 export const updateVersion = async (versionId: string, label: string) => {
   try {
-    const response = await fetch(`${server_url}/versions/version/${versionId}`, {
-      method: "PATCH",
-      headers: {
-        ...getHeaders(),
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ label }),
-    });
+    const response = await fetch(
+      `${server_url}/versions/version/${versionId}`,
+      {
+        method: "PATCH",
+        headers: {
+          ...getHeaders(),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ label }),
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -106,10 +116,13 @@ export const updateVersion = async (versionId: string, label: string) => {
  */
 export const deleteVersion = async (versionId: string) => {
   try {
-    const response = await fetch(`${server_url}/versions/version/${versionId}`, {
-      method: "DELETE",
-      headers: getHeaders(),
-    });
+    const response = await fetch(
+      `${server_url}/versions/version/${versionId}`,
+      {
+        method: "DELETE",
+        headers: getHeaders(),
+      }
+    );
 
     if (!response.ok) {
       throw new Error("Failed to delete version");
@@ -118,6 +131,26 @@ export const deleteVersion = async (versionId: string) => {
     return await response.json();
   } catch (error) {
     console.error("Error deleting version:", error);
+    throw error;
+  }
+};
+
+export const getVersionDiff = async (versionId: string) => {
+  try {
+    const response = await fetch(
+      `${server_url}/texts/version-diff/${versionId}`,
+      {
+        headers: getHeaders(),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to get version diff");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error getting version diff:", error);
     throw error;
   }
 };

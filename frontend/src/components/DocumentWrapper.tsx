@@ -37,7 +37,7 @@ function DocumentWrapper() {
         <MenuDrawer quill1Ref={quill1Ref} quill2Ref={quill2Ref} />
       )} */}
       <div id="toolbar-container"></div>
-      <div className="flex px-2  h-[calc(100dvh-52px)]">
+      <div className="flex px-2  h-[calc(100dvh-100px)]">
         <EditorProvider>
           <YjsProvider>
             <DocumentEditor docId={id} />
