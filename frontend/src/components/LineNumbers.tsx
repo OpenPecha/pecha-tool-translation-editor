@@ -195,12 +195,26 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
   const isRoot = documentId === useParams().id;
 
   const handleClickOnLineNumber = (e: React.MouseEvent<HTMLSpanElement>) => {
-    const lineNumber = (e.target as HTMLSpanElement).textContent;
+    // Get the line number from the clicked element or its parent
+    let lineNumber: string | null = null;
+    const target = e.target as HTMLSpanElement;
+
+    if (target.classList.contains("line-number")) {
+      // Clicked on outer span
+      const innerSpan = target.querySelector("span");
+      lineNumber = innerSpan?.textContent || null;
+    } else {
+      // Clicked on inner span
+      lineNumber = target.textContent;
+    }
+
     if (!lineNumber) return;
 
     // Get current editor's container and clicked element's position
     const currentEditor = editorRef?.current?.querySelector(".ql-editor");
-    const clickedSpan = e.target as HTMLSpanElement;
+    const clickedSpan = target.closest(".line-number") as HTMLSpanElement;
+    if (!clickedSpan) return;
+
     const clickedTop = parseFloat(clickedSpan.style.top);
     const currentScrollTop = currentEditor?.scrollTop || 0;
     const viewportOffset = clickedTop - currentScrollTop;
@@ -213,7 +227,7 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
     // Find matching line number span in other editor
     const targetSpan = Array.from(
       otherLineNumbers.getElementsByClassName("line-number")
-    ).find((span) => span.textContent === lineNumber);
+    ).find((span) => span.querySelector("span")?.textContent === lineNumber);
 
     if (targetSpan) {
       // Get the other editor's container
