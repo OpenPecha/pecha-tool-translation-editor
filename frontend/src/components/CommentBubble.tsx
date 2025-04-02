@@ -80,6 +80,7 @@ const CommentBubble = () => {
     }
 
     const comment = commentThread?.[0];
+    const commented_on = comment?.comment_on;
     if (!comment || !currentUser) return;
 
     createComment(
@@ -90,7 +91,8 @@ const CommentBubble = () => {
       comment.initial_end_offset,
       comment.threadId,
       isSuggestion,
-      isSuggestion ? suggestedText.trim() : undefined
+      isSuggestion ? suggestedText.trim() : undefined,
+      commented_on
     )
       .then(() => {
         setIsModalOpen(false);

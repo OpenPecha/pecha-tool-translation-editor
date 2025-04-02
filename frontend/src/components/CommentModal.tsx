@@ -11,10 +11,13 @@ function CommentModal({ documentId, setShowCommentModal, range }) {
   const { getQuill } = useEditor();
   const quill = getQuill(documentId);
   const { currentUser } = useAuth();
-
+  const currentRangeText = quill?.getText(
+    currentRange?.index,
+    currentRange?.length
+  );
   async function addComment() {
     if (!currentRange) return;
-
+    console.log(currentRangeText);
     const content = commentText;
     if (!content || content === "") {
       setShowCommentModal(false);
@@ -23,7 +26,6 @@ function CommentModal({ documentId, setShowCommentModal, range }) {
 
     const end = currentRange.index + currentRange.length;
     const threadId = crypto.randomUUID();
-
     try {
       const createdComment = await createComment(
         documentId,
@@ -33,10 +35,11 @@ function CommentModal({ documentId, setShowCommentModal, range }) {
         end,
         threadId,
         isSuggestion,
-        isSuggestion ? suggestedText : undefined
+        isSuggestion ? suggestedText : undefined,
+        currentRangeText
       );
       console.log("createdComment", createdComment);
-      if (createdComment.id) {
+      if (createdComment?.id) {
         // Update the Quill editor to highlight the text
         quill?.formatText(currentRange.index, currentRange.length, "comment", {
           id: createdComment.threadId,

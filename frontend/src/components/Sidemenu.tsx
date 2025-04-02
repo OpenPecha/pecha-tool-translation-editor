@@ -2,7 +2,10 @@ import React, { useEffect, useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import SelectTranslation from "./SelectTranslation";
 import { useParams } from "react-router-dom";
-import { fetchComments } from "@/api/comment";
+import { deleteComment, fetchComments } from "@/api/comment";
+import { FaCross } from "react-icons/fa";
+import { BiCross, BiTrash } from "react-icons/bi";
+import { useEditor } from "@/contexts/EditorContext";
 
 type MenuOption = "translations" | "settings" | "main" | "comments";
 
@@ -100,7 +103,7 @@ function SideMenu({
 function Comments() {
   const { id } = useParams();
   const [comments, setComments] = useState<any[]>([]);
-
+  const { activeQuill } = useEditor();
   useEffect(() => {
     if (id) {
       fetchComments(id)
@@ -109,12 +112,24 @@ function Comments() {
     }
   }, [id]);
 
+  const handleDeleteComment = (commentId: string) => {
+    deleteComment(commentId)
+      .then(() => {
+        setComments(comments.filter((comment) => comment.id !== commentId));
+      })
+      .catch((e) => console.error(e));
+  };
+  const handleCommentClick = (comment: any) => {
+    if (activeQuill) {
+      activeQuill.setSelection(comment.initial_start_offset);
+    }
+  };
   return (
     <div className="px-4 max-h-[calc(100vh-100px)] overflow-y-auto">
       <div className="flow-root">
         <ul role="list" className="-mb-8">
           {comments.map((comment, commentIdx) => (
-            <li key={comment.id}>
+            <li key={comment.id} onClick={() => handleCommentClick(comment)}>
               <div className="relative pb-8">
                 {commentIdx !== comments.length - 1 ? (
                   <span
@@ -132,16 +147,29 @@ function Comments() {
                   </div>
                   <div className="flex min-w-0 flex-1 justify-between space-x-4">
                     <div>
-                      <p className="text-sm text-gray-500">
-                        <span className="font-medium text-gray-900">
-                          {comment.user.username}
-                        </span>
-                        {comment.is_suggestion ? (
-                          <span> suggested "{comment.suggested_text}"</span>
-                        ) : (
-                          <span> commented</span>
-                        )}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm text-gray-500 font-monlam">
+                          <span className="font-medium text-gray-900">
+                            {comment.user.username}
+                          </span>
+                          {comment.is_suggestion ? (
+                            <span>
+                              {" "}
+                              suggested "{comment.suggested_text}" for "
+                              {comment.comment_on}"
+                            </span>
+                          ) : (
+                            <span> commented on "{comment.comment_on}"</span>
+                          )}
+                        </p>
+                        <button
+                          onClick={() => handleDeleteComment(comment.id)}
+                          className="text-red-500 hover:text-red-700 text-sm cursor-pointer"
+                          title="Delete comment"
+                        >
+                          <BiTrash />
+                        </button>
+                      </div>
                       <p className="mt-1 text-sm text-gray-700">
                         {comment.content}
                       </p>

@@ -62,6 +62,7 @@ model Comment {
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
   childComments        Comment[] @relation("parentComment")
+  comment_on           String?
   initial_start_offset Int
   initial_end_offset   Int
   doc                  Doc       @relation(fields: [docId], references: [id], onDelete: Cascade)

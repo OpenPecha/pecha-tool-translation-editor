@@ -64,6 +64,7 @@ export const fetchCommentsByThreadId = async (threadId: string) => {
  * @param {boolean} [is_suggestion] - Whether this is a suggestion
  * @param {string} [suggested_text] - The suggested text (required if is_suggestion is true)
  * @param {string} [parentCommentId] - Optional parent comment ID (for replies)
+ * @param {string} [comment_on] - The comment ID that this comment is replying to
  * @returns {Promise<any>} - The created comment
  */
 export const createComment = async (
@@ -75,9 +76,11 @@ export const createComment = async (
   threadId: string,
   is_suggestion?: boolean,
   suggested_text?: string,
+  comment_on?: string,
   parentCommentId?: string
 ) => {
   try {
+    console.log("comment_on", comment_on);
     const response = await fetch(`${server_url}/comments`, {
       method: "POST",
       headers: getHeaders(),
@@ -91,6 +94,7 @@ export const createComment = async (
         is_suggestion,
         suggested_text,
         parentCommentId,
+        comment_on,
       }),
     });
 
@@ -151,33 +155,4 @@ export const deleteComment = async (commentId: string) => {
   } catch (error) {
     console.error("Error deleting comment:", error);
   }
-};
-
-/**
- * Create a suggestion comment
- * @param {string} docId - The document ID
- * @param {string} userId - The user ID
- * @param {string} content - The comment text explaining the suggestion
- * @param {number} startOffset - The initial start offset
- * @param {number} endOffset - The initial end offset
- * @param {string} suggested_text - The suggested replacement text
- * @returns {Promise<any>} - The created suggestion comment
- */
-export const createSuggestion = async (
-  docId: string,
-  userId: string,
-  content: string,
-  startOffset: number,
-  endOffset: number,
-  suggested_text: string
-) => {
-  return createComment(
-    docId,
-    userId,
-    content,
-    startOffset,
-    endOffset,
-    true,
-    suggested_text
-  );
 };

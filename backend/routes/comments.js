@@ -72,12 +72,14 @@ router.post("/", authenticate, async (req, res) => {
       threadId,
       is_suggestion,
       suggested_text,
+      comment_on,
     } = req.body;
 
     if (
       !docId ||
       !userId ||
       !content ||
+      !comment_on ||
       initial_start_offset == null ||
       initial_end_offset == null
     ) {
@@ -90,19 +92,21 @@ router.post("/", authenticate, async (req, res) => {
         .status(400)
         .json({ error: "Suggested text is required for suggestions" });
     }
-
+    const data = {
+      docId,
+      userId,
+      content,
+      parentCommentId,
+      initial_start_offset,
+      initial_end_offset,
+      threadId,
+      comment_on,
+      is_suggestion: is_suggestion || false,
+      suggested_text,
+    };
+    console.log(data);
     const newComment = await prisma.comment.create({
-      data: {
-        docId,
-        userId,
-        content,
-        parentCommentId,
-        initial_start_offset,
-        initial_end_offset,
-        threadId,
-        is_suggestion: is_suggestion || false,
-        suggested_text,
-      },
+      data: data,
       include: { user: true },
     });
 
