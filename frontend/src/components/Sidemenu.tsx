@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import SelectTranslation from "./SelectTranslation";
+import { useParams } from "react-router-dom";
+import { fetchComments } from "@/api/comment";
 
 type MenuOption = "translations" | "settings" | "main" | "comments";
 
@@ -56,7 +58,7 @@ function SideMenu({
               <ChevronLeft size={16} />
               Back
             </button>
-            <div>Comments Content</div>
+            <Comments />
           </div>
         );
       default:
@@ -91,6 +93,71 @@ function SideMenu({
   return (
     <div className="bg-white border-l h-full w-1/4 shadow-sm">
       {renderContent()}
+    </div>
+  );
+}
+
+function Comments() {
+  const { id } = useParams();
+  const [comments, setComments] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (id) {
+      fetchComments(id)
+        .then((data) => setComments(data || []))
+        .catch((e) => console.error(e));
+    }
+  }, [id]);
+
+  return (
+    <div className="px-4 max-h-[calc(100vh-100px)] overflow-y-auto">
+      <div className="flow-root">
+        <ul role="list" className="-mb-8">
+          {comments.map((comment, commentIdx) => (
+            <li key={comment.id}>
+              <div className="relative pb-8">
+                {commentIdx !== comments.length - 1 ? (
+                  <span
+                    className="absolute left-4 top-4 -ml-px h-full w-0.5 bg-gray-200"
+                    aria-hidden="true"
+                  />
+                ) : null}
+                <div className="relative flex space-x-3">
+                  <div>
+                    <span className="h-8 w-8 rounded-full bg-gray-400 flex items-center justify-center ring-8 ring-white">
+                      <span className="text-sm font-medium text-white">
+                        {comment.user.username[0].toUpperCase()}
+                      </span>
+                    </span>
+                  </div>
+                  <div className="flex min-w-0 flex-1 justify-between space-x-4">
+                    <div>
+                      <p className="text-sm text-gray-500">
+                        <span className="font-medium text-gray-900">
+                          {comment.user.username}
+                        </span>
+                        {comment.is_suggestion ? (
+                          <span> suggested "{comment.suggested_text}"</span>
+                        ) : (
+                          <span> commented</span>
+                        )}
+                      </p>
+                      <p className="mt-1 text-sm text-gray-700">
+                        {comment.content}
+                      </p>
+                    </div>
+                    <div className="whitespace-nowrap text-right text-sm text-gray-500">
+                      <time dateTime={comment.createdAt}>
+                        {new Date(comment.createdAt).toLocaleDateString()}
+                      </time>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }
