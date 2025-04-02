@@ -87,7 +87,7 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
 
       for (const heading of headingElements) {
         const rect = heading.getBoundingClientRect();
-        if (rect.top <= containerRect.top + 200) {
+        if (rect.top <= containerRect.top + 10) {
           // Keep track of the last visible heading
           lastVisibleHeading = heading;
         } else {
@@ -183,7 +183,7 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
                   ? "  border-l-2 border-violet-700"
                   : "hover:bg-gray-100"
               )}
-              style={{ paddingLeft: `${(heading.level - 1) * 16}px` }}
+              // style={{ paddingLeft: `${(heading.level - 1) * 16}px` }}
             >
               <div className="flex items-center">
                 {hasChildren && (

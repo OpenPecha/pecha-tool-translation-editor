@@ -245,7 +245,7 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
   return (
     <>
       {showBookmarkPopup && bookmarked > 0 && (
-        <div className="fixed bottom-4 left-4  p-2 z-50  ">
+        <div className="fixed bottom-4 left-4  p-2 z-10  ">
           <button
             onClick={handleScrollToBookmark}
             title="Go to bookmark"

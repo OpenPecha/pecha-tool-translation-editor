@@ -95,7 +95,7 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
     return () => {
       quill.off("selection-change", handleSelectionChange);
     };
-  }, [documentId]);
+  }, [documentId, quill]);
 
   const handleHeadingChange = (value: string | number) => {
     if (!quill) return;
