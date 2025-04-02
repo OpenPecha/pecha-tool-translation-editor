@@ -5,7 +5,7 @@ import { FaList, FaArrowCircleLeft } from "react-icons/fa";
 import { useEditor } from "@/contexts/EditorContext";
 import { MAX_HEADING_LEVEL } from "@/../config";
 import { cn } from "@/lib/utils";
-
+import { debounce } from "lodash";
 interface Heading {
   text: string;
   level: number;
@@ -68,6 +68,62 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
       });
     }
     return () => observer.disconnect();
+  }, [quill]);
+
+  useEffect(() => {
+    const updateActiveHeading = () => {
+      if (!quill) return;
+      const container = quill.root;
+      const containerRect = container.getBoundingClientRect();
+      const headingElements = Array.from(
+        container.querySelectorAll(generateList())
+      );
+
+      // If no headings found, keep the current activeHeadingId
+      if (headingElements.length === 0) return;
+
+      let currentHeading = null;
+      let lastVisibleHeading = null;
+
+      for (const heading of headingElements) {
+        const rect = heading.getBoundingClientRect();
+        if (rect.top <= containerRect.top + 200) {
+          // Keep track of the last visible heading
+          lastVisibleHeading = heading;
+        } else {
+          // We've found the first heading below viewport
+          currentHeading = lastVisibleHeading;
+          break;
+        }
+      }
+
+      // If we're at the end and haven't set currentHeading, use the last visible heading
+      if (!currentHeading && lastVisibleHeading) {
+        currentHeading = lastVisibleHeading;
+      }
+
+      // Only update if we found a heading
+      if (currentHeading && currentHeading.id) {
+        setActiveHeadingId(currentHeading.id);
+      }
+    };
+
+    const debouncedUpdate = debounce(updateActiveHeading, 100);
+
+    const editorContainer = quill?.root;
+    if (editorContainer) {
+      editorContainer.addEventListener("scroll", debouncedUpdate);
+      window.addEventListener("resize", debouncedUpdate); // Also handle window resizes
+
+      // Initial update
+      updateActiveHeading();
+
+      return () => {
+        editorContainer.removeEventListener("scroll", debouncedUpdate);
+        window.removeEventListener("resize", debouncedUpdate);
+        debouncedUpdate.cancel();
+      };
+    }
   }, [quill]);
 
   const scrollToHeading = (id: string) => {
@@ -193,13 +249,6 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
           <div className="overflow-y-auto flex-grow">{renderTOC()}</div>
         </div>
       </div>
-
-      {isOpen && (
-        <div
-          className="fixed inset-0  bg-opacity-30 z-10"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
     </>
   );
 };

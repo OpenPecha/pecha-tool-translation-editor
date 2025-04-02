@@ -98,11 +98,16 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
   }, [documentId]);
 
   const handleHeadingChange = (value: string | number) => {
+    if (!quill) return;
+
     if (value === "") {
-      // Apply normal text
+      // Clear all header formats (h1-h6)
+      for (let i = 1; i <= MAX_HEADING_LEVEL; i++) {
+        quill.format(`header${i}`, false);
+      }
+      // Set to paragraph
       quill.format("header", false);
     } else {
-      // Apply custom header
       quill.format(`header${value}`, true);
     }
   };
