@@ -2,7 +2,8 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import { debounce } from "lodash";
 import { useParams } from "react-router-dom";
 import { useEditor } from "@/contexts/EditorContext";
-import LineNumberMenu from "./LineNumberMenu";
+import useLocalStorage from "@/hooks/useLocalStorage";
+import { FaBookmark } from "react-icons/fa";
 
 const offsetTop = 0;
 
@@ -16,6 +17,51 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
       lineHeight?: string;
     }>
   >([]);
+  const [bookmarked, setBookmarked] = useLocalStorage(
+    `${documentId}-bookmark`,
+    0
+  );
+  const [showBookmarkPopup, setShowBookmarkPopup] = useState(false);
+
+  const handleDoubleClick = (lineNumber: number) => {
+    if (lineNumber === bookmarked) {
+      setBookmarked(0);
+    } else {
+      setBookmarked(lineNumber);
+    }
+  };
+
+  const isBookmarkInViewport = () => {
+    const editorContainer = editorRef?.current?.querySelector(".ql-editor");
+    const lineNumberSpan = lineNumbersRef.current?.querySelector(
+      `.line-number:nth-child(${bookmarked})`
+    ) as HTMLElement;
+
+    if (!editorContainer || !lineNumberSpan) return false;
+
+    const containerRect = editorContainer.getBoundingClientRect();
+    const lineTop = parseFloat(lineNumberSpan.style.top);
+    const scrollTop = editorContainer.scrollTop;
+
+    // Check if bookmark is within viewport
+    return !(lineTop < scrollTop || lineTop > scrollTop + containerRect.height);
+  };
+
+  const handleScrollToBookmark = () => {
+    const lineNumberSpan = lineNumbersRef.current?.querySelector(
+      `.line-number:nth-child(${bookmarked})`
+    ) as HTMLElement;
+
+    if (lineNumberSpan) {
+      const editorContainer = editorRef?.current?.querySelector(".ql-editor");
+      if (editorContainer && lineNumberSpan) {
+        const targetTop = parseFloat(lineNumberSpan.style.top);
+        editorContainer.scrollTop = targetTop;
+      }
+    }
+    setShowBookmarkPopup(false);
+  };
+
   const { getQuill } = useEditor();
   const quill = getQuill(documentId);
   const updateLineNumbers = useCallback(() => {
@@ -117,6 +163,11 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
           lineNumbersRef.current.style.transform = `translateY(${-editorContainer.scrollTop}px)`;
         }
         debouncedUpdateLineNumbers();
+
+        // Update bookmark popup visibility on scroll
+        if (bookmarked > 0) {
+          setShowBookmarkPopup(!isBookmarkInViewport());
+        }
       });
     }
 
@@ -129,7 +180,17 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
     return () => {
       window.removeEventListener("resize", debouncedUpdateLineNumbers);
     };
-  }, [editorRef, quill, updateLineNumbers]);
+  }, [editorRef, quill, updateLineNumbers, bookmarked]);
+
+  useEffect(() => {
+    if (bookmarked > 0) {
+      setShowBookmarkPopup(!isBookmarkInViewport());
+      const timer = setTimeout(() => {
+        setShowBookmarkPopup(false);
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [lineNumbers.length]);
 
   const isRoot = documentId === useParams().id;
 
@@ -169,11 +230,22 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
 
   return (
     <>
+      {showBookmarkPopup && bookmarked > 0 && (
+        <div className="fixed bottom-4 left-4  p-2 z-50  ">
+          <button
+            onClick={handleScrollToBookmark}
+            title="Go to bookmark"
+            className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+          >
+            <FaBookmark />
+          </button>
+        </div>
+      )}
       <div
         ref={lineNumbersRef}
-        className={`line-numbers mt-[5px]  h-full ${
+        className={`line-numbers mt-[5px] h-full ${
           isRoot ? "quill-1" : "quill-2"
-        }`}
+        } relative`}
       >
         {lineNumbers.map((lineNum, index) => (
           <EachLineNumber
@@ -182,6 +254,8 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
             position={lineNum}
             documentId={documentId}
             onCLick={handleClickOnLineNumber}
+            handleDoubleClick={handleDoubleClick}
+            bookmarked={bookmarked}
           />
         ))}
       </div>
@@ -189,34 +263,45 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
   );
 };
 
-function EachLineNumber({ lineNumber, position, documentId, onCLick }) {
-  const [menuVisible, setMenuVisible] = useState(false);
-  const handleContextMenu = (e: React.MouseEvent<HTMLSpanElement>) => {
-    e.preventDefault();
-    setMenuVisible(true);
-  };
+interface EachLineNumberProps {
+  readonly lineNumber: number;
+  readonly position: { readonly top: number; readonly height: number };
+  readonly documentId: string;
+  readonly onCLick: (e: React.MouseEvent<HTMLSpanElement>) => void;
+  readonly handleDoubleClick: (lineNumber: number) => void;
+  readonly bookmarked: number;
+}
+
+function EachLineNumber({
+  lineNumber,
+  position,
+  documentId,
+  onCLick,
+  handleDoubleClick,
+  bookmarked,
+}: EachLineNumberProps) {
+  const isBookmarked = bookmarked === lineNumber;
   return (
-    <>
+    <span
+      onDoubleClick={() => handleDoubleClick(lineNumber)}
+      style={{
+        top: `${position.top}px`,
+        height: `${position.height}px`,
+      }}
+      onClick={onCLick}
+      className={`line-number relative flex items-center px-2 `}
+      id={`${documentId}-line-${lineNumber}`}
+    >
       <span
-        onContextMenu={handleContextMenu}
-        style={{
-          top: `${position.top}px`,
-          height: `${position.height}px`,
-        }}
-        onClick={onCLick}
-        className="line-number"
+        className={
+          isBookmarked
+            ? "bg-amber-100 font-medium text-amber-900 border-r-2 border-amber-500"
+            : "hover:bg-gray-100"
+        }
       >
         {lineNumber}
       </span>
-      {menuVisible && (
-        <LineNumberMenu
-          documentId={documentId}
-          position={position}
-          lineNumber={lineNumber}
-          onClose={() => setMenuVisible(false)}
-        />
-      )}
-    </>
+    </span>
   );
 }
 
