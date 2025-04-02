@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
-const Navbar = () => {
+const Navbar = ({ title }: { title?: string }) => {
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -23,9 +23,9 @@ const Navbar = () => {
         />
         <Link
           to="/"
-          className="text-xl font-semibold text-gray-700 hover:text-gray-900 transition"
+          className="text-xl font-semibold text-gray-700 hover:text-gray-900 transition capitalize"
         >
-          Pecha Editor
+          {title || "Pecha Editor"}
         </Link>
       </div>
 

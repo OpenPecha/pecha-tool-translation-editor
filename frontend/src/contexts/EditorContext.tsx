@@ -62,6 +62,9 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({
       setActiveEditor(null);
       setActiveQuill(null);
     }
+    if (quillEditors.size > 0) {
+      setActiveEditor(Array.from(quillEditors.keys())[0]);
+    }
   };
 
   const getQuill = (id: string) => {

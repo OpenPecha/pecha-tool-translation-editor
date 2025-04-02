@@ -1,10 +1,7 @@
 import Quill from "quill";
 import React, { useEffect, useRef, useState } from "react";
 
-function useScrollHook(
-  quill1Ref: React.RefObject<Quill>,
-  quill2Ref: React.RefObject<Quill>
-) {
+function useScrollHook(quill1: Quill, quill2: Quill) {
   const ignoreScrollEvents = useRef(false);
   const lastClickY = useRef<number | null>(null);
   const [syncMode, setSyncMode] = useState<"scroll" | "click" | "none">("none");
@@ -17,10 +14,7 @@ function useScrollHook(
   };
 
   useEffect(() => {
-    if (!quill1Ref.current || !quill2Ref.current) return;
-
-    const quill1 = quill1Ref.current;
-    const quill2 = quill2Ref.current;
+    if (!quill1 || !quill2) return;
 
     const handleScroll = (source: Quill, target: Quill) => {
       if (syncMode !== "scroll" || ignoreScrollEvents.current) return;

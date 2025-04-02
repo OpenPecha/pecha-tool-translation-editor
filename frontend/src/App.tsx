@@ -4,7 +4,7 @@ import Navbar from "./components/Navbar";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import DocumentList from "./components/DocumentList";
-import DocumentWrapper from "./components/DocumentWrapper";
+import DocumentsWrapper from "./components/DocumentWrapper";
 
 // Protected route component
 const ProtectedRoute = ({ children }) => {
@@ -23,12 +23,12 @@ const ProtectedRoute = ({ children }) => {
 function AppContent() {
   return (
     <div className="flex flex-col h-full bg-[#fafbfd]">
-      <Navbar />
       <Routes>
         <Route
           path="/"
           element={
             <ProtectedRoute>
+              <Navbar />
               <DocumentList />
             </ProtectedRoute>
           }
@@ -40,7 +40,7 @@ function AppContent() {
           path="/documents/:id"
           element={
             <ProtectedRoute>
-              <DocumentWrapper />
+              <DocumentsWrapper />
             </ProtectedRoute>
           }
         />

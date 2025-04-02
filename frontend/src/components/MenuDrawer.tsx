@@ -3,12 +3,22 @@ import React, { useState } from "react";
 import { FaCog } from "react-icons/fa";
 import SyncOptions from "./SyncOptions";
 import useScrollHook from "@/hooks/useScrollHook";
+import { useEditor } from "@/contexts/EditorContext";
 
-function MenuDrawer({ quill1Ref, quill2Ref }) {
+function MenuDrawer({
+  rootId,
+  translationId,
+}: {
+  rootId: string;
+  translationId: string;
+}) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const { getQuill } = useEditor();
+  const quill1 = getQuill(rootId);
+  const quill2 = getQuill(translationId);
   const { syncMode, setSyncMode, htmlTag, setSelectedHtmlTag } = useScrollHook(
-    quill1Ref,
-    quill2Ref
+    quill1,
+    quill2
   );
   return (
     <>
