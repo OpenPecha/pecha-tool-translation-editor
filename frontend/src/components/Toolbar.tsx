@@ -7,6 +7,7 @@ import Permissions from "./Permissions";
 import { useEditor } from "@/contexts/EditorContext";
 import HeaderDropdown from "./quillExtension/HeaderDropdown";
 import { MAX_HEADING_LEVEL } from "@/../config";
+import { Switch } from "./ui/switch";
 
 interface ToolbarProps {
   addSuggestion: () => void;
@@ -18,6 +19,8 @@ interface ToolbarProps {
 const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
   const historyRef = useRef<HTMLDivElement>(null);
   const [openHistory, setOpenHistory] = useState(false);
+  const [isEnabled, setIsEnabled] = useState(true);
+
   const { getQuill, activeEditor, activeQuill } = useEditor();
   const [currentHeader, setCurrentHeader] = useState<string | number>("");
   const quill = getQuill(documentId);
@@ -135,7 +138,17 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
       }
     }
   };
+
+  const toggleEdit = () => {
+    if (quill) {
+      const newState = !isEnabled;
+      setIsEnabled(newState);
+      quill.enable(newState);
+    }
+  };
+
   const showToolbar = activeEditor === documentId;
+
   return (
     <>
       {createPortal(
@@ -164,6 +177,7 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
               />
             </span>
 
+            <span className="ql-formats"></span>
             {/* <span className="ql-formats">
               <select className="ql-header">
                 <option value="1" />
@@ -230,7 +244,21 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
               </button>
             </span>
           </div>
-          <div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={isEnabled}
+                onCheckedChange={toggleEdit}
+                style={{
+                  backgroundColor: isEnabled ? "black" : "#ccc",
+                  color: isEnabled ? "#fff" : "#000",
+                  width: "40px",
+                }}
+              />
+              <span className="text-xs  italic">
+                {isEnabled ? "Editable" : "Locked"}
+              </span>
+            </div>
             {synced ? (
               "🟢"
             ) : (
