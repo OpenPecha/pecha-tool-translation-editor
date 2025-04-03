@@ -1,7 +1,6 @@
 import { useQuillHistory } from "@/contexts/HistoryContext";
 import { useState, useEffect } from "react";
-import { IoMdArrowBack } from "react-icons/io";
-import { useNavigate, useParams } from "react-router-dom";
+import { IoMdClose } from "react-icons/io";
 import { getVersionDiff } from "@/api/version";
 
 interface DeltaOperation {
@@ -37,6 +36,10 @@ interface DiffResponse {
   currentText: string;
 }
 
+interface VersionDiffProps {
+  readonly onClose: () => void;
+}
+
 const DiffViewer = ({ diffs }: { diffs: [number, string][] }) => {
   return (
     <div className="font-mono text-sm">
@@ -68,9 +71,7 @@ const DiffViewer = ({ diffs }: { diffs: [number, string][] }) => {
   );
 };
 
-function VersionDiff() {
-  const navigate = useNavigate();
-  const { documentId } = useParams();
+function VersionDiff({ onClose }: VersionDiffProps) {
   const { versions, isLoading } = useQuillHistory() as QuillHistoryContext;
   const [selectedVersionId, setSelectedVersionId] = useState<string | null>(
     null
@@ -110,10 +111,10 @@ function VersionDiff() {
       {/* Header */}
       <div className="bg-white border-b px-4 py-2 flex items-center">
         <button
-          onClick={() => navigate(`/documents/${documentId}`)}
-          className="flex items-center text-gray-600 hover:text-gray-900"
+          onClick={onClose}
+          className="flex flex-row items-center text-gray-600 hover:text-gray-900"
         >
-          <IoMdArrowBack className="mr-2" /> Back to editor
+          <IoMdClose size={20} className="mr-2 font-bold" />
         </button>
       </div>
 
@@ -136,7 +137,7 @@ function VersionDiff() {
         </div>
 
         {/* Right panel - Version list */}
-        <div className="w-1/3 border-l bg-white overflow-y-auto">
+        <div className="w-1/4 border-l bg-white overflow-y-auto">
           <div className="p-4">
             <h2 className="text-xl font-semibold mb-4">Version History</h2>
             {versions && versions.length > 0 ? (
