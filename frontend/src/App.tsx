@@ -1,23 +1,43 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { QuillHistoryProvider } from "./contexts/HistoryContext";
 import Navbar from "./components/Navbar";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import DocumentList from "./components/DocumentList";
 import DocumentsWrapper from "./components/DocumentWrapper";
+import { useParams } from "react-router-dom";
+import { ReactNode } from "react";
+import VersionDiff from "./pages/VersionDiff";
+
+interface ProtectedRouteProps {
+  children: ReactNode;
+}
+
+interface HistoryProviderWrapperProps {
+  children: ReactNode;
+}
 
 // Protected route component
-const ProtectedRoute = ({ children }) => {
-  const { currentUser, loading } = useAuth();
-  if (loading) {
+const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+  const auth = useAuth();
+  if (auth?.loading) {
     return <div className="loading">Loading...</div>;
   }
 
-  if (!currentUser) {
+  if (!auth?.currentUser) {
     return <Navigate to="/login" />;
   }
 
-  return children;
+  return <>{children}</>;
+};
+
+// History provider wrapper that gets docId from params
+const HistoryProviderWrapper = ({ children }: HistoryProviderWrapperProps) => {
+  const { documentId } = useParams();
+  return (
+    <QuillHistoryProvider docId={documentId}>{children}</QuillHistoryProvider>
+  );
 };
 
 function AppContent() {
@@ -40,7 +60,19 @@ function AppContent() {
           path="/documents/:id"
           element={
             <ProtectedRoute>
-              <DocumentsWrapper />
+              <QuillHistoryProvider>
+                <DocumentsWrapper />
+              </QuillHistoryProvider>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/version-history/:documentId"
+          element={
+            <ProtectedRoute>
+              <HistoryProviderWrapper>
+                <VersionDiff />
+              </HistoryProviderWrapper>
             </ProtectedRoute>
           }
         />

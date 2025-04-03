@@ -227,16 +227,20 @@ router.get("/version-diff/:versionId", async (req, res) => {
       },
     });
 
+    let previousText = "";
+    if (previousVersion) {
+      previousText =
+        previousVersion.content?.ops?.map((op) => op.insert || "").join("") ||
+        "";
+    }
+
     if (!previousVersion) {
-      return res.status(404).json({ error: "Previous version not found" });
+      previousText = "";
     }
 
     // Extract text content from version content
     const currentText =
       currentVersion.content?.ops?.map((op) => op.insert || "").join("") || "";
-
-    const previousText =
-      previousVersion.content?.ops?.map((op) => op.insert || "").join("") || "";
 
     // Compute the diff
     const diffs = dmp.diff_main(previousText, currentText);
