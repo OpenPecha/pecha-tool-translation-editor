@@ -248,6 +248,9 @@ module.exports = (getYDoc) => {
       canWrite = canWrite === "true" || canWrite === true;
       const document = await prisma.doc.findUnique({
         where: { id: documentId },
+        include: {
+          translations: true,
+        },
       });
       if (!document)
         return res.status(404).json({ error: "Document not found" });
@@ -278,6 +281,26 @@ module.exports = (getYDoc) => {
         } catch (error) {
           console.error(error);
           return res.status(500).json({ error: "user doesnt exist" });
+        }
+      }
+
+      // If document is root, give same permissions to all translations
+      if (document.isRoot && document.translations.length > 0) {
+        for (const translation of document.translations) {
+          const existingTransPermission = await prisma.permission.findFirst({
+            where: { docId: translation.id, userId },
+          });
+
+          if (existingTransPermission) {
+            await prisma.permission.update({
+              where: { id: existingTransPermission.id },
+              data: { canRead, canWrite },
+            });
+          } else {
+            await prisma.permission.create({
+              data: { docId: translation.id, userId, canRead, canWrite },
+            });
+          }
         }
       }
 
