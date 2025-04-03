@@ -1,10 +1,13 @@
 import { getVersionDiff } from "@/api/version";
 import { useQuillHistory } from "@/contexts/HistoryContext";
-import React from "react";
+import { useState } from "react";
 import { MdDelete } from "react-icons/md";
 import { SiTicktick } from "react-icons/si";
+import { useNavigate, useParams } from "react-router-dom";
 
 function VersionList() {
+  const navigate = useNavigate();
+  const { id: documentId } = useParams();
   const {
     versions,
     currentVersionId,
@@ -15,18 +18,26 @@ function VersionList() {
     createNamedSnapshot,
     toggleAutoSave,
   } = useQuillHistory();
+  const [showAllVersions, setShowAllVersions] = useState(false);
   const formatDate = (isoString) => {
     return new Date(isoString).toLocaleString();
   };
 
   const handleVersionClick = async (versionId: string) => {
     const diff = await getVersionDiff(versionId);
-    console.log(diff);
   };
 
   return (
     <div className="versions-list">
-      <h4 className="font-bold mb-2 text-xs">Versions</h4>
+      <div className="flex justify-between items-center">
+        <h4 className="font-bold mb-2 text-xs">Versions</h4>
+        <h4
+          className="text-xs text-gray-500 hover:text-gray-700 cursor-pointer"
+          onClick={() => navigate(`/version-history/${documentId}`)}
+        >
+          View all
+        </h4>
+      </div>
       {versions.length === 0 ? (
         <p className="text-gray-500">No saved versions yet</p>
       ) : (
