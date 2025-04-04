@@ -44,12 +44,12 @@ const HistoryProviderWrapper = ({ children }: HistoryProviderWrapperProps) => {
 };
 
 function AppContent() {
-  // if (VITE_DISABLE_DEVTOOL === "true") {
-  //   DisableDevtool({
-  //     url: "https://www.google.com",
-  //     disableMenu: false,
-  //   });
-  // }
+  if (VITE_DISABLE_DEVTOOL === "true") {
+    DisableDevtool({
+      url: "https://www.google.com",
+      disableMenu: false,
+    });
+  }
 
   return (
     <div className="flex flex-col h-full bg-[#fafbfd]">

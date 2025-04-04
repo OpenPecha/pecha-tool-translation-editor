@@ -4,6 +4,7 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useMemo,
 } from "react";
 
 import {
@@ -184,20 +185,36 @@ export const QuillHistoryProvider = ({
   }, []);
 
   // Context value
-  const value = {
-    versions,
-    currentVersionId,
-    autoSaveEnabled,
-    autoSaveInterval,
-    isLoading,
-    registerQuill,
-    saveVersion,
-    loadVersion,
-    deleteVersion,
-    createNamedSnapshot,
-    toggleAutoSave,
-    setAutoSaveInterval: setAutoSaveIntervalTime,
-  };
+  const value = useMemo(
+    () => ({
+      versions,
+      currentVersionId,
+      autoSaveEnabled,
+      autoSaveInterval,
+      isLoading,
+      registerQuill,
+      saveVersion,
+      loadVersion,
+      deleteVersion,
+      createNamedSnapshot,
+      toggleAutoSave,
+      setAutoSaveInterval: setAutoSaveIntervalTime,
+    }),
+    [
+      versions,
+      currentVersionId,
+      autoSaveEnabled,
+      autoSaveInterval,
+      isLoading,
+      registerQuill,
+      saveVersion,
+      loadVersion,
+      deleteVersion,
+      createNamedSnapshot,
+      toggleAutoSave,
+      setAutoSaveIntervalTime,
+    ]
+  );
 
   return (
     <QuillHistoryContext.Provider value={value}>

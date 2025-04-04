@@ -149,7 +149,7 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
   };
 
   const showToolbar = activeEditor === documentId;
-
+  const isEnabledStyle = { display: isEnabled ? "flex" : "none" };
   return (
     <>
       {createPortal(
@@ -161,7 +161,7 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
           }}
         >
           <div className="flex items-center gap-4 flex-1">
-            <span className="ql-formats">
+            <span className="ql-formats" style={isEnabledStyle}>
               <select className="ql-font" title="Font">
                 <option value="sans-serif" selected>
                   Sans-serif
@@ -171,28 +171,13 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
                 <option value="monlam">Monlam</option> {/* Custom font */}
               </select>
             </span>
-            <span className="ql-formats" title="Heading">
+            <span className="ql-formats" title="Heading" style={isEnabledStyle}>
               <HeaderDropdown
                 value={currentHeader}
                 onChange={handleHeadingChange}
               />
             </span>
-
-            <span className="ql-formats"></span>
-            {/* <span className="ql-formats">
-              <select className="ql-header">
-                <option value="1" />
-                <option value="2" />
-                <option value="3" />
-                <option value="4" />
-                <option value="5" />
-                <option value="6" />
-
-                <option selected />
-              </select>
-            </span> */}
-
-            <span className="ql-formats" title="Size">
+            <span className="ql-formats" title="Size" style={isEnabledStyle}>
               <select className="ql-size">
                 <option value="small" />
                 <option selected />
@@ -200,7 +185,7 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
                 <option value="huge" />
               </select>
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2" style={isEnabledStyle}>
               <span className="ql-formats">
                 <button className="ql-bold" title="Bold" />
                 <button className="ql-italic" title="Italic" />
@@ -209,13 +194,17 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
               </span>
             </div>
             {/* <select className="ql-color"></select> */}
-            <select className="ql-background"></select>
-            <span className="ql-formats" title="Section">
+            <select className="ql-background" style={isEnabledStyle}></select>
+            <span className="ql-formats" title="Section" style={isEnabledStyle}>
               <button className="ql-sect" onClick={handleSectionCreation}>
                 <FaObjectGroup />
               </button>
             </span>
-            <span className="ql-formats" title="Suggestion">
+            <span
+              className="ql-formats"
+              title="Suggestion"
+              style={isEnabledStyle}
+            >
               <button className="ql-suggestion" onClick={addSuggestion}>
                 <FaCommentDots />
               </button>
@@ -231,6 +220,7 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
             <span className="ql-formats" title="Share">
               <Permissions documentId={documentId} />
             </span>
+
             <div
               ref={historyRef}
               style={{

@@ -27,16 +27,8 @@ interface Version {
 }
 
 function VersionList() {
-  const {
-    versions,
-    currentVersionId,
-    autoSaveEnabled,
-    saveVersion,
-    loadVersion,
-    deleteVersion,
-    createNamedSnapshot,
-    toggleAutoSave,
-  } = useQuillHistory();
+  const { versions, currentVersionId, loadVersion, deleteVersion } =
+    useQuillHistory();
   const [showVersionDiff, setShowVersionDiff] = useState(false);
 
   const formatDate = (isoString: string) => {
