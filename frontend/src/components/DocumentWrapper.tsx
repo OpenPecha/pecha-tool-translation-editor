@@ -39,10 +39,10 @@ function DocumentsWrapper() {
       <>
         <Navbar title={currentDoc?.identifier} />
         {selectedTranslationId && (
-          <MenuDrawer rootId={id} translationId={selectedTranslationId} />
+          <MenuDrawer rootId={id!} translationId={selectedTranslationId} />
         )}
         <div id="toolbar-container"></div>
-        <div className="relative flex px-2  h-[calc(100dvh-100px)]">
+        <div className="relative flex px-2  h-[calc(100dvh-100px)] w-full">
           <YjsProvider>
             <DocumentEditor docId={id} />
           </YjsProvider>

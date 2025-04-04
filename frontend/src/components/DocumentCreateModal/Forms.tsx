@@ -3,13 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { createDocument } from "../../api/document";
 import SelectLanguage from "./SelectLanguage";
 import SelectPechas, { PechaType } from "./SelectPechas";
+import { DialogFooter } from "../ui/dialog";
+import { Document } from "../DocumentList";
 
 export function NewPechaForm({
   documents,
-  setShowCreateModal,
+  closeModal,
 }: {
-  documents: Document[];
-  setShowCreateModal: (show: boolean) => void;
+  readonly documents: Document[];
+  readonly closeModal: () => void;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [newDocIdentifier, setNewDocIdentifier] = useState("");
@@ -43,7 +45,7 @@ export function NewPechaForm({
         setIsRoot(false);
         setIsPublic(false);
         setRootId(null);
-        setShowCreateModal(false);
+        closeModal();
         navigate(`/documents/${response.id}`);
       })
       .catch((error) => {
@@ -133,13 +135,17 @@ export function NewPechaForm({
       </div>
       <DocumentCreateModalFooter
         createDoc={createDoc}
-        setShowCreateModal={setShowCreateModal}
+        closeModal={closeModal}
       />
     </div>
   );
 }
 
-export function PechaFromOpenPecha({ setShowCreateModal }) {
+export function PechaFromOpenPecha({
+  closeModal,
+}: {
+  readonly closeModal: () => void;
+}) {
   const [selectedRootPecha, setSelectedRootPecha] = useState<PechaType | null>(
     null
   );
@@ -151,27 +157,24 @@ export function PechaFromOpenPecha({ setShowCreateModal }) {
         selectedRootPecha={selectedRootPecha}
         setSelectedRootPecha={setSelectedRootPecha}
       />
-      <DocumentCreateModalFooter
-        createDoc={() => {}}
-        setShowCreateModal={setShowCreateModal}
-      />
+      <DocumentCreateModalFooter createDoc={() => {}} closeModal={closeModal} />
     </div>
   );
 }
 
 function DocumentCreateModalFooter({
   createDoc,
-  setShowCreateModal,
+  closeModal,
 }: {
-  createDoc: () => void;
-  setShowCreateModal: (show: boolean) => void;
+  readonly createDoc: () => void;
+  readonly closeModal: () => void;
 }) {
   return (
-    <div className="p-4 border-t border-gray-200  flex justify-end gap-4">
+    <DialogFooter>
       <button
         type="button"
         className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
-        onClick={() => setShowCreateModal(false)}
+        onClick={closeModal}
       >
         Cancel
       </button>
@@ -182,6 +185,6 @@ function DocumentCreateModalFooter({
       >
         Create
       </button>
-    </div>
+    </DialogFooter>
   );
 }

@@ -1,5 +1,7 @@
 import { fetchPechas } from "@/api/pecha";
 import React, { useEffect, useState } from "react";
+import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
+import { Label } from "../ui/label";
 
 export type PechaType = {
   id: string;
@@ -30,43 +32,27 @@ function SelectPechas({
   return (
     <>
       <div className="mb-4">
-        <label className="block mb-2">Type:</label>
-        <div className="flex  gap-2">
-          <div className="flex items-center gap-2 border rounded-md p-2">
-            <input
-              type="radio"
-              id="versionOf"
-              name="documentType"
-              value="version_of"
-              checked={filterBy === "version_of"}
-              onChange={(e) => setFilterBy(e.target.value)}
-            />
-            <label htmlFor="versionOf">version of</label>
+        <div className="block mb-2">Type:</div>
+        <RadioGroup
+          defaultValue="version_of"
+          value={filterBy}
+          onValueChange={setFilterBy}
+        >
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="version_of" id="version_of" />
+            <Label htmlFor="version_of">version of</Label>
           </div>
-          <div className="flex items-center gap-2 border rounded-md p-2">
-            <input
-              type="radio"
-              id="commentaryOf"
-              name="documentType"
-              value="commentary_of"
-              checked={filterBy === "commentary_of"}
-              onChange={(e) => setFilterBy(e.target.value)}
-            />
-            <label htmlFor="commentaryOf">commentary of</label>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="commentary_of" id="commentary_of" />
+            <Label htmlFor="commentary_of">commentary of</Label>
           </div>
-          <div className="flex items-center gap-2 border rounded-md p-2">
-            <input
-              type="radio"
-              id="translationOf"
-              name="documentType"
-              value="translation_of"
-              checked={filterBy === "translation_of"}
-              onChange={(e) => setFilterBy(e.target.value)}
-            />
-            <label htmlFor="translationOf">Translation of</label>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="translation_of" id="translation_of" />
+            <Label htmlFor="translation_of">Translation of</Label>
           </div>
-        </div>
+        </RadioGroup>
       </div>
+
       <div className="mb-4">
         <label htmlFor="rootDocSelect" className="block mb-1">
           Connect to OpenPecha:

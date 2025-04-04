@@ -136,7 +136,7 @@ function SideMenu({
   };
 
   return (
-    <div className="bg-white border-l h-full w-1/4 shadow-sm">
+    <div className="absolute right-0 bg-white border-l h-full w-1/4 shadow-sm">
       {renderContent()}
     </div>
   );

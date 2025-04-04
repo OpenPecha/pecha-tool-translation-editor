@@ -9,8 +9,8 @@ function MenuDrawer({
   rootId,
   translationId,
 }: {
-  rootId: string;
-  translationId: string;
+  readonly rootId: string;
+  readonly translationId: string;
 }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const { getQuill } = useEditor();

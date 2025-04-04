@@ -6,6 +6,8 @@ import EditModal from "./EditModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "./ui/badge";
 import { isTibetan } from "@/lib/isTibetan";
+import { Card, CardFooter, CardHeader, CardTitle } from "./ui/card";
+import { Document } from "./DocumentList";
 
 interface EachDocumentProps {
   readonly doc: Document;
@@ -78,50 +80,54 @@ export default function EachDocument({
 
   return (
     <div>
-      <Link
-        to={`/documents/${doc.id}`}
-        className="block border-gray-300 border rounded-lg p-4 hover:shadow-md transition-shadow"
-        key={doc.id}
-      >
-        <div className="flex justify-between items-center mb-2">
-          <h3 className="text-xl font-semibold truncate">
-            <span
-              className={`capitalize ${
-                isTibetan("བོད་ལ་") ? "font-monlam" : "font-sans"
-              }`}
-            >
-              {doc.identifier}
-            </span>
-          </h3>
-          {hasPermission && (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setShowEditModal(true);
-                }}
-                className="z-20 p-2 rounded-md transition-all duration-200 hover:bg-blue-500 hover:text-white hover:scale-110"
-                title="Edit Document"
+      <Link to={`/documents/${doc.id}`}>
+        <Card className="w-[320px] py-2">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div
+                className={`capitalize ${
+                  isTibetan("བོད་ལ་") ? "font-monlam" : "font-sans"
+                }`}
               >
-                <MdEdit />
-              </button>
-              {!isShared && (
-                <button
-                  onClick={handleDelete}
-                  className="z-20 p-2 rounded-md transition-all duration-200 hover:bg-red-500 hover:text-white hover:scale-110"
-                >
-                  <MdDelete />
-                </button>
+                {doc.identifier}
+              </div>
+              {hasPermission && (
+                <div className="flex items-center ">
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setShowEditModal(true);
+                    }}
+                    className="z-20 p-2 rounded-md transition-all duration-200 hover:bg-blue-500 hover:text-white hover:scale-110"
+                    title="Edit Document"
+                  >
+                    <MdEdit />
+                  </button>
+                  {!isShared && (
+                    <button
+                      onClick={handleDelete}
+                      className="z-20 p-2 rounded-md transition-all duration-200 hover:bg-red-500 hover:text-white hover:scale-110"
+                    >
+                      <MdDelete />
+                    </button>
+                  )}
+                </div>
+              )}
+            </CardTitle>
+            {/* <CardDescription>Card Description</CardDescription> */}
+          </CardHeader>
+
+          <CardFooter>
+            <div className="mt-2 text-sm text-gray-500 flex gap-2">
+              {isShared && <Badge variant="outline">Shared</Badge>}
+              {doc.isRoot && <Badge>Root</Badge>}
+              {doc.root && (
+                <Badge variant="outline">{doc.root.identifier}</Badge>
               )}
             </div>
-          )}
-        </div>
-        <div className="mt-2 text-sm text-gray-500 flex gap-2">
-          {isShared && <Badge variant="outline">Shared</Badge>}
-          {doc.isRoot && <Badge>Root</Badge>}
-          {doc.root && <Badge variant="outline">{doc.root.identifier}</Badge>}
-        </div>
+          </CardFooter>
+        </Card>
       </Link>
 
       {showEditModal && (

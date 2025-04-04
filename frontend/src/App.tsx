@@ -6,18 +6,12 @@ import Login from "./components/Login";
 import Register from "./components/Register";
 import DocumentList from "./components/DocumentList";
 import DocumentsWrapper from "./components/DocumentWrapper";
-import { useParams } from "react-router-dom";
 import { ReactNode } from "react";
-import VersionDiff from "./pages/VersionDiff";
 import DisableDevtool from "disable-devtool";
 
 const VITE_DISABLE_DEVTOOL = import.meta.env.VITE_DISABLE_DEVTOOL;
 
 interface ProtectedRouteProps {
-  children: ReactNode;
-}
-
-interface HistoryProviderWrapperProps {
   children: ReactNode;
 }
 
@@ -33,14 +27,6 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
 
   return <>{children}</>;
-};
-
-// History provider wrapper that gets docId from params
-const HistoryProviderWrapper = ({ children }: HistoryProviderWrapperProps) => {
-  const { documentId } = useParams();
-  return (
-    <QuillHistoryProvider docId={documentId}>{children}</QuillHistoryProvider>
-  );
 };
 
 function AppContent() {
@@ -76,16 +62,7 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/version-history/:documentId"
-          element={
-            <ProtectedRoute>
-              <HistoryProviderWrapper>
-                <VersionDiff />
-              </HistoryProviderWrapper>
-            </ProtectedRoute>
-          }
-        />
+
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </div>
