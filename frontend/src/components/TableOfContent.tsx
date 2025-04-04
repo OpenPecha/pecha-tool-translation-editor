@@ -222,7 +222,7 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
     <>
       <Button
         onClick={() => setIsOpen(!isOpen)}
-        className="absolute top-3 left-4 p-3 z-10"
+        className="absolute top-3 left-4 p-3 z-2"
         aria-label="Toggle Table of Contents"
         size="sm"
         variant="outline"

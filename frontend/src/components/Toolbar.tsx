@@ -35,6 +35,7 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
       URL.revokeObjectURL(a.href);
     }
   };
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (

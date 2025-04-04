@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, redirect } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { QuillHistoryProvider } from "./contexts/HistoryContext";
 import Navbar from "./components/Navbar";
@@ -9,6 +9,9 @@ import DocumentsWrapper from "./components/DocumentWrapper";
 import { useParams } from "react-router-dom";
 import { ReactNode } from "react";
 import VersionDiff from "./pages/VersionDiff";
+import DisableDevtool from "disable-devtool";
+
+const VITE_DISABLE_DEVTOOL = import.meta.env.VITE_DISABLE_DEVTOOL;
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -41,6 +44,13 @@ const HistoryProviderWrapper = ({ children }: HistoryProviderWrapperProps) => {
 };
 
 function AppContent() {
+  if (VITE_DISABLE_DEVTOOL === "true") {
+    DisableDevtool({
+      url: "https://www.google.com",
+      disableMenu: false,
+    });
+  }
+
   return (
     <div className="flex flex-col h-full bg-[#fafbfd]">
       <Routes>

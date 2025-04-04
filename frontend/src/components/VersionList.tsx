@@ -3,6 +3,7 @@ import { useState } from "react";
 import { MdDelete } from "react-icons/md";
 import { SiTicktick } from "react-icons/si";
 import VersionDiff from "@/pages/VersionDiff";
+import { createPortal } from "react-dom";
 
 interface DeltaOperation {
   insert: string;
@@ -110,16 +111,18 @@ function VersionList() {
       </div>
 
       {/* Version Diff Modal */}
-      {showVersionDiff && (
-        <div className="fixed inset-0 z-50 overflow-hidden">
-          <div className="absolute inset-0 bg-opacity-50" />
-          <div className="absolute inset-0 flex flex-col">
-            <div className="flex-1 bg-white rounded-lg shadow-xl m-4 overflow-hidden">
-              <VersionDiff onClose={() => setShowVersionDiff(false)} />
+      {showVersionDiff &&
+        createPortal(
+          <div className="fixed inset-0 z-50 overflow-hidden">
+            <div className="absolute inset-0 bg-opacity-50" />
+            <div className="absolute inset-0 flex flex-col">
+              <div className="flex-1 bg-white rounded-lg shadow-xl m-4 overflow-hidden">
+                <VersionDiff onClose={() => setShowVersionDiff(false)} />
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.getElementById("diff-portal")
+        )}
     </>
   );
 }

@@ -38,5 +38,3 @@ export default function quill_import() {
     customHeaders.push(CustomHeader);
   }
 }
-
-console.log(customHeaders);
