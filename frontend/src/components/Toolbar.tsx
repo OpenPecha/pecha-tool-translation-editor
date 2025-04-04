@@ -231,14 +231,15 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
             <span className="ql-formats" title="Share">
               <Permissions documentId={documentId} />
             </span>
-            {openHistory && (
-              <div
-                ref={historyRef}
-                className="absolute bg-gray-100 z-10 top-10 right-0"
-              >
-                <QuillHistoryControls />
-              </div>
-            )}
+            <div
+              ref={historyRef}
+              style={{
+                display: openHistory ? "block" : "none",
+              }}
+              className="absolute bg-gray-100 z-10 top-10 right-0"
+            >
+              <QuillHistoryControls />
+            </div>
             <span className="ql-formats" title="Export">
               <button onClick={exportText}>
                 <GrDocumentTxt />
