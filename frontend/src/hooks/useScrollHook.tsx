@@ -1,5 +1,5 @@
 import Quill from "quill";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 function useScrollHook(quill1: Quill, quill2: Quill) {
   const ignoreScrollEvents = useRef(false);
@@ -22,9 +22,13 @@ function useScrollHook(quill1: Quill, quill2: Quill) {
       const sourceEditor = source.root;
       const targetEditor = target.root;
 
-      const selector = getQuerySelector(htmlTag);
-      const sourceBlocks = Array.from(sourceEditor.querySelectorAll(selector));
-      const targetBlocks = Array.from(targetEditor.querySelectorAll(selector));
+      const allHeadersTags = ["h1", "h2", "h3", "h4", "h5", "h6"];
+      const sourceBlocks = Array.from(
+        sourceEditor.querySelectorAll(allHeadersTags.join(","))
+      );
+      const targetBlocks = Array.from(
+        targetEditor.querySelectorAll(allHeadersTags.join(","))
+      );
 
       if (sourceBlocks.length === 0 || targetBlocks.length === 0) return;
 
@@ -38,15 +42,36 @@ function useScrollHook(quill1: Quill, quill2: Quill) {
 
       const middleBlock =
         visibleSourceBlocks[Math.floor(visibleSourceBlocks.length / 2)];
-      const sourceIndex = sourceBlocks.indexOf(middleBlock);
-
-      if (sourceIndex !== -1 && sourceIndex < targetBlocks.length) {
-        const targetBlock = targetBlocks[sourceIndex];
+      
+      // Get the tag name of the middle block (e.g., h1, h2, etc.)
+      const middleBlockTag = middleBlock.tagName.toLowerCase();
+      
+      // Find all blocks with the same tag in source
+      const sourceTagBlocks = sourceBlocks.filter(
+        (block) => block.tagName.toLowerCase() === middleBlockTag
+      );
+      
+      // Find the index of the middle block among blocks with the same tag
+      const sourceTagIndex = sourceTagBlocks.indexOf(middleBlock);
+      
+      // Find all blocks with the same tag in target
+      const targetTagBlocks = Array.from(
+        targetEditor.querySelectorAll(middleBlockTag)
+      );
+      
+      console.log(`${middleBlockTag} at index ${sourceTagIndex}`);
+      
+      // Only scroll if there's a matching tag at the same index in target
+      if (sourceTagIndex !== -1 && sourceTagIndex < targetTagBlocks.length) {
+        const targetBlock = targetTagBlocks[sourceTagIndex];
+        console.log("Found matching target block", targetBlock);
         ignoreScrollEvents.current = true;
         targetBlock.scrollIntoView({ block: "center", behavior: "auto" });
         setTimeout(() => {
           ignoreScrollEvents.current = false;
         }, 50);
+      } else {
+        console.log(`No matching ${middleBlockTag} at index ${sourceTagIndex} in target`);
       }
     };
 
