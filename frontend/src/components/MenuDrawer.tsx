@@ -16,7 +16,7 @@ function MenuDrawer({
   const { getQuill } = useEditor();
   const quill1 = getQuill(rootId);
   const quill2 = getQuill(translationId);
-  const { syncMode, setSyncMode, htmlTag, setSelectedHtmlTag } = useScrollHook(
+  const { syncMode, setSyncMode, syncType, setSyncType } = useScrollHook(
     quill1,
     quill2
   );
@@ -49,8 +49,8 @@ function MenuDrawer({
           <SyncOptions
             syncMode={syncMode}
             setSyncMode={setSyncMode}
-            selectedHtmlTag={htmlTag}
-            setSelectedHtmlTag={setSelectedHtmlTag}
+            syncType={syncType}
+            setSyncType={setSyncType}
           />
         </div>
       </div>

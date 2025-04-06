@@ -5,13 +5,13 @@ import TagOptions from "./TagOptions";
 function SyncOptions({
   syncMode,
   setSyncMode,
-  selectedHtmlTag,
-  setSelectedHtmlTag,
+  syncType,
+  setSyncType,
 }: {
   syncMode: "scroll" | "click" | "none";
   setSyncMode: (mode: "scroll" | "click" | "none") => void;
-  selectedHtmlTag: string;
-  setSelectedHtmlTag: (tag: string) => void;
+  syncType: "heading" | "lineNumber";
+  setSyncType: (type: "heading" | "lineNumber") => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -100,10 +100,7 @@ function SyncOptions({
       </div>
 
       {syncMode === "click" && (
-        <TagOptions
-          selectedHtmlTag={selectedHtmlTag}
-          setSelectedHtmlTag={setSelectedHtmlTag}
-        />
+        <TagOptions syncType={syncType} setSyncType={setSyncType} />
       )}
     </div>
   );

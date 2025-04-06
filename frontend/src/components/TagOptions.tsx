@@ -1,40 +1,55 @@
 function TagOptions({
-  selectedHtmlTag = "p",
-  setSelectedHtmlTag,
+  syncType,
+  setSyncType,
 }: {
-  selectedHtmlTag: string;
-  setSelectedHtmlTag: (tag: string) => void;
+  syncType: "heading" | "lineNumber";
+  setSyncType: (type: "heading" | "lineNumber") => void;
 }) {
-  const tags = [
-    { label: "Para", value: "p" },
-    { label: "H1", value: "h1" },
-    { label: "H2", value: "h2" },
-    { label: "H3", value: "h3" },
-    { label: "Bold", value: "b" },
-    { label: "Italic", value: "i" },
-  ];
-
   return (
     <div className="flex flex-col gap-2 mt-2">
-      <label className="text-sm font-medium text-gray-700">
-        Select element to sync
-      </label>
-      <div className="relative">
-        <select
-          value={selectedHtmlTag}
-          onChange={(e) => setSelectedHtmlTag(e.target.value)}
-          className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      <div className="mb-3">
+        <label
+          id="sync-method-label"
+          className="text-sm font-medium text-gray-700 mb-2 block"
         >
-          {tags.map((tag) => (
-            <option key={tag.value} value={tag.value}>
-              {tag.label}
-            </option>
-          ))}
-        </select>
+          Sync Method
+        </label>
+        <div className="flex gap-4" aria-labelledby="sync-method-label">
+          <label className="inline-flex items-center">
+            <input
+              type="radio"
+              id="heading-sync"
+              name="sync-type"
+              className="form-radio h-4 w-4 text-blue-600"
+              checked={syncType === "heading"}
+              onChange={() => setSyncType("heading")}
+              aria-labelledby="sync-method-label heading-label"
+            />
+            <span id="heading-label" className="ml-2 text-sm text-gray-700">
+              Headings
+            </span>
+          </label>
+          <label className="inline-flex items-center">
+            <input
+              type="radio"
+              id="line-number-sync"
+              name="sync-type"
+              className="form-radio h-4 w-4 text-blue-600"
+              checked={syncType === "lineNumber"}
+              onChange={() => setSyncType("lineNumber")}
+              aria-labelledby="sync-method-label line-number-label"
+            />
+            <span id="line-number-label" className="ml-2 text-sm text-gray-700">
+              Line Number
+            </span>
+          </label>
+        </div>
+        <p className="text-xs text-gray-500 mt-1">
+          {syncType === "heading"
+            ? "Sync by matching heading types and their positions"
+            : "Sync by matching line positions between documents"}
+        </p>
       </div>
-      <p className="text-xs text-gray-500">
-        Clicking will sync the selected element type between documents
-      </p>
     </div>
   );
 }
