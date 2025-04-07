@@ -48,15 +48,19 @@ export function NewPechaForm({
         closeModal();
         navigate(`/documents/${response.id}`);
       })
-      .catch((error) => {
-        console.error("Error creating document:", error);
+      .catch((e) => {
         const errorMessage =
-          error instanceof Error ? error.message : "Failed to create document";
+          e instanceof Error ? e.message : "Failed to create document";
         setError(errorMessage);
       });
   };
   return (
     <div className="p-4">
+      {error != "" && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {"error with creating document"}
+        </div>
+      )}
       <SelectLanguage
         setSelectedLanguage={setSelectedLanguage}
         selectedLanguage={selectedLanguage}
@@ -180,7 +184,7 @@ function DocumentCreateModalFooter({
       </button>
       <button
         type="button"
-        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer"
         onClick={createDoc}
       >
         Create

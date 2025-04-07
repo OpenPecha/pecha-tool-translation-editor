@@ -2,7 +2,6 @@ const express = require("express");
 const authenticate = require("../middleware/authenticate");
 const { PrismaClient } = require("@prisma/client");
 const Y = require("yjs");
-const moment = require("moment");
 const multer = require("multer");
 const fs = require("fs").promises;
 
@@ -43,7 +42,9 @@ module.exports = (getYDoc) => {
       const state = Y.encodeStateAsUpdate(doc);
       const delta = ytext.toDelta();
 
-      const document = await prisma.doc.create({
+
+      const document = await prisma.$transaction(async (tx) => {
+      const doc = await tx.doc.create({
         data: {
           identifier,
           ownerId: req.user.id,
@@ -54,14 +55,25 @@ module.exports = (getYDoc) => {
         },
       });
 
-      await prisma.permission.create({
+      await tx.permission.create({
         data: {
-          docId: document.id,
+          docId: doc.id,
           userId: req.user.id,
           canRead: true,
           canWrite: true,
         },
       });
+      await tx.version.create({
+        data:{
+          content:delta,
+          docId:doc.id,
+          label:"initail Auto-save",
+        }
+      })
+  
+      return doc;
+    })
+ 
 
       res.status(201).json(document);
     } catch (error) {
