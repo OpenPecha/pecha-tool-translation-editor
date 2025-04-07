@@ -33,23 +33,22 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
       (_, i) => `h${i + 1}`
     ).join(",");
   };
-
   useEffect(() => {
     const extractHeadings = () => {
       if (!quill) return;
       const headingElements = quill.root.querySelectorAll(generateList());
-      const headingsData: Heading[] = Array.from(headingElements).map(
-        (heading, index) => {
-          const id = `heading-${index}`;
+      const headingsData: Heading[] = Array.from(headingElements)
+        .filter((f) => f.textContent !== "")
+        .map((heading, index) => {
+          let id = `heading-${index}`;
           heading.setAttribute("id", id);
           return {
-            text: heading.textContent || "",
+            text: heading.textContent,
             level: parseInt(heading.tagName[1]),
-            id,
+            id: id,
           };
-        }
-      );
-
+        });
+      console.log(headingsData);
       setHeadings(headingsData);
       const initialExpanded: { [key: string]: boolean } = {};
       headingsData.forEach((h) => {
