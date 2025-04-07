@@ -271,7 +271,7 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
       </div>
     );
   };
-
+  const showSyncButton = quillEditors.size > 1;
   return (
     <>
       <Button
@@ -299,11 +299,13 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
               <FaArrowCircleLeft className="w-5 h-5" />
             </button>
             <h3 className="text-lg font-semibold">Table of Contents</h3>
-            <Switch
-              checked={synced}
-              onCheckedChange={setSynced}
-              className="ml-2"
-            />
+            {showSyncButton && (
+              <Switch
+                checked={synced}
+                onCheckedChange={setSynced}
+                className="ml-2"
+              />
+            )}
           </div>
           <div className="overflow-y-auto flex-grow">{renderTOC()}</div>
         </div>
