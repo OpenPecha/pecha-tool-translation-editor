@@ -79,9 +79,9 @@ export default function EachDocument({
     );
 
   return (
-    <div>
+    <div className="w-full">
       <Link to={`/documents/${doc.id}`}>
-        <Card className="w-[320px] py-2">
+        <Card className="w-full py-2">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <div

@@ -22,7 +22,7 @@ function DocumentCreateModal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">Create pecha</Button>
+        <Button variant="outline">+ Create pecha</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>

@@ -2,6 +2,7 @@ import { useState, useEffect, SetStateAction, Dispatch } from "react";
 import { fetchDocuments } from "../../api/document";
 import DocumentCreateModal from "../DocumentCreateModal/DocumentCreateModal";
 import EachDocument from "./EachDocument";
+import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
 export interface Document {
   id: string;
   identifier: string;
@@ -13,6 +14,9 @@ const DocumentList = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState<"all" | "root" | "translations">(
+    "all"
+  );
 
   useEffect(() => {
     const fetchDocs = async () => {
@@ -29,11 +33,27 @@ const DocumentList = () => {
     fetchDocs();
   }, []);
 
+  const filteredTexts = (() => {
+    switch (activeTab) {
+      case "root":
+        return documents.filter((doc) => doc.isRoot);
+      case "translations":
+        return documents.filter((doc) => !doc.isRoot);
+      default:
+        return documents;
+    }
+  })();
   return (
     <div className="flex border-t border-t-gray-300">
-      <div className="p-4">
-        <div className="pb-3">
-          <DocumentCreateModal documents={documents} />
+      <div className="p-4 w-full">
+        <div className="flex flex-col items-center mb-8">
+          <h1 className="text-3xl font-bold text-dharma-burgundy mb-2">
+            Pecha Text
+          </h1>
+          <p className="text-center text-gray-600 max-w-2xl">
+            A collection of Buddhist texts, including original root texts and
+            their translations.
+          </p>
         </div>
 
         {error && (
@@ -41,8 +61,22 @@ const DocumentList = () => {
             {error}
           </div>
         )}
+        <div className="flex pb-3 justify-between">
+          <Tabs
+            defaultValue="all"
+            className=" mb-8"
+            onValueChange={(value) => setActiveTab(value as any)}
+          >
+            <TabsList className="grid grid-cols-3 w-full max-w-md mx-auto">
+              <TabsTrigger value="all">All Texts</TabsTrigger>
+              <TabsTrigger value="root">Root Texts</TabsTrigger>
+              <TabsTrigger value="translations">Translations</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <DocumentCreateModal documents={documents} />
+        </div>
         <List
-          documents={documents}
+          documents={filteredTexts}
           isLoading={isLoading}
           setDocuments={setDocuments}
         />
