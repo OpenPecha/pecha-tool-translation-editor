@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { IoMdClose } from "react-icons/io";
 import { getVersionDiff } from "@/api/version";
 import DiffViewer from "./DiffViewer";
+import { Button } from "@/components/ui/button";
 
 interface DeltaOperation {
   insert: string;
@@ -42,7 +43,8 @@ interface VersionDiffProps {
 }
 
 function VersionDiff({ onClose }: VersionDiffProps) {
-  const { versions, isLoading } = useQuillHistory() as QuillHistoryContext;
+  const { versions, isLoading, loadVersion, currentVersionId } =
+    useQuillHistory() as QuillHistoryContext;
   const [selectedVersionId, setSelectedVersionId] = useState<string | null>(
     null
   );
@@ -67,6 +69,17 @@ function VersionDiff({ onClose }: VersionDiffProps) {
 
     fetchDiff();
   }, [selectedVersionId]);
+
+  const handleRestore = async (versionId: string) => {
+    if (versionId) {
+      try {
+        await loadVersion(versionId);
+        onClose();
+      } catch (error) {
+        console.error("Error restoring version:", error);
+      }
+    }
+  };
 
   if (isLoading) {
     return (
@@ -134,6 +147,14 @@ function VersionDiff({ onClose }: VersionDiffProps) {
                           {formatDate(version.timestamp)}
                         </p>
                       </div>
+                      <Button
+                        onClick={() => handleRestore(version.id)}
+                        disabled={version.id === currentVersionId}
+                        title="Restore version"
+                        className="px-2 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                      >
+                        Restore
+                      </Button>
                     </div>
                   </div>
                 ))
