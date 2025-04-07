@@ -26,6 +26,10 @@ export function NewPechaForm({
 
   const createDoc = async () => {
     if (!newDocIdentifier) return;
+    if (selectedFile && selectedFile.type !== "text/plain") {
+      setError("Only .txt files are allowed");
+      return;
+    }
 
     const formData = new FormData();
     formData.append("identifier", newDocIdentifier);
@@ -132,9 +136,18 @@ export function NewPechaForm({
           type="file"
           id="fileInput"
           ref={fileInputRef}
-          onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file && file.type !== "text/plain") {
+              setError("Only .txt files are allowed");
+              setSelectedFile(null);
+            } else {
+              setError("");
+              setSelectedFile(file || null);
+            }
+          }}
           className="w-full p-2 border rounded"
-          accept=".txt,.md"
+          accept=".txt"
         />
       </div>
       <DocumentCreateModalFooter
