@@ -22,6 +22,7 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
     0
   );
   const [showBookmarkPopup, setShowBookmarkPopup] = useState(false);
+  const [maxLineWidth, setMaxLineWidth] = useState(3); // Default minimum width
 
   const handleDoubleClick = (lineNumber: number) => {
     if (lineNumber === bookmarked) {
@@ -145,6 +146,13 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
     if (lineNumbersRef.current) {
       lineNumbersRef.current.style.height = `${editorElement.scrollHeight}px`;
     }
+
+    // Calculate the width needed for the largest line number
+    const totalLines = lineNumber - 1;
+    const digitsRequired =
+      totalLines > 0 ? Math.floor(Math.log10(totalLines)) + 1 : 1;
+    setMaxLineWidth(Math.max(digitsRequired, 2)); // At least 2 characters wide
+
     setLineNumbers(newLineNumbers);
   }, [editorRef, quill]);
 
@@ -257,9 +265,10 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
       )}
       <div
         ref={lineNumbersRef}
-        className={`line-numbers mt-[5px] h-full ${
+        className={`line-numbers mt-[3px] h-full ${
           isRoot ? "quill-1" : "quill-2"
-        } relative`}
+        } text-right relative`}
+        style={{ width: `${maxLineWidth + 1}ch` }}
       >
         {lineNumbers.map((lineNum, index) => (
           <EachLineNumber
@@ -303,14 +312,14 @@ function EachLineNumber({
         height: `${position.height}px`,
       }}
       onClick={onCLick}
-      className={`line-number relative flex items-center px-2 `}
+      className={`line-number relative flex w-full items-center justify-start pl-1`}
       id={`${documentId}-line-${lineNumber}`}
     >
       <span
         className={
           isBookmarked
-            ? "bg-amber-100 font-medium text-amber-900 border-r-2 border-amber-500"
-            : "hover:bg-gray-100"
+            ? "bg-amber-100 font-medium text-amber-900 border-l-2 text-right w-full border-amber-500"
+            : "hover:bg-gray-100 text-right w-full"
         }
       >
         {lineNumber}

@@ -8,6 +8,7 @@
     overflow: hidden;
     white-space: pre;
     width: 4ch;
+    margin-right:5px;
   }
   .line-number {
     position: absolute;
@@ -16,7 +17,6 @@
     font-weight: 800;
     font-size: 14px;
     color: darkgray;
-    width: max-content;
     display: block;
   
   }

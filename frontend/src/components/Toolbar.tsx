@@ -8,6 +8,9 @@ import { useEditor } from "@/contexts/EditorContext";
 import HeaderDropdown from "./quillExtension/HeaderDropdown";
 import { MAX_HEADING_LEVEL } from "@/../config";
 import { Switch } from "./ui/switch";
+import DisableDevtool from "disable-devtool";
+import ExportButton from "./ExportButton";
+const VITE_DISABLE_DEVTOOL = import.meta.env.VITE_DISABLE_DEVTOOL;
 
 interface ToolbarProps {
   addSuggestion: () => void;
@@ -24,17 +27,6 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
   const { getQuill, activeEditor, activeQuill } = useEditor();
   const [currentHeader, setCurrentHeader] = useState<string | number>("");
   const quill = getQuill(documentId);
-  const exportText = () => {
-    if (quill) {
-      const text = quill.getText();
-      const blob = new Blob([text], { type: "text/plain" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "exported_text.txt";
-      a.click();
-      URL.revokeObjectURL(a.href);
-    }
-  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -144,6 +136,10 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
     if (quill) {
       const newState = !isEnabled;
       setIsEnabled(newState);
+      DisableDevtool({
+        url: "/",
+        disableMenu: newState,
+      });
       quill.enable(newState);
     }
   };
@@ -231,9 +227,7 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
               <QuillHistoryControls />
             </div>
             <span className="ql-formats" title="Export">
-              <button onClick={exportText}>
-                <GrDocumentTxt />
-              </button>
+              <ExportButton doc_id={documentId} />
             </span>
           </div>
           <div className="flex items-center gap-2">

@@ -7,9 +7,6 @@ import Register from "./components/Register";
 import DocumentList from "./components/Dashboard/DocumentList";
 import DocumentsWrapper from "./components/DocumentWrapper";
 import { ReactNode } from "react";
-import DisableDevtool from "disable-devtool";
-
-const VITE_DISABLE_DEVTOOL = import.meta.env.VITE_DISABLE_DEVTOOL;
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -30,13 +27,6 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 };
 
 function AppContent() {
-  if (VITE_DISABLE_DEVTOOL === "true") {
-    DisableDevtool({
-      url: "https://www.google.com",
-      disableMenu: false,
-    });
-  }
-
   return (
     <div className="flex flex-col h-full bg-[#fafbfd]">
       <Routes>
