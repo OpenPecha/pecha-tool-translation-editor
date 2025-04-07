@@ -7,7 +7,7 @@ import { fetchDocument } from "../api/document";
 import { useAuth } from "../contexts/AuthContext";
 import { QuillHistoryProvider } from "../contexts/HistoryContext";
 import "../editor.css";
-import CommentBubble from "./CommentBubble";
+import CommentBubble from "./Comment/CommentBubble";
 import { CommentProvider } from "@/contexts/CommentContext";
 const RealTimeEditor = ({ docId }: { docId: string | undefined }) => {
   const { id } = useParams();

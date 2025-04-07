@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { deleteDocument, updateDocument } from "../api/document";
+import { deleteDocument, updateDocument } from "../../api/document";
 import { Link } from "react-router-dom";
 import { MdDelete, MdEdit } from "react-icons/md";
-import EditModal from "./EditModal";
 import { useAuth } from "@/contexts/AuthContext";
-import { Badge } from "./ui/badge";
+import { Badge } from "../ui/badge";
 import { isTibetan } from "@/lib/isTibetan";
-import { Card, CardFooter, CardHeader, CardTitle } from "./ui/card";
-import { Document } from "./DocumentList";
+import { Card, CardFooter, CardHeader, CardTitle } from "../ui/card";
+import { Document } from "../Dashboard/DocumentList";
+import EditModal from "./EditModal";
 
 interface EachDocumentProps {
   readonly doc: Document;

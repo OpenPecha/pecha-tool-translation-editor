@@ -1,7 +1,7 @@
 import { useState, useEffect, SetStateAction, Dispatch } from "react";
-import { fetchDocuments } from "../api/document";
+import { fetchDocuments } from "../../api/document";
+import DocumentCreateModal from "../DocumentCreateModal/DocumentCreateModal";
 import EachDocument from "./EachDocument";
-import DocumentCreateModal from "./DocumentCreateModal/DocumentCreateModal";
 export interface Document {
   id: string;
   identifier: string;

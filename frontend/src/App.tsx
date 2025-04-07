@@ -4,7 +4,7 @@ import { QuillHistoryProvider } from "./contexts/HistoryContext";
 import Navbar from "./components/Navbar";
 import Login from "./components/Login";
 import Register from "./components/Register";
-import DocumentList from "./components/DocumentList";
+import DocumentList from "./components/Dashboard/DocumentList";
 import DocumentsWrapper from "./components/DocumentWrapper";
 import { ReactNode } from "react";
 import DisableDevtool from "disable-devtool";

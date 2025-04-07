@@ -9,7 +9,7 @@ import OverlayLoading from "./OverlayLoading";
 import { fetchDocument } from "../api/document";
 import { useQuillHistory } from "../contexts/HistoryContext";
 import LineNumberVirtualized from "./LineNumbers";
-import CommentModal from "./CommentModal";
+import CommentModal from "./Comment/CommentModal";
 import TableOfContent from "./TableOfContent";
 import { useEditor } from "@/contexts/EditorContext";
 quill_import();

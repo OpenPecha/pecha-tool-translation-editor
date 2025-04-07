@@ -1,15 +1,15 @@
 import Quill from "quill";
 import { useRef, useState } from "react";
-import CommentBlot from "./quillExtension/commentBlot";
+import CommentBlot from "../quillExtension/commentBlot";
 import { createComment, deleteComment } from "@/api/comment";
 import { useAuth } from "@/contexts/AuthContext";
 import { useComment } from "@/contexts/CommentContext";
 import { IoClose } from "react-icons/io5";
 import { FaTrash } from "react-icons/fa";
 import { BiUser } from "react-icons/bi";
-import { Button } from "./ui/button";
-import { Switch } from "./ui/switch";
-import { Label } from "./ui/label";
+import { Button } from "../ui/button";
+import { Switch } from "../ui/switch";
+import { Label } from "../ui/label";
 
 interface User {
   id: string;

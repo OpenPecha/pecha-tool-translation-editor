@@ -17,7 +17,6 @@ function CommentModal({ documentId, setShowCommentModal, range }) {
   );
   async function addComment() {
     if (!currentRange) return;
-    console.log(currentRangeText);
     const content = commentText;
     if (!content || content === "") {
       setShowCommentModal(false);
@@ -38,7 +37,6 @@ function CommentModal({ documentId, setShowCommentModal, range }) {
         isSuggestion ? suggestedText : undefined,
         currentRangeText
       );
-      console.log("createdComment", createdComment);
       if (createdComment?.id) {
         // Update the Quill editor to highlight the text
         quill?.formatText(currentRange.index, currentRange.length, "comment", {

@@ -4,7 +4,7 @@ import { createDocument } from "../../api/document";
 import SelectLanguage from "./SelectLanguage";
 import SelectPechas, { PechaType } from "./SelectPechas";
 import { DialogFooter } from "../ui/dialog";
-import { Document } from "../DocumentList";
+import { Document } from "../Dashboard/DocumentList";
 
 export function NewPechaForm({
   documents,

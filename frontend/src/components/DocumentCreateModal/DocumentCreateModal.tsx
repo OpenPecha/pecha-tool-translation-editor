@@ -1,6 +1,6 @@
 import { NewPechaForm, PechaFromOpenPecha } from "./Forms";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { Document } from "../DocumentList";
+import { Document } from "../Dashboard/DocumentList";
 import {
   Dialog,
   DialogContent,

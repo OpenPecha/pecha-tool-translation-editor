@@ -5,7 +5,7 @@ import { EditorProvider } from "@/contexts/EditorContext";
 import { useParams } from "react-router-dom";
 import DocumentEditor from "./DocumentEditor";
 import { YjsProvider } from "../lib/yjsProvider";
-import SideMenu from "./Sidemenu";
+import SideMenu from "./EditorSideMenu/Sidemenu";
 import { ChevronRight } from "lucide-react";
 import MenuDrawer from "./MenuDrawer";
 import Navbar from "./Navbar";
