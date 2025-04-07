@@ -20,7 +20,7 @@ model User {
 
 model Doc {
   id                     String       @id @default(uuid()) // Unique identifier for the document
-  identifier             String       @unique // Ensures each document has a unique identifier
+  identifier             String // Ensures each document has a unique identifier
   docs_prosemirror_delta Json? // Nullable array of objects
   docs_y_doc_state       Bytes? // Binary data for Yjs document state
   language               String       @default("bo") // Language of the document content
@@ -70,20 +70,6 @@ model Comment {
   is_suggestion        Boolean   @default(false)
   suggested_text       String?
 }
-
-// model Suggestion {
-//   id                   String   @id @default(uuid())
-//   threadId             String?
-//   docId                String
-//   userId               String
-//   content              String
-//   createdAt            DateTime @default(now())
-//   updatedAt            DateTime @updatedAt
-//   initial_start_offset Int
-//   initial_end_offset   Int
-//   doc                  Doc      @relation("suggested_on", fields: [docId], references: [id], onDelete: Cascade)
-//   user                 User     @relation("suggested_by", fields: [userId], references: [id], onDelete: Cascade)
-// }
 
 model Version {
   id        String   @id @default(uuid()) // Unique identifier
