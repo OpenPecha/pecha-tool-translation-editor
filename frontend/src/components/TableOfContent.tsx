@@ -10,6 +10,7 @@ import { useEditor } from "@/contexts/EditorContext";
 import { MAX_HEADING_LEVEL } from "@/../config";
 import { cn } from "@/lib/utils";
 import { debounce } from "lodash";
+import { Switch } from "./ui/switch";
 
 interface Heading {
   text: string;
@@ -25,14 +26,14 @@ interface TableOfContentProps {
 const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [headings, setHeadings] = useState<Heading[]>([]);
+  const [synced, setSynced] = useState(false);
   const [expandedSections, setExpandedSections] = useState<{
     [key: string]: boolean;
   }>({});
   const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null);
-  const { getQuill } = useEditor();
+  const { getQuill, quillEditors } = useEditor();
 
   const quill = getQuill(documentId);
-
   const generateList = () => {
     return Array.from(
       { length: MAX_HEADING_LEVEL },
@@ -76,7 +77,6 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
           };
         });
 
-      console.log(headingsData);
       setHeadings(headingsData);
       const initialExpanded: { [key: string]: boolean } = {};
       headingsData.forEach((h) => {
@@ -149,6 +149,24 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
 
   const scrollToHeading = (id: string) => {
     if (!quill) return;
+    let otherKey = null;
+    if (quillEditors.size > 1 && synced) {
+      for (const key of quillEditors.keys()) {
+        if (key !== documentId) {
+          otherKey = key;
+          break;
+        }
+      }
+      const quill2 = getQuill(otherKey);
+      if (quill2) {
+        const el = quill2.root.querySelector(`#${id}`);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth" });
+          setActiveHeadingId(id);
+        }
+      }
+    }
+
     const el = quill.root.querySelector(`#${id}`);
     if (el) {
       el.scrollIntoView({ behavior: "smooth" });
@@ -281,6 +299,11 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
               <FaArrowCircleLeft className="w-5 h-5" />
             </button>
             <h3 className="text-lg font-semibold">Table of Contents</h3>
+            <Switch
+              checked={synced}
+              onCheckedChange={setSynced}
+              className="ml-2"
+            />
           </div>
           <div className="overflow-y-auto flex-grow">{renderTOC()}</div>
         </div>
