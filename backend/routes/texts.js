@@ -3,6 +3,7 @@ const router = express.Router();
 const { PrismaClient } = require("@prisma/client");
 const authenticate = require("../middleware/authenticate");
 const { diff_match_patch } = require("diff-match-patch");
+const Delta = require('quill-delta');
 
 const prisma = new PrismaClient();
 const dmp = new diff_match_patch();
@@ -237,31 +238,99 @@ router.get("/version-diff/:versionId", async (req, res) => {
       previousText = "";
     }
 
-    // Extract text content from version content
-    const currentText =
-      currentVersion.content?.ops?.map((op) => op.insert || "").join("") || "";
 
-    // Compute the diff
-    const diffs = dmp.diff_main(previousText, currentText);
-    dmp.diff_cleanupSemantic(diffs);
-
-    // Format diffs into a more readable structure
-    // const formattedDiffs = diffs
-    //   .map(([type, text]) => ({
-    //     type: type === 1 ? "added" : type === -1 ? "removed" : "unchanged",
-    //     text,
-    //   }))
-    //   .filter((diff) => diff.type !== "unchanged" || diff.text.trim());
-
+    const oldDelta = previousVersion ? new Delta(previousVersion.content?.ops): new Delta();
+    const newDelta = new Delta(currentVersion.content?.ops);
+    const diff = markDiff(oldDelta, newDelta);
+    
     return res.json({
-      diffs: diffs,
-      previousText,
-      currentText,
+      diffs: diff,
+      previousText
     });
   } catch (err) {
-    console.error(err);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+
+
+function markDiff(oldDelta, newDelta) {
+  const diff = oldDelta.diff(newDelta);
+  const finalDiff = { ops: [] };
+
+  // Apply visual styles for insertions and deletions
+  for (let op of diff.ops) {
+    if (op.insert) {
+      op.attributes = {
+        ...(op.attributes || {}),
+        background: "#cce8cc",
+        color: "#003700",
+      };
+    } else if (op.delete) {
+      // Simulate deletion by adding the deleted text with strike
+      const deletedOp = oldDelta.ops.find(o => o.insert && o.insert.length === op.delete);
+      finalDiff.ops.push({
+        insert: deletedOp ? deletedOp.insert : "[deleted]",
+        attributes: {
+          background: "#e8cccc",
+          color: "#370000",
+          strike: true,
+        },
+      });
+      continue;
+    }
+    finalDiff.ops.push(op);
+  }
+
+  // Step 2: Handle formatting-only changes
+  const formattedDiff = [];
+
+  const oldOps = oldDelta.ops || [];
+  const newOps = newDelta.ops || [];
+  const len = Math.min(oldOps.length, newOps.length);
+
+  for (let i = 0; i < len; i++) {
+    const oldOp = oldOps[i];
+    const newOp = newOps[i];
+
+    const oldText = oldOp.insert;
+    const newText = newOp.insert;
+
+    if (oldText === newText) {
+      const oldAttrs = oldOp.attributes || {};
+      const newAttrs = newOp.attributes || {};
+
+      if (JSON.stringify(oldAttrs) !== JSON.stringify(newAttrs)) {
+        // Formatting changed
+        formattedDiff.push({
+          insert: newText,
+          attributes: {
+            background: "#fff3cd",
+            color: "#856404",
+            ...newAttrs,
+          },
+        });
+      } else {
+        formattedDiff.push(newOp);
+      }
+    } else {
+      // Content differs, already handled above by .diff()
+      formattedDiff.push(newOp);
+    }
+  }
+
+  // Replace unstyled parts with formatted ones
+  const mergedOps = finalDiff.ops.map(op => {
+    if (!op.attributes || Object.keys(op.attributes).length === 0) {
+      const match = formattedDiff.find(f => f.insert === op.insert);
+      return match || op;
+    }
+    return op;
+  });
+
+  return { ops: mergedOps };
+}
+
+
 
 module.exports = router;

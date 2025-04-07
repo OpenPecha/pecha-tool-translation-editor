@@ -26,7 +26,13 @@
     border:none !important;
   }
 
-  
+  .ql-diff-added {
+    background-color: #e6ffe6;
+  }
+  .ql-diff-deleted {
+    background-color: #ffe6e6;
+    text-decoration: line-through;
+  }
   .ql-editor {
     min-height: 100% !important;
     padding:0 !important;

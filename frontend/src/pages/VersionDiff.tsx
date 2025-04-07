@@ -2,6 +2,7 @@ import { useQuillHistory } from "@/contexts/HistoryContext";
 import { useState, useEffect } from "react";
 import { IoMdClose } from "react-icons/io";
 import { getVersionDiff } from "@/api/version";
+import DiffViewer from "./DiffViewer";
 
 interface DeltaOperation {
   insert: string;
@@ -39,37 +40,6 @@ interface DiffResponse {
 interface VersionDiffProps {
   readonly onClose: () => void;
 }
-
-const DiffViewer = ({ diffs }: { diffs: [number, string][] }) => {
-  return (
-    <div className="font-mono text-sm">
-      {diffs.map(([type, text], index) => {
-        const lines = text.split("\n");
-        return lines.map((line, lineIndex) => {
-          if (!line) return null;
-          const key = `${index}-${lineIndex}`;
-          const prefix = type === 1 ? "+" : type === -1 ? "-" : " ";
-
-          return (
-            <div
-              key={key}
-              className={`flex ${
-                type === 1
-                  ? "bg-green-50"
-                  : type === -1
-                  ? "bg-red-50"
-                  : "bg-white"
-              }`}
-            >
-              <span className="w-8 text-gray-500 select-none">{prefix}</span>
-              <span className="flex-1">{line}</span>
-            </div>
-          );
-        });
-      })}
-    </div>
-  );
-};
 
 function VersionDiff({ onClose }: VersionDiffProps) {
   const { versions, isLoading } = useQuillHistory() as QuillHistoryContext;
@@ -126,7 +96,10 @@ function VersionDiff({ onClose }: VersionDiffProps) {
             <div>
               <h2 className="text-xl font-semibold mb-4">Changes</h2>
               <div className="border rounded-lg p-4 bg-gray-50">
-                <DiffViewer diffs={diffData.diffs} />
+                <DiffViewer
+                  diffDelta={diffData.diffs}
+                  prev={diffData.previousText}
+                />
               </div>
             </div>
           ) : (
