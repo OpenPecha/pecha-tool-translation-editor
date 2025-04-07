@@ -3,7 +3,7 @@ import { debounce } from "lodash";
 import { useParams } from "react-router-dom";
 import { useEditor } from "@/contexts/EditorContext";
 import useLocalStorage from "@/hooks/useLocalStorage";
-import { FaBookmark } from "react-icons/fa";
+import { FaBookmark, FaChevronUp, FaChevronDown } from "react-icons/fa";
 
 const offsetTop = 0;
 
@@ -17,25 +17,30 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
       lineHeight?: string;
     }>
   >([]);
-  const [bookmarked, setBookmarked] = useLocalStorage(
-    `${documentId}-bookmark`,
-    0
+  const [bookmarks, setBookmarks] = useLocalStorage<number[]>(
+    `${documentId}-bookmarks`,
+    []
   );
+  const [currentBookmarkIndex, setCurrentBookmarkIndex] = useState<number>(-1);
   const [showBookmarkPopup, setShowBookmarkPopup] = useState(false);
   const [maxLineWidth, setMaxLineWidth] = useState(3); // Default minimum width
 
   const handleDoubleClick = (lineNumber: number) => {
-    if (lineNumber === bookmarked) {
-      setBookmarked(0);
+    if (bookmarks.includes(lineNumber)) {
+      setBookmarks(bookmarks.filter((bm) => bm !== lineNumber));
+      // Reset current index if we removed the current bookmark
+      if (bookmarks[currentBookmarkIndex] === lineNumber) {
+        setCurrentBookmarkIndex(-1);
+      }
     } else {
-      setBookmarked(lineNumber);
+      setBookmarks([...bookmarks, lineNumber].sort((a, b) => a - b));
     }
   };
 
-  const isBookmarkInViewport = () => {
+  const isBookmarkInViewport = (lineNumber: number) => {
     const editorContainer = editorRef?.current?.querySelector(".ql-editor");
     const lineNumberSpan = lineNumbersRef.current?.querySelector(
-      `.line-number:nth-child(${bookmarked})`
+      `.line-number[id$="-line-${lineNumber}"]`
     ) as HTMLElement;
 
     if (!editorContainer || !lineNumberSpan) return false;
@@ -48,9 +53,9 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
     return !(lineTop < scrollTop || lineTop > scrollTop + containerRect.height);
   };
 
-  const handleScrollToBookmark = () => {
+  const scrollToBookmark = (lineNumber: number) => {
     const lineNumberSpan = lineNumbersRef.current?.querySelector(
-      `.line-number:nth-child(${bookmarked})`
+      `.line-number[id$="-line-${lineNumber}"]`
     ) as HTMLElement;
 
     if (lineNumberSpan) {
@@ -60,6 +65,27 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
         editorContainer.scrollTop = targetTop;
       }
     }
+  };
+
+  const handleScrollToNextBookmark = () => {
+    if (bookmarks.length === 0) return;
+
+    let newIndex = currentBookmarkIndex + 1;
+    if (newIndex >= bookmarks.length) newIndex = 0;
+
+    setCurrentBookmarkIndex(newIndex);
+    scrollToBookmark(bookmarks[newIndex]);
+    setShowBookmarkPopup(false);
+  };
+
+  const handleScrollToPrevBookmark = () => {
+    if (bookmarks.length === 0) return;
+
+    let newIndex = currentBookmarkIndex - 1;
+    if (newIndex < 0) newIndex = bookmarks.length - 1;
+
+    setCurrentBookmarkIndex(newIndex);
+    scrollToBookmark(bookmarks[newIndex]);
     setShowBookmarkPopup(false);
   };
 
@@ -173,8 +199,10 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
         debouncedUpdateLineNumbers();
 
         // Update bookmark popup visibility on scroll
-        if (bookmarked > 0) {
-          setShowBookmarkPopup(!isBookmarkInViewport());
+        if (bookmarks.length > 0 && currentBookmarkIndex >= 0) {
+          setShowBookmarkPopup(
+            !isBookmarkInViewport(bookmarks[currentBookmarkIndex])
+          );
         }
       });
     }
@@ -188,17 +216,19 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
     return () => {
       window.removeEventListener("resize", debouncedUpdateLineNumbers);
     };
-  }, [editorRef, quill, updateLineNumbers, bookmarked]);
+  }, [editorRef, quill, updateLineNumbers, bookmarks, currentBookmarkIndex]);
 
   useEffect(() => {
-    if (bookmarked > 0) {
-      setShowBookmarkPopup(!isBookmarkInViewport());
+    if (bookmarks.length > 0 && currentBookmarkIndex >= 0) {
+      setShowBookmarkPopup(
+        !isBookmarkInViewport(bookmarks[currentBookmarkIndex])
+      );
       const timer = setTimeout(() => {
         setShowBookmarkPopup(false);
       }, 4000);
       return () => clearTimeout(timer);
     }
-  }, [lineNumbers.length]);
+  }, [lineNumbers.length, bookmarks, currentBookmarkIndex]);
 
   const isRoot = documentId === useParams().id;
 
@@ -249,20 +279,42 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
       }
     }
   };
-
+  console.log(showBookmarkPopup, bookmarks, currentBookmarkIndex);
   return (
     <>
-      {showBookmarkPopup && bookmarked > 0 && (
-        <div className="fixed bottom-4 left-4  p-2 z-10  ">
+      {bookmarks.length > 0 && (
+        <div className="fixed bottom-4 left-2 p-2 z-10 flex items-center gap-2">
+          {bookmarks.length > 1 && (
+            <button
+              onClick={handleScrollToPrevBookmark}
+              title="Previous bookmark"
+              className="bg-blue-500 text-white px-3 py-1 rounded-l hover:bg-blue-600"
+            >
+              <FaChevronUp />
+            </button>
+          )}
           <button
-            onClick={handleScrollToBookmark}
-            title="Go to bookmark"
-            className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+            onClick={scrollToBookmark.bind(
+              null,
+              bookmarks[currentBookmarkIndex]
+            )}
+            title="Go to current bookmark"
+            className="bg-blue-500 text-white px-3 py-1 hover:bg-blue-600"
           >
             <FaBookmark />
           </button>
+          {bookmarks.length > 1 && (
+            <button
+              onClick={handleScrollToNextBookmark}
+              title="Next bookmark"
+              className="bg-blue-500 text-white px-3 py-1 rounded-r hover:bg-blue-600"
+            >
+              <FaChevronDown />
+            </button>
+          )}
         </div>
       )}
+
       <div
         ref={lineNumbersRef}
         className={`line-numbers mt-[3px] h-full ${
@@ -278,7 +330,7 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
             documentId={documentId}
             onCLick={handleClickOnLineNumber}
             handleDoubleClick={handleDoubleClick}
-            bookmarked={bookmarked}
+            isBookmarked={bookmarks.includes(lineNum.number)}
           />
         ))}
       </div>
@@ -292,7 +344,7 @@ interface EachLineNumberProps {
   readonly documentId: string;
   readonly onCLick: (e: React.MouseEvent<HTMLSpanElement>) => void;
   readonly handleDoubleClick: (lineNumber: number) => void;
-  readonly bookmarked: number;
+  readonly isBookmarked: boolean;
 }
 
 function EachLineNumber({
@@ -301,9 +353,8 @@ function EachLineNumber({
   documentId,
   onCLick,
   handleDoubleClick,
-  bookmarked,
+  isBookmarked,
 }: EachLineNumberProps) {
-  const isBookmarked = bookmarked === lineNumber;
   return (
     <span
       onDoubleClick={() => handleDoubleClick(lineNumber)}
