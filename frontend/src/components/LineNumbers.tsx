@@ -279,7 +279,6 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
       }
     }
   };
-  console.log(showBookmarkPopup, bookmarks, currentBookmarkIndex);
   return (
     <>
       {bookmarks.length > 0 && (
@@ -303,7 +302,7 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
           >
             <FaBookmark />
           </button>
-          {bookmarks.length > 1 && (
+          {bookmarks.length > 0 && (
             <button
               onClick={handleScrollToNextBookmark}
               title="Next bookmark"
