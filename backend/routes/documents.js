@@ -65,7 +65,7 @@ module.exports = (getYDoc) => {
       });
       await tx.version.create({
         data:{
-          content:delta,
+          content:{ops:delta},
           docId:doc.id,
           label:"initail Auto-save",
         }

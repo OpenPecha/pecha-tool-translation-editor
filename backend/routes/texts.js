@@ -206,7 +206,6 @@ router.get("/version-diff/:versionId", async (req, res) => {
         timestamp: true,
       },
     });
-     console.log(currentVersion)
     if (!currentVersion) {
       return res.status(404).json({ error: "Version not found" });
     }
@@ -230,7 +229,7 @@ router.get("/version-diff/:versionId", async (req, res) => {
     let previousText = "";
     if (previousVersion) {
       previousText =
-        previousVersion.content?.map((op) => op.insert || "").join("") ||
+        previousVersion.content?.ops?.map((op) => op.insert || "").join("") ||
         "";
     }
 
@@ -240,7 +239,7 @@ router.get("/version-diff/:versionId", async (req, res) => {
 
     // Extract text content from version content
     const currentText =
-      currentVersion.content?.map((op) => op.insert || "").join("") || "";
+      currentVersion.content?.ops?.map((op) => op.insert || "").join("") || "";
 
     // Compute the diff
     const diffs = dmp.diff_main(previousText, currentText);
