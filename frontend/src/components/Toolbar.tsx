@@ -154,6 +154,7 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
           style={{
             display: showToolbar ? "flex" : "none",
             opacity: showToolbar ? 1 : 0,
+            position: "relative",
           }}
         >
           <div className="flex items-center gap-4 flex-1">

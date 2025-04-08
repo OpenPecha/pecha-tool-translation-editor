@@ -12,6 +12,8 @@ import { deleteComment, fetchComments } from "@/api/comment";
 import { useEditor } from "@/contexts/EditorContext";
 import { BiTrash } from "react-icons/bi";
 import Comments from "./Comments";
+import DocumentInfo from "./DocumentInfo";
+import { Button } from "../ui/button";
 
 type MenuOption =
   | "translations"
@@ -22,12 +24,12 @@ type MenuOption =
 
 function SideMenu({
   translations,
-  selectedTranslationId,
   setSelectedTranslationId,
+  doc_info,
 }: {
   readonly translations: any;
-  readonly selectedTranslationId: any;
   readonly setSelectedTranslationId: (id: string) => void;
+  readonly doc_info: any;
 }) {
   const [currentView, setCurrentView] = useState<MenuOption>("main");
 
@@ -35,103 +37,62 @@ function SideMenu({
     switch (currentView) {
       case "translations":
         return (
-          <div className="h-full">
-            <button
-              onClick={() => setCurrentView("main")}
-              className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md mb-4"
-            >
-              <ChevronLeft size={16} />
-              Back
-            </button>
-            <hr />
+          <InMenuWrapper onBackClick={() => setCurrentView("main")}>
             <SelectTranslation
               translations={translations}
               setSelectedTranslationId={setSelectedTranslationId}
             />
-          </div>
+          </InMenuWrapper>
         );
       case "settings":
         return (
-          <div className="h-full">
-            <button
-              onClick={() => setCurrentView("main")}
-              className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md mb-4"
-            >
-              <ChevronLeft size={16} />
-              Back
-            </button>
+          <InMenuWrapper onBackClick={() => setCurrentView("main")}>
             <div>Settings Content</div>
-          </div>
+          </InMenuWrapper>
         );
       case "commentary":
         return (
-          <div className="h-full">
-            <button
-              onClick={() => setCurrentView("main")}
-              className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md mb-4"
-            >
-              <ChevronLeft size={16} />
-              Back
-            </button>
+          <InMenuWrapper onBackClick={() => setCurrentView("main")}>
             <div>Commentary Content</div>
-          </div>
+          </InMenuWrapper>
         );
       case "comments":
         return (
-          <div className="h-full">
-            <button
-              onClick={() => setCurrentView("main")}
-              className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md mb-4"
-            >
-              <ChevronLeft size={16} />
-              Back
-            </button>
+          <InMenuWrapper onBackClick={() => setCurrentView("main")}>
             <Comments />
-          </div>
+          </InMenuWrapper>
         );
       default:
         return (
           <div className="flex flex-col p-4 gap-3">
-            <button
-              onClick={() => setCurrentView("translations")}
-              className="w-full text-left py-2 px-4 bg-gray-50 hover:bg-gray-100 rounded-lg cursor-pointer font-medium text-gray-700 transition-colors border border-gray-200 shadow-sm flex items-center justify-between"
-            >
+            <MenuButton onClick={() => setCurrentView("translations")}>
               <div className="flex items-center gap-2">
                 <Languages size={16} />
                 Translations
               </div>
               <ChevronLeft className="h-4 w-4 rotate-180" />
-            </button>
-            <button
-              onClick={() => setCurrentView("commentary")}
-              className="w-full text-left py-2 px-4 bg-gray-50 hover:bg-gray-100 rounded-lg cursor-pointer font-medium text-gray-700 transition-colors border border-gray-200 shadow-sm flex items-center justify-between"
-            >
+            </MenuButton>
+            <MenuButton onClick={() => setCurrentView("commentary")}>
               <div className="flex items-center gap-2">
                 <BookOpen size={16} />
                 Commentary
               </div>
               <ChevronLeft className="h-4 w-4 rotate-180" />
-            </button>
-            <button
-              onClick={() => setCurrentView("comments")}
-              className="w-full text-left py-2 px-4 bg-gray-50 hover:bg-gray-100 rounded-lg cursor-pointer font-medium text-gray-700 transition-colors border border-gray-200 shadow-sm flex items-center justify-between"
-            >
+            </MenuButton>
+            <MenuButton onClick={() => setCurrentView("comments")}>
               <div className="flex items-center gap-2">
                 <MessageSquare size={16} />
                 Comments
               </div>
               <ChevronLeft className="h-4 w-4 rotate-180" />
-            </button>
-            <button
-              onClick={() => setCurrentView("settings")}
-              className="w-full text-left py-2 px-4 bg-gray-50 hover:bg-gray-100 rounded-lg cursor-pointer font-medium text-gray-700 transition-colors border border-gray-200 shadow-sm flex items-center justify-between"
-            >
+            </MenuButton>
+            <MenuButton onClick={() => setCurrentView("settings")}>
               <div className="flex items-center gap-2">
                 <Settings size={16} />
                 Settings
               </div>
               <ChevronLeft className="h-4 w-4 rotate-180" />
-            </button>
+            </MenuButton>
           </div>
         );
     }
@@ -140,6 +101,42 @@ function SideMenu({
   return (
     <div className="absolute right-0 bg-white border-l h-full w-1/4 shadow-sm">
       {renderContent()}
+      <DocumentInfo doc_info={doc_info} />
+    </div>
+  );
+}
+
+function MenuButton({ children, onClick }) {
+  return (
+    <Button
+      type="button"
+      onClick={onClick}
+      variant="ghost"
+      className="w-full text-left py-2 px-4  rounded-lg cursor-pointer font-medium text-gray-700 transition-colors flex items-center justify-between"
+    >
+      {children}
+    </Button>
+  );
+}
+
+function InMenuWrapper({
+  children,
+  onBackClick,
+}: {
+  readonly children: React.ReactNode;
+  readonly onBackClick: () => void;
+}) {
+  return (
+    <div className="h-full">
+      <Button
+        variant="ghost"
+        onClick={onBackClick}
+        className="flex items-center gap-2  hover:bg-gray-100 rounded-md mx-1 my-2 cursor-pointer"
+      >
+        <ChevronLeft size={16} />
+        Back
+      </Button>
+      <div className="p-4">{children}</div>
     </div>
   );
 }

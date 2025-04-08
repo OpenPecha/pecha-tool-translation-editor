@@ -129,29 +129,26 @@ function VersionDiff({ onClose }: VersionDiffProps) {
           <div className="p-4">
             <h2 className="text-xl font-semibold mb-4">Version History</h2>
             {versions && versions.length > 0 ? (
-              versions
-                .slice()
-                .reverse()
-                .map((version: Version) => (
-                  <div
-                    key={version.id}
-                    className={`p-4 border-b cursor-pointer ${
-                      version.id === selectedVersionId
-                        ? "bg-blue-50"
-                        : "hover:bg-gray-50"
-                    }`}
-                    onClick={() => setSelectedVersionId(version.id)}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-medium">{version.label}</h3>
-                        <p className="text-sm text-gray-500">
-                          {formatDate(version.timestamp)}
-                        </p>
-                      </div>
+              versions.map((version: Version) => (
+                <div
+                  key={version.id}
+                  className={`p-4 border-b cursor-pointer ${
+                    version.id === selectedVersionId
+                      ? "bg-blue-50"
+                      : "hover:bg-gray-50"
+                  }`}
+                  onClick={() => setSelectedVersionId(version.id)}
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-medium">{version.label}</h3>
+                      <p className="text-sm text-gray-500">
+                        {formatDate(version.timestamp)}
+                      </p>
                     </div>
                   </div>
-                ))
+                </div>
+              ))
             ) : (
               <div className="text-gray-500 text-center py-8">
                 No versions available

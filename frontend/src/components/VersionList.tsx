@@ -55,49 +55,46 @@ function VersionList() {
           <p className="text-gray-500">No saved versions yet</p>
         ) : (
           <div className="max-h-60 overflow-y-auto border">
-            {versions
-              .slice()
-              .reverse()
-              .map((version: Version) => (
-                <div
-                  key={version.id}
-                  className={`px-2  flex justify-between items-center border-b hover:bg-gray-100 ${
-                    version.id === currentVersionId ? "bg-blue-100" : ""
-                  }`}
-                >
-                  <div>
-                    <div className="font-sm">{version.label}</div>
-                    <div className="text-xs text-gray-500">
-                      {formatDate(version.timestamp)}
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => loadVersion(version.id)}
-                      disabled={version.id === currentVersionId}
-                      title="Load version"
-                      className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm"
-                    >
-                      <SiTicktick />
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (
-                          window.confirm(
-                            "Are you sure you want to delete this version?"
-                          )
-                        ) {
-                          deleteVersion(version.id);
-                        }
-                      }}
-                      title="Delete version"
-                      className="px-2 py-1 bg-red-100 rounded hover:bg-red-200 text-sm"
-                    >
-                      <MdDelete />
-                    </button>
+            {versions.map((version: Version) => (
+              <div
+                key={version.id}
+                className={`px-2  flex justify-between items-center border-b hover:bg-gray-100 ${
+                  version.id === currentVersionId ? "bg-blue-100" : ""
+                }`}
+              >
+                <div>
+                  <div className="font-sm">{version.label}</div>
+                  <div className="text-xs text-gray-500">
+                    {formatDate(version.timestamp)}
                   </div>
                 </div>
-              ))}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => loadVersion(version.id)}
+                    disabled={version.id === currentVersionId}
+                    title="Load version"
+                    className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm"
+                  >
+                    <SiTicktick />
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          "Are you sure you want to delete this version?"
+                        )
+                      ) {
+                        deleteVersion(version.id);
+                      }
+                    }}
+                    title="Delete version"
+                    className="px-2 py-1 bg-red-100 rounded hover:bg-red-200 text-sm"
+                  >
+                    <MdDelete />
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

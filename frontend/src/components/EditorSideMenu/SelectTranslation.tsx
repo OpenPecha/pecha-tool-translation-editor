@@ -1,3 +1,4 @@
+import { GrDocument } from "react-icons/gr";
 import { Translation } from "./DocumentWrapper";
 import { Button } from "./ui/button";
 
@@ -15,9 +16,10 @@ function SelectTranslation({
           <div
             key={translation.id}
             onClick={() => setSelectedTranslationId(translation.id)}
-            className="cursor-pointer capitalize"
+            className="cursor-pointer capitalize flex items-center gap-2"
           >
-            {index + 1}: {translation.identifier}
+            <GrDocument size={23} />
+            {translation.identifier}({translation.language})
           </div>
         ))}
       </div>

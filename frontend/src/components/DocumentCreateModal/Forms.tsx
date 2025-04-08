@@ -25,7 +25,14 @@ export function NewPechaForm({
   const navigate = useNavigate();
 
   const createDoc = async () => {
-    if (!newDocIdentifier) return;
+    if (!newDocIdentifier || newDocIdentifier.trim() === "") {
+      setError("give a name to your document");
+      return;
+    }
+    if (selectedLanguage === "") {
+      setError("choose a language");
+      return;
+    }
     if (selectedFile && selectedFile.type !== "text/plain") {
       setError("Only .txt files are allowed");
       return;
@@ -35,6 +42,7 @@ export function NewPechaForm({
     formData.append("identifier", newDocIdentifier);
     formData.append("isRoot", isRoot.toString());
     formData.append("isPublic", isPublic.toString());
+    formData.append("language", selectedLanguage);
     if (!isRoot && rootId) {
       formData.append("rootId", rootId);
     }
@@ -62,7 +70,7 @@ export function NewPechaForm({
     <div className="p-4">
       {error != "" && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {"error with creating document"}
+          {error}
         </div>
       )}
       <SelectLanguage
@@ -95,7 +103,7 @@ export function NewPechaForm({
           }}
         />
       </div>
-      <div className="flex items-center gap-2 mb-4">
+      {/* <div className="flex items-center gap-2 mb-4">
         <label htmlFor="isPublicCheckbox">Is Public Document</label>
         <input
           id="isPublicCheckbox"
@@ -103,7 +111,7 @@ export function NewPechaForm({
           checked={isPublic}
           onChange={(e) => setIsPublic(e.target.checked)}
         />
-      </div>
+      </div> */}
 
       {!isRoot && (
         <div className="mb-4">

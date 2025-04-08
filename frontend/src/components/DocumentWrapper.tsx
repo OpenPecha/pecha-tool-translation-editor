@@ -50,8 +50,8 @@ function DocumentsWrapper() {
           {!selectedTranslationId ? (
             <SideMenu
               translations={translations}
-              selectedTranslationId={selectedTranslationId}
               setSelectedTranslationId={setSelectedTranslationId}
+              doc_info={currentDoc}
             />
           ) : (
             <YjsProvider key={selectedTranslationId}>

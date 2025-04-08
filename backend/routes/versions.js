@@ -20,7 +20,6 @@ router.get("/:docId", authenticate, async (req, res) => {
       },
       orderBy: { timestamp: "desc" },
     });
-
     res.json(versions);
   } catch (error) {
     console.error("Error fetching versions:", error);

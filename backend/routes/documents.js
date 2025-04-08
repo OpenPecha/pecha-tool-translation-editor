@@ -23,7 +23,7 @@ module.exports = (getYDoc) => {
   // Create a new document
   router.post("/", cors(), authenticate, upload.single("file"), async (req, res) => {
     try {
-      const { identifier, isRoot, rootId } = req.body;
+      const { identifier, isRoot, rootId,language } = req.body;
       if (!identifier)
         return res
           .status(400)
@@ -53,6 +53,7 @@ module.exports = (getYDoc) => {
           docs_prosemirror_delta: delta,
           isRoot: isRoot === "true",
           rootId: rootId ?? null,
+          language,
         },
       });
 
