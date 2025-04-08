@@ -15,7 +15,7 @@ function SelectTranslation({
           <div
             key={translation.id}
             onClick={() => setSelectedTranslationId(translation.id)}
-            className="cursor-pointer"
+            className="cursor-pointer capitalize"
           >
             {index + 1}: {translation.identifier}
           </div>

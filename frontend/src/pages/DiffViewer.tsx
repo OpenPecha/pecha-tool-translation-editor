@@ -2,7 +2,13 @@ import Quill from "quill";
 import { useEffect, useRef } from "react";
 import Delta from "quill-delta";
 
-const DiffViewer = ({ diffDelta, prev }: { diffDelta: any; prev: string }) => {
+const DiffViewer = ({
+  diffDelta,
+  prev,
+}: {
+  diffDelta: [number, string][];
+  prev: [number, string][];
+}) => {
   const quillRef = useRef<Quill | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -26,7 +32,7 @@ const DiffViewer = ({ diffDelta, prev }: { diffDelta: any; prev: string }) => {
     if (prev) {
       try {
         // Create a delta from the previous content
-        const prevDelta = new Delta().insert(prev);
+        const prevDelta = new Delta(prev);
         // Compose the previous delta with the diff delta
         if (diffDelta) {
           const combinedDelta = prevDelta.compose(new Delta(diffDelta));

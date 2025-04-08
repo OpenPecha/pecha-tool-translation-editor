@@ -43,6 +43,7 @@ function SideMenu({
               <ChevronLeft size={16} />
               Back
             </button>
+            <hr />
             <SelectTranslation
               translations={translations}
               setSelectedTranslationId={setSelectedTranslationId}

@@ -14,20 +14,17 @@ const Navbar = ({ title }: { title?: string }) => {
   return (
     <nav className="  px-6 py-2 flex justify-between items-center">
       {/* Logo and Brand */}
-      <div className="flex items-center gap-3">
+      <Link to="/" className="flex items-center gap-3">
         <img
           alt="icon"
           src="/icon/icon.png"
           width={28}
           className="object-contain"
         />
-        <Link
-          to="/"
-          className="text-xl font-semibold text-gray-700 hover:text-gray-900 transition capitalize"
-        >
-          {title || "Pecha Editor"}
-        </Link>
-      </div>
+        <div className="text-xl font-semibold text-gray-700 hover:text-gray-900 transition capitalize">
+          {title}
+        </div>
+      </Link>
 
       {/* Navigation Menu */}
       <div className="flex items-center gap-4">

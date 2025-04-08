@@ -227,25 +227,14 @@ router.get("/version-diff/:versionId", async (req, res) => {
       },
     });
 
-    let previousText = "";
-    if (previousVersion) {
-      previousText =
-        previousVersion.content?.ops?.map((op) => op.insert || "").join("") ||
-        "";
-    }
-
-    if (!previousVersion) {
-      previousText = "";
-    }
-
 
     const oldDelta = previousVersion ? new Delta(previousVersion.content?.ops): new Delta();
     const newDelta = new Delta(currentVersion.content?.ops);
-    const diff = markDiff(oldDelta, newDelta);
+    const diffs = markDiff(oldDelta, newDelta);
     
     return res.json({
-      diffs: diff,
-      previousText
+      diffs,
+      prev:previousVersion?previousVersion.content?.ops:null,
     });
   } catch (err) {
     return res.status(500).json({ error: "Internal Server Error" });

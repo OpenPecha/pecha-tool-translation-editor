@@ -34,7 +34,7 @@ interface QuillHistoryContext {
 
 interface DiffResponse {
   diffs: [number, string][];
-  previousText: string;
+  prev: [number, string][];
   currentText: string;
 }
 
@@ -108,12 +108,7 @@ function VersionDiff({ onClose }: VersionDiffProps) {
           {selectedVersionId && diffData ? (
             <div>
               <h2 className="text-xl font-semibold mb-4">Changes</h2>
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <DiffViewer
-                  diffDelta={diffData.diffs}
-                  prev={diffData.previousText}
-                />
-              </div>
+              <DiffViewer diffDelta={diffData.diffs} prev={diffData.prev} />
             </div>
           ) : (
             <div className="text-center text-gray-500 mt-20">
