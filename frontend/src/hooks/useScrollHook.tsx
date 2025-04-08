@@ -17,6 +17,108 @@ function useScrollHook(quill1: Quill, quill2: Quill) {
       const sourceEditor = source.root;
       const targetEditor = target.root;
 
+      if (syncType === "lineNumber") {
+        handleScrollLineNumberSync(sourceEditor, targetEditor);
+      } else if (syncType === "heading") {
+        handleScrollHeadingSync(sourceEditor, targetEditor);
+      }
+    };
+
+    const handleScrollLineNumberSync = (
+      sourceEditor: HTMLElement,
+      targetEditor: HTMLElement
+    ) => {
+      // Find the source and target editor containers
+      const sourceContainer = sourceEditor.closest(".editor-container");
+      const targetContainer = targetEditor.closest(".editor-container");
+
+      const sourceLineNumbersContainer =
+        sourceContainer?.querySelector(".line-numbers");
+      const targetLineNumbersContainer =
+        targetContainer?.querySelector(".line-numbers");
+
+      if (!sourceLineNumbersContainer || !targetLineNumbersContainer) return;
+
+      // Get the current scroll position of the source editor
+      const sourceScrollTop = sourceEditor.scrollTop;
+
+      // Find the line number element that is at the top of the visible area in the source editor
+      const sourceLineNumbers = Array.from(
+        sourceLineNumbersContainer.querySelectorAll(".line-number")
+      );
+
+      const targetLineNumbers = Array.from(
+        targetLineNumbersContainer.querySelectorAll(".line-number")
+      );
+
+      if (sourceLineNumbers.length === 0 || targetLineNumbers.length === 0)
+        return;
+
+      // Check if the target editor is at or very near its maximum scroll position
+      const targetEditorHeight = targetEditor.scrollHeight;
+      const targetViewportHeight = targetEditor.clientHeight;
+      const targetMaxScroll = targetEditorHeight - targetViewportHeight;
+      const isAtBottom = targetEditor.scrollTop >= targetMaxScroll - 5; // 5px threshold
+
+      // Determine scroll direction - only need to check if scrolling down
+      const isScrollingDown = sourceEditor.scrollTop > targetEditor.scrollTop;
+
+      // If target is at bottom and source is scrolling down, don't sync
+      // This prevents shaky behavior when scrolling down past the end of target content
+      if (isAtBottom && isScrollingDown) {
+        console.log("Target at bottom, scrolling down - preventing sync");
+        return;
+      }
+
+      // In all other cases (including scrolling up from bottom), allow sync
+
+      // Find the line number element that is closest to the top of the visible area
+      let topVisibleLineElement: HTMLElement | null = null;
+      let minDistance = Number.MAX_VALUE;
+
+      for (const lineEl of sourceLineNumbers) {
+        const htmlEl = lineEl as HTMLElement;
+        const lineTop = parseFloat(htmlEl.style.top ?? "0");
+        const distance = Math.abs(lineTop - sourceScrollTop);
+
+        if (distance < minDistance) {
+          minDistance = distance;
+          topVisibleLineElement = htmlEl;
+        }
+      }
+
+      if (!topVisibleLineElement) return;
+
+      // Get the line number from the element
+      const lineNumberSpan = topVisibleLineElement.querySelector("span");
+      if (!lineNumberSpan) return;
+
+      const topLineNumber = parseInt(lineNumberSpan.textContent ?? "0", 10);
+      if (isNaN(topLineNumber)) return;
+
+      // Find the corresponding line number element in the target editor
+      const targetLineElement = Array.from(targetLineNumbers).find((el) => {
+        const span = el.querySelector("span");
+        return span && parseInt(span.textContent ?? "0", 10) === topLineNumber;
+      }) as HTMLElement | undefined;
+
+      if (!targetLineElement) return;
+
+      // Get the top position of the target line element
+      const targetTop = parseFloat(targetLineElement.style.top ?? "0");
+
+      // Set the scroll position of the target editor directly for natural scrolling
+      // Only update if the difference is significant enough to avoid micro-adjustments
+      if (Math.abs(targetEditor.scrollTop - targetTop) > 2) {
+        targetEditor.scrollTop = targetTop;
+      }
+    };
+
+    const handleScrollHeadingSync = (
+      sourceEditor: HTMLElement,
+      targetEditor: HTMLElement
+    ) => {
+      // Get all heading elements in both editors
       const sourceBlocks = Array.from(
         sourceEditor.querySelectorAll(allHeadersTags.join(","))
       );
@@ -143,7 +245,7 @@ function useScrollHook(quill1: Quill, quill2: Quill) {
         targetEditor.querySelectorAll(clickedTagName)
       );
 
-      // Only scroll if there's a matching heading at the same index in target
+      // Only scroll if there's a matching tag at the same index in target
       if (clickedHeadingIndex < sameTagTargetBlocks.length) {
         const targetBlock = sameTagTargetBlocks[
           clickedHeadingIndex
@@ -169,8 +271,6 @@ function useScrollHook(quill1: Quill, quill2: Quill) {
       // find line numbers containers
       let sourceLineNumbersContainer =
         sourceContainer?.querySelector(".line-numbers");
-      const targetLineNumbersContainer =
-        targetContainer?.querySelector(".line-numbers");
 
       if (!sourceContainer || !targetContainer) return;
 
@@ -231,12 +331,12 @@ function useScrollHook(quill1: Quill, quill2: Quill) {
       let minDistance = Number.MAX_VALUE;
 
       for (const lineEl of lineNumberElements) {
-        const lineTop = parseFloat(lineEl.style.top || "0");
+        const lineTop = parseFloat(lineEl.style.top ?? "0");
         const distance = Math.abs(lineTop - relativePosition);
 
         if (distance < minDistance) {
           minDistance = distance;
-          closestLineElement = lineEl;
+          closestLineElement = lineEl as HTMLElement;
         }
       }
 

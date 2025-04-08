@@ -99,7 +99,7 @@ function SyncOptions({
         )}
       </div>
 
-      {syncMode === "click" && (
+      {syncMode !== "none" && !isOpen && (
         <TagOptions syncType={syncType} setSyncType={setSyncType} />
       )}
     </div>
