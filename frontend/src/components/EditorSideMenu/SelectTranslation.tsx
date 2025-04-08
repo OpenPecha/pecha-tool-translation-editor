@@ -18,7 +18,7 @@ function SelectTranslation({
             onClick={() => setSelectedTranslationId(translation.id)}
             className="cursor-pointer capitalize flex items-center gap-2"
           >
-            <GrDocument size={23} />
+            <GrDocument />
             {translation.identifier}({translation.language})
           </div>
         ))}
