@@ -43,7 +43,7 @@ interface VersionDiffProps {
 }
 
 function VersionDiff({ onClose }: VersionDiffProps) {
-  const { versions, isLoading, loadVersion, currentVersionId } =
+  const { versions, isLoading, loadVersion } =
     useQuillHistory() as QuillHistoryContext;
   const [selectedVersionId, setSelectedVersionId] = useState<string | null>(
     null
@@ -70,10 +70,10 @@ function VersionDiff({ onClose }: VersionDiffProps) {
     fetchDiff();
   }, [selectedVersionId]);
 
-  const handleRestore = async (versionId: string) => {
-    if (versionId) {
+  const handleRestore = async () => {
+    if (selectedVersionId) {
       try {
-        await loadVersion(versionId);
+        await loadVersion(selectedVersionId);
         onClose();
       } catch (error) {
         console.error("Error restoring version:", error);
@@ -88,17 +88,24 @@ function VersionDiff({ onClose }: VersionDiffProps) {
       </div>
     );
   }
-
+  const lastVersionId = versions?.[0]?.id;
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b px-4 py-2 flex items-center">
+      <div className="bg-white border-b px-4 py-2 flex justify-between items-center">
         <button
           onClick={onClose}
           className="flex flex-row items-center text-gray-600 hover:text-gray-900"
         >
           <IoMdClose size={20} className="mr-2 font-bold" />
         </button>
+        <Button
+          onClick={handleRestore}
+          disabled={!selectedVersionId || selectedVersionId === lastVersionId}
+          title="Restore version"
+        >
+          Restore
+        </Button>
       </div>
 
       {/* Main content */}
@@ -142,14 +149,6 @@ function VersionDiff({ onClose }: VersionDiffProps) {
                           {formatDate(version.timestamp)}
                         </p>
                       </div>
-                      <Button
-                        onClick={() => handleRestore(version.id)}
-                        disabled={version.id === currentVersionId}
-                        title="Restore version"
-                        className="px-2 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
-                      >
-                        Restore
-                      </Button>
                     </div>
                   </div>
                 ))
