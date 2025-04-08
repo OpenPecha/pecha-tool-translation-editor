@@ -44,7 +44,7 @@ const HeaderDropdown = ({
       <div
         onClick={() => setOpen(!open)}
         onKeyDown={handleKeyDown}
-        className="border px-3 py-1 rounded cursor-pointer bg-white shadow-sm flex justify-between items-center"
+        className=" px-3 py-1 rounded cursor-pointer  flex justify-between items-center"
         role="combobox"
         aria-expanded={open}
         aria-haspopup="listbox"

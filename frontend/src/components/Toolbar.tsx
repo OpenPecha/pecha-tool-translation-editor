@@ -174,14 +174,14 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
                 onChange={handleHeadingChange}
               />
             </span>
-            <span className="ql-formats" title="Size" style={isEnabledStyle}>
+            {/* <span className="ql-formats" title="Size" style={isEnabledStyle}>
               <select className="ql-size">
                 <option value="small" />
                 <option selected />
                 <option value="large" />
                 <option value="huge" />
               </select>
-            </span>
+            </span> */}
             <div className="flex items-center gap-2" style={isEnabledStyle}>
               <span className="ql-formats">
                 <button className="ql-bold" title="Bold" />
