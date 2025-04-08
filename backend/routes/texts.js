@@ -230,11 +230,11 @@ router.get("/version-diff/:versionId", async (req, res) => {
 
     const oldDelta = previousVersion ? new Delta(previousVersion.content?.ops): new Delta();
     const newDelta = new Delta(currentVersion.content?.ops);
-    const diffs = markDiff(oldDelta, newDelta);
-    
+    const diffs1 = markDiff(oldDelta, newDelta);
+
+    const diffs=oldDelta?.compose(new Delta(diffs1));
     return res.json({
       diffs,
-      prev:previousVersion?previousVersion.content?.ops:null,
     });
   } catch (err) {
     return res.status(500).json({ error: "Internal Server Error" });
@@ -247,33 +247,51 @@ function markDiff(oldDelta, newDelta) {
   const diff = oldDelta.diff(newDelta);
   const finalDiff = { ops: [] };
 
-  // Apply visual styles for insertions and deletions
+  let oldIndex = 0;
+
   for (let op of diff.ops) {
     if (op.insert) {
-      op.attributes = {
-        ...(op.attributes || {}),
-        background: "#cce8cc",
-        color: "#003700",
-      };
-    } else if (op.delete) {
-      // Simulate deletion by adding the deleted text with strike
-      const deletedOp = oldDelta.ops.find(o => o.insert && o.insert.length === op.delete);
+      // Style inserted text
       finalDiff.ops.push({
-        insert: deletedOp ? deletedOp.insert : "[deleted]",
+        insert: op.insert,
+        attributes: {
+          ...(op.attributes || {}),
+          background: "#cce8cc",
+          color: "#003700",
+        },
+      });
+    } else if (op.delete) {
+      // Get deleted text from oldDelta
+      let deletedText = "";
+      while (op.delete > 0 && oldIndex < oldDelta.ops.length) {
+        const oldOp = oldDelta.ops[oldIndex];
+        if (typeof oldOp.insert === "string") {
+          const take = Math.min(op.delete, oldOp.insert.length);
+          deletedText += oldOp.insert.slice(0, take);
+          oldDelta.ops[oldIndex].insert = oldOp.insert.slice(take); // trim taken
+          op.delete -= take;
+          if (oldDelta.ops[oldIndex].insert.length === 0) oldIndex++;
+        } else {
+          oldIndex++;
+        }
+      }
+
+      finalDiff.ops.push({
+        insert: deletedText,
         attributes: {
           background: "#e8cccc",
           color: "#370000",
           strike: true,
         },
       });
-      continue;
+    } else if (op.retain) {
+      // Preserve retained ops temporarily (will merge below)
+      finalDiff.ops.push({ retain: op.retain, attributes: op.attributes });
     }
-    finalDiff.ops.push(op);
   }
 
-  // Step 2: Handle formatting-only changes
+  // Handle formatting-only changes
   const formattedDiff = [];
-
   const oldOps = oldDelta.ops || [];
   const newOps = newDelta.ops || [];
   const len = Math.min(oldOps.length, newOps.length);
@@ -282,17 +300,13 @@ function markDiff(oldDelta, newDelta) {
     const oldOp = oldOps[i];
     const newOp = newOps[i];
 
-    const oldText = oldOp.insert;
-    const newText = newOp.insert;
-
-    if (oldText === newText) {
+    if (oldOp.insert === newOp.insert) {
       const oldAttrs = oldOp.attributes || {};
       const newAttrs = newOp.attributes || {};
 
       if (JSON.stringify(oldAttrs) !== JSON.stringify(newAttrs)) {
-        // Formatting changed
         formattedDiff.push({
-          insert: newText,
+          insert: newOp.insert,
           attributes: {
             background: "#fff3cd",
             color: "#856404",
@@ -303,14 +317,13 @@ function markDiff(oldDelta, newDelta) {
         formattedDiff.push(newOp);
       }
     } else {
-      // Content differs, already handled above by .diff()
       formattedDiff.push(newOp);
     }
   }
 
-  // Replace unstyled parts with formatted ones
+  // Merge step to overwrite unstyled parts with formatted ones
   const mergedOps = finalDiff.ops.map(op => {
-    if (!op.attributes || Object.keys(op.attributes).length === 0) {
+    if (op.insert && (!op.attributes || Object.keys(op.attributes).length === 0)) {
       const match = formattedDiff.find(f => f.insert === op.insert);
       return match || op;
     }

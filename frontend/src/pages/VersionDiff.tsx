@@ -108,7 +108,7 @@ function VersionDiff({ onClose }: VersionDiffProps) {
           {selectedVersionId && diffData ? (
             <div>
               <h2 className="text-xl font-semibold mb-4">Changes</h2>
-              <DiffViewer diffDelta={diffData.diffs} prev={diffData.prev} />
+              <DiffViewer diffDelta={diffData.diffs} />
             </div>
           ) : (
             <div className="text-center text-gray-500 mt-20">

@@ -1,6 +1,13 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@font-face {
+  font-family: monlam;
+  src: url('/fonts/MonlamTBslim.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -47,14 +54,13 @@
   --sidebar-ring: oklch(0.705 0.015 286.067);
 }
 
-@font-face {
-  font-family: 'Monlam';
-  src: url('/fonts/MonlamTBslim.woff2') format('woff2');
-  font-weight: normal;
-  font-style: normal;
+
+@theme {
+  --font-monlam: 'monlam', sans-serif;
 }
+
 .ql-font-monlam {
-  font-family: 'Monlam', sans-serif;
+  font-family: 'monlam', sans-serif;
 }
 .custom-comment {
   background-color: lightyellow;
@@ -64,7 +70,7 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont,'monlam', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   line-height: 1.6;
   color: var(--text-color);
 }

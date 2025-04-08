@@ -2,13 +2,7 @@ import Quill from "quill";
 import { useEffect, useRef } from "react";
 import Delta from "quill-delta";
 
-const DiffViewer = ({
-  diffDelta,
-  prev,
-}: {
-  diffDelta: [number, string][];
-  prev: [number, string][];
-}) => {
+const DiffViewer = ({ diffDelta }: { diffDelta: [number, string][] }) => {
   const quillRef = useRef<Quill | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -29,39 +23,20 @@ const DiffViewer = ({
       containerRef.current.appendChild(editor);
     }
 
-    if (prev) {
+    if (diffDelta) {
       try {
         // Create a delta from the previous content
-        const prevDelta = new Delta(prev);
+        const prevDelta = new Delta(diffDelta);
         // Compose the previous delta with the diff delta
-        if (diffDelta) {
-          const combinedDelta = prevDelta.compose(new Delta(diffDelta));
-          // Set content with the combined delta
-          quillRef.current.setContents(combinedDelta);
-        } else {
-          // If no diff, just set the previous content
-          quillRef.current.setContents(prevDelta);
-        }
+        // Set content with the combined delta
+        quillRef.current.setContents(prevDelta);
       } catch (error) {
         console.error("Error applying diff:", error);
       }
-    } else {
-      const prevDelta = new Delta();
-      if (diffDelta) {
-        const combinedDelta = prevDelta.compose(new Delta(diffDelta));
-        // Set content with the combined delta
-        quillRef.current.setContents(combinedDelta);
-      }
     }
-  }, [diffDelta, prev]);
+  }, [diffDelta]);
 
-  return (
-    <div
-      id="diff-container"
-      ref={containerRef}
-      className="diff-viewer-container"
-    />
-  );
+  return <div id="diff-container" ref={containerRef} className="font-monlam" />;
 };
 
 export default DiffViewer;
