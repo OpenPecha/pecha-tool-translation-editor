@@ -351,7 +351,6 @@ module.exports = (getYDoc) => {
           where: {
             docId: documentId,
             userId: req.user.id,
-            userEmail: req.user.email,
             canWrite: true,
           },
         });
