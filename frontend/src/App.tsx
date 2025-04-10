@@ -1,12 +1,14 @@
-import { Routes, Route, Navigate, redirect } from "react-router-dom";
-import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { QuillHistoryProvider } from "./contexts/HistoryContext";
 import Navbar from "./components/Navbar";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import DocumentList from "./components/Dashboard/DocumentList";
 import DocumentsWrapper from "./components/DocumentWrapper";
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
+import { AuthProvider } from "./auth/auth-context-provider";
+import { useAuth } from "./auth/use-auth-hook";
+import Callback from "./Callback";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -14,12 +16,13 @@ interface ProtectedRouteProps {
 
 // Protected route component
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const auth = useAuth();
-  if (auth?.loading) {
+  const { isLoading, isAuthenticated, currentUser } = useAuth();
+
+  if (isLoading) {
     return <div className="loading">Loading...</div>;
   }
 
-  if (!auth?.currentUser) {
+  if (!isAuthenticated || !currentUser) {
     return <Navigate to="/login" />;
   }
 
@@ -41,6 +44,7 @@ function AppContent() {
         />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/callback" element={<Callback />} />
 
         <Route
           path="/documents/:id"

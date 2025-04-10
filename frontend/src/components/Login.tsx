@@ -1,50 +1,55 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../auth/use-auth-hook";
 import { useStore } from "../store";
+import { AuthProvider } from "../auth/types";
 
 const Login = () => {
   const [password, setPassword] = useState("");
   const { username, setUsername } = useStore(
-    ({ setUsername, username, setRoomId }) => ({
+    ({ setUsername, username }) => ({
       setUsername,
       username,
     })
   );
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
-  const { currentUser, loading } = useAuth();
+  const [submitting, setSubmitting] = useState(false);
+  const { login, currentUser, isLoading, isAuthenticated } = useAuth();
 
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setIsLoading(true);
+    setSubmitting(true);
 
     try {
-      const result = await login(username, password);
+      // Using the traditional login method
+      const result = await login(AuthProvider.GOOGLE, username, password);
 
       setUsername(username);
-      if (result.success) {
+      if (result && 'success' in result && result.success) {
         navigate("/");
-      } else {
+      } else if (result && 'error' in result && result.error) {
         setError(result.error);
       }
     } catch (error) {
       console.log(error);
       setError("An unexpected error occurred");
     } finally {
-      setIsLoading(false);
+      setSubmitting(false);
     }
   };
 
+  const handleAuth0Login = () => {
+    login(AuthProvider.AUTH0);
+  };
+
   useEffect(() => {
-    if (currentUser) {
+    if (isAuthenticated && currentUser) {
       navigate("/");
     }
-  }, [currentUser]);
+  }, [isAuthenticated, currentUser, navigate]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
@@ -102,10 +107,18 @@ const Login = () => {
           <div>
             <button
               type="submit"
-              disabled={isLoading}
-              className="group relative flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50"
+              disabled={submitting || isLoading}
+              className="group relative flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-500 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50 mb-3"
             >
-              {isLoading ? "Signing in..." : "Sign in"}
+              {submitting ? "Signing in..." : "Sign in with Username/Password"}
+            </button>
+            <button
+              type="button"
+              onClick={handleAuth0Login}
+              disabled={submitting || isLoading}
+              className="group relative flex w-full justify-center rounded-md bg-gray-800 px-3 py-2 text-sm font-semibold text-white hover:bg-gray-700 focus-visible:outline-offset-2 focus-visible:outline-gray-800 disabled:opacity-50"
+            >
+              {submitting ? "Signing in..." : "Sign in with Auth0"}
             </button>
           </div>
         </form>

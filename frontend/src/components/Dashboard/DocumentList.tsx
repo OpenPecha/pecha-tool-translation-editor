@@ -98,7 +98,7 @@ const List = ({
     return <div className="text-center py-4">Loading documents...</div>;
   }
 
-  if (documents.length === 0) {
+  if (documents?.length === 0) {
     return (
       <div className="text-center py-8">
         <p>You don't have any documents yet. Create one to get started!</p>
@@ -108,7 +108,7 @@ const List = ({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {documents.map((doc) => {
+      {documents?.map((doc) => {
         return (
           <EachDocument
             key={doc.id}
