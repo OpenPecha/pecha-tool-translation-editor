@@ -4,11 +4,11 @@ import "quill/dist/quill.snow.css";
 import YjsContext from "../lib/yjsProvider";
 import Editor from "./Editor";
 import { fetchDocument } from "../api/document";
-import { useAuth } from "../contexts/AuthContext";
 import { QuillHistoryProvider } from "../contexts/HistoryContext";
 import "../editor.css";
 import CommentBubble from "./Comment/CommentBubble";
 import { CommentProvider } from "@/contexts/CommentContext";
+import { useAuth } from "@/auth/use-auth-hook";
 const RealTimeEditor = ({ docId }: { docId: string | undefined }) => {
   const { id } = useParams();
   const { createYjsProvider, yjsProvider, ydoc, yText, clearYjsProvider } =

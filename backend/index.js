@@ -14,7 +14,7 @@ const versionsRoutes = require("./routes/versions");
 const documentsRoutes = require("./routes/documents");
 const pechaRoutes = require("./routes/pecha");
 const textsRoutes = require("./routes/texts");
-const authenticateToken = require("./middleware/authenticate");
+const userRoutes = require("./routes/user");
 const prisma = new PrismaClient();
 const app = express();
 const SECRET_KEY = process.env.SECRET_KEY || "super-secret-key";
@@ -36,7 +36,7 @@ const getYDoc = (docName, userId) =>
     }
     return doc;
   });
-
+ 
 app.use(express.json({ limit: "50mb" })); // Increase JSON payload limit
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use("/comments", commentsRoutes);
@@ -44,61 +44,9 @@ app.use("/versions", versionsRoutes);
 app.use("/documents", documentsRoutes(getYDoc));
 app.use("/pecha", pechaRoutes);
 app.use("/texts", textsRoutes);
+app.use("/users",userRoutes)
 const pingTimeout = 30000;
 const clients = new Set();
-
-// Token route (for testing)
-app.post("/token", async (req, res) => {
-  const { username, password } = req.body;
-
-  const user = await prisma.user.findUnique({ where: { username } });
-  if (!user || !(await bcrypt.compare(password, user.password))) {
-    return res.status(401).json({ detail: "Invalid username or password" });
-  }
-
-  const token = jwt.sign({ id: user.id }, SECRET_KEY, {
-    expiresIn: process.env.AUTH_EXPIRY || "1d",
-  });
-  res.json({ access_token: token, token_type: "bearer" });
-});
-app.post("/register", async (req, res) => {
-  const { username, email, password } = req.body;
-  try {
-    const existingUser = await prisma.user.findUnique({ where: { email } });
-    if (existingUser)
-      return res.status(400).json({ error: "User already exists" });
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await prisma.user.create({
-      data: { username, email, password: hashedPassword },
-    });
-
-    res
-      .status(201)
-      .json({ id: user.id, username: user.username, email: user.email });
-  } catch (error) {
-    res.status(500).json({ error: "Error creating user" });
-  }
-});
-// User Login
-app.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (!user || !(await bcrypt.compare(password, user.password))) {
-    return res.status(401).json({ message: "Invalid credentials" });
-  }
-
-  const token = jwt.sign({ id: user.id }, SECRET_KEY, { expiresIn: "30m" });
-  res.json({ accessToken: token });
-});
-// Get user profile
-app.get("/users/me", authenticateToken, async (req, res) => {
-  res.json({
-    id: req.user.id,
-    username: req.user.username,
-    email: req.user.email,
-  });
-});
 
 wss.on("connection", async (ws, request) => {
   const injectedWS = ws;

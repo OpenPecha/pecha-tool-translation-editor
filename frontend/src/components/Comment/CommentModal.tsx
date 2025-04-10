@@ -1,5 +1,6 @@
 import { createComment } from "@/api/comment";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/auth/use-auth-hook";
+
 import { useEditor } from "@/contexts/EditorContext";
 import React, { useState } from "react";
 

@@ -1,6 +1,6 @@
  import { useState, useEffect } from 'react';
 import { fetchDocument } from '../api/document';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '@/auth/use-auth-hook';
 
 interface Translation {
   id: string;
@@ -31,7 +31,6 @@ export const useCurrentDoc = (docId: string | undefined): UseCurrentDocReturn =>
   const [isEditable, setIsEditable] = useState(false);
   
   const { currentUser } = useAuth();
-
   useEffect(() => {
     async function loadDocument() {
       if (!docId) {

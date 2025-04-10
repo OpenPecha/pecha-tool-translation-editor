@@ -1,14 +1,18 @@
-import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/use-auth-hook";
+import { Button } from "./ui/button";
+import { AuthProvider } from "@/auth/types";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 const Navbar = ({ title }: { title?: string }) => {
-  const { currentUser, logout } = useAuth();
-  const navigate = useNavigate();
+  const { currentUser, logout, login } = useAuth();
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
+  };
+
+  const handleAuth0Login = () => {
+    login(AuthProvider.AUTH0);
   };
 
   return (
@@ -30,12 +34,17 @@ const Navbar = ({ title }: { title?: string }) => {
       <div className="flex items-center gap-4">
         {currentUser ? (
           <>
-            <span className="text-gray-700 text-sm">
-              Hi,{" "}
+            <div className="text-gray-700 text-sm flex gap-1 items-center">
+              <Avatar>
+                <AvatarImage src={currentUser?.picture} />
+                <AvatarFallback>
+                  {currentUser?.name?.slice(0, 2)}
+                </AvatarFallback>
+              </Avatar>
               <span className="capitalize font-medium text-gray-900">
-                {currentUser.username}
+                {currentUser.name}
               </span>
-            </span>
+            </div>
             <button
               onClick={handleLogout}
               className="px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-lg shadow hover:bg-red-600 transition"
@@ -44,20 +53,12 @@ const Navbar = ({ title }: { title?: string }) => {
             </button>
           </>
         ) : (
-          <>
-            <Link
-              to="/login"
-              className="px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg shadow hover:bg-blue-600 transition"
-            >
-              Login
-            </Link>
-            <Link
-              to="/register"
-              className="px-4 py-2 bg-gray-700 text-white text-sm font-medium rounded-lg shadow hover:bg-gray-800 transition"
-            >
-              Register
-            </Link>
-          </>
+          <Button
+            onClick={handleAuth0Login}
+            className="px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg shadow hover:bg-blue-600 transition"
+          >
+            Login
+          </Button>
         )}
       </div>
     </nav>

@@ -29,7 +29,7 @@ module.exports = (getYDoc) => {
           .status(400)
           .json({ error: "Missing identifier in query params" });
 
-      const doc = getYDoc(identifier, req.user.id);
+      const doc = getYDoc(identifier, req.user.email);
       // Update the Y.doc with file content
       const ytext = doc.getText(identifier);
       if (req?.file) {
@@ -116,6 +116,7 @@ module.exports = (getYDoc) => {
       });
       res.json(documents);
     } catch (error) {
+      console.log(error)
       res.status(500).json({ error: "Error fetching documents" });
     }
   });
@@ -277,7 +278,7 @@ module.exports = (getYDoc) => {
 
       // Check if the user already has permissions
       const existingPermission = await prisma.permission.findFirst({
-        where: { docId: documentId, userId },
+        where: { docId: documentId, userEmail: email },
       });
 
       if (existingPermission) {
@@ -290,7 +291,7 @@ module.exports = (getYDoc) => {
         // Create a new permission entry
         try {
           await prisma.permission.create({
-            data: { docId: documentId, userId, canRead, canWrite },
+            data: { docId: documentId, userId, userEmail: email, canRead, canWrite },
           });
         } catch (error) {
           console.error(error);
@@ -302,7 +303,7 @@ module.exports = (getYDoc) => {
       if (document.isRoot && document.translations.length > 0) {
         for (const translation of document.translations) {
           const existingTransPermission = await prisma.permission.findFirst({
-            where: { docId: translation.id, userId },
+            where: { docId: translation.id, userEmail: email },
           });
 
           if (existingTransPermission) {
@@ -312,7 +313,7 @@ module.exports = (getYDoc) => {
             });
           } else {
             await prisma.permission.create({
-              data: { docId: translation.id, userId, canRead, canWrite },
+              data: { docId: translation.id, userId, userEmail: email, canRead, canWrite },
             });
           }
         }
@@ -350,6 +351,7 @@ module.exports = (getYDoc) => {
           where: {
             docId: documentId,
             userId: req.user.id,
+            userEmail: req.user.email,
             canWrite: true,
           },
         });

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@auth0/auth0-react": "^2.3.0",
+    "@radix-ui/react-avatar": "^1.1.4",
     "@radix-ui/react-dialog": "^1.1.6",
     "@radix-ui/react-label": "^2.1.2",
     "@radix-ui/react-radio-group": "^1.2.3",
@@ -24,6 +25,7 @@
     "clsx": "^2.1.1",
     "codemirror": "^5.63.0",
     "disable-devtool": "^0.3.8",
+    "express-oauth2-jwt-bearer": "^1.6.1",
     "file-saver": "^2.0.5",
     "html-docx-js": "^0.3.1",
     "lodash": "^4.17.21",

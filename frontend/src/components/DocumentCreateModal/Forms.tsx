@@ -126,13 +126,14 @@ export function NewPechaForm({
             disabled={isRoot}
           >
             <option value="">Select a root document</option>
-            {documents
-              .filter((d) => d.isRoot)
-              .map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.identifier}
-                </option>
-              ))}
+            {documents?.length > 0 &&
+              documents
+                .filter((d) => d.isRoot)
+                .map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.identifier}
+                  </option>
+                ))}
           </select>
         </div>
       )}

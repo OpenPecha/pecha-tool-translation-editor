@@ -9,6 +9,7 @@ export interface Document {
   isRoot: boolean;
   rootId: string | null;
   updatedAt: string;
+  ownerId?: string;
 }
 const DocumentList = () => {
   const [documents, setDocuments] = useState<Document[]>([]);

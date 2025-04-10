@@ -1,26 +1,68 @@
 const { PrismaClient } = require("@prisma/client");
 const jwt = require("jsonwebtoken");
 const prisma = new PrismaClient();
+const { auth, claimCheck } = require('express-oauth2-jwt-bearer');
 
-// Middleware to verify JWT token
-const SECRET_KEY = process.env.SECRET_KEY || "super-secret-key";
+// Auth0 configuration
+const AUTH0_DOMAIN = process.env.AUTH0_DOMAIN;
+const AUTH0_AUDIENCE = process.env.AUTH0_AUDIENCE;
 
+// Create Auth0 JWT validator middleware
+const validateAuth0Token = auth({
+  issuerBaseURL: `https://${AUTH0_DOMAIN}/`,
+  audience: AUTH0_AUDIENCE,
+  tokenSigningAlg: 'RS256'
+});
 
+/**
+ * Middleware that authenticates requests using Auth0 access tokens
+ */
 const authenticateToken = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "Access denied, no token provided" });
-  }
-
-  const token = authHeader.split(" ")[1];
-
   try {
-    const decoded = jwt.verify(token, SECRET_KEY);
-    req.user = await prisma.user.findUnique({ where: { id: decoded.id } });
-    if (!req.user) return res.status(403).json({ message: "Invalid token" });
-    next();
+    // First validate the token with Auth0
+    await validateAuth0Token(req, res, async () => {
+      // Get the user info from the validated token
+      const userEmail = req.auth.payload["https://pecha-tool/email"];
+      const id=req.auth.payload['sub'];
+      
+      if (!userEmail) {
+        return res.status(401).json({ error: "Email claim missing from token" });
+      }
+      
+      // Find user in database
+      const user = await prisma.user.findUnique({
+        where: { email: userEmail }
+      });
+      
+      if (!user) {
+        // Create user if they don't exist in our database
+        const newUser = await prisma.user.create({
+          data: {
+            id,
+            email: userEmail,
+            username: userEmail.split("@")[0]
+          }
+        });
+        
+        req.user = {
+          id: newUser.id,
+          email: newUser.email
+        };
+        
+        return next();
+      }
+      
+      // Attach user to request object
+      req.user = {
+        id: user.id,
+        email: user.email
+      };
+      
+      next();
+    });
   } catch (error) {
-    return res.status(403).json({ message: "Invalid token" });
+    console.error("Authentication error:", error);
+    return res.status(401).json({ error: "Authentication failed" });
   }
 };
 

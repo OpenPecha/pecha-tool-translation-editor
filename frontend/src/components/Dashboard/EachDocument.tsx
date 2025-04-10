@@ -2,12 +2,13 @@ import { useState } from "react";
 import { deleteDocument, updateDocument } from "../../api/document";
 import { Link } from "react-router-dom";
 import { MdDelete, MdEdit } from "react-icons/md";
-import { useAuth } from "@/contexts/AuthContext";
+
 import { Badge } from "../ui/badge";
 import { isTibetan } from "@/lib/isTibetan";
 import { Card, CardFooter, CardHeader, CardTitle } from "../ui/card";
 import { Document } from "../Dashboard/DocumentList";
 import EditModal from "./EditModal";
+import { useAuth } from "@/auth/use-auth-hook";
 
 interface EachDocumentProps {
   readonly doc: Document;

@@ -19,5 +19,4 @@ export interface AuthContextType {
   login: (provider?: AuthProvider) => void;
   logout: () => void;
   getToken: () => Promise<string | null>;
-  authProvider: AuthProvider | null;
 }
