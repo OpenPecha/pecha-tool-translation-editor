@@ -15,7 +15,7 @@ const Callback: React.FC = () => {
       console.log("Silent login failed: user must log in manually.");
       login(false);
     }
-  }, [isAuthenticated, isLoading, navigate, getToken, error]);
+  }, [isAuthenticated, error]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50">
