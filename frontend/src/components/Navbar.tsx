@@ -5,7 +5,7 @@ import { AuthProvider } from "@/auth/types";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 const Navbar = ({ title }: { title?: string }) => {
-  const { currentUser, logout, login } = useAuth();
+  const { currentUser, logout, login, isAuthenticated } = useAuth();
 
   const handleLogout = () => {
     logout();
@@ -32,7 +32,7 @@ const Navbar = ({ title }: { title?: string }) => {
 
       {/* Navigation Menu */}
       <div className="flex items-center gap-4">
-        {currentUser ? (
+        {isAuthenticated ? (
           <>
             <div className="text-gray-700 text-sm flex gap-1 items-center">
               <Avatar>
@@ -42,7 +42,7 @@ const Navbar = ({ title }: { title?: string }) => {
                 </AvatarFallback>
               </Avatar>
               <span className="capitalize font-medium text-gray-900">
-                {currentUser.name}
+                {currentUser?.name}
               </span>
             </div>
             <button
