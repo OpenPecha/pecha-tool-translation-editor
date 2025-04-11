@@ -8,6 +8,7 @@ import Login from "./pages/Login";
 import { useAuth } from "./auth/use-auth-hook";
 import Callback from "./pages/Callback";
 import { useEffect } from "react";
+import LoginComponent from "./components/LoginComponent";
 
 function AppContent() {
   const { isAuthenticated, getToken } = useAuth();
@@ -25,11 +26,13 @@ function AppContent() {
           path="/"
           element={
             <>
-              <Navbar />
               {isAuthenticated ? (
-                <DocumentList />
+                <>
+                  <Navbar />
+                  <DocumentList />
+                </>
               ) : (
-                <h2 className=" text-center">login please</h2>
+                <LoginComponent />
               )}
             </>
           }
