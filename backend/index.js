@@ -18,11 +18,22 @@ const userRoutes = require("./routes/user");
 const prisma = new PrismaClient();
 const app = express();
 const SECRET_KEY = process.env.SECRET_KEY || "super-secret-key";
-const ALLOWED_URLS=process.env.ALLOWED_URLS.split(",");
+
+
+const ALLOWED_URLS = process.env.ALLOWED_URLS ? process.env.ALLOWED_URLS.split(",") : ["http://localhost:3000"];
 app.use(cors({
-  origin: ALLOWED_URLS,
-  credentials: true
+  origin: function(origin, callback) {
+    if (!origin || ALLOWED_URLS.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
+
 
 const server = http.createServer(app);
 const wss = new WebSocket.Server({
