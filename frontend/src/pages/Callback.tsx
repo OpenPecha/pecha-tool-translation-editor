@@ -4,18 +4,26 @@ import { useAuth } from "@/auth/use-auth-hook";
 
 const Callback: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, error, login } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
+    console.log(isAuthenticated);
     // Once authentication is complete and not loading, redirect to home
     if (isAuthenticated) {
       navigate("/");
     }
-    if (error?.message.includes("login_required")) {
-      console.log("Silent login failed: user must log in manually.");
-      login(false);
+
+    const queryParams = new URLSearchParams(location.search);
+    const errormessage = queryParams.get("error");
+    if (errormessage?.includes("login_required")) {
+      const login_url =
+        import.meta.env.VITE_WORKSPACE_URL +
+        "/login?redirect=" +
+        import.meta.env.VITE_AUTH0_REDIRECT_URI;
+      console.log(login_url);
+      window.location.href = login_url;
     }
-  }, [isAuthenticated, error]);
+  }, [isAuthenticated]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50">

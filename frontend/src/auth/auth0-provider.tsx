@@ -1,5 +1,6 @@
 import React, { ReactNode } from "react";
 import { Auth0Provider } from "@auth0/auth0-react";
+import { useNavigate } from "react-router-dom";
 
 interface Auth0ProviderWithNavigateProps {
   children: ReactNode;
@@ -17,7 +18,6 @@ export const Auth0ProviderWithNavigate: React.FC<
     console.warn("Auth0 domain or client ID not configured");
     return <>{children}</>;
   }
-
   return (
     <Auth0Provider
       domain={domain}
