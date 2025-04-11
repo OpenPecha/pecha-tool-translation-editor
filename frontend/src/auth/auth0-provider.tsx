@@ -26,6 +26,7 @@ export const Auth0ProviderWithNavigate: React.FC<
         redirect_uri: redirectUri,
         scope: "openid profile email",
         audience: import.meta.env.VITE_AUTH0_AUDIENCE,
+        prompt: "none",
       }}
       useRefreshTokens={true}
       useRefreshTokensFallback={true}
