@@ -24,6 +24,8 @@ const ALLOWED_URLS = process.env.ALLOWED_URLS ? process.env.ALLOWED_URLS.split("
 app.use(cors({
   origin: true, // reflects the request origin
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 }));
 
 
