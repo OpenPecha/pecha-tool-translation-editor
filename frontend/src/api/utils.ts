@@ -3,6 +3,7 @@ type CustomHeaders = Record<string, string>;
 
 const getBaseHeaders = (): CustomHeaders => {
   const token = localStorage.getItem("access_token");
+  console.log(token)
   return {
     Authorization: `Bearer ${token}`,
   };

@@ -11,32 +11,30 @@ import { useEffect } from "react";
 import LoginComponent from "./components/LoginComponent";
 
 function Layout({ children }) {
-  const { isAuthenticated, getToken, login, currentUser, isLoading } =
-    useAuth();
+  const { isAuthenticated, login, isLoading, getToken } = useAuth();
   useEffect(() => {
     // Only attempt silent login if not already authenticated and not currently loading
     if (!isAuthenticated && !isLoading) {
       console.log("No active session detected, attempting silent login");
-      login(true); // This will attempt silent login once
+      login(true); // This wil
+      // l attempt silent login once
     }
-  }, [isAuthenticated, isLoading, login]);
-  return <>{children}</>;
-}
-
-function AppContent() {
-  const { isAuthenticated, getToken, login, currentUser, isLoading } =
-    useAuth();
-
-  // Try silent login on app initialization if not authenticated
-
-  // Store token in localStorage when authenticated
-  useEffect(() => {
     if (isAuthenticated) {
       getToken().then((token) => {
         localStorage.setItem("access_token", token!);
       });
     }
-  }, [isAuthenticated, getToken]);
+  }, [isAuthenticated, isLoading, login, getToken]);
+  return <>{children}</>;
+}
+
+function AppContent() {
+  const { isAuthenticated } = useAuth();
+
+  // Try silent login on app initialization if not authenticated
+
+  // Store token in localStorage when authenticated
+
   return (
     <div className="flex flex-col h-full bg-[#fafbfd]">
       <Routes>

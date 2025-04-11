@@ -22,20 +22,21 @@ const authenticateToken = async (req, res, next) => {
     // First validate the token with Auth0
     await validateAuth0Token(req, res, async () => {
       // Get the user info from the validated token
-      const userEmail = req.auth.payload["https://pecha-tool/email"];
       const id=req.auth.payload['sub'];
       
-      if (!userEmail) {
-        return res.status(401).json({ error: "Email claim missing from token" });
-      }
+      
       
       // Find user in database
       const user = await prisma.user.findUnique({
-        where: { email: userEmail }
+        where: { id: id }
       });
       
       if (!user) {
         // Create user if they don't exist in our database
+        const userEmail = req.auth.payload["https://pecha-tool/email"];
+        if (!userEmail) {
+          return res.status(401).json({ error: "Email claim missing from token" });
+        }
         const newUser = await prisma.user.create({
           data: {
             id,
