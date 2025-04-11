@@ -44,13 +44,11 @@ function AppContent() {
           path="/"
           element={
             <Layout>
-              {isAuthenticated ? (
+              {isAuthenticated && (
                 <>
                   <Navbar />
                   <DocumentList />
                 </>
-              ) : (
-                <LoginComponent />
               )}
             </Layout>
           }
