@@ -18,7 +18,11 @@ const userRoutes = require("./routes/user");
 const prisma = new PrismaClient();
 const app = express();
 const SECRET_KEY = process.env.SECRET_KEY || "super-secret-key";
-app.use(cors());
+const ALLOWED_URLS=process.env.ALLOWED_URLS.split(",");
+app.use(cors({
+  origin: ALLOWED_URLS,
+  credentials: true
+}));
 
 const server = http.createServer(app);
 const wss = new WebSocket.Server({
