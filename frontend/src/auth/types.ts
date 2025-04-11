@@ -5,16 +5,14 @@ export interface User {
   picture?: string;
 }
 
-export enum AuthProvider {
-  GOOGLE = 'google',
-  AUTH0 = 'auth0'
-}
+
 
 export interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   currentUser: User | null;
-  login: (provider?: AuthProvider) => void;
+  login: (retry:boolean) => void;
   logout: () => void;
   getToken: () => Promise<string | null>;
+  error: string | null;
 }

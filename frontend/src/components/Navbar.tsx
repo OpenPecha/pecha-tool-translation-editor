@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/use-auth-hook";
 import { Button } from "./ui/button";
-import { AuthProvider } from "@/auth/types";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 const Navbar = ({ title }: { title?: string }) => {
@@ -12,7 +11,7 @@ const Navbar = ({ title }: { title?: string }) => {
   };
 
   const handleAuth0Login = () => {
-    login(AuthProvider.AUTH0);
+    login(false);
   };
 
   return (

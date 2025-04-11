@@ -4,14 +4,14 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 function Login() {
-  const { currentUser, logout, login } = useAuth();
+  const { currentUser, login } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (currentUser) {
       navigate("/");
     } else {
-      login(AuthProvider.AUTH0);
+      login(false);
     }
   }, []);
   return <div></div>;

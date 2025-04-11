@@ -22,6 +22,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     getAccessTokenSilently,
     loginWithRedirect,
     logout: auth0Logout,
+    error,
   } = useAuth0();
 
   const logout = useCallback(() => {
@@ -47,17 +48,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [getAccessTokenSilently]);
 
   const currentUser = { ...user, id: user?.sub };
+
+  const login = useCallback(
+    (retry: boolean) => {
+      loginWithRedirect({
+        authorizationParams: {
+          prompt: retry ? "login" : "none",
+        },
+      });
+    },
+    [loginWithRedirect]
+  );
   // Use useMemo to prevent unnecessary re-renders
   const contextValue = useMemo(
     () => ({
       isAuthenticated,
       isLoading,
       currentUser,
-      login: loginWithRedirect,
+      login,
       logout,
       getToken,
+      error,
     }),
-    [isAuthenticated, isLoading, user, loginWithRedirect, logout, getToken]
+    [isAuthenticated, isLoading, user, login, logout, getToken, error]
   );
 
   return (
