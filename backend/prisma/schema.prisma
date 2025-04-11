@@ -39,17 +39,14 @@ model Doc {
 }
 
 model Permission {
-  id        String  @id @default(uuid())
-  docId     String
-  userId    String
-  userEmail String
-  canRead   Boolean @default(true)
-  canWrite  Boolean @default(false)
+  id       String  @id @default(uuid())
+  docId    String
+  userId   String
+  canRead  Boolean @default(true)
+  canWrite Boolean @default(false)
 
   doc  Doc  @relation(fields: [docId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([docId, userEmail]) // Prevent duplicate permissions for the same document-user pair
 }
 
 model Comment {
