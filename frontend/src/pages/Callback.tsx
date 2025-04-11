@@ -4,7 +4,7 @@ import { useAuth } from "@/auth/use-auth-hook";
 
 const Callback: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, isLoading, getToken, error, login } = useAuth();
+  const { isAuthenticated, error, login } = useAuth();
 
   useEffect(() => {
     // Once authentication is complete and not loading, redirect to home
