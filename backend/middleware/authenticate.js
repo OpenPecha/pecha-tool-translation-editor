@@ -30,7 +30,6 @@ const authenticateToken = async (req, res, next) => {
       const user = await prisma.user.findUnique({
         where: { id: id }
       });
-      console.log(user,id,req.auth.payload)
       
       if (!user) {
         // Create user if they don't exist in our database

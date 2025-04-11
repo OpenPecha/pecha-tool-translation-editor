@@ -21,8 +21,14 @@ function DocumentCreateModal({
   const closeModal = () => setOpen(false);
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline">+ Create pecha</Button>
+      <DialogTrigger className="cursor-pointer ">
+        <img
+          width={144}
+          height={186}
+          className="border-1 border-gray-300"
+          src="https://ssl.gstatic.com/docs/templates/thumbnails/docs-blank-googlecolors.png"
+          alt=""
+        />
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>

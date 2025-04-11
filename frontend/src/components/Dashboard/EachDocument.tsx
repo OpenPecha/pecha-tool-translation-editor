@@ -9,6 +9,8 @@ import { Card, CardFooter, CardHeader, CardTitle } from "../ui/card";
 import { Document } from "../Dashboard/DocumentList";
 import EditModal from "./EditModal";
 import { useAuth } from "@/auth/use-auth-hook";
+import { FileText } from "lucide-react";
+import { formatDate } from "@/lib/formatDate";
 
 interface EachDocumentProps {
   readonly doc: Document;
@@ -80,55 +82,59 @@ export default function EachDocument({
     );
 
   return (
-    <div className="w-full">
-      <Link to={`/documents/${doc.id}`}>
-        <Card className="w-full py-2">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <div
-                className={`capitalize ${
-                  isTibetan("བོད་ལ་") ? "font-monlam" : "font-sans"
-                }`}
-              >
-                {doc.identifier}
-              </div>
-              {hasPermission && (
-                <div className="flex items-center ">
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setShowEditModal(true);
-                    }}
-                    className="z-20 p-2 rounded-md transition-all duration-200 hover:bg-blue-500 hover:text-white hover:scale-110"
-                    title="Edit Document"
-                  >
-                    <MdEdit />
-                  </button>
-                  {!isShared && (
-                    <button
-                      onClick={handleDelete}
-                      className="z-20 p-2 rounded-md transition-all duration-200 hover:bg-red-500 hover:text-white hover:scale-110"
-                    >
-                      <MdDelete />
-                    </button>
-                  )}
-                </div>
-              )}
-            </CardTitle>
-            {/* <CardDescription>Card Description</CardDescription> */}
-          </CardHeader>
-
-          <CardFooter>
-            <div className="mt-2 text-sm text-gray-500 flex gap-2">
-              {isShared && <Badge variant="outline">Shared</Badge>}
+    <div className="w-full  ">
+      <Link
+        to={`/documents/${doc.id}`}
+        className="flex items-center w-full justify-between p-3 transition-all  hover:bg-blue-100"
+      >
+        <div
+          className={`flex gap-5 items-center capitalize ${
+            isTibetan("བོད་ལ་") ? "font-monlam" : "font-sans"
+          }`}
+        >
+          {" "}
+          <div className="p-1 bg-blue-300 rounded-full">
+            <FileText />
+          </div>
+          <div className="flex gap-2 text-gray-600 leading-[20px] font-monlam ">
+            {doc.identifier}
+            <span className=" text-sm text-gray-500 flex gap-2">
               {doc.isRoot && <Badge>Root</Badge>}
               {doc.root && (
                 <Badge variant="outline">{doc.root.identifier}</Badge>
               )}
-            </div>
-          </CardFooter>
-        </Card>
+            </span>
+          </div>
+        </div>
+        {isShared && (
+          <div>
+            <Badge variant="outline">Shared</Badge>
+          </div>
+        )}
+        <div>{formatDate(doc.updatedAt)}</div>
+        {hasPermission && (
+          <div className="flex items-center ">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowEditModal(true);
+              }}
+              className="z-20 p-2 rounded-md transition-all duration-200 hover:bg-blue-500 hover:text-white hover:scale-110"
+              title="Edit Document"
+            >
+              <MdEdit />
+            </button>
+            {!isShared && (
+              <button
+                onClick={handleDelete}
+                className="z-20 p-2 rounded-md transition-all duration-200 hover:bg-red-500 hover:text-white hover:scale-110"
+              >
+                <MdDelete />
+              </button>
+            )}
+          </div>
+        )}
       </Link>
 
       {showEditModal && (
