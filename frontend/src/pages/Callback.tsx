@@ -7,7 +7,6 @@ const Callback: React.FC = () => {
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
-    console.log(isAuthenticated);
     // Once authentication is complete and not loading, redirect to home
     if (isAuthenticated) {
       navigate("/");
@@ -22,6 +21,8 @@ const Callback: React.FC = () => {
         import.meta.env.VITE_AUTH0_REDIRECT_URI;
       console.log(login_url);
       window.location.href = login_url;
+    } else {
+      navigate("/");
     }
   }, [isAuthenticated]);
 
