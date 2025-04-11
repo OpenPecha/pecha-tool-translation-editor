@@ -9,9 +9,20 @@ import { useAuth } from "./auth/use-auth-hook";
 import Callback from "./pages/Callback";
 import { useEffect } from "react";
 import LoginComponent from "./components/LoginComponent";
-
 function AppContent() {
-  const { isAuthenticated, getToken } = useAuth();
+  const { isAuthenticated, getToken, login, currentUser, isLoading } =
+    useAuth();
+
+  // Try silent login on app initialization if not authenticated
+  useEffect(() => {
+    // Only attempt silent login if not already authenticated and not currently loading
+    if (!isAuthenticated && !isLoading) {
+      console.log("No active session detected, attempting silent login");
+      login(true); // This will attempt silent login once
+    }
+  }, [isAuthenticated, isLoading, login]);
+
+  // Store token in localStorage when authenticated
   useEffect(() => {
     if (isAuthenticated) {
       getToken().then((token) => {

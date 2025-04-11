@@ -28,7 +28,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = useCallback(() => {
     // If using Auth0, use their logout function
     auth0Logout({
-      logoutParams: { returnTo: window.location.origin },
+      logoutParams: { returnTo: window.location.origin, federated: true },
     });
     // If no token, just clear storage and reset state
     localStorage.removeItem("auth_token");
@@ -47,18 +47,45 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, [getAccessTokenSilently]);
 
-  const currentUser = { ...user, id: user?.sub };
+  // Ensure user object matches the User interface requirements
+  const currentUser = user ? {
+    id: user?.sub ?? '',
+    email: user?.email ?? '',
+    name: user?.name,
+    picture: user?.picture
+  } : null;
+
+  // Track silent auth attempts to prevent infinite loops
+  const [silentAuthAttempted, setSilentAuthAttempted] = useState(false);
 
   const login = useCallback(
-    (retry: boolean) => {
+    (auto: boolean) => {
+      // If this is a silent auth attempt (auto=true)
+      if (auto) {
+        // If we've already tried silent auth and it failed, don't try again
+        if (silentAuthAttempted) {
+          console.log('Silent authentication already attempted, not retrying to prevent loop');
+          return;
+        }
+        
+        // Mark that we've attempted silent auth
+        setSilentAuthAttempted(true);
+      } else {
+        // If this is an explicit login, reset the silent auth flag
+        setSilentAuthAttempted(false);
+      }
+      
       loginWithRedirect({
         authorizationParams: {
-          prompt: retry ? "login" : "none",
+          prompt: auto ? "none" : "login",
         },
       });
     },
-    [loginWithRedirect]
+    [loginWithRedirect, silentAuthAttempted]
   );
+  // Convert error to string | null to match AuthContextType
+  const errorMessage = error ? error.message || 'Authentication error' : null;
+
   // Use useMemo to prevent unnecessary re-renders
   const contextValue = useMemo(
     () => ({
@@ -68,9 +95,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       login,
       logout,
       getToken,
-      error,
+      error: errorMessage,
     }),
-    [isAuthenticated, isLoading, user, login, logout, getToken, error]
+    [isAuthenticated, isLoading, currentUser, login, logout, getToken, errorMessage]
   );
 
   return (

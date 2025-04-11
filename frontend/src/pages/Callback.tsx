@@ -4,16 +4,12 @@ import { useAuth } from "@/auth/use-auth-hook";
 
 const Callback: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, isLoading, getToken, login, error } = useAuth();
+  const { isAuthenticated, isLoading, getToken, error } = useAuth();
 
   useEffect(() => {
     // Once authentication is complete and not loading, redirect to home
     if (isAuthenticated) {
       navigate("/");
-    }
-    if (error && error.message.includes("login_required")) {
-      console.log("Silent login failed: user must log in manually.");
-      login(true);
     }
   }, [isAuthenticated, isLoading, navigate, getToken, error]);
 
