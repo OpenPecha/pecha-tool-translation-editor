@@ -15,14 +15,9 @@ const Callback: React.FC = () => {
     const queryParams = new URLSearchParams(location.search);
     const errormessage = queryParams.get("error");
     if (errormessage?.includes("login_required")) {
-      const login_url =
-        import.meta.env.VITE_WORKSPACE_URL +
-        "/login?redirect=" +
-        import.meta.env.VITE_AUTH0_REDIRECT_URI;
+      const login_url = import.meta.env.VITE_WORKSPACE_URL + "/login";
       console.log(login_url);
       window.location.href = login_url;
-    } else {
-      navigate("/");
     }
   }, [isAuthenticated]);
 
