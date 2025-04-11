@@ -21,6 +21,7 @@ export const fetchDocuments = async () => {
   try {
     const response = await fetch(`${server_url}/documents`, {
       headers: getHeaders(),
+      credentials: "include",
     });
 
     if (response.ok) {
