@@ -4,6 +4,7 @@ import { FaShare } from "react-icons/fa";
 import { MdCancel, MdSaveAs } from "react-icons/md";
 import { Button } from "./ui/button";
 import { createPortal } from "react-dom";
+import { ToolbarButton } from "./Toolbar";
 
 function Permissions({ documentId }: { readonly documentId: string }) {
   const [showModal, setShowModal] = useState(false);
@@ -11,12 +12,13 @@ function Permissions({ documentId }: { readonly documentId: string }) {
   return (
     <>
       {/* Grant Permission Button */}
-      <button
+      <ToolbarButton
+        title="Share"
         onClick={() => setShowModal(true)}
         className="py-2 rounded-md  transition"
       >
         <FaShare />
-      </button>
+      </ToolbarButton>
 
       {/* Permission Modal */}
       {showModal &&

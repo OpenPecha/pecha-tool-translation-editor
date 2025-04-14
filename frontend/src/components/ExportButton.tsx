@@ -1,6 +1,7 @@
 import { useEditor } from "@/contexts/EditorContext";
 import { GrDocumentTxt, GrDocumentWord } from "react-icons/gr";
 import * as quillToWord from "quill-to-word";
+import { ToolbarButton } from "./Toolbar";
 function ExportButton({ doc_id }: { readonly doc_id: string }) {
   const { getQuill } = useEditor();
   const quill = getQuill(doc_id);
@@ -33,12 +34,12 @@ function ExportButton({ doc_id }: { readonly doc_id: string }) {
 
   return (
     <>
-      <button onClick={exportText}>
+      <ToolbarButton onClick={exportText} title="Txt" className={""}>
         <GrDocumentTxt />
-      </button>
-      <button onClick={exportWord}>
+      </ToolbarButton>
+      <ToolbarButton onClick={exportWord} title="Docx" className={""}>
         <GrDocumentWord />
-      </button>
+      </ToolbarButton>
     </>
   );
 }

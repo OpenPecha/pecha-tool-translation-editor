@@ -10,6 +10,8 @@ import { MAX_HEADING_LEVEL } from "@/../config";
 import { Switch } from "./ui/switch";
 import DisableDevtool from "disable-devtool";
 import ExportButton from "./ExportButton";
+import { BiCommentAdd } from "react-icons/bi";
+import { Button } from "./ui/button";
 const VITE_DISABLE_DEVTOOL = import.meta.env.VITE_DISABLE_DEVTOOL;
 
 interface ToolbarProps {
@@ -164,7 +166,7 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
       signal
     );
     return () => signal.abort();
-  }, [keyLocked, quill]);
+  }, [keyLocked]);
 
   return (
     <>
@@ -177,7 +179,7 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
             position: "relative",
           }}
         >
-          <div className="flex items-center gap-4 flex-1">
+          <div className="flex items-center gap-4 flex-1 h-10">
             <span className="ql-formats" style={isEnabledStyle}>
               <select className="ql-font" title="Font">
                 <option value="sans-serif" selected>
@@ -213,28 +215,29 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
             {/* <select className="ql-color"></select> */}
             <select className="ql-background" style={isEnabledStyle}></select>
             <span className="ql-formats" title="Section" style={isEnabledStyle}>
-              <button className="ql-sect" onClick={handleSectionCreation}>
+              <ToolbarButton
+                onClick={handleSectionCreation}
+                title="Section"
+                className=""
+              >
                 <FaObjectGroup />
-              </button>
-            </span>
-            <span
-              className="ql-formats"
-              title="Suggestion"
-              style={isEnabledStyle}
-            >
-              <button className="ql-suggestion" onClick={addSuggestion}>
-                <FaCommentDots />
-              </button>
-            </span>
-            <span className="ql-formats" title="History">
-              <button
+              </ToolbarButton>
+
+              <ToolbarButton
+                onClick={addSuggestion}
+                title="Suggestion"
+                className=""
+              >
+                <BiCommentAdd size={28} />
+              </ToolbarButton>
+              <ToolbarButton
+                title="Versions"
                 className="ql-history"
                 onClick={() => setOpenHistory(!openHistory)}
               >
                 <FaHistory />
-              </button>
-            </span>
-            <span className="ql-formats" title="Share">
+              </ToolbarButton>
+
               <Permissions documentId={documentId} />
             </span>
 
@@ -293,4 +296,20 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
   );
 };
 
+export const ToolbarButton = ({ children, onClick, title, className }) => {
+  return (
+    <Button
+      type="button"
+      onClick={onClick}
+      variant="ghost"
+      title={title}
+      className={
+        className +
+        " w-full text-left py-2 px-4  rounded-lg cursor-pointer font-medium text-gray-700 transition-colors flex items-center justify-between"
+      }
+    >
+      {children}
+    </Button>
+  );
+};
 export default Toolbar;

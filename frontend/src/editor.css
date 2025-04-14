@@ -40,7 +40,15 @@
     background-color: white;
     border: 1px solid #e0e0e0 !important;
   }
+  .ql-formats button{
+    padding: 10px;
+    background-color: red;
+  }
 
+.ql-formats button:hover{
+  border-radius: 4px;
+  background-color: rgb(221, 221, 221);
+}
 
   .ql-toolbar.ql-snow{
     border: none !important;
@@ -98,4 +106,19 @@
     display: block;
   }
   
+
+
+
+   .ql-snow.ql-toolbar button:hover, .ql-snow .ql-toolbar button:hover, .ql-snow.ql-toolbar button:focus, .ql-snow .ql-toolbar button:focus, .ql-snow.ql-toolbar button.ql-active, .ql-snow .ql-toolbar button.ql-active, .ql-snow.ql-toolbar .ql-picker-label:hover, .ql-snow .ql-toolbar .ql-picker-label:hover, .ql-snow.ql-toolbar .ql-picker-label.ql-active, .ql-snow .ql-toolbar .ql-picker-label.ql-active, .ql-snow.ql-toolbar .ql-picker-item:hover, .ql-snow .ql-toolbar .ql-picker-item:hover, .ql-snow.ql-toolbar .ql-picker-item.ql-selected, .ql-snow .ql-toolbar .ql-picker-item.ql-selected {
+    color: black !important;
+}
+.ql-active .ql-stroke ,.ql-formats  button:hover .ql-stroke{
+  stroke: black !important;
+}
+.ql-toolbar button.ql-active {
+  stroke: black !important;
+  background-color: #d3e2fd !important;  /* your custom background, e.g., purple */
+  border-radius: 6px;         /* optional: make it look nicer */
+  font-weight: 700 !important;
+}
 
