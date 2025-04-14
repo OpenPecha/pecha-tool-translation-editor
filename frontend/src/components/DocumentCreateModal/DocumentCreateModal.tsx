@@ -11,6 +11,7 @@ import {
 } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { useState } from "react";
+import { Plus } from "lucide-react";
 
 function DocumentCreateModal({
   documents,
@@ -22,13 +23,14 @@ function DocumentCreateModal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger className="cursor-pointer ">
-        <img
-          width={144}
-          height={186}
-          className="border-1 border-gray-300"
-          src="https://ssl.gstatic.com/docs/templates/thumbnails/docs-blank-googlecolors.png"
-          alt=""
-        />
+        <div className="border rounded-lg p-4 flex items-center justify-center hover:border-blue-500 cursor-pointer mb-12 bg-white shadow-sm">
+          <div className="flex flex-col items-center justify-center">
+            <div className=" p-4 rounded-full flex items-center justify-center  transition-colors">
+              <img src="/icon/plus.png" width={70} alt="" />
+            </div>
+            <p className="mt-4 text-sm text-gray-600">Create New Project</p>
+          </div>
+        </div>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>

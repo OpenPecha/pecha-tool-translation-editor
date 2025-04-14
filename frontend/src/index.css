@@ -57,6 +57,7 @@
 
 @theme {
   --font-monlam: 'monlam', sans-serif;
+  --primary-color: rgba(18,223,236,0.1);
 }
 
 .ql-font-monlam {

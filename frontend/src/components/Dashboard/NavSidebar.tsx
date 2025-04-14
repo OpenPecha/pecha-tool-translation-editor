@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  trigger: React.ReactNode;
 }
 
-const NavSidebar = ({ isOpen, onClose }: SidebarProps) => {
+const NavSidebar = ({ isOpen, onClose, trigger }: SidebarProps) => {
   // Close sidebar when pressing escape key
   useEffect(() => {
     const signal = new AbortController();
@@ -41,6 +42,7 @@ const NavSidebar = ({ isOpen, onClose }: SidebarProps) => {
 
   return (
     <>
+      {trigger}
       {/* Backdrop overlay */}
       <div
         className={cn(

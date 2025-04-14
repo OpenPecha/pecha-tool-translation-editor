@@ -39,10 +39,10 @@ const DocumentList = () => {
   }, []);
 
   return (
-    <div className="flex  flex-col border-t-gray-300">
-      <div className="bg-[#f2f3f5] p-3">
+    <div className="flex  flex-col border-t-gray-300 ">
+      <div className="pt-14 px-6 ">
         <div className="max-w-6xl mx-auto">
-          <div className="start_document">Start a new document</div>
+          <h1 className="text-xl font-medium mb-6">Start new project</h1>
           <DocumentCreateModal documents={documents} />
         </div>
       </div>

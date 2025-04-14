@@ -213,7 +213,11 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
               </span>
             </div>
             {/* <select className="ql-color"></select> */}
-            <select className="ql-background" style={isEnabledStyle}></select>
+            <select
+              className="ql-background "
+              style={isEnabledStyle}
+              title="Highlight"
+            ></select>
             <span className="ql-formats" title="Section" style={isEnabledStyle}>
               <ToolbarButton
                 onClick={handleSectionCreation}
@@ -237,8 +241,6 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
               >
                 <FaHistory />
               </ToolbarButton>
-
-              <Permissions documentId={documentId} />
             </span>
 
             <div

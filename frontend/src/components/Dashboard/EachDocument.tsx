@@ -87,14 +87,12 @@ export default function EachDocument({
       <Link to={`/documents/${doc.id}`} className="contents">
         <TableRow className=" transition-all  hover:bg-blue-100 ">
           <TableCell
-            className={`flex gap-5 items-center capitalize ${
+            className={`flex gap-1 items-center capitalize ${
               isTibetan("བོད་ལ་") ? "font-monlam" : "font-sans"
             }`}
           >
             {" "}
-            <div className="p-1 bg-blue-300 rounded-full">
-              <FileText />
-            </div>
+            <img src="/icon/doc.svg" width={28} alt="document" />
             <div className="flex gap-2 text-gray-600 leading-[20px] font-monlam ">
               {doc.identifier}
               <span className=" text-sm text-gray-500 flex gap-2">

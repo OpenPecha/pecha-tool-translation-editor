@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { QuillHistoryProvider } from "./contexts/HistoryContext";
-import Navbar from "./components/Navbar";
 import DocumentList from "./components/Dashboard/DocumentList";
 import DocumentsWrapper from "./components/DocumentWrapper";
 import { AuthProvider } from "./auth/auth-context-provider";
@@ -8,6 +7,7 @@ import Login from "./pages/Login";
 import { useAuth } from "./auth/use-auth-hook";
 import Callback from "./pages/Callback";
 import { useEffect } from "react";
+import Navbar from "./components/Dashboard/Navbar";
 
 function Layout({ children }) {
   const { isAuthenticated, login, isLoading, getToken } = useAuth();

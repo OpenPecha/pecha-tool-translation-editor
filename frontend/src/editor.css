@@ -121,4 +121,20 @@
   border-radius: 6px;         /* optional: make it look nicer */
   font-weight: 700 !important;
 }
+.ql-toolbar .ql-picker.ql-background .ql-picker-label::before {
+  content: '';
+  display: inline-block;
+  background-image: url('/icon/highlight.png');
+  background-size: contain;
+  width: 20px;
+  height: 20px;
+}
+.ql-toolbar .ql-picker.ql-background:hover  {
+  background-color: #d3e2fd !important;  /* your custom background, e.g., purple */
+  border-radius: 6px;         /* optional: make it look nicer */
+  font-weight: 700 !important; /* hide the default SVG icon */
+}
 
+.ql-toolbar .ql-picker.ql-background .ql-picker-label svg {
+  display: none; 
+}
