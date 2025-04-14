@@ -44,7 +44,7 @@ export const useCurrentDoc = (docId: string | undefined): UseCurrentDocReturn =>
         const doc = await fetchDocument(docId);
         if(doc?.permissions){
           doc?.permissions.find((permission) => {
-            if(permission.userId === currentUser.id){
+            if(permission.userId === currentUser?.id){
               setIsEditable(true)
             }
           })

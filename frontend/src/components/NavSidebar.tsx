@@ -11,14 +11,15 @@ interface SidebarProps {
 const NavSidebar = ({ isOpen, onClose }: SidebarProps) => {
   // Close sidebar when pressing escape key
   useEffect(() => {
+    const signal = new AbortController();
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
         onClose();
       }
     };
 
-    document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
+    document.addEventListener("keydown", handleEscape, signal);
+    return () => signal.abort();
   }, [isOpen, onClose]);
 
   // Prevent body scrolling when sidebar is open on mobile

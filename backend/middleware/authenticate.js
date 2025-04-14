@@ -23,9 +23,10 @@ const authenticateToken = async (req, res, next) => {
     await validateAuth0Token(req, res, async () => {
       // Get the user info from the validated token
       const id=req.auth.payload['sub'];
-      
-      
-      
+      if(!id){
+        return res.status(401).json({ error: "User ID claim missing from token" });
+      }
+
       // Find user in database
       const user = await prisma.user.findUnique({
         where: { id: id }

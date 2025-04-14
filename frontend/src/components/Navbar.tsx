@@ -6,9 +6,11 @@ import SearchInput from "./SearchInput";
 import { Menu } from "lucide-react";
 import { useState } from "react";
 import NavSidebar from "./NavSidebar";
+import { User } from "@auth0/auth0-react";
 
 const Navbar = ({ title }: { title?: string }) => {
   const { currentUser, logout, login, isAuthenticated } = useAuth();
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const handleLogout = () => {
     logout();
@@ -19,29 +21,33 @@ const Navbar = ({ title }: { title?: string }) => {
   };
   const onToggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const closeSidebar = () => setIsSidebarOpen(false);
+  const showSidebar = !title || title === "";
   return (
     <nav className="  px-6 py-2 flex justify-between items-center">
       {/* Logo and Brand */}
       <div className="flex gap-2">
-        <div
-          onClick={onToggleSidebar}
-          aria-label="Toggle sidebar"
-          className="p-[12px] hover:bg-gray-300 cursor-pointer rounded-full"
-        >
-          <Menu size={20} />
-          <span className="sr-only">Toggle sidebar</span>
-        </div>
+        {showSidebar && (
+          <div
+            onClick={onToggleSidebar}
+            aria-label="Toggle sidebar"
+            className="p-[12px] hover:bg-gray-300 cursor-pointer rounded-full"
+          >
+            <Menu size={20} />
+            <span className="sr-only">Toggle sidebar</span>
+          </div>
+        )}
         <NavSidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
-        <Link to="/" className="flex items-center gap-3">
+        <Link
+          to="/"
+          className="flex items-center gap-3 text-xl font-semibold text-gray-700 hover:text-gray-900 transition capitalize"
+        >
           <img
             alt="icon"
             src="/icon/icon.png"
             width={28}
             className="object-contain"
           />
-          <div className="text-xl font-semibold text-gray-700 hover:text-gray-900 transition capitalize">
-            {title}
-          </div>
+          {title}
         </Link>
       </div>
 
@@ -49,25 +55,7 @@ const Navbar = ({ title }: { title?: string }) => {
       {/* Navigation Menu */}
       <div className="flex items-center gap-4">
         {isAuthenticated ? (
-          <>
-            <div className="text-gray-700 text-sm flex gap-1 items-center">
-              <Avatar>
-                <AvatarImage src={currentUser?.picture} />
-                <AvatarFallback>
-                  {currentUser?.name?.slice(0, 2)}
-                </AvatarFallback>
-              </Avatar>
-              <span className="capitalize font-medium text-gray-900">
-                {currentUser?.name}
-              </span>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-lg shadow hover:bg-red-600 transition"
-            >
-              Logout
-            </button>
-          </>
+          <ProfileArea handleLogout={handleLogout} currentUser={currentUser} />
         ) : (
           <Button
             onClick={handleAuth0Login}
@@ -80,5 +68,49 @@ const Navbar = ({ title }: { title?: string }) => {
     </nav>
   );
 };
+
+function ProfileArea({
+  handleLogout,
+  currentUser,
+}: {
+  readonly handleLogout: () => void;
+  readonly currentUser: User | null;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleDropdown = () => setIsOpen(!isOpen);
+
+  const onLogout = () => {
+    handleLogout();
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="relative">
+      <div
+        className="text-gray-700 text-sm flex gap-1 items-center cursor-pointer"
+        onClick={toggleDropdown}
+      >
+        <Avatar>
+          <AvatarImage src={currentUser?.picture} />
+          <AvatarFallback>{currentUser?.name?.slice(0, 2)}</AvatarFallback>
+        </Avatar>
+        <span className="capitalize font-medium text-gray-900">
+          {currentUser?.name}
+        </span>
+      </div>
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-[999999]">
+          <button
+            onClick={onLogout}
+            className="block w-full text-left px-4 py-2 text-sm  hover:bg-gray-100"
+          >
+            Logout
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default Navbar;

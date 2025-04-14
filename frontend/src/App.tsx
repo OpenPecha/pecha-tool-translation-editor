@@ -8,7 +8,6 @@ import Login from "./pages/Login";
 import { useAuth } from "./auth/use-auth-hook";
 import Callback from "./pages/Callback";
 import { useEffect } from "react";
-import LoginComponent from "./components/LoginComponent";
 
 function Layout({ children }) {
   const { isAuthenticated, login, isLoading, getToken } = useAuth();
@@ -30,10 +29,7 @@ function Layout({ children }) {
 
 function AppContent() {
   const { isAuthenticated } = useAuth();
-
   // Try silent login on app initialization if not authenticated
-
-  // Store token in localStorage when authenticated
 
   return (
     <div className="flex flex-col h-full bg-[#fafbfd]">

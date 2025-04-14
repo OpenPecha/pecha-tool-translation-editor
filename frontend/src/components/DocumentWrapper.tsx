@@ -17,6 +17,7 @@ export interface Translation {
 
 function DocumentsWrapper() {
   const { id } = useParams();
+  console.log(id);
   const { currentDoc, loading, error } = useCurrentDoc(id);
   const translations = useMemo(
     () => currentDoc?.translations ?? [],

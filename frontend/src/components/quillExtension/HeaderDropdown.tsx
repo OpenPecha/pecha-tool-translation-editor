@@ -17,13 +17,14 @@ const HeaderDropdown = ({
   const levels = Array.from({ length: maxLevel }, (_, i) => i + 1);
 
   useEffect(() => {
+    const signal = new AbortController();
     const handleClickOutside = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside, signal);
+    return () => signal.abort();
   }, []);
 
   const handleSelect = (val: string | number) => {

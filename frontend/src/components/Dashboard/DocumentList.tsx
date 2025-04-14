@@ -3,6 +3,13 @@ import { fetchDocuments } from "../../api/document";
 import DocumentCreateModal from "../DocumentCreateModal/DocumentCreateModal";
 import EachDocument from "./EachDocument";
 import "./style.css";
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../ui/table";
 export interface Document {
   id: string;
   identifier: string;
@@ -46,11 +53,13 @@ const DocumentList = () => {
           </div>
         )}
         <div className="max-w-6xl mx-auto">
-          <List
-            documents={documents}
-            isLoading={isLoading}
-            setDocuments={setDocuments}
-          />
+          {documents?.length > 0 && (
+            <List
+              documents={documents}
+              isLoading={isLoading}
+              setDocuments={setDocuments}
+            />
+          )}
         </div>
       </div>
     </div>
@@ -78,32 +87,28 @@ const List = ({
     );
   }
 
-  function TableHeading({ children }) {
-    return (
-      <div className="table-heading text-gray-600 font-semibold">
-        {children}
-      </div>
-    );
-  }
-
   return (
-    <div className="flex flex-col gap-4 items-center">
-      <div className="flex justify-between w-full p-3">
-        <TableHeading>Documents</TableHeading>
-        <TableHeading>Last opened</TableHeading>
-        <TableHeading>Options</TableHeading>
-      </div>
-      {documents?.map((doc) => {
-        return (
-          <EachDocument
-            key={doc.id}
-            doc={doc}
-            setDocuments={setDocuments}
-            documents={documents}
-          />
-        );
-      })}
-    </div>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Documents</TableHead>
+          <TableHead>Last opened</TableHead>
+          <TableHead>Options</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {documents?.map((doc) => {
+          return (
+            <EachDocument
+              key={doc.id}
+              doc={doc}
+              setDocuments={setDocuments}
+              documents={documents}
+            />
+          );
+        })}
+      </TableBody>
+    </Table>
   );
 };
 

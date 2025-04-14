@@ -10,11 +10,11 @@ function DocumentInfo({ doc_info }) {
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
           <span className="text-muted-foreground">language</span>
-          <span>{doc_info.language}</span>
+          <span>{doc_info?.language}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">Root</span>
-          <span>{doc_info.isRoot ? "true" : "false"}</span>
+          <span>{doc_info?.isRoot ? "true" : "false"}</span>
         </div>
       </div>
     </div>

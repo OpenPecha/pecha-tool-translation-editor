@@ -23,12 +23,14 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
   const historyRef = useRef<HTMLDivElement>(null);
   const [openHistory, setOpenHistory] = useState(false);
   const [isEnabled, setIsEnabled] = useState(true);
+  const [keyLocked, setKeyLocked] = useState(false);
 
   const { getQuill, activeEditor, activeQuill } = useEditor();
   const [currentHeader, setCurrentHeader] = useState<string | number>("");
   const quill = getQuill(documentId);
 
   useEffect(() => {
+    const signal = new AbortController();
     const handleClickOutside = (event: MouseEvent) => {
       if (
         historyRef.current &&
@@ -39,13 +41,13 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
     };
 
     if (openHistory) {
-      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside, signal);
     } else {
-      document.removeEventListener("mousedown", handleClickOutside);
+      signal.abort();
     }
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      signal.abort();
     };
   }, [openHistory]);
 
@@ -146,6 +148,24 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
 
   const showToolbar = activeEditor === documentId;
   const isEnabledStyle = { display: isEnabled ? "flex" : "none" };
+
+  useEffect(() => {
+    const signal = new AbortController();
+    quill?.root.addEventListener(
+      "keydown",
+      (e: KeyboardEvent) => {
+        if (keyLocked) {
+          if (e.key !== "Enter") {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }
+      },
+      signal
+    );
+    return () => signal.abort();
+  }, [keyLocked, quill]);
+
   return (
     <>
       {createPortal(
@@ -232,6 +252,20 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
             </span>
           </div>
           <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={keyLocked}
+                onCheckedChange={() => setKeyLocked(!keyLocked)}
+                style={{
+                  backgroundColor: keyLocked ? "black" : "#ccc",
+                  color: keyLocked ? "#fff" : "#000",
+                  width: "40px",
+                }}
+              />
+              <span className="text-xs  italic">
+                key {isEnabled ? "" : "Locked"}
+              </span>
+            </div>
             <div className="flex items-center gap-2">
               <Switch
                 checked={isEnabled}
