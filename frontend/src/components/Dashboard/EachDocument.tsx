@@ -12,6 +12,7 @@ import { useAuth } from "@/auth/use-auth-hook";
 import { FileText } from "lucide-react";
 import { formatDate } from "@/lib/formatDate";
 import { TableCell, TableRow } from "../ui/table";
+import ProjectItem from "./ProjectItem";
 
 interface EachDocumentProps {
   readonly doc: Document;
@@ -81,60 +82,24 @@ export default function EachDocument({
       (permission) =>
         permission.userId === currentUser?.id && permission.canWrite === true
     );
-
+  const editOpen = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowEditModal(true);
+  };
   return (
     <>
       <Link to={`/documents/${doc.id}`} className="contents">
-        <TableRow className=" transition-all  hover:bg-blue-100 ">
-          <TableCell
-            className={`flex gap-1 items-center capitalize ${
-              isTibetan("བོད་ལ་") ? "font-monlam" : "font-sans"
-            }`}
-          >
-            {" "}
-            <img src="/icon/doc.svg" width={28} alt="document" />
-            <div className="flex gap-2 text-gray-600 leading-[20px] font-monlam ">
-              {doc.identifier}
-              <span className=" text-sm text-gray-500 flex gap-2">
-                {doc.isRoot && <Badge>Root</Badge>}
-                {doc.root && (
-                  <Badge variant="outline">{doc.root.identifier}</Badge>
-                )}
-              </span>
-            </div>
-            {isShared && (
-              <div>
-                <Badge variant="outline">Shared</Badge>
-              </div>
-            )}
-          </TableCell>
-          <TableCell>{formatDate(doc.updatedAt)}</TableCell>
-          <TableCell>
-            {hasPermission && (
-              <div className="flex items-center ">
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setShowEditModal(true);
-                  }}
-                  className="z-20 p-2 rounded-md transition-all duration-200 hover:bg-blue-500 hover:text-white hover:scale-110"
-                  title="Edit Document"
-                >
-                  <MdEdit />
-                </button>
-                {!isShared && (
-                  <button
-                    onClick={handleDelete}
-                    className="z-20 p-2 rounded-md transition-all duration-200 hover:bg-red-500 hover:text-white hover:scale-110"
-                  >
-                    <MdDelete />
-                  </button>
-                )}
-              </div>
-            )}
-          </TableCell>
-        </TableRow>
+        <ProjectItem
+          title={doc.identifier}
+          date={formatDate(doc.updatedAt)}
+          hasDocument={true}
+          hasSharedUsers={false}
+          owner={""}
+          hasPermission={hasPermission}
+          updateDocument={editOpen}
+          deleteDocument={handleDelete}
+        />
       </Link>
 
       {showEditModal && (

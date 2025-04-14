@@ -10,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
+import { Button } from "../ui/button";
 export interface Document {
   id: string;
   identifier: string;
@@ -88,27 +89,53 @@ const List = ({
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Documents</TableHead>
-          <TableHead>Last opened</TableHead>
-          <TableHead>Options</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {documents?.map((doc) => {
-          return (
-            <EachDocument
-              key={doc.id}
-              doc={doc}
-              setDocuments={setDocuments}
-              documents={documents}
-            />
-          );
-        })}
-      </TableBody>
-    </Table>
+    <div className="mb-8">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-base font-medium">Projects</h2>
+
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="h-8 text-sm">
+            Owned by anyone
+          </Button>
+
+          <Button variant="outline" size="sm" className="h-8 text-sm">
+            Last opened by me
+          </Button>
+
+          <div className="flex gap-1">
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <span className="sr-only">Grid view</span>
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <path
+                  fill="currentColor"
+                  d="M1 1h6v6H1V1zm8 0h6v6H9V1zm-8 8h6v6H1V9zm8 0h6v6H9V9z"
+                />
+              </svg>
+            </Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <span className="sr-only">List view</span>
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <path
+                  fill="currentColor"
+                  d="M1 1h14v2H1V1zm0 4h14v2H1V5zm0 4h14v2H1V9zm0 4h14v2H1v-2z"
+                />
+              </svg>
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {documents?.map((doc) => {
+        return (
+          <EachDocument
+            key={doc.id}
+            doc={doc}
+            setDocuments={setDocuments}
+            documents={documents}
+          />
+        );
+      })}
+    </div>
   );
 };
 
