@@ -16,6 +16,22 @@ model User {
   permissions Permission[] // A user can have multiple permissions
   comments    Comment[] // A user can have multiple comments
   createdAt   DateTime     @default(now())
+  Project     Project[]
+}
+
+model Project {
+  id           String       @id @default(uuid())
+  name         String
+  identifier   String       @unique
+  owner        User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId      String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  roots        Doc[]        @relation("Roots")
+  translations Doc[]        @relation("Translations")
+  permissions  Permission[] @relation("ProjectPermissions")
+  metadata     Json?
+  status       String       @default("active") // active, deleted, archived, draft
 }
 
 model Doc {
@@ -36,17 +52,37 @@ model Doc {
   permissions            Permission[] // A document can have multiple permission entries
   comments               Comment[] // A document can have multiple comments
   versions               Version[] // A document can have multiple versions
+  metadata               Json? // Additional metadata for the document
+
+  rootsProject          Project? @relation("Roots", fields: [rootProjectId], references: [id])
+  rootProjectId         String?
+  translationsProject   Project? @relation("Translations", fields: [translationsProjectId], references: [id])
+  translationsProjectId String?
+
+  @@index([ownerId])
+  @@index([rootId])
+  @@index([rootProjectId])
+  @@index([translationsProjectId])
 }
 
 model Permission {
-  id       String  @id @default(uuid())
-  docId    String
-  userId   String
-  canRead  Boolean @default(true)
-  canWrite Boolean @default(false)
+  id        String  @id @default(uuid())
+  docId     String
+  userId    String
+  canRead   Boolean @default(true)
+  canWrite  Boolean @default(false)
+  projectId String
 
-  doc  Doc  @relation(fields: [docId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  doc     Doc     @relation(fields: [docId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Project Project @relation("ProjectPermissions", fields: [projectId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([docId])
+  @@index([userId])
+  @@index([projectId])
 }
 
 model Comment {

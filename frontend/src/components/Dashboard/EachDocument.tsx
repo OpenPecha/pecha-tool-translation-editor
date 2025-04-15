@@ -6,75 +6,91 @@ import EditModal from "./EditModal";
 import { useAuth } from "@/auth/use-auth-hook";
 import { formatDate } from "@/lib/formatDate";
 import ProjectItem from "./ProjectItem";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface EachDocumentProps {
-  readonly doc: Document;
-  readonly setDocuments: React.Dispatch<React.SetStateAction<Document[]>>;
+  readonly doc: Document & {
+    permissions?: Array<{ userId: string; canWrite: boolean }>;
+  };
   readonly documents: Document[];
   readonly view: "grid" | "list";
 }
 
 export default function EachDocument({
   doc,
-  setDocuments,
   documents,
   view,
 }: EachDocumentProps) {
   const [showEditModal, setShowEditModal] = useState(false);
   const { currentUser } = useAuth();
-  const isShared = doc.ownerId !== currentUser?.id;
+  const queryClient = useQueryClient();
+
+  const deleteDocumentMutation = useMutation({
+    mutationFn: (id: string) => deleteDocument(id),
+    onSuccess: (deleted) => {
+      if (deleted.message) {
+        // Invalidate and refetch documents query
+        queryClient.invalidateQueries({ queryKey: ["documents"] });
+      }
+    },
+    onError: (error) => {
+      console.error("Error deleting document:", error);
+    },
+  });
+
   const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     const permission = confirm("Delete the document?");
     if (permission) {
-      try {
-        const deleted = await deleteDocument(doc.id);
-        if (deleted.message) {
-          setDocuments((prev: Document[]) =>
-            prev.filter((d: Document) => d.id !== doc.id)
-          );
-        }
-      } catch (e) {
-        console.error("Error deleting document:", e);
-      }
+      deleteDocumentMutation.mutate(doc.id);
     }
   };
+
+  type UpdateDocumentParams = {
+    id: string;
+    data: {
+      isRoot: boolean;
+      rootId: string | null;
+      identifier: string;
+      isPublic: boolean;
+    };
+  };
+
+  const updateDocumentMutation = useMutation({
+    mutationFn: ({ id, data }: UpdateDocumentParams) =>
+      updateDocument(id, data),
+    onSuccess: (updatedDoc) => {
+      // Invalidate and refetch documents query
+
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
+    },
+    onError: (error) => {
+      console.error("Error updating document:", error);
+    },
+  });
 
   const handleUpdate = async (
     isRoot: boolean,
     rootId: string | null,
-    identifier: string,
-    isPublic: boolean
+    identifier: string | null,
+    isPublic: boolean | null
   ) => {
-    try {
-      const updatedDoc = await updateDocument(doc.id, {
+    updateDocumentMutation.mutate({
+      id: doc.id,
+      data: {
         isRoot,
         rootId,
-        identifier,
-        isPublic,
-      });
-      setDocuments((prev: Document[]) =>
-        prev.map((d: Document) =>
-          d.id === doc.id
-            ? {
-                ...d,
-                isRoot: updatedDoc.isRoot,
-                rootId: updatedDoc.rootId,
-                identifier: updatedDoc.identifier,
-                isPublic: updatedDoc.isPublic,
-              }
-            : d
-        )
-      );
-    } catch (error) {
-      console.error("Error updating document:", error);
-    }
+        identifier: identifier ?? "",
+        isPublic: isPublic ?? false,
+      },
+    });
   };
+  // Check if user has permission to edit the document
   const hasPermission =
     doc.ownerId === currentUser?.id ||
-    doc.permissions.some(
-      (permission) =>
+    doc.permissions?.some(
+      (permission: { userId: string; canWrite: boolean }) =>
         permission.userId === currentUser?.id && permission.canWrite === true
     );
   const editOpen = (e: React.MouseEvent) => {

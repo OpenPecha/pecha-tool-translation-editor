@@ -84,11 +84,12 @@ module.exports = (getYDoc) => {
   });
 
   // Get all documents for the user
+  // Get all documents for the user
   router.get("/", authenticate, async (req, res) => {
     try {
-      const { search } = req.query;
+      const { search, isRoot } = req.query;
       
-      const whereCondition = {
+      let whereCondition = {
         OR: [
           { ownerId: req.user.id },
           { permissions: { some: { userId: req.user.id, canRead: true } } },
@@ -103,6 +104,14 @@ module.exports = (getYDoc) => {
         }));
       }
       
+      // Filter by isRoot if provided
+      if (isRoot === 'true') {
+        whereCondition = {
+          ...whereCondition,
+          isRoot: true
+        };
+      }
+      
       const documents = await prisma.doc.findMany({
         where: whereCondition,
         select: {
@@ -113,7 +122,15 @@ module.exports = (getYDoc) => {
           language: true,
           isRoot: true,
           isPublic: true,
-          translations: true,
+          translations: {
+            select: {
+              id: true,
+              language: true,
+              ownerId: true,
+              permissions: true,
+              updatedAt: true,
+            },
+          },
           updatedAt: true,
           root: {
             select: {
@@ -348,8 +365,7 @@ module.exports = (getYDoc) => {
       const document = await prisma.doc.findUnique({
         where: { id: documentId },
         include: {
-          root: true,
-          translations: true,
+          root: true
         },
       });
 
@@ -447,9 +463,13 @@ module.exports = (getYDoc) => {
         const updated = await tx.doc.update({
           where: { id: documentId },
           data: updateData,
-          include: {
+          select: {
             root: true,
-            translations: true,
+            translations: {
+              select:{
+                id:true
+              }
+            },
           },
         });
 
@@ -478,7 +498,9 @@ module.exports = (getYDoc) => {
             where: { id: documentId },
             include: {
               root: true,
-              translations: true,
+              translations: {
+                select:{id:true}
+              },
             },
           });
         }

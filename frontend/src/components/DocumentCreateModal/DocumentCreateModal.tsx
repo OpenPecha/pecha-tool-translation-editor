@@ -1,6 +1,5 @@
 import { NewPechaForm, PechaFromOpenPecha } from "./Forms";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { Document } from "../Dashboard/DocumentList";
 import {
   Dialog,
   DialogContent,
@@ -10,13 +9,16 @@ import {
   DialogTrigger,
 } from "../ui/dialog";
 import { useState } from "react";
-function DocumentCreateModal({
-  documents,
-}: {
-  readonly documents: Document[];
-}) {
+import { useQuery } from "@tanstack/react-query";
+import { fetchDocuments } from "../../api/document";
+function DocumentCreateModal() {
   const [open, setOpen] = useState(false);
   const closeModal = () => setOpen(false);
+  const rootDocuments = useQuery({
+    queryKey: ["root-documents"],
+    queryFn: () => fetchDocuments({ isRoot: true }),
+    enabled: open, // Only fetch when modal is open
+  });
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger className="cursor-pointer ">
@@ -46,7 +48,10 @@ function DocumentCreateModal({
             </TabsTrigger>
           </TabsList>
           <TabsContent value="newPecha">
-            <NewPechaForm documents={documents} closeModal={closeModal} />
+            <NewPechaForm
+              documents={rootDocuments?.data || []}
+              closeModal={closeModal}
+            />
           </TabsContent>
           <TabsContent value="pechaFromOpenPecha">
             <PechaFromOpenPecha closeModal={closeModal} />

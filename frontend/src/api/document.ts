@@ -17,12 +17,18 @@ export const fetchPublicDocuments = async () => {
   }
 };
 
-export const fetchDocuments = async ({ search }: { search?: string } = {}) => {
+export const fetchDocuments = async ({ search, isRoot }: { search?: string, isRoot?: boolean } = {}) => {
   try {
-    const url = search 
-      ? `${server_url}/documents?search=${encodeURIComponent(search)}`
-      : `${server_url}/documents`;
-      
+    let url = `${server_url}/documents`;
+    const params = new URLSearchParams();
+    
+    if (search) params.append('search', search);
+    if (isRoot !== undefined) params.append('isRoot', isRoot.toString());
+    
+    if (params.toString()) {
+      url += `?${params.toString()}`;
+    }
+    
     const response = await fetch(url, {
       headers: getHeaders(),
     });

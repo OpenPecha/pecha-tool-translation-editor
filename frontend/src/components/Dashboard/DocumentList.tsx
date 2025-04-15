@@ -17,7 +17,6 @@ export interface Document {
   ownerId?: string;
 }
 const DocumentList = () => {
-  const [documents, setDocuments] = useState<Document[]>([]);
   const { searchQuery } = useSearch();
 
   const { data, isLoading, isError } = useQuery({
@@ -30,7 +29,7 @@ const DocumentList = () => {
       <div className="pt-14 px-6 ">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-xl font-medium mb-6">Start new project</h1>
-          <DocumentCreateModal documents={data} />
+          <DocumentCreateModal />
         </div>
       </div>
       <div className="p-4 w-full">
@@ -41,13 +40,7 @@ const DocumentList = () => {
         )}
         <div className="max-w-6xl mx-auto">
           {isLoading && <div>loading...</div>}
-          {data?.length > 0 && (
-            <List
-              documents={data}
-              isLoading={isLoading}
-              setDocuments={setDocuments}
-            />
-          )}
+          {data?.length > 0 && <List documents={data} isLoading={isLoading} />}
         </div>
       </div>
     </div>
@@ -57,11 +50,9 @@ const DocumentList = () => {
 const List = ({
   documents,
   isLoading,
-  setDocuments,
 }: {
   documents: Document[];
   isLoading: boolean;
-  setDocuments: Dispatch<SetStateAction<Document[]>>;
 }) => {
   const [view, setView] = useState<"grid" | "list">("list");
 
@@ -139,7 +130,6 @@ const List = ({
               view={view}
               key={doc.id}
               doc={doc}
-              setDocuments={setDocuments}
               documents={documents}
             />
           );

@@ -5,6 +5,7 @@ import SelectLanguage from "./SelectLanguage";
 import SelectPechas, { PechaType } from "./SelectPechas";
 import { DialogFooter } from "../ui/dialog";
 import { Document } from "../Dashboard/DocumentList";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function NewPechaForm({
   documents,
@@ -23,6 +24,34 @@ export function NewPechaForm({
 
   const [selectedLanguage, setSelectedLanguage] = useState<string>("");
   const navigate = useNavigate();
+
+  const queryClient = useQueryClient();
+
+  const createDocumentMutation = useMutation({
+    mutationFn: (formData: FormData) => createDocument(formData),
+    onSuccess: (response) => {
+      setNewDocIdentifier("");
+      setSelectedFile(null);
+      setIsRoot(false);
+      setIsPublic(false);
+      setRootId(null);
+      // Invalidate and refetch documents query
+      // queryClient.invalidateQueries({ queryKey: ["documents"] });
+      queryClient.setQueryData(
+        ["documents"],
+        (oldData: Document[] | undefined) => {
+          if (!oldData) return [];
+          return [...oldData, response];
+        }
+      );
+      closeModal();
+      // navigate(`/documents/${response.id}`);
+    },
+    onError: (error: Error) => {
+      const errorMessage = error.message || "Failed to create document";
+      setError(errorMessage);
+    },
+  });
 
   const createDoc = async () => {
     if (!newDocIdentifier || newDocIdentifier.trim() === "") {
@@ -50,21 +79,7 @@ export function NewPechaForm({
       formData.append("file", selectedFile);
     }
 
-    createDocument(formData)
-      .then((response) => {
-        setNewDocIdentifier("");
-        setSelectedFile(null);
-        setIsRoot(false);
-        setIsPublic(false);
-        setRootId(null);
-        closeModal();
-        navigate(`/documents/${response.id}`);
-      })
-      .catch((e) => {
-        const errorMessage =
-          e instanceof Error ? e.message : "Failed to create document";
-        setError(errorMessage);
-      });
+    createDocumentMutation.mutate(formData);
   };
   return (
     <div className="p-4">

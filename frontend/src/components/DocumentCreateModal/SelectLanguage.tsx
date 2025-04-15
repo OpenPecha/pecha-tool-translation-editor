@@ -17,6 +17,7 @@ function SelectLanguage({
   const { data: languages = [] } = useQuery<LanguageType[]>({
     queryKey: ["languages"],
     queryFn: fetchLanguage,
+    staleTime: 1000 * 60 * 60 * 24, // 1 day
   });
 
   return (
