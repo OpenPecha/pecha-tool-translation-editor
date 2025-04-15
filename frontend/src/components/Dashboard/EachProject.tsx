@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import EditModal from "./EditModal";
 import { useAuth } from "@/auth/use-auth-hook";
+import PermissionsModal from "./PermissionsModal";
 
 import ProjectItem from "./ProjectItem";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -15,6 +16,7 @@ interface EachProjectProps {
 
 export default function EachProject({ project, view }: EachProjectProps) {
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showPermissionsModal, setShowPermissionsModal] = useState(false);
   const { currentUser } = useAuth();
   const queryClient = useQueryClient();
 
@@ -83,6 +85,12 @@ export default function EachProject({ project, view }: EachProjectProps) {
     e.stopPropagation();
     setShowEditModal(true);
   };
+  
+  const permissionsOpen = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowPermissionsModal(true);
+  };
   return (
     <>
       <Link
@@ -106,6 +114,7 @@ export default function EachProject({ project, view }: EachProjectProps) {
           hasPermission={hasPermission}
           updateDocument={editOpen}
           deleteDocument={handleDelete}
+          managePermissions={permissionsOpen}
           view={view}
           status={project.status}
         />
@@ -116,6 +125,14 @@ export default function EachProject({ project, view }: EachProjectProps) {
           project={project}
           onClose={() => setShowEditModal(false)}
           onUpdate={(name, identifier) => handleUpdate(name, identifier)}
+        />
+      )}
+      
+      {showPermissionsModal && (
+        <PermissionsModal
+          projectId={project.id}
+          projectName={project.name}
+          onClose={() => setShowPermissionsModal(false)}
         />
       )}
     </>

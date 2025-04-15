@@ -105,6 +105,43 @@ router.post("/", async (req, res) => {
 });
 
 /**
+ * @route   GET /users/search
+ * @desc    Search for users by email
+ * @access  Private
+ */
+router.get("/search", authenticate, async (req, res) => {
+  try {
+    const { email } = req.query;
+    
+    if (!email) {
+      return res.status(400).json({ error: "Email is required for search" });
+    }
+    
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        picture: true
+      }
+    });
+    
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    
+    res.json({
+      success: true,
+      data: user
+    });
+  } catch (error) {
+    console.error("Error searching for user:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
  * @route   GET /users/:id
  * @desc    Get user by ID
  * @access  Public
@@ -199,6 +236,8 @@ router.get("/translations/:rootId", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+
 
 // Get diff between current and previous version
 router.get("/version-diff/:versionId", async (req, res) => {

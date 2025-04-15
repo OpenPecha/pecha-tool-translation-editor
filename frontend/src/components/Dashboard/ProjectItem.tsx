@@ -18,6 +18,7 @@ interface ProjectItemProps {
   hasPermission?: boolean;
   updateDocument: (e: React.MouseEvent) => void;
   deleteDocument: (e: React.MouseEvent) => void;
+  managePermissions: (e: React.MouseEvent) => void;
   view: "grid" | "list";
   status?: string;
   documentCount?: number;
@@ -33,6 +34,7 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
   hasPermission = false,
   updateDocument,
   deleteDocument,
+  managePermissions,
   view,
   status,
   documentCount = 0,
@@ -90,6 +92,9 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={updateDocument}>
                   Update
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={managePermissions}>
+                  Manage Permissions
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={deleteDocument}
@@ -150,6 +155,9 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={updateDocument}>
                   Update
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={managePermissions}>
+                  Manage Permissions
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={deleteDocument}

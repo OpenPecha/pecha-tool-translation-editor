@@ -26,7 +26,11 @@ export interface Project {
     updatedAt: string;
   }[];
   permissions?: Permission[];
-  translations?: any[];
+  translations?: {
+    id: string;
+    identifier: string;
+    language?: string;
+  }[];
   owner?: {
     id: string;
     username: string;
@@ -268,6 +272,72 @@ export const updateUserProjectPermission = async (
     return await response.json();
   } catch (error) {
     console.error(`Error updating user permission in project ${projectId}:`, error);
+    throw error;
+  }
+};
+
+// Add a user to a project by email
+export const addUserToProjectByEmail = async (
+  projectId: string,
+  email: string,
+  canWrite: boolean = false
+) => {
+  try {
+    const response = await fetch(`${server_url}/projects/${projectId}/users/email`, {
+      method: "POST",
+      headers: {
+        ...getHeaders(),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, canWrite }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to add user to project: ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error(`Error adding user to project ${projectId}:`, error);
+    throw error;
+  }
+};
+
+// Get project permissions
+export const fetchProjectPermissions = async (projectId: string) => {
+  try {
+    const response = await fetch(`${server_url}/projects/${projectId}/permissions`, {
+      headers: getHeaders(),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch project permissions: ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error(`Error fetching project permissions ${projectId}:`, error);
+    throw error;
+  }
+};
+
+// Search for a user by email
+export const searchUserByEmail = async (email: string) => {
+  try {
+    const response = await fetch(`${server_url}/users/search?email=${encodeURIComponent(email)}`, {
+      headers: getHeaders(),
+    });
+    
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error("User not found with this email");
+      }
+      throw new Error(`Failed to search user: ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error(`Error searching user by email:`, error);
     throw error;
   }
 };
