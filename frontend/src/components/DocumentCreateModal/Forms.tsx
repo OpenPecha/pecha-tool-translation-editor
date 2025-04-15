@@ -1,86 +1,63 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { createDocument } from "../../api/document";
 import SelectLanguage from "./SelectLanguage";
 import SelectPechas, { PechaType } from "./SelectPechas";
 import { DialogFooter } from "../ui/dialog";
-import { Document } from "../Dashboard/DocumentList";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { ScrollArea } from "../ui/scroll-area";
+import TextUploader from "./TextUploader";
+import MetaDataInput from "./MetaDataInput";
+import { createProject } from "@/api/project";
 
 export function NewPechaForm({
-  documents,
+  projectName,
   closeModal,
 }: {
-  readonly documents: Document[];
+  readonly projectName: string;
   readonly closeModal: () => void;
 }) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [newDocIdentifier, setNewDocIdentifier] = useState("");
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isRoot, setIsRoot] = useState(false);
-  const [isPublic, setIsPublic] = useState(false);
-  const [rootId, setRootId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
   const [selectedLanguage, setSelectedLanguage] = useState<string>("");
-  const navigate = useNavigate();
-
+  const [rootId, setRootId] = useState<string | null>(null);
+  const [metadata, setMetadata] = useState<Json | null>(null);
   const queryClient = useQueryClient();
+  const createProjectMutation = useMutation({
+    mutationFn: () => {
+      if (!projectName) {
+        throw new Error("Project name is required");
+      }
+      return createProject({
+        name: projectName,
+        identifier: projectName.toLowerCase().replace(/\s+/g, "-"),
+        rootId: rootId ?? undefined,
+        metadata: metadata ?? undefined,
+      });
+    },
+    onSuccess: (data) => {
+      // Invalidate and refetch projects query
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
 
-  const createDocumentMutation = useMutation({
-    mutationFn: (formData: FormData) => createDocument(formData),
-    onSuccess: (response) => {
-      setNewDocIdentifier("");
-      setSelectedFile(null);
-      setIsRoot(false);
-      setIsPublic(false);
-      setRootId(null);
-      // Invalidate and refetch documents query
-      // queryClient.invalidateQueries({ queryKey: ["documents"] });
-      queryClient.setQueryData(
-        ["documents"],
-        (oldData: Document[] | undefined) => {
-          if (!oldData) return [];
-          return [...oldData, response];
-        }
-      );
+      // Close modal and reset form
       closeModal();
-      // navigate(`/documents/${response.id}`);
     },
     onError: (error: Error) => {
-      const errorMessage = error.message || "Failed to create document";
-      setError(errorMessage);
+      setError(error.message || "Failed to create project");
     },
   });
 
-  const createDoc = async () => {
-    if (!newDocIdentifier || newDocIdentifier.trim() === "") {
-      setError("give a name to your document");
-      return;
-    }
-    if (selectedLanguage === "") {
-      setError("choose a language");
-      return;
-    }
-    if (selectedFile && selectedFile.type !== "text/plain") {
-      setError("Only .txt files are allowed");
+  const handleCreateProject = () => {
+    if (!rootId) {
+      setError("Root document is required");
       return;
     }
 
-    const formData = new FormData();
-    formData.append("identifier", newDocIdentifier);
-    formData.append("isRoot", isRoot.toString());
-    formData.append("isPublic", isPublic.toString());
-    formData.append("language", selectedLanguage);
-    if (!isRoot && rootId) {
-      formData.append("rootId", rootId);
+    if (!projectName) {
+      setError("Project name is required");
+      return;
     }
-    if (selectedFile) {
-      formData.append("file", selectedFile);
-    }
-
-    createDocumentMutation.mutate(formData);
+    createProjectMutation.mutate();
   };
+
   return (
     <div className="p-4">
       {error != "" && (
@@ -88,94 +65,24 @@ export function NewPechaForm({
           {error}
         </div>
       )}
-      <SelectLanguage
-        setSelectedLanguage={setSelectedLanguage}
-        selectedLanguage={selectedLanguage}
-      />
-      <div className="mb-4">
-        <label htmlFor="docIdentifier" className="block mb-1">
-          Document Identifier
-        </label>
-        <input
-          type="text"
-          id="docIdentifier"
-          value={newDocIdentifier}
-          onChange={(e) => setNewDocIdentifier(e.target.value)}
-          placeholder="Enter document identifier"
-          className="w-full p-2 border rounded"
-          required
+      <ScrollArea className="h-[50dvh] pr-4">
+        <SelectLanguage
+          setSelectedLanguage={setSelectedLanguage}
+          selectedLanguage={selectedLanguage}
         />
-      </div>
-      <div className="flex items-center gap-2 mb-4">
-        <label htmlFor="isRootCheckbox">Is Root Document</label>
-        <input
-          id="isRootCheckbox"
-          type="checkbox"
-          checked={isRoot}
-          onChange={(e) => {
-            setIsRoot(e.target.checked);
-            if (e.target.checked) setRootId(null);
-          }}
+        {/* {selectedLanguage && ( */}
+        <TextUploader
+          isRoot={true}
+          isPublic={false}
+          selectedLanguage={selectedLanguage}
+          setRootId={setRootId}
         />
-      </div>
-      {/* <div className="flex items-center gap-2 mb-4">
-        <label htmlFor="isPublicCheckbox">Is Public Document</label>
-        <input
-          id="isPublicCheckbox"
-          type="checkbox"
-          checked={isPublic}
-          onChange={(e) => setIsPublic(e.target.checked)}
-        />
-      </div> */}
+        <MetaDataInput setMetadata={setMetadata} />
 
-      {!isRoot && (
-        <div className="mb-4">
-          <label htmlFor="rootDocSelect" className="block mb-1">
-            Connect to Root Document:
-          </label>
-          <select
-            id="rootDocSelect"
-            value={rootId ?? ""}
-            onChange={(e) => setRootId(e.target.value || null)}
-            className="w-full p-2 border rounded"
-            disabled={isRoot}
-          >
-            <option value="">Select a root document</option>
-            {documents?.length > 0 &&
-              documents
-                .filter((d) => d.isRoot)
-                .map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.identifier}
-                  </option>
-                ))}
-          </select>
-        </div>
-      )}
-      <div className="mb-4">
-        <label htmlFor="fileInput" className="block mb-1">
-          Upload File (Optional)
-        </label>
-        <input
-          type="file"
-          id="fileInput"
-          ref={fileInputRef}
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file && file.type !== "text/plain") {
-              setError("Only .txt files are allowed");
-              setSelectedFile(null);
-            } else {
-              setError("");
-              setSelectedFile(file || null);
-            }
-          }}
-          className="w-full p-2 border rounded"
-          accept=".txt"
-        />
-      </div>
+        {/* )} */}
+      </ScrollArea>
       <DocumentCreateModalFooter
-        createDoc={createDoc}
+        createDoc={handleCreateProject}
         closeModal={closeModal}
       />
     </div>
@@ -211,7 +118,7 @@ function DocumentCreateModalFooter({
   readonly closeModal: () => void;
 }) {
   return (
-    <DialogFooter>
+    <DialogFooter className="flex w-full sm:justify-between">
       <button
         type="button"
         className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"

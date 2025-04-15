@@ -3,22 +3,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { fetchDocuments } from "../../api/document";
+import { Label } from "../ui/label";
+import { Input } from "../ui/input";
 function DocumentCreateModal() {
+  const [projectName, setProjectName] = useState("");
   const [open, setOpen] = useState(false);
   const closeModal = () => setOpen(false);
-  const rootDocuments = useQuery({
-    queryKey: ["root-documents"],
-    queryFn: () => fetchDocuments({ isRoot: true }),
-    enabled: open, // Only fetch when modal is open
-  });
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger className="cursor-pointer ">
@@ -31,29 +27,35 @@ function DocumentCreateModal() {
           </div>
         </div>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[60%] w-[95%] max-h-[90vh] overflow-hidden">
         <DialogHeader>
-          <DialogTitle>Create pecha</DialogTitle>
-          <DialogDescription>
-            create openpecha from scratch or from existing openpecha
-          </DialogDescription>
+          <DialogTitle className="text-xl">
+            Create Translation Project
+          </DialogTitle>
         </DialogHeader>
-        <Tabs defaultValue="newPecha" className="w-full">
+        <div className="grid w-full max-w-sm items-center gap-1.5 mb-2">
+          <Label htmlFor="projectName">Project Name</Label>
+          <Input
+            id="projectName"
+            value={projectName}
+            className="w-full"
+            onChange={(e) => setProjectName(e.target.value)}
+            placeholder="Enter project name"
+          />
+        </div>
+        <Tabs defaultValue="upload" className="w-full">
           <TabsList className="w-full">
-            <TabsTrigger value="newPecha" className="cursor-pointer">
-              New Pecha
+            <TabsTrigger value="upload" className="cursor-pointer">
+              Upload File
             </TabsTrigger>
-            <TabsTrigger value="pechaFromOpenPecha" className="cursor-pointer">
-              Pecha from OpenPecha
+            <TabsTrigger value="OpenPecha" className="cursor-pointer">
+              OpenPecha URL
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="newPecha">
-            <NewPechaForm
-              documents={rootDocuments?.data || []}
-              closeModal={closeModal}
-            />
+          <TabsContent value="upload">
+            <NewPechaForm projectName={projectName} closeModal={closeModal} />
           </TabsContent>
-          <TabsContent value="pechaFromOpenPecha">
+          <TabsContent value="OpenPecha">
             <PechaFromOpenPecha closeModal={closeModal} />
           </TabsContent>
         </Tabs>

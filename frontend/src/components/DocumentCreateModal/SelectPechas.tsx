@@ -1,7 +1,8 @@
 import { fetchPechas } from "@/api/pecha";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { Label } from "../ui/label";
+import { useQuery } from "@tanstack/react-query";
 
 export type PechaType = {
   id: string;
@@ -18,17 +19,12 @@ function SelectPechas({
   const [filterBy, setFilterBy] = useState<
     "commentary_of" | "version_of" | "translation_of"
   >("commentary_of");
-  const [pechas, setPechas] = useState<PechaType[]>([]);
 
-  useEffect(() => {
-    fetchPechas({ filterBy })
-      .then((pechas) => {
-        setPechas(pechas);
-      })
-      .catch((error) => {
-        console.error("Error fetching pechas:", error);
-      });
-  }, [filterBy]);
+  const { data: pechas = [] } = useQuery({
+    queryKey: ["pechas", filterBy],
+    queryFn: () => fetchPechas({ filterBy }),
+    staleTime: 5 * 60 * 1000,
+  });
   return (
     <>
       <div className="mb-4">
@@ -59,14 +55,17 @@ function SelectPechas({
         </label>
         <select
           id="rootDocSelect"
-          onChange={(e) => setSelectedRootPecha(e.target.value)}
+          onChange={(e) => {
+            const selected = pechas.find((p) => p.id === e.target.value);
+            setSelectedRootPecha(selected || null);
+          }}
           className="w-full p-2 border rounded"
-          value={selectedRootPecha?.id}
+          value={selectedRootPecha?.id || ""}
         >
           <option value="">Select a root document</option>
-          {pechas.map((d) => (
+          {pechas?.metadata?.map((d) => (
             <option key={d.id} value={d.id}>
-              {d.id} {d.title}
+              {d.id} {d.title.bo}
             </option>
           ))}
         </select>

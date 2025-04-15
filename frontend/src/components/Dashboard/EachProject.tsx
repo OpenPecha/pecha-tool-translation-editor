@@ -1,26 +1,19 @@
 import { useState } from "react";
 import { deleteDocument, updateDocument } from "../../api/document";
 import { Link } from "react-router-dom";
-import { Document } from "../Dashboard/DocumentList";
 import EditModal from "./EditModal";
 import { useAuth } from "@/auth/use-auth-hook";
 import { formatDate } from "@/lib/formatDate";
 import ProjectItem from "./ProjectItem";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Project } from "@/api/project";
 
-interface EachDocumentProps {
-  readonly doc: Document & {
-    permissions?: Array<{ userId: string; canWrite: boolean }>;
-  };
-  readonly documents: Document[];
+interface EachProjectProps {
+  readonly project: Project;
   readonly view: "grid" | "list";
 }
 
-export default function EachDocument({
-  doc,
-  documents,
-  view,
-}: EachDocumentProps) {
+export default function EachProject({ project, view }: EachProjectProps) {
   const [showEditModal, setShowEditModal] = useState(false);
   const { currentUser } = useAuth();
   const queryClient = useQueryClient();
@@ -88,8 +81,8 @@ export default function EachDocument({
   };
   // Check if user has permission to edit the document
   const hasPermission =
-    doc.ownerId === currentUser?.id ||
-    doc.permissions?.some(
+    project.ownerId === currentUser?.id ||
+    project.permissions?.some(
       (permission: { userId: string; canWrite: boolean }) =>
         permission.userId === currentUser?.id && permission.canWrite === true
     );
@@ -98,30 +91,31 @@ export default function EachDocument({
     e.stopPropagation();
     setShowEditModal(true);
   };
+  const doc = project.roots?.[0];
   return (
     <>
-      <Link to={`/documents/${doc.id}`} className="contents">
+      <Link to={`/documents/${doc?.id}`} className="contents">
         <ProjectItem
-          title={doc.identifier}
-          date={formatDate(doc.updatedAt)}
+          title={project.identifier}
+          date={formatDate(project.updatedAt)}
           hasDocument={true}
           hasSharedUsers={false}
           owner={""}
           hasPermission={hasPermission}
-          updateDocument={editOpen}
-          deleteDocument={handleDelete}
+          updateDocument={() => {}}
+          deleteDocument={() => {}}
           view={view}
         />
       </Link>
 
-      {showEditModal && (
+      {/* {showEditModal && (
         <EditModal
           doc={doc}
           onClose={() => setShowEditModal(false)}
           onUpdate={handleUpdate}
           documents={documents}
         />
-      )}
+      )} */}
     </>
   );
 }

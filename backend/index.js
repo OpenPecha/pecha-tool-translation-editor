@@ -15,6 +15,7 @@ const documentsRoutes = require("./routes/documents");
 const pechaRoutes = require("./routes/pecha");
 const textsRoutes = require("./routes/texts");
 const userRoutes = require("./routes/user");
+const projectRoutes= require("./routes/project");
 const prisma = new PrismaClient();
 const app = express();
 const SECRET_KEY = process.env.SECRET_KEY || "super-secret-key";
@@ -58,6 +59,7 @@ app.use("/documents", documentsRoutes(getYDoc));
 app.use("/pecha", pechaRoutes);
 app.use("/texts", textsRoutes);
 app.use("/users",userRoutes)
+app.use("/projects",projectRoutes)
 const pingTimeout = 30000;
 const clients = new Set();
 

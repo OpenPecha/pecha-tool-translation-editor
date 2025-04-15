@@ -1,12 +1,12 @@
-import { useState, useEffect, SetStateAction, Dispatch } from "react";
-import { fetchDocuments } from "../../api/document";
+import { useState } from "react";
 import DocumentCreateModal from "../DocumentCreateModal/DocumentCreateModal";
-import EachDocument from "./EachDocument";
 import "./style.css";
 
 import { Button } from "../ui/button";
-import { useSearch } from "@/contexts/SearchContext";
+// import { useSearch } from "@/contexts/SearchContext";
 import { useQuery } from "@tanstack/react-query";
+import { fetchProjects, Project } from "@/api/project";
+import EachProject from "./EachProject";
 
 export interface Document {
   id: string;
@@ -17,69 +17,71 @@ export interface Document {
   ownerId?: string;
 }
 const DocumentList = () => {
-  const { searchQuery } = useSearch();
+  // We can add search functionality later if needed
+  // const { searchQuery } = useSearch();
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["documents", searchQuery],
-    queryFn: () => fetchDocuments({ search: searchQuery }),
+  const {
+    data: projects,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["projects"],
+    queryFn: () => fetchProjects({}),
   });
-
   return (
-    <div className="flex  flex-col border-t-gray-300 ">
-      <div className="pt-14 px-6 ">
+    <div className="flex flex-col border-t-gray-300">
+      <div className="pt-14 px-6">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-xl font-medium mb-6">Start new project</h1>
+          <h1 className="text-xl font-medium mb-6">Translation Projects</h1>
           <DocumentCreateModal />
         </div>
       </div>
       <div className="p-4 w-full">
         {isError && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {"Failed to fetch documents"}
+            {"Failed to fetch projects"}
           </div>
         )}
         <div className="max-w-6xl mx-auto">
-          {isLoading && <div>loading...</div>}
-          {data?.length > 0 && <List documents={data} isLoading={isLoading} />}
+          {isLoading && <div>Loading...</div>}
+          {projects?.length > 0 && (
+            <ProjectList projects={projects} isLoading={isLoading} />
+          )}
+          {projects?.length === 0 && !isLoading && (
+            <div className="text-center py-8">
+              <p>You don't have any projects yet. Create one to get started!</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 };
 
-const List = ({
-  documents,
+const ProjectList = ({
+  projects,
   isLoading,
 }: {
-  documents: Document[];
+  projects: Project[];
   isLoading: boolean;
 }) => {
   const [view, setView] = useState<"grid" | "list">("list");
 
   if (isLoading) {
-    return <div className="text-center py-4">Loading documents...</div>;
+    return <div className="text-center py-4">Loading projects...</div>;
   }
-
-  if (documents?.length === 0) {
-    return (
-      <div className="text-center py-8">
-        <p>You don't have any documents yet. Create one to get started!</p>
-      </div>
-    );
-  }
-
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-base font-medium">Projects</h2>
+        <h2 className="text-base font-medium">Your Projects</h2>
 
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="h-8 text-sm">
-            Owned by anyone
+            All Projects
           </Button>
 
           <Button variant="outline" size="sm" className="h-8 text-sm">
-            Last opened by me
+            Recently Updated
           </Button>
 
           <div className="flex gap-1">
@@ -124,16 +126,9 @@ const List = ({
             : "flex-col"
         }`}
       >
-        {documents?.map((doc) => {
-          return (
-            <EachDocument
-              view={view}
-              key={doc.id}
-              doc={doc}
-              documents={documents}
-            />
-          );
-        })}
+        {projects?.map((project) => (
+          <EachProject view={view} key={project.id} project={project} />
+        ))}
       </div>
     </div>
   );

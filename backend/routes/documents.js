@@ -2,7 +2,6 @@ const express = require("express");
 const authenticate = require("../middleware/authenticate");
 const { PrismaClient } = require("@prisma/client");
 const Y = require("yjs");
-const cors = require("cors");
 const multer = require("multer");
 const fs = require("fs").promises;
 
@@ -21,7 +20,7 @@ const upload = multer({
 
 module.exports = (getYDoc) => {
   // Create a new document
-  router.post("/", cors(), authenticate, upload.single("file"), async (req, res) => {
+  router.post("/", authenticate, upload.single("file"), async (req, res) => {
     try {
       const { identifier, isRoot, rootId,language } = req.body;
       if (!identifier)
@@ -56,13 +55,13 @@ module.exports = (getYDoc) => {
           language,
         },
       });
-
       await tx.permission.create({
         data: {
           docId: doc.id,
           userId: req.user.id,
           canRead: true,
           canWrite: true,
+          
         },
       });
       await tx.version.create({

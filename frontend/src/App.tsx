@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { QuillHistoryProvider } from "./contexts/HistoryContext";
-import DocumentList from "./components/Dashboard/DocumentList";
+import DocumentList from "./components/Dashboard/ProjectList";
 import DocumentsWrapper from "./components/DocumentWrapper";
 import { AuthProvider } from "./auth/auth-context-provider";
 import Login from "./pages/Login";

@@ -21,8 +21,8 @@ function SelectLanguage({
   });
 
   return (
-    <div className="flex gap-2 mb-4">
-      <Label>Language of Text:</Label>
+    <div className="flex gap-2 flex-col">
+      <Label>Root Text Language:</Label>
       {languages.length > 0 && (
         <select
           className=" p-2 border rounded"
