@@ -3,20 +3,11 @@ import DocumentCreateModal from "../DocumentCreateModal/DocumentCreateModal";
 import "./style.css";
 
 import { Button } from "../ui/button";
-// import { useSearch } from "@/contexts/SearchContext";
 import { useQuery } from "@tanstack/react-query";
 import { fetchProjects, Project } from "@/api/project";
 import EachProject from "./EachProject";
 
-export interface Document {
-  id: string;
-  identifier: string;
-  isRoot: boolean;
-  rootId: string | null;
-  updatedAt: string;
-  ownerId?: string;
-}
-const DocumentList = () => {
+const ProjectList = () => {
   // We can add search functionality later if needed
   // const { searchQuery } = useSearch();
 
@@ -45,7 +36,7 @@ const DocumentList = () => {
         <div className="max-w-6xl mx-auto">
           {isLoading && <div>Loading...</div>}
           {projects?.length > 0 && (
-            <ProjectList projects={projects} isLoading={isLoading} />
+            <ProjectsGrid projects={projects} isLoading={isLoading} />
           )}
           {projects?.length === 0 && !isLoading && (
             <div className="text-center py-8">
@@ -58,7 +49,7 @@ const DocumentList = () => {
   );
 };
 
-const ProjectList = ({
+const ProjectsGrid = ({
   projects,
   isLoading,
 }: {
@@ -134,4 +125,4 @@ const ProjectList = ({
   );
 };
 
-export default DocumentList;
+export default ProjectList;

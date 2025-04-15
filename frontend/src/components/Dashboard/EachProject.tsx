@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { deleteDocument, updateDocument } from "../../api/document";
 import { Link } from "react-router-dom";
 import EditModal from "./EditModal";
 import { useAuth } from "@/auth/use-auth-hook";
-import { formatDate } from "@/lib/formatDate";
+
 import ProjectItem from "./ProjectItem";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Project } from "@/api/project";
+import { Project, deleteProject, updateProject } from "@/api/project";
+import { formatDate } from "@/lib/formatDate";
 
 interface EachProjectProps {
   readonly project: Project;
@@ -18,72 +18,64 @@ export default function EachProject({ project, view }: EachProjectProps) {
   const { currentUser } = useAuth();
   const queryClient = useQueryClient();
 
-  const deleteDocumentMutation = useMutation({
-    mutationFn: (id: string) => deleteDocument(id),
-    onSuccess: (deleted) => {
-      if (deleted.message) {
-        // Invalidate and refetch documents query
-        queryClient.invalidateQueries({ queryKey: ["documents"] });
-      }
+  const deleteProjectMutation = useMutation({
+    mutationFn: (id: string) => deleteProject(id),
+    onSuccess: () => {
+      // Invalidate and refetch projects query
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
     },
     onError: (error) => {
-      console.error("Error deleting document:", error);
+      console.error("Error deleting project:", error);
     },
   });
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const permission = confirm("Delete the document?");
+    const permission = confirm(
+      "Delete this project? This action cannot be undone."
+    );
     if (permission) {
-      deleteDocumentMutation.mutate(doc.id);
+      deleteProjectMutation.mutate(project.id);
     }
   };
 
-  type UpdateDocumentParams = {
+  type UpdateProjectParams = {
     id: string;
     data: {
-      isRoot: boolean;
-      rootId: string | null;
-      identifier: string;
-      isPublic: boolean;
+      name?: string;
+      identifier?: string;
+      status?: string;
+      metadata?: Record<string, unknown>;
     };
   };
 
-  const updateDocumentMutation = useMutation({
-    mutationFn: ({ id, data }: UpdateDocumentParams) =>
-      updateDocument(id, data),
-    onSuccess: (updatedDoc) => {
-      // Invalidate and refetch documents query
-
-      queryClient.invalidateQueries({ queryKey: ["documents"] });
+  const updateProjectMutation = useMutation({
+    mutationFn: ({ id, data }: UpdateProjectParams) => updateProject(id, data),
+    onSuccess: () => {
+      // Invalidate and refetch projects query
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      setShowEditModal(false);
     },
     onError: (error) => {
-      console.error("Error updating document:", error);
+      console.error("Error updating project:", error);
     },
   });
 
-  const handleUpdate = async (
-    isRoot: boolean,
-    rootId: string | null,
-    identifier: string | null,
-    isPublic: boolean | null
-  ) => {
-    updateDocumentMutation.mutate({
-      id: doc.id,
+  const handleUpdate = async (name: string, identifier: string) => {
+    updateProjectMutation.mutate({
+      id: project.id,
       data: {
-        isRoot,
-        rootId,
-        identifier: identifier ?? "",
-        isPublic: isPublic ?? false,
+        name,
+        identifier,
       },
     });
   };
-  // Check if user has permission to edit the document
+  // Check if user has permission to edit the project
   const hasPermission =
     project.ownerId === currentUser?.id ||
     project.permissions?.some(
-      (permission: { userId: string; canWrite: boolean }) =>
+      (permission) =>
         permission.userId === currentUser?.id && permission.canWrite === true
     );
   const editOpen = (e: React.MouseEvent) => {
@@ -91,31 +83,41 @@ export default function EachProject({ project, view }: EachProjectProps) {
     e.stopPropagation();
     setShowEditModal(true);
   };
-  const doc = project.roots?.[0];
   return (
     <>
-      <Link to={`/documents/${doc?.id}`} className="contents">
+      <Link
+        to={
+          project.roots && project.roots.length > 0
+            ? `/documents/${project.roots[0]?.id}`
+            : "#"
+        }
+        className="contents"
+      >
         <ProjectItem
-          title={project.identifier}
+          title={project.name}
+          subtitle={project.roots && project.roots.length > 0 
+            ? project.roots[0].identifier 
+            : "No root document"}
           date={formatDate(project.updatedAt)}
-          hasDocument={true}
+          hasDocument={project.roots ? project.roots.length > 0 : false}
+          documentCount={project.roots?.length ?? 0}
           hasSharedUsers={false}
-          owner={""}
+          owner={project.ownerId === currentUser?.id ? "Me" : (project.owner?.username ?? "")}
           hasPermission={hasPermission}
-          updateDocument={() => {}}
-          deleteDocument={() => {}}
+          updateDocument={editOpen}
+          deleteDocument={handleDelete}
           view={view}
+          status={project.status}
         />
       </Link>
 
-      {/* {showEditModal && (
+      {showEditModal && (
         <EditModal
-          doc={doc}
+          project={project}
           onClose={() => setShowEditModal(false)}
-          onUpdate={handleUpdate}
-          documents={documents}
+          onUpdate={(name, identifier) => handleUpdate(name, identifier)}
         />
-      )} */}
+      )}
     </>
   );
 }

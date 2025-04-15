@@ -1,6 +1,16 @@
 import { getHeaders } from "./utils";
 const server_url = import.meta.env.VITE_SERVER_URL;
 
+export interface Permission {
+  userId: string;
+  canRead: boolean;
+  canWrite: boolean;
+  user?: {
+    id: string;
+    username: string;
+  };
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -9,23 +19,32 @@ export interface Project {
   createdAt: string;
   updatedAt: string;
   status: string;
-  metadata?: any;
-  roots?: any[];
+  metadata?: Record<string, unknown>;
+  roots?: {
+    id: string;
+    identifier: string;
+    updatedAt: string;
+  }[];
+  permissions?: Permission[];
   translations?: any[];
+  owner?: {
+    id: string;
+    username: string;
+  };
 }
 
 export interface CreateProjectParams {
   name: string;
   identifier: string;
   rootId?: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 export interface UpdateProjectParams {
   name?: string;
   identifier?: string;
   status?: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 // Fetch all projects for the current user
@@ -96,7 +115,7 @@ export const createProject = async (projectData: CreateProjectParams) => {
 export const updateProject = async (projectId: string, updateData: UpdateProjectParams) => {
   try {
     const response = await fetch(`${server_url}/projects/${projectId}`, {
-      method: "PATCH",
+      method: "PUT",
       headers: {
         ...getHeaders(),
         "Content-Type": "application/json",

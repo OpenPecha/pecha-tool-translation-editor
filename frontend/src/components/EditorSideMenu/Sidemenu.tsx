@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   ChevronLeft,
   Settings,
@@ -7,13 +7,10 @@ import {
   Languages,
 } from "lucide-react";
 import SelectTranslation from "./SelectTranslation";
-import { useParams } from "react-router-dom";
-import { deleteComment, fetchComments } from "@/api/comment";
-import { useEditor } from "@/contexts/EditorContext";
-import { BiTrash } from "react-icons/bi";
 import Comments from "./Comments";
 import DocumentInfo from "./DocumentInfo";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
+import { Translation } from "../DocumentWrapper";
 
 type MenuOption =
   | "translations"
@@ -22,17 +19,23 @@ type MenuOption =
   | "comments"
   | "commentary";
 
+interface DocumentInfo {
+  id: string;
+  identifier: string;
+  isRoot: boolean;
+  [key: string]: any; // For other properties
+}
+
 function SideMenu({
   translations,
   setSelectedTranslationId,
   doc_info,
 }: {
-  readonly translations: any;
+  readonly translations: Translation[];
   readonly setSelectedTranslationId: (id: string) => void;
-  readonly doc_info: any;
+  readonly doc_info: DocumentInfo;
 }) {
   const [currentView, setCurrentView] = useState<MenuOption>("main");
-
   const renderContent = () => {
     switch (currentView) {
       case "translations":
@@ -41,6 +44,7 @@ function SideMenu({
             <SelectTranslation
               translations={translations}
               setSelectedTranslationId={setSelectedTranslationId}
+              doc_info={doc_info}
             />
           </InMenuWrapper>
         );
@@ -106,13 +110,19 @@ function SideMenu({
   );
 }
 
-function MenuButton({ children, onClick }) {
+function MenuButton({
+  children,
+  onClick,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+}) {
   return (
     <Button
       type="button"
       onClick={onClick}
       variant="ghost"
-      className="w-full text-left py-2 px-4  rounded-lg cursor-pointer font-medium text-gray-700 transition-colors flex items-center justify-between"
+      className="w-full text-left py-2 px-4 rounded-lg cursor-pointer font-medium text-gray-700 transition-colors flex items-center justify-between"
     >
       {children}
     </Button>

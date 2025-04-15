@@ -13,11 +13,11 @@ import Navbar from "./Navbar";
 export interface Translation {
   id: string;
   identifier: string;
+  language: string;
 }
 
 function DocumentsWrapper() {
   const { id } = useParams();
-  console.log(id);
   const { currentDoc, loading, error } = useCurrentDoc(id);
   const translations = useMemo(
     () => currentDoc?.translations ?? [],
