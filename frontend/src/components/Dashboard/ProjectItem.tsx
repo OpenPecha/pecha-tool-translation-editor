@@ -17,6 +17,7 @@ interface ProjectItemProps {
   hasPermission?: boolean;
   updateDocument: (e: React.MouseEvent) => void;
   deleteDocument: (e: React.MouseEvent) => void;
+  view: "grid" | "list";
 }
 
 const ProjectItem: React.FC<ProjectItemProps> = ({
@@ -28,58 +29,110 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
   hasPermission = false,
   updateDocument,
   deleteDocument,
+  view,
 }) => {
+  if (view === "list") {
+    return (
+      <div className="flex items-center py-2 px-1 hover:bg-gray-50 rounded-md">
+        <div className="flex-shrink-0 mr-4">
+          <div className="bg-blue-100 p-2 rounded-full">
+            <FileText size={20} className="text-blue-500" />
+          </div>
+        </div>
+
+        <div className="flex-grow min-w-0">
+          <div className="flex items-center">
+            <h3 className="text-sm font-medium truncate">{title}</h3>
+            {hasDocument && (
+              <span className="ml-2 p-1">
+                <FileText size={16} className="text-gray-400" />
+              </span>
+            )}
+            {hasSharedUsers && (
+              <span className="ml-1 p-1">
+                <Users size={16} className="text-gray-400" />
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="flex-shrink-0 text-sm text-gray-500 mx-4 w-36 text-right">
+          {owner ? owner : "—"}
+        </div>
+
+        <div className="flex-shrink-0 text-sm text-gray-500 w-36">{date}</div>
+
+        <div className="flex-shrink-0 ml-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="p-1 rounded-full hover:bg-gray-100">
+                <MoreVertical size={16} className="text-gray-500" />
+              </button>
+            </DropdownMenuTrigger>
+            {hasPermission && (
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={updateDocument}>
+                  Update
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={deleteDocument}
+                  className="text-red-500"
+                >
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            )}
+          </DropdownMenu>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex items-center py-2 px-1 hover:bg-gray-50 rounded-md">
-      <div className="flex-shrink-0 mr-4">
-        <div className="bg-blue-100 p-2 rounded-full">
-          <FileText size={20} className="text-blue-500" />
-        </div>
-      </div>
-
-      <div className="flex-grow min-w-0">
+    <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+      <div className="space-y-2">
         <div className="flex items-center">
-          <h3 className="text-sm font-medium truncate">{title}</h3>
-          {hasDocument && (
-            <span className="ml-2 p-1">
-              <FileText size={16} className="text-gray-400" />
-            </span>
-          )}
-          {hasSharedUsers && (
-            <span className="ml-1 p-1">
-              <Users size={16} className="text-gray-400" />
-            </span>
-          )}
+          <h3 className="text-sm font-medium truncate capitalize">{title}</h3>
         </div>
-      </div>
 
-      <div className="flex-shrink-0 text-sm text-gray-500 mx-4 w-36 text-right">
-        {owner ? owner : "—"}
-      </div>
-
-      <div className="flex-shrink-0 text-sm text-gray-500 w-36">{date}</div>
-
-      <div className="flex-shrink-0 ml-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="p-1 rounded-full hover:bg-gray-100">
-              <MoreVertical size={16} className="text-gray-500" />
-            </button>
-          </DropdownMenuTrigger>
-          {hasPermission && (
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={updateDocument}>
-                Update
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={deleteDocument}
-                className="text-red-500"
-              >
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          )}
-        </DropdownMenu>
+        <div className="flex items-center mt-2 justify-between">
+          <div className="flex item-center">
+            {hasDocument && (
+              <div className="bg-blue-100 p-2 rounded-full">
+                <FileText size={20} className="text-blue-500" />
+              </div>
+            )}
+            <div className="flex items-center text-xs text-gray-500">
+              <span className="mr-2">{date}</span>
+              {owner && <span>· {owner}</span>}
+            </div>
+            {hasSharedUsers && (
+              <span>
+                <Users size={16} className="text-gray-400" />
+              </span>
+            )}
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="p-1 rounded-full hover:bg-gray-100">
+                <MoreVertical size={16} className="text-gray-500" />
+              </button>
+            </DropdownMenuTrigger>
+            {hasPermission && (
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={updateDocument}>
+                  Update
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={deleteDocument}
+                  className="text-red-500"
+                >
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            )}
+          </DropdownMenu>
+        </div>
       </div>
     </div>
   );

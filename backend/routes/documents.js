@@ -86,13 +86,25 @@ module.exports = (getYDoc) => {
   // Get all documents for the user
   router.get("/", authenticate, async (req, res) => {
     try {
+      const { search } = req.query;
+      
+      const whereCondition = {
+        OR: [
+          { ownerId: req.user.id },
+          { permissions: { some: { userId: req.user.id, canRead: true } } },
+        ],
+      };
+      
+      // Add search filter if provided
+      if (search) {
+        whereCondition.OR = whereCondition.OR.map(condition => ({
+          ...condition,
+          identifier: { contains: search, mode: 'insensitive' }
+        }));
+      }
+      
       const documents = await prisma.doc.findMany({
-        where: {
-          OR: [
-            { ownerId: req.user.id },
-            { permissions: { some: { userId: req.user.id, canRead: true } } },
-          ],
-        },
+        where: whereCondition,
         select: {
           id: true,
           identifier: true,
@@ -116,7 +128,7 @@ module.exports = (getYDoc) => {
       });
       res.json(documents);
     } catch (error) {
-      console.log(error)
+      console.log(error);
       res.status(500).json({ error: "Error fetching documents" });
     }
   });

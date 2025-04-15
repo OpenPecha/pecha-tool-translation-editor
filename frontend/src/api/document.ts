@@ -17,9 +17,13 @@ export const fetchPublicDocuments = async () => {
   }
 };
 
-export const fetchDocuments = async () => {
+export const fetchDocuments = async ({ search }: { search?: string } = {}) => {
   try {
-    const response = await fetch(`${server_url}/documents`, {
+    const url = search 
+      ? `${server_url}/documents?search=${encodeURIComponent(search)}`
+      : `${server_url}/documents`;
+      
+    const response = await fetch(url, {
       headers: getHeaders(),
     });
 
@@ -47,6 +51,8 @@ export const fetchDocument = async (id: string) => {
     throw error;
   }
 };
+
+
 
 export const createDocument = async (formData: FormData) => {
   const response = await fetch(`${server_url}/documents`, {

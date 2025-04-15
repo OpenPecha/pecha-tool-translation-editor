@@ -8,10 +8,11 @@ import NavSidebar from "./NavSidebar";
 import { User } from "@auth0/auth0-react";
 import { useAuth } from "@/auth/use-auth-hook";
 import SidebarMenu from "./NavSidebar1";
+import AppLauncher from "../Applauncher";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 
 const Navbar = ({ title }: { title?: string }) => {
   const { currentUser, logout, login, isAuthenticated } = useAuth();
-
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const handleLogout = () => {
     logout();
@@ -54,6 +55,7 @@ const Navbar = ({ title }: { title?: string }) => {
       {!title && <SearchInput />}
       {/* Navigation Menu */}
       <div className="flex items-center gap-4">
+        <AppLauncher />
         {isAuthenticated ? (
           <ProfileArea handleLogout={handleLogout} currentUser={currentUser} />
         ) : (
@@ -78,38 +80,31 @@ function ProfileArea({
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const toggleDropdown = () => setIsOpen(!isOpen);
-
   const onLogout = () => {
     handleLogout();
     setIsOpen(false);
   };
 
   return (
-    <div className="relative">
-      <div
-        className="text-gray-700 text-sm flex gap-1 items-center cursor-pointer"
-        onClick={toggleDropdown}
-      >
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
         <Avatar>
           <AvatarImage src={currentUser?.picture} />
           <AvatarFallback>{currentUser?.name?.slice(0, 2)}</AvatarFallback>
         </Avatar>
-      </div>
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-[999999]">
-          <span className="p-3 capitalize font-medium text-gray-900">
-            {currentUser?.name}
-          </span>
-          <button
-            onClick={onLogout}
-            className="block w-full text-left px-4 py-2 text-sm  hover:bg-gray-100"
-          >
-            Logout
-          </button>
-        </div>
-      )}
-    </div>
+      </PopoverTrigger>
+      <PopoverContent align="end">
+        <span className="p-3 capitalize font-medium text-gray-900">
+          {currentUser?.name}
+        </span>
+        <button
+          onClick={onLogout}
+          className="block w-full text-left px-4 py-2 text-sm  hover:bg-gray-100"
+        >
+          Logout
+        </button>
+      </PopoverContent>
+    </Popover>
   );
 }
 

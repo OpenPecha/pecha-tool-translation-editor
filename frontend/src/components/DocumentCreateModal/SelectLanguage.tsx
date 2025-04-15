@@ -1,6 +1,6 @@
 import { fetchLanguage } from "@/api/pecha";
-import React, { useEffect, useState } from "react";
 import { Label } from "../ui/label";
+import { useQuery } from "@tanstack/react-query";
 
 type LanguageType = {
   code: string;
@@ -11,17 +11,13 @@ function SelectLanguage({
   selectedLanguage,
   setSelectedLanguage,
 }: {
-  selectedLanguage: string;
-  setSelectedLanguage: (language: string) => void;
+  readonly selectedLanguage: string;
+  readonly setSelectedLanguage: (language: string) => void;
 }) {
-  const [languages, setLanguages] = useState<LanguageType[]>([]);
-
-  useEffect(() => {
-    fetchLanguage().then((languages) => {
-      console.log(languages);
-      setLanguages(languages);
-    });
-  }, []);
+  const { data: languages = [] } = useQuery<LanguageType[]>({
+    queryKey: ["languages"],
+    queryFn: fetchLanguage,
+  });
 
   return (
     <div className="flex gap-2 mb-4">

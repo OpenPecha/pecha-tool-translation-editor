@@ -9,10 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
-import { Button } from "../ui/button";
 import { useState } from "react";
-import { Plus } from "lucide-react";
-
 function DocumentCreateModal({
   documents,
 }: {

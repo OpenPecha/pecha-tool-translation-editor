@@ -46,8 +46,8 @@ const NavSidebar = ({ isOpen, onClose, trigger }: SidebarProps) => {
       {/* Backdrop overlay */}
       <div
         className={cn(
-          "fixed inset-0 z-40 bg-background/80 backdrop-blur-sm transition-all duration-300",
-          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          "fixed inset-0 z-40   transition-all duration-300",
+          isOpen ? "opacity-100" : " pointer-events-none"
         )}
         onClick={onClose}
         aria-hidden="true"

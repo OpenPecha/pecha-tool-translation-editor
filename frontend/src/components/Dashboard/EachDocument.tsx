@@ -1,29 +1,24 @@
 import { useState } from "react";
 import { deleteDocument, updateDocument } from "../../api/document";
 import { Link } from "react-router-dom";
-import { MdDelete, MdEdit } from "react-icons/md";
-
-import { Badge } from "../ui/badge";
-import { isTibetan } from "@/lib/isTibetan";
-import { Card, CardFooter, CardHeader, CardTitle } from "../ui/card";
 import { Document } from "../Dashboard/DocumentList";
 import EditModal from "./EditModal";
 import { useAuth } from "@/auth/use-auth-hook";
-import { FileText } from "lucide-react";
 import { formatDate } from "@/lib/formatDate";
-import { TableCell, TableRow } from "../ui/table";
 import ProjectItem from "./ProjectItem";
 
 interface EachDocumentProps {
   readonly doc: Document;
   readonly setDocuments: React.Dispatch<React.SetStateAction<Document[]>>;
   readonly documents: Document[];
+  readonly view: "grid" | "list";
 }
 
 export default function EachDocument({
   doc,
   setDocuments,
   documents,
+  view,
 }: EachDocumentProps) {
   const [showEditModal, setShowEditModal] = useState(false);
   const { currentUser } = useAuth();
@@ -99,6 +94,7 @@ export default function EachDocument({
           hasPermission={hasPermission}
           updateDocument={editOpen}
           deleteDocument={handleDelete}
+          view={view}
         />
       </Link>
 

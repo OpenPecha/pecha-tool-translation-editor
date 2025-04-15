@@ -8,6 +8,10 @@ import { useAuth } from "./auth/use-auth-hook";
 import Callback from "./pages/Callback";
 import { useEffect } from "react";
 import Navbar from "./components/Dashboard/Navbar";
+import { SearchProvider } from "./contexts/SearchContext";
+import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 function Layout({ children }) {
   const { isAuthenticated, login, isLoading, getToken } = useAuth();
@@ -39,10 +43,10 @@ function AppContent() {
           element={
             <Layout>
               {isAuthenticated && (
-                <>
+                <SearchProvider>
                   <Navbar />
                   <DocumentList />
-                </>
+                </SearchProvider>
               )}
             </Layout>
           }
@@ -67,9 +71,11 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
