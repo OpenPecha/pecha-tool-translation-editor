@@ -12,6 +12,8 @@ import {
 import ExportButton from "./ExportButton";
 import { BiCommentAdd } from "react-icons/bi";
 import { Button } from "./ui/button";
+import { generateJsonFromText } from "@/lib/segmentFromText";
+import Quill from "quill";
 const VITE_DISABLE_DEVTOOL = import.meta.env.VITE_DISABLE_DEVTOOL;
 const isEnabled = !EDITOR_READ_ONLY;
 const keyLocked = EDITOR_ENTER_ONLY;
@@ -227,11 +229,17 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
             </span>
           </div>
           <div className="flex items-center gap-2">
-            {synced ? (
-              "🟢"
-            ) : (
-              <span className="text-xs text-gray-400 italic"> saving... </span>
-            )}
+            <PublishButton quill={quill!} />
+            <div>
+              {synced ? (
+                "🟢"
+              ) : (
+                <span className="text-xs text-gray-400 italic">
+                  {" "}
+                  saving...{" "}
+                </span>
+              )}
+            </div>
           </div>
         </div>,
         document.getElementById("toolbar-container")!
@@ -254,6 +262,25 @@ export const ToolbarButton = ({ children, onClick, title, className }) => {
     >
       {children}
     </Button>
+  );
+};
+
+export const PublishButton = ({ quill }: { quill: Quill }) => {
+  const handlePublish = () => {
+    const text = quill.getText();
+    const json = generateJsonFromText(text);
+    console.log("published", json);
+  };
+
+  return (
+    <div className="flex items-center mr-2">
+      <div
+        className="bg-blue-300 shadow rounded px-2 cursor-pointer capitalize text-gray-600"
+        onClick={handlePublish}
+      >
+        publish
+      </div>
+    </div>
   );
 };
 export default Toolbar;

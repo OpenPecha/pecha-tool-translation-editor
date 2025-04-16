@@ -1,57 +1,112 @@
 import { deleteComment, fetchComments } from "@/api/comment";
 import { useEditor } from "@/contexts/EditorContext";
-import { useEffect, useState } from "react";
 import { BiTrash } from "react-icons/bi";
 import { useParams } from "react-router-dom";
 import Quill from "quill";
 import CommentBlot from "../quillExtension/commentBlot";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ScrollArea } from "../ui/scroll-area";
+import { Avatar } from "../ui/avatar";
+import { AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
+
+interface Comment {
+  id: string;
+  threadId: string;
+  content: string;
+  comment_on: string;
+  suggested_text?: string;
+  is_suggestion: boolean;
+  createdAt: string;
+  user: {
+    id: string;
+    username: string;
+    picture: string;
+  };
+}
 
 function Comments() {
   const { id } = useParams();
-  const [comments, setComments] = useState<any[]>([]);
   const { getQuill } = useEditor();
-  useEffect(() => {
-    if (id) {
-      fetchComments(id)
-        .then((data) => setComments(data || []))
-        .catch((e) => console.error(e));
-    }
-  }, [id]);
+  const queryClient = useQueryClient();
 
-  const handleDeleteComment = (commentId: string) => {
-    const quill = getQuill(id!);
-    const comment = comments.find((c) => c.id === commentId);
+  // Fetch comments using React Query
+  const {
+    data: comments = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["comments", id],
+    queryFn: () => fetchComments(id!),
+    enabled: !!id, // Only run query if id exists
+    staleTime: 30000, // Consider data fresh for 30 seconds
+    refetchOnWindowFocus: true,
+  });
+  console.log(comments);
+  // Delete comment mutation
+  const deleteCommentMutation = useMutation({
+    mutationFn: (commentId: string) => deleteComment(commentId),
+    onSuccess: (_, commentId) => {
+      // Invalidate and refetch comments after deletion
+      queryClient.invalidateQueries({ queryKey: ["comments", id] });
 
-    deleteComment(commentId)
-      .then(() => {
-        // Filter out the deleted comment
-        const updatedComments = comments.filter((c) => c.id !== commentId);
-        setComments(updatedComments);
+      // Handle UI updates that need to happen immediately
+      const comment = comments.find((c: Comment) => c.id === commentId);
+      const quill = getQuill(id!);
 
-        // Check if this was the last comment in its thread
-        const threadComments = updatedComments.filter(
-          (c) => c.threadId === comment?.threadId
+      // Check if this was the last comment in its thread
+      const threadComments = comments.filter(
+        (c: Comment) => c.threadId === comment?.threadId && c.id !== commentId
+      );
+
+      if (threadComments.length === 0 && quill && comment?.threadId) {
+        // Find and remove the suggestion mark from the editor
+        const suggestionSpan = document.querySelector<HTMLSpanElement>(
+          `span.comments[data-id="${comment.threadId}"]`
         );
-        if (threadComments.length === 0 && quill && comment?.threadId) {
-          // Find and remove the suggestion mark from the editor
-          const suggestionSpan = document.querySelector<HTMLSpanElement>(
-            `span.comments[data-id="${comment.threadId}"]`
-          );
-          if (suggestionSpan) {
-            const blot = Quill.find(suggestionSpan);
-            if (blot && blot instanceof CommentBlot) {
-              blot.delete();
-            }
+        if (suggestionSpan) {
+          const blot = Quill.find(suggestionSpan);
+          if (blot && blot instanceof CommentBlot) {
+            blot.delete();
           }
         }
-      })
-      .catch((e) => console.error(e));
+      }
+    },
+    onError: (error) => {
+      console.error("Error deleting comment:", error);
+    },
+  });
+
+  const handleDeleteComment = (commentId: string) => {
+    deleteCommentMutation.mutate(commentId);
   };
+  if (isLoading) {
+    return (
+      <div className="px-4 py-8 text-center text-gray-500">
+        Loading comments...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="px-4 py-8 text-center text-red-500">
+        Error loading comments:{" "}
+        {error instanceof Error ? error.message : "Unknown error"}
+      </div>
+    );
+  }
+
+  if (!comments || comments.length === 0) {
+    return (
+      <div className="px-4 py-8 text-center text-gray-500">No comments yet</div>
+    );
+  }
+
   return (
-    <div className="px-4 max-h-[calc(100vh-100px)] overflow-y-auto">
+    <ScrollArea className="px-4 h-[calc(100vh-100px)]  overflow-y-auto ">
       <div className="flow-root">
         <ul role="list" className="-mb-8">
-          {comments.map((comment) => (
+          {comments.map((comment: Comment) => (
             <EachComment
               comment={comment}
               key={comment.id}
@@ -60,11 +115,16 @@ function Comments() {
           ))}
         </ul>
       </div>
-    </div>
+    </ScrollArea>
   );
 }
 
-function EachComment({ comment, deleteComment }) {
+interface EachCommentProps {
+  comment: Comment;
+  deleteComment: (commentId: string) => void;
+}
+
+function EachComment({ comment, deleteComment }: EachCommentProps) {
   const handleCommentClick = () => {
     const threadId = comment.threadId;
     const span = document.querySelector(`span[data-id="${threadId}"]`);
@@ -84,50 +144,66 @@ function EachComment({ comment, deleteComment }) {
     }
   };
 
+  // Prevent event propagation when clicking delete button
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    deleteComment(comment.id);
+  };
+
+  // Format the date nicely
+  const formattedDate = new Date(comment.createdAt).toLocaleDateString(
+    undefined,
+    {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    }
+  );
+
+  // Get the first letter of username for avatar fallback
+  const userInitial = comment.user.username[0].toUpperCase();
+  console.log(comment.user.picture);
   return (
-    <li key={comment.id} onClick={handleCommentClick}>
-      <div className="relative pb-8">
-        <div className="relative flex space-x-3">
-          <div>
-            <span className="h-8 w-8 rounded-full bg-gray-400 flex items-center justify-center ring-8 ring-white">
-              <span className="text-sm font-medium text-white">
-                {comment.user.username[0].toUpperCase()}
-              </span>
-            </span>
-          </div>
-          <div className="flex min-w-0 flex-1 justify-between space-x-4">
+    <li className="mb-4" onClick={handleCommentClick}>
+      <div className="border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer bg-white">
+        <div className="p-3 pb-0 flex flex-row items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Avatar>
+              <AvatarFallback>{comment.user.username[0]}</AvatarFallback>
+              <AvatarImage src={comment.user.picture} />
+            </Avatar>
             <div>
-              <div className="flex items-center gap-2">
-                <p className="text-sm text-gray-500 font-monlam">
-                  <span className="font-medium text-gray-900">
-                    {comment.user.username}
-                  </span>
-                  {comment.is_suggestion ? (
-                    <span>
-                      {" "}
-                      suggested "{comment.suggested_text}" for "
-                      {comment.comment_on}"
-                    </span>
-                  ) : (
-                    <span> commented on "{comment.comment_on}"</span>
-                  )}
-                </p>
-                <button
-                  onClick={() => deleteComment(comment.id)}
-                  className="text-red-500 hover:text-red-700 text-sm cursor-pointer"
-                  title="Delete comment"
-                >
-                  <BiTrash />
-                </button>
-              </div>
-              <p className="mt-1 text-sm text-gray-700">{comment.content}</p>
-            </div>
-            <div className="whitespace-nowrap text-right text-sm text-gray-500">
-              <time dateTime={comment.createdAt}>
-                {new Date(comment.createdAt).toLocaleDateString()}
-              </time>
+              <p className="text-sm font-medium">{comment.user.username}</p>
+              <p className="text-xs text-muted-foreground">{formattedDate}</p>
             </div>
           </div>
+          <button
+            className="h-6 w-6 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full flex items-center justify-center"
+            onClick={handleDeleteClick}
+            title="Delete comment"
+          >
+            <BiTrash className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="p-3 pt-2">
+          {comment.is_suggestion ? (
+            <div className="text-sm">
+              <span className="text-muted-foreground">Suggested </span>
+              <span className="font-medium bg-yellow-50 px-1 rounded">
+                "{comment.suggested_text}"
+              </span>
+              <span className="text-muted-foreground"> for </span>
+              <span className="italic">"{comment.comment_on}"</span>
+            </div>
+          ) : (
+            <div className="text-sm">
+              <span className="text-muted-foreground">Commented on </span>
+              <span className="italic">"{comment.comment_on}"</span>
+            </div>
+          )}
+          <p className="mt-2 text-sm border-l-2 border-blue-200 pl-2 py-1">
+            {comment.content}
+          </p>
         </div>
       </div>
     </li>

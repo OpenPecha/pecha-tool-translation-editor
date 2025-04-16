@@ -67,8 +67,8 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const getQuill = (id: string) => {
-    return quillEditors.get(id);
+  const getQuill = (id: string): Quill | null => {
+    return quillEditors.get(id) ?? null;
   };
 
   return (

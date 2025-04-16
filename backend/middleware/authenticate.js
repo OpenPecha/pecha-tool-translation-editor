@@ -31,18 +31,19 @@ const authenticateToken = async (req, res, next) => {
       const user = await prisma.user.findUnique({
         where: { id: id }
       });
-      
       if (!user) {
         // Create user if they don't exist in our database
-        const userEmail = req.auth.payload["https://pecha-tool/email"];
-        if (!userEmail) {
+        const userEmail = req?.auth?.payload["https://pecha-tool/email"];
+        const picture= req?.auth?.payload["https://pecha-tool/picture"];
+        if (!userEmail||!picture) {
           return res.status(401).json({ error: "Email claim missing from token" });
         }
         const newUser = await prisma.user.create({
           data: {
             id,
             email: userEmail,
-            username: userEmail.split("@")[0]
+            username: userEmail.split("@")[0],
+            picture
           }
         });
         

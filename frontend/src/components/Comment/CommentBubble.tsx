@@ -10,10 +10,13 @@ import { Button } from "../ui/button";
 import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
 import { useAuth } from "@/auth/use-auth-hook";
+import { Avatar, AvatarFallback } from "@radix-ui/react-avatar";
+import { AvatarImage } from "../ui/avatar";
 
 interface User {
   id: string;
   username: string;
+  picture: string;
 }
 
 interface Comment {
@@ -142,9 +145,13 @@ const CommentBubble = () => {
             key={comment.id}
             className="p-2 flex gap-2 border-b border-gray-200"
           >
-            <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
-              <BiUser size={14} color="#64748b" />
-            </div>
+            <Avatar>
+              <AvatarFallback>{comment.user.username}</AvatarFallback>
+              <AvatarImage
+                className="rounded-full w-9 h-9"
+                src={comment.user.picture}
+              />
+            </Avatar>
 
             <div style={{ flex: 1, minWidth: 0 }}>
               <div className=" flex items-center gap-3 mb-2">
