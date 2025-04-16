@@ -7,7 +7,11 @@ interface EditModalProps {
   onUpdate: (name: string, identifier: string) => Promise<void>;
 }
 
-const EditModal: React.FC<EditModalProps> = ({ project, onClose, onUpdate }) => {
+const EditModal: React.FC<EditModalProps> = ({
+  project,
+  onClose,
+  onUpdate,
+}) => {
   const [name, setName] = useState(project.name);
   const [identifier, setIdentifier] = useState(project.identifier);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -24,7 +28,7 @@ const EditModal: React.FC<EditModalProps> = ({ project, onClose, onUpdate }) => 
       setIsUpdating(false);
     }
   };
-
+  const disable = isUpdating || name === project.name || name === "";
   return (
     <div className="fixed inset-0 flex justify-center items-center z-50">
       <div className="bg-white rounded-lg w-full max-w-md shadow-lg">
@@ -54,22 +58,6 @@ const EditModal: React.FC<EditModalProps> = ({ project, onClose, onUpdate }) => 
                 required
               />
             </div>
-            <div className="mb-4">
-              <label htmlFor="identifier" className="block mb-1 font-medium">
-                Identifier
-              </label>
-              <input
-                id="identifier"
-                type="text"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                className="w-full p-2 border rounded"
-                required
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Used in URLs and references. Should be lowercase with hyphens.
-              </p>
-            </div>
           </div>
           <div className="p-4 border-t border-gray-200  flex justify-end gap-4">
             <button
@@ -82,7 +70,7 @@ const EditModal: React.FC<EditModalProps> = ({ project, onClose, onUpdate }) => 
             <button
               type="submit"
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
-              disabled={isUpdating}
+              disabled={disable}
             >
               {isUpdating ? "Updating..." : "Update"}
             </button>

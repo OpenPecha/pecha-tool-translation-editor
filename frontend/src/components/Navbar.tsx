@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Permissions from "./Permissions";
+import { FileText } from "lucide-react";
 
 const Navbar = ({ title }: { title?: string }) => {
   const { currentUser, logout, login, isAuthenticated } = useAuth();
@@ -33,21 +34,22 @@ const Navbar = ({ title }: { title?: string }) => {
     login(false);
   };
   return (
-    <nav className="  px-6 py-2 flex justify-between items-center">
+    <nav className="  px-6 pt-2 flex justify-between items-center">
       {/* Logo and Brand */}
       <div className="flex gap-2">
         <Link
           to="/"
           className="flex items-center gap-3 font-semibold text-gray-700 hover:text-gray-900 transition capitalize"
         >
-          <img
+          <FileText className="w-8 h-8 text-blue-400" />
+          {/* <img
             alt="icon"
             src="/icon/doc.svg"
             width={52}
             className=" object-contain"
-          />
+          /> */}
         </Link>
-        <div className="flex flex-col w-fit">
+        <div className="flex flex-col w-fit -space-y-1">
           <TitleWrapper title={title!} />
           <NavMenuList />
         </div>
@@ -113,6 +115,7 @@ function ProfileArea({
     </div>
   );
 }
+
 function TitleWrapper({ title }: { readonly title: string }) {
   // Create a separate component for the input to avoid conditional hook calls
   if (!title) return null;
