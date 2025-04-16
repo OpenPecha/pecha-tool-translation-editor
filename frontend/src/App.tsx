@@ -36,7 +36,7 @@ function AppContent() {
   // Try silent login on app initialization if not authenticated
 
   return (
-    <div className="flex flex-col h-full bg-[#fafbfd]">
+    <div className="flex flex-col max-h-screen overflow-hidden bg-[#fafbfd]">
       <Routes>
         <Route
           path="/"

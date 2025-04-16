@@ -99,7 +99,7 @@ function SideMenu({
   return (
     <div className="bg-white border-l h-full w-1/4 shadow-sm">
       {renderContent()}
-      <DocumentInfo />
+      {currentView === "main" && <DocumentInfo />}
     </div>
   );
 }

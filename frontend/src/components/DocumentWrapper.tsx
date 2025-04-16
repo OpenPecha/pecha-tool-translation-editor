@@ -38,7 +38,7 @@ function DocumentsWrapper() {
           <MenuDrawer rootId={id!} translationId={selectedTranslationId} />
         )}
         <div id="toolbar-container"></div>
-        <div className="relative flex px-2  h-[calc(100dvh-100px)] w-full">
+        <div className="relative flex px-2  h-[calc(100dvh-110px)] w-full">
           <YjsProvider>
             <DocumentEditor docId={id} />
           </YjsProvider>
