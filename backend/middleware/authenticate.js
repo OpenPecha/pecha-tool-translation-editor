@@ -22,7 +22,7 @@ const authenticateToken = async (req, res, next) => {
     // First validate the token with Auth0
     await validateAuth0Token(req, res, async () => {
       // Get the user info from the validated token
-      const id=req.auth.payload['sub'];
+      const id=req?.auth?.payload['sub'];
       if(!id){
         return res.status(401).json({ error: "User ID claim missing from token" });
       }

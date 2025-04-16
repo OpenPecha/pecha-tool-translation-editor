@@ -1,19 +1,20 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { FaCommentDots, FaHistory, FaObjectGroup } from "react-icons/fa";
-import { GrDocumentTxt } from "react-icons/gr";
+import { FaHistory, FaObjectGroup } from "react-icons/fa";
 import QuillHistoryControls from "./QuillHistoryControls";
-import Permissions from "./Permissions";
 import { useEditor } from "@/contexts/EditorContext";
 import HeaderDropdown from "./quillExtension/HeaderDropdown";
-import { MAX_HEADING_LEVEL } from "@/../config";
-import { Switch } from "./ui/switch";
-import DisableDevtool from "disable-devtool";
+import {
+  EDITOR_ENTER_ONLY,
+  EDITOR_READ_ONLY,
+  MAX_HEADING_LEVEL,
+} from "@/../config";
 import ExportButton from "./ExportButton";
 import { BiCommentAdd } from "react-icons/bi";
 import { Button } from "./ui/button";
 const VITE_DISABLE_DEVTOOL = import.meta.env.VITE_DISABLE_DEVTOOL;
-
+const isEnabled = !EDITOR_READ_ONLY;
+const keyLocked = EDITOR_ENTER_ONLY;
 interface ToolbarProps {
   addSuggestion: () => void;
   id: string;
@@ -24,8 +25,6 @@ interface ToolbarProps {
 const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
   const historyRef = useRef<HTMLDivElement>(null);
   const [openHistory, setOpenHistory] = useState(false);
-  const [isEnabled, setIsEnabled] = useState(true);
-  const [keyLocked, setKeyLocked] = useState(false);
 
   const { getQuill, activeEditor, activeQuill } = useEditor();
   const [currentHeader, setCurrentHeader] = useState<string | number>("");
@@ -136,37 +135,8 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
     }
   };
 
-  const toggleEdit = () => {
-    if (quill) {
-      const newState = !isEnabled;
-      setIsEnabled(newState);
-      DisableDevtool({
-        url: "/",
-        disableMenu: newState,
-      });
-      quill.enable(newState);
-    }
-  };
-
   const showToolbar = activeEditor === documentId;
   const isEnabledStyle = { display: isEnabled ? "flex" : "none" };
-
-  useEffect(() => {
-    const signal = new AbortController();
-    quill?.root.addEventListener(
-      "keydown",
-      (e: KeyboardEvent) => {
-        if (keyLocked) {
-          if (e.key !== "Enter") {
-            e.preventDefault();
-            e.stopPropagation();
-          }
-        }
-      },
-      signal
-    );
-    return () => signal.abort();
-  }, [keyLocked]);
 
   return (
     <>
@@ -257,34 +227,6 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2">
-              <Switch
-                checked={keyLocked}
-                onCheckedChange={() => setKeyLocked(!keyLocked)}
-                style={{
-                  backgroundColor: keyLocked ? "black" : "#ccc",
-                  color: keyLocked ? "#fff" : "#000",
-                  width: "40px",
-                }}
-              />
-              <span className="text-xs  italic">
-                key {isEnabled ? "" : "Locked"}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Switch
-                checked={isEnabled}
-                onCheckedChange={toggleEdit}
-                style={{
-                  backgroundColor: isEnabled ? "black" : "#ccc",
-                  color: isEnabled ? "#fff" : "#000",
-                  width: "40px",
-                }}
-              />
-              <span className="text-xs  italic">
-                {isEnabled ? "Editable" : "Locked"}
-              </span>
-            </div>
             {synced ? (
               "🟢"
             ) : (

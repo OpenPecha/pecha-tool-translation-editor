@@ -12,6 +12,8 @@ import LineNumberVirtualized from "./LineNumbers";
 import CommentModal from "./Comment/CommentModal";
 import TableOfContent from "./TableOfContent";
 import { useEditor } from "@/contexts/EditorContext";
+import { EDITOR_ENTER_ONLY } from "@/../config";
+
 quill_import();
 
 const Editor = ({
@@ -37,6 +39,8 @@ const Editor = ({
     useEditor();
   const [currentRange, setCurrentRange] = useState<Range | null>(null);
   useEffect(() => {
+    const signal = new AbortController();
+
     const editorId = documentId;
     const quill = new Quill(editorRef?.current, {
       theme: "snow",
@@ -62,6 +66,18 @@ const Editor = ({
     });
     registerQuill(quill);
     registerQuill2(editorId, quill);
+    quill?.root.addEventListener(
+      "keydown",
+      (e: KeyboardEvent) => {
+        if (EDITOR_ENTER_ONLY) {
+          if (e.key !== "Enter") {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }
+      },
+      signal
+    );
     new QuillBinding(yText, quill, yjsProvider?.awareness);
     yjsProvider?.on("sync", (isSynced: boolean) => {
       setSynced(isSynced);
@@ -98,6 +114,7 @@ const Editor = ({
     return () => {
       clearYjsProvider();
       unregisterQuill2("editor" + editorId);
+      signal.abort();
     };
   }, []);
 

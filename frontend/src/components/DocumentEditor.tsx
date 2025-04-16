@@ -9,6 +9,10 @@ import "../editor.css";
 import CommentBubble from "./Comment/CommentBubble";
 import { CommentProvider } from "@/contexts/CommentContext";
 import { useAuth } from "@/auth/use-auth-hook";
+
+import { EDITOR_ENTER_ONLY, EDITOR_READ_ONLY } from "@/../config";
+import disableDevtool from "disable-devtool";
+
 const RealTimeEditor = ({ docId }: { docId: string | undefined }) => {
   const { id } = useParams();
   const { createYjsProvider, yjsProvider, ydoc, yText, clearYjsProvider } =
@@ -18,11 +22,16 @@ const RealTimeEditor = ({ docId }: { docId: string | undefined }) => {
   const roomId = docId ?? id;
   useEffect(() => {
     fetchDocument(roomId).then((doc) => {
-      if (doc?.permissions) {
+      if (doc?.permissions && !EDITOR_READ_ONLY) {
         doc?.permissions.find((permission) => {
-          if (permission.userId === currentUser.id) {
+          if (permission?.userId === currentUser.id && permission?.canWrite) {
             setIsEditable(true);
           }
+        });
+      } else {
+        disableDevtool({
+          url: "/",
+          disableMenu: true,
         });
       }
       createYjsProvider(roomId);
