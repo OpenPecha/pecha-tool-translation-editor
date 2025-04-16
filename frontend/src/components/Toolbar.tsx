@@ -28,7 +28,7 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
   const historyRef = useRef<HTMLDivElement>(null);
   const [openHistory, setOpenHistory] = useState(false);
 
-  const { getQuill, activeEditor, activeQuill } = useEditor();
+  const { getQuill, activeEditor } = useEditor();
   const [currentHeader, setCurrentHeader] = useState<string | number>("");
   const quill = getQuill(documentId);
 

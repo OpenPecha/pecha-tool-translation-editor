@@ -5,7 +5,6 @@ import { createComment, deleteComment } from "@/api/comment";
 import { useComment } from "@/contexts/CommentContext";
 import { IoClose } from "react-icons/io5";
 import { FaTrash } from "react-icons/fa";
-import { BiUser } from "react-icons/bi";
 import { Button } from "../ui/button";
 import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
@@ -16,10 +15,10 @@ import { AvatarImage } from "../ui/avatar";
 interface User {
   id: string;
   username: string;
-  picture: string;
+  picture?: string;
 }
 
-interface Comment {
+export interface Comment {
   id: string;
   docId: string;
   threadId: string;
@@ -207,7 +206,7 @@ const CommentBubble = () => {
           <Switch
             id="isSuggestionCheckbox"
             checked={isSuggestion}
-            onCheckedChange={(e) => setIsSuggestion(!isSuggestion)}
+            onCheckedChange={() => setIsSuggestion(!isSuggestion)}
             style={{ margin: 0 }}
           />
           <Label

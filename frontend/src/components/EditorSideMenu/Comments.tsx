@@ -6,23 +6,8 @@ import Quill from "quill";
 import CommentBlot from "../quillExtension/commentBlot";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ScrollArea } from "../ui/scroll-area";
-import { Avatar } from "../ui/avatar";
-import { AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
-
-interface Comment {
-  id: string;
-  threadId: string;
-  content: string;
-  comment_on: string;
-  suggested_text?: string;
-  is_suggestion: boolean;
-  createdAt: string;
-  user: {
-    id: string;
-    username: string;
-    picture: string;
-  };
-}
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Comment } from "../Comment/CommentBubble";
 
 function Comments() {
   const { id } = useParams();
@@ -103,9 +88,9 @@ function Comments() {
   }
 
   return (
-    <ScrollArea className="px-4 h-[calc(100vh-100px)]  overflow-y-auto ">
+    <ScrollArea className="px-4 h-[calc(100vh-100px)] overflow-y-auto">
       <div className="flow-root">
-        <ul role="list" className="-mb-8">
+        <div className="-mb-8">
           {comments.map((comment: Comment) => (
             <EachComment
               comment={comment}
@@ -113,21 +98,23 @@ function Comments() {
               deleteComment={handleDeleteComment}
             />
           ))}
-        </ul>
+        </div>
       </div>
     </ScrollArea>
   );
 }
 
 interface EachCommentProps {
-  comment: Comment;
-  deleteComment: (commentId: string) => void;
+  readonly comment: Comment;
+  readonly deleteComment: (commentId: string) => void;
 }
 
 function EachComment({ comment, deleteComment }: EachCommentProps) {
   const handleCommentClick = () => {
     const threadId = comment.threadId;
-    const span = document.querySelector(`span[data-id="${threadId}"]`);
+    const span = document.querySelector(
+      `span[data-id="${threadId}"]`
+    ) as HTMLElement;
     if (span) {
       // Scroll the span into view
       span.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -159,18 +146,22 @@ function EachComment({ comment, deleteComment }: EachCommentProps) {
       day: "numeric",
     }
   );
-
-  // Get the first letter of username for avatar fallback
-  const userInitial = comment.user.username[0].toUpperCase();
-  console.log(comment.user.picture);
   return (
-    <li className="mb-4" onClick={handleCommentClick}>
+    <button
+      className="mb-4 w-full text-left bg-transparent border-0 p-0"
+      onClick={handleCommentClick}
+    >
       <div className="border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer bg-white">
         <div className="p-3 pb-0 flex flex-row items-center justify-between">
           <div className="flex items-center gap-2">
             <Avatar>
-              <AvatarFallback>{comment.user.username[0]}</AvatarFallback>
-              <AvatarImage src={comment.user.picture} />
+              <AvatarImage
+                src={comment.user.picture}
+                alt={comment.user.username}
+              />
+              <AvatarFallback>
+                {comment.user.username[0].toUpperCase()}
+              </AvatarFallback>
             </Avatar>
             <div>
               <p className="text-sm font-medium">{comment.user.username}</p>
@@ -206,7 +197,7 @@ function EachComment({ comment, deleteComment }: EachCommentProps) {
           </p>
         </div>
       </div>
-    </li>
+    </button>
   );
 }
 
