@@ -104,7 +104,6 @@ router.post("/", authenticate, async (req, res) => {
       is_suggestion: is_suggestion || false,
       suggested_text,
     };
-    console.log(data);
     const newComment = await prisma.comment.create({
       data: data,
       include: { user: true },

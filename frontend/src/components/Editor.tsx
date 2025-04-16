@@ -118,11 +118,15 @@ const Editor = ({
     };
   }, []);
 
+  function addSuggestion(text: string) {
+    if (text.length < 5) return;
+    setShowCommentModal((p) => !p);
+  }
   return (
     <div className="w-full relative flex-1 h-full">
       <Toolbar
         id={toolbarId}
-        addSuggestion={() => setShowCommentModal((p) => !p)}
+        addSuggestion={addSuggestion}
         synced={synced}
         documentId={documentId}
       />

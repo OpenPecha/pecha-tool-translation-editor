@@ -23,7 +23,6 @@ module.exports = (getYDoc) => {
   router.post("/", authenticate, upload.single("file"), async (req, res) => {
     try {
       const { identifier, isRoot, rootId,language } = req.body;
-       console.log(req.body)
       if (!identifier)
         return res
           .status(400)
@@ -202,15 +201,15 @@ module.exports = (getYDoc) => {
           isPublic: true,
           translations: true,
           docs_prosemirror_delta: true,
+          rootProjectId:true,
         },
       });
-
       if (!document)
         return res.status(404).json({ error: "Document not found" });
 
       if (document.ownerId !== req.user.id) {
         const permission = await prisma.permission.findFirst({
-          where: { docId: document.id, userId: req.user.id, canRead: true },
+          where: { projectId: document.rootProjectId, userId: req.user.id, canRead: true },
         });
         if (!permission && !document.isPublic)
           return res.status(403).json({ error: "No access" });

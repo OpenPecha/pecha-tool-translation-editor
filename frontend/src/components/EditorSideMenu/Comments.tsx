@@ -26,7 +26,6 @@ function Comments() {
     staleTime: 30000, // Consider data fresh for 30 seconds
     refetchOnWindowFocus: true,
   });
-  console.log(comments);
   // Delete comment mutation
   const deleteCommentMutation = useMutation({
     mutationFn: (commentId: string) => deleteComment(commentId),
@@ -147,7 +146,7 @@ function EachComment({ comment, deleteComment }: EachCommentProps) {
     }
   );
   return (
-    <button
+    <div
       className="mb-4 w-full text-left bg-transparent border-0 p-0"
       onClick={handleCommentClick}
     >
@@ -197,7 +196,7 @@ function EachComment({ comment, deleteComment }: EachCommentProps) {
           </p>
         </div>
       </div>
-    </button>
+    </div>
   );
 }
 

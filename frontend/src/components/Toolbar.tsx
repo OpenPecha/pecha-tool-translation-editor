@@ -18,7 +18,7 @@ const VITE_DISABLE_DEVTOOL = import.meta.env.VITE_DISABLE_DEVTOOL;
 const isEnabled = !EDITOR_READ_ONLY;
 const keyLocked = EDITOR_ENTER_ONLY;
 interface ToolbarProps {
-  addSuggestion: () => void;
+  addSuggestion: (data: string) => void;
   id: string;
   synced: boolean;
   documentId: string;
@@ -200,7 +200,7 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
               </ToolbarButton>
 
               <ToolbarButton
-                onClick={addSuggestion}
+                onClick={() => addSuggestion(quill?.getSelection())}
                 title="Suggestion"
                 className=""
               >

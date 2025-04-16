@@ -3,6 +3,7 @@ import { useAuth } from "@/auth/use-auth-hook";
 
 import { useEditor } from "@/contexts/EditorContext";
 import React, { useState } from "react";
+import { Button } from "../ui/button";
 
 function CommentModal({ documentId, setShowCommentModal, range }) {
   const [commentText, setCommentText] = useState("");
@@ -57,7 +58,7 @@ function CommentModal({ documentId, setShowCommentModal, range }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-[rgba(0,0,0,0.3)] bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-96">
         <h3 className="text-lg font-semibold mb-4">Add Comment</h3>
         <textarea
@@ -90,8 +91,9 @@ function CommentModal({ documentId, setShowCommentModal, range }) {
           />
         )}
 
-        <div className="flex justify-end gap-2">
-          <button
+        <div className="flex justify-between gap-2">
+          <Button
+            variant="outline"
             onClick={() => {
               setShowCommentModal(false);
               setCommentText("");
@@ -100,13 +102,13 @@ function CommentModal({ documentId, setShowCommentModal, range }) {
             className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={addComment}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
             Submit
-          </button>
+          </Button>
         </div>
       </div>
     </div>

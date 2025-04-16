@@ -80,7 +80,6 @@ export const createComment = async (
   parentCommentId?: string
 ) => {
   try {
-    console.log("comment_on", comment_on);
     const response = await fetch(`${server_url}/comments`, {
       method: "POST",
       headers: getHeaders(),
