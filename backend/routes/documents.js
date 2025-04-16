@@ -47,6 +47,7 @@ module.exports = (getYDoc) => {
       const doc = await tx.doc.create({
         data: {
           identifier,
+          name: identifier,
           ownerId: req.user.id,
           docs_y_doc_state: state,
           docs_prosemirror_delta: delta,
@@ -115,6 +116,7 @@ module.exports = (getYDoc) => {
         where: whereCondition,
         select: {
           id: true,
+          name: true,
           identifier: true,
           ownerId: true,
           permissions: true,
@@ -133,7 +135,7 @@ module.exports = (getYDoc) => {
           updatedAt: true,
           root: {
             select: {
-              identifier: true,
+              name:true,
             },
           },
           rootId: true,
@@ -157,6 +159,7 @@ module.exports = (getYDoc) => {
         },
         select: {
           id: true,
+          name: true,
           identifier: true,
           ownerId: true,
           permissions: true,
@@ -167,7 +170,7 @@ module.exports = (getYDoc) => {
           updatedAt: true,
           root: {
             select: {
-              identifier: true,
+              name: true,
             },
           },
           rootId: true,
@@ -189,6 +192,7 @@ module.exports = (getYDoc) => {
         where: { id: req.params.id },
         select: {
           id: true,
+          name: true,
           identifier: true,
           ownerId: true,
           permissions: true,
@@ -357,7 +361,7 @@ module.exports = (getYDoc) => {
   // Update document's root relationship and root status
   router.patch("/:id", authenticate, async (req, res) => {
     try {
-      const { rootId, isRoot, translations, identifier, isPublic } = req.body;
+      const { rootId, isRoot, translations, identifier, isPublic, name } = req.body;
       const documentId = req.params.id;
 
       // Check if the document exists
@@ -452,7 +456,10 @@ module.exports = (getYDoc) => {
       const updateData = {
         rootId: rootId || null,
         isRoot: isRoot ?? (rootId ? false : document.isRoot),
+        // Only update identifier if explicitly provided, otherwise keep the original
         identifier: identifier || document.identifier,
+        // Update name if provided
+        name: name || document.name,
         isPublic: isPublic ?? document.isPublic,
       };
 
@@ -488,7 +495,8 @@ module.exports = (getYDoc) => {
             data: {
               rootId: documentId,
               isRoot: false,
-              identifier: identifier || document.identifier,
+              // Only update name for translations, keep identifier the same
+              name: name || document.name,
             },
           });
 

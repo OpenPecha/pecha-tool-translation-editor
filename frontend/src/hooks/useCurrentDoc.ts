@@ -9,6 +9,7 @@ interface Translation {
 
 interface Document {
   id: string;
+  name: string;
   identifier: string;
   docs_prosemirror_delta: Record<string, unknown>;
   docs_y_doc_state: Uint8Array;

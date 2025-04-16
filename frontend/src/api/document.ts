@@ -122,6 +122,7 @@ interface UpdateDocumentParams {
   isRoot?: boolean;
   rootId?: string | null;
   identifier?: string;
+  name?: string;
   isPublic?: boolean;
 }
 

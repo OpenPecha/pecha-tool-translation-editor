@@ -39,6 +39,7 @@
     padding-inline: 16px !important;
     background-color: white;
     border: 1px solid #e0e0e0 !important;
+    line-height: normal;
   }
   .ql-formats button{
     padding: 10px;

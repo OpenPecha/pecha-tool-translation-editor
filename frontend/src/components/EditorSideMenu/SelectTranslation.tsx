@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { GrDocument } from "react-icons/gr";
 import { Plus } from "lucide-react";
 import { Translation } from "../DocumentWrapper";
 import { Button } from "../ui/button";
 import CreateTranslationModal from "./CreateTranslationModal";
 import { useParams } from "react-router-dom";
+import { useCurrentDoc } from "@/hooks/useCurrentDoc";
 
 interface DocumentInfo {
   id: string;
@@ -13,28 +14,28 @@ interface DocumentInfo {
 }
 
 function SelectTranslation({
-  translations,
   setSelectedTranslationId,
-  doc_info,
 }: {
-  readonly translations: Translation[];
   readonly setSelectedTranslationId: (id: string) => void;
-  readonly doc_info: DocumentInfo;
 }) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const { id } = useParams();
   const rootDocId = id as string;
-
+  const { currentDoc } = useCurrentDoc(rootDocId);
+  const translations = useMemo(
+    () => currentDoc?.translations ?? [],
+    [currentDoc?.translations]
+  );
   const handleCreateSuccess = (translationId: string) => {
     setShowCreateModal(false);
     setSelectedTranslationId(translationId);
   };
-  console.log(doc_info);
+  const isRoot = currentDoc?.isRoot;
   return (
     <div className="mt-3 rounded-lg overflow-hidden">
       <div className="flex justify-between items-center mb-4">
         <h3 className="font-medium">Translations</h3>
-        {doc_info?.isRoot && (
+        {isRoot && (
           <Button
             onClick={() => setShowCreateModal(true)}
             size="sm"

@@ -19,10 +19,7 @@ export interface Translation {
 function DocumentsWrapper() {
   const { id } = useParams();
   const { currentDoc, loading, error } = useCurrentDoc(id);
-  const translations = useMemo(
-    () => currentDoc?.translations ?? [],
-    [currentDoc?.translations]
-  );
+
   const [selectedTranslationId, setSelectedTranslationId] = useState<
     string | null
   >(null);
@@ -36,7 +33,7 @@ function DocumentsWrapper() {
   return (
     <EditorProvider>
       <>
-        <Navbar title={currentDoc?.identifier} />
+        <Navbar title={currentDoc?.name} />
         {selectedTranslationId && (
           <MenuDrawer rootId={id!} translationId={selectedTranslationId} />
         )}
@@ -47,11 +44,7 @@ function DocumentsWrapper() {
           </YjsProvider>
 
           {!selectedTranslationId ? (
-            <SideMenu
-              translations={translations}
-              setSelectedTranslationId={setSelectedTranslationId}
-              doc_info={currentDoc}
-            />
+            <SideMenu setSelectedTranslationId={setSelectedTranslationId} />
           ) : (
             <YjsProvider key={selectedTranslationId}>
               <DocumentEditor docId={selectedTranslationId} />

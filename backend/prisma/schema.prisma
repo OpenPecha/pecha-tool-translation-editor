@@ -35,7 +35,8 @@ model Project {
 
 model Doc {
   id                     String       @id @default(uuid()) // Unique identifier for the document
-  identifier             String // Ensures each document has a unique identifier
+  name                   String       @default("document")
+  identifier             String       @unique // Ensures each document has a unique identifier
   docs_prosemirror_delta Json? // Nullable array of objects
   docs_y_doc_state       Bytes? // Binary data for Yjs document state
   language               String       @default("bo") // Language of the document content

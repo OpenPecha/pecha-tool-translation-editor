@@ -27,13 +27,9 @@ interface DocumentInfo {
 }
 
 function SideMenu({
-  translations,
   setSelectedTranslationId,
-  doc_info,
 }: {
-  readonly translations: Translation[];
   readonly setSelectedTranslationId: (id: string) => void;
-  readonly doc_info: DocumentInfo;
 }) {
   const [currentView, setCurrentView] = useState<MenuOption>("main");
   const renderContent = () => {
@@ -42,9 +38,7 @@ function SideMenu({
         return (
           <InMenuWrapper onBackClick={() => setCurrentView("main")}>
             <SelectTranslation
-              translations={translations}
               setSelectedTranslationId={setSelectedTranslationId}
-              doc_info={doc_info}
             />
           </InMenuWrapper>
         );
@@ -103,9 +97,9 @@ function SideMenu({
   };
 
   return (
-    <div className="absolute right-0 bg-white border-l h-full w-1/4 shadow-sm">
+    <div className="bg-white border-l h-full w-1/4 shadow-sm">
       {renderContent()}
-      <DocumentInfo doc_info={doc_info} />
+      <DocumentInfo />
     </div>
   );
 }

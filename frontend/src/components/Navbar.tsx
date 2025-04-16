@@ -120,7 +120,7 @@ function TitleWrapper({ title }: { readonly title: string }) {
 }
 
 // Separate component to handle the input logic
-function TitleInput({ initialTitle }: { initialTitle: string }) {
+function TitleInput({ initialTitle }: { readonly initialTitle: string }) {
   const [inputValue, setInputValue] = useState(initialTitle);
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
@@ -129,7 +129,8 @@ function TitleInput({ initialTitle }: { initialTitle: string }) {
   const updateTitleMutation = useMutation({
     mutationFn: async (newTitle: string) => {
       if (!id) throw new Error("Document ID not found");
-      return await updateDocument(id, { identifier: newTitle });
+      // Update the document name instead of the identifier
+      return await updateDocument(id, { name: newTitle });
     },
     onSuccess: () => {
       // Invalidate and refetch document data
@@ -145,21 +146,29 @@ function TitleInput({ initialTitle }: { initialTitle: string }) {
   // Update input value when it changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
+    if (newValue === initialTitle) return;
+    if (newValue.trim() === "") return;
     setInputValue(newValue);
   };
 
-  // Handle form submission
+  // Save changes if title has changed and is not empty
+  const saveChanges = () => {
+    if (inputValue !== initialTitle && inputValue.trim()) {
+      updateTitleMutation.mutate(inputValue);
+    }
+  };
+
+  // Handle form submission (Enter key)
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Blur the input field to trigger the blur event
+    saveChanges();
+    // Blur the input on enter
     (document.activeElement as HTMLElement)?.blur();
   };
 
   // Handle blur event to save changes when focus is lost
   const handleBlur = () => {
-    if (inputValue !== initialTitle && inputValue.trim()) {
-      updateTitleMutation.mutate(inputValue);
-    }
+    saveChanges();
   };
 
   return (
@@ -169,7 +178,7 @@ function TitleInput({ initialTitle }: { initialTitle: string }) {
           value={inputValue}
           onChange={handleInputChange}
           onBlur={handleBlur}
-          className="text-md  text-gray-700 hover:text-gray-900 transition capitalize hover:outline hover:outline-gray-300 "
+          className="text-md text-gray-700 hover:text-gray-900 transition capitalize hover:outline hover:outline-gray-300"
           style={{
             width: `${inputValue.length + 1}ch`,
             minWidth: "50px",

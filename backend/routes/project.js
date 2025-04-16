@@ -32,7 +32,7 @@ router.get("/", authenticate, async (req, res) => {
         roots: {
           select: {
             id: true,
-            identifier: true,
+            name: true,
             updatedAt: true
           }
         }

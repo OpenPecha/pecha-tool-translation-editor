@@ -23,6 +23,7 @@ export interface Project {
   roots?: {
     id: string;
     identifier: string;
+    name:string;
     updatedAt: string;
   }[];
   permissions?: Permission[];

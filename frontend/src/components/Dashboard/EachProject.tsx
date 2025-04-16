@@ -85,7 +85,7 @@ export default function EachProject({ project, view }: EachProjectProps) {
     e.stopPropagation();
     setShowEditModal(true);
   };
-  
+
   const permissionsOpen = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -103,14 +103,20 @@ export default function EachProject({ project, view }: EachProjectProps) {
       >
         <ProjectItem
           title={project.name}
-          subtitle={project.roots && project.roots.length > 0 
-            ? project.roots[0].identifier 
-            : "No root document"}
+          subtitle={
+            project.roots && project.roots.length > 0
+              ? project.roots[0].name
+              : "No root document"
+          }
           date={formatDate(project.updatedAt)}
           hasDocument={project.roots ? project.roots.length > 0 : false}
           documentCount={project.roots?.length ?? 0}
           hasSharedUsers={false}
-          owner={project.ownerId === currentUser?.id ? "Me" : (project.owner?.username ?? "")}
+          owner={
+            project.ownerId === currentUser?.id
+              ? "Me"
+              : project.owner?.username ?? ""
+          }
           hasPermission={hasPermission}
           updateDocument={editOpen}
           deleteDocument={handleDelete}
@@ -127,7 +133,7 @@ export default function EachProject({ project, view }: EachProjectProps) {
           onUpdate={(name, identifier) => handleUpdate(name, identifier)}
         />
       )}
-      
+
       {showPermissionsModal && (
         <PermissionsModal
           projectId={project.id}

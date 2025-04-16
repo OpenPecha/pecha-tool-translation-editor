@@ -119,7 +119,7 @@ const Editor = ({
           <div
             ref={editorRef}
             className="editor-content flex-1"
-            style={{ fontFamily: "Monlam", fontSize: 18 }}
+            style={{ fontFamily: "Monlam", fontSize: "1rem", lineHeight: 1.5 }}
           />
         </div>
         <OverlayLoading isLoading={showOverlay} />
