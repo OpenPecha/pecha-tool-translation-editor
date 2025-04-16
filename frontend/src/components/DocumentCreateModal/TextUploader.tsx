@@ -8,11 +8,13 @@ const TextUploader = ({
   isPublic,
   selectedLanguage,
   setRootId,
+  disable,
 }: {
   isRoot: boolean;
   isPublic: boolean;
   selectedLanguage: string;
   setRootId: (id: string) => void;
+  disable?: boolean;
 }) => {
   const [file, setFile] = useState<File | null>(null);
 
@@ -47,7 +49,7 @@ const TextUploader = ({
   };
 
   return (
-    <>
+    <div className="mb-2">
       {!file && (
         <div className="flex flex-col gap-2">
           <label htmlFor="text-file" className="text-sm font-medium">
@@ -58,7 +60,7 @@ const TextUploader = ({
             type="file"
             accept=".txt"
             onChange={handleFileChange}
-            disabled={uploadMutation.isPending}
+            disabled={disable || uploadMutation.isPending}
           />
         </div>
       )}
@@ -79,7 +81,7 @@ const TextUploader = ({
           {uploadMutation.error?.message || "An error occurred while uploading"}
         </div>
       )}
-    </>
+    </div>
   );
 };
 

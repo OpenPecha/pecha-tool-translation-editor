@@ -7,6 +7,7 @@ import { ScrollArea } from "../ui/scroll-area";
 import TextUploader from "./TextUploader";
 import MetaDataInput from "./MetaDataInput";
 import { createProject } from "@/api/project";
+import { Button } from "../ui/button";
 
 export function NewPechaForm({
   projectName,
@@ -16,7 +17,6 @@ export function NewPechaForm({
   readonly closeModal: () => void;
 }) {
   const [error, setError] = useState("");
-
   const [selectedLanguage, setSelectedLanguage] = useState<string>("");
   const [rootId, setRootId] = useState<string | null>(null);
   const [metadata, setMetadata] = useState<Json | null>(null);
@@ -65,7 +65,7 @@ export function NewPechaForm({
           {error}
         </div>
       )}
-      <ScrollArea className="h-[50dvh] pr-4">
+      <ScrollArea className="h-[50dvh] ">
         <SelectLanguage
           setSelectedLanguage={setSelectedLanguage}
           selectedLanguage={selectedLanguage}
@@ -76,14 +76,18 @@ export function NewPechaForm({
           isPublic={false}
           selectedLanguage={selectedLanguage}
           setRootId={setRootId}
+          disable={!selectedLanguage || selectedLanguage === ""}
         />
-        <MetaDataInput setMetadata={setMetadata} />
-
+        <MetaDataInput
+          setMetadata={setMetadata}
+          disable={!rootId || !selectedLanguage || selectedLanguage === ""}
+        />
         {/* )} */}
       </ScrollArea>
       <DocumentCreateModalFooter
         createDoc={handleCreateProject}
         closeModal={closeModal}
+        disable={!rootId || !selectedLanguage || selectedLanguage === ""}
       />
     </div>
   );
@@ -105,7 +109,11 @@ export function PechaFromOpenPecha({
         selectedRootPecha={selectedRootPecha}
         setSelectedRootPecha={setSelectedRootPecha}
       />
-      <DocumentCreateModalFooter createDoc={() => {}} closeModal={closeModal} />
+      <DocumentCreateModalFooter
+        createDoc={() => {}}
+        closeModal={closeModal}
+        disable={true}
+      />
     </div>
   );
 }
@@ -113,26 +121,29 @@ export function PechaFromOpenPecha({
 function DocumentCreateModalFooter({
   createDoc,
   closeModal,
+  disable,
 }: {
   readonly createDoc: () => void;
   readonly closeModal: () => void;
+  readonly disable: boolean;
 }) {
   return (
     <DialogFooter className="flex w-full sm:justify-between">
-      <button
+      <Button
         type="button"
         className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
         onClick={closeModal}
       >
         Cancel
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer"
         onClick={createDoc}
+        disabled={disable}
       >
         Create
-      </button>
+      </Button>
     </DialogFooter>
   );
 }

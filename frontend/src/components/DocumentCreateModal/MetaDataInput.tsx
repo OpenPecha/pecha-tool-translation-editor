@@ -3,7 +3,13 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { X } from "lucide-react";
 
-function MetaDataInput({ setMetadata }) {
+function MetaDataInput({
+  setMetadata,
+  disable,
+}: {
+  setMetadata: (metadata: Json) => void;
+  disable?: boolean;
+}) {
   const [jsonFile, setJsonFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState<string>("");
 
@@ -52,6 +58,7 @@ function MetaDataInput({ setMetadata }) {
           type="file"
           accept=".json"
           onChange={handleFileChange}
+          disabled={disable}
         />
       ) : (
         <div className="flex items-center justify-between p-2 border rounded-md">

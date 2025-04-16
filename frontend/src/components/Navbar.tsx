@@ -1,16 +1,30 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { User } from "@auth0/auth0-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 import { useAuth } from "../auth/use-auth-hook";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Menu } from "lucide-react";
-import { useState } from "react";
-import NavSidebar from "./Dashboard/NavSidebar";
-import { User } from "@auth0/auth0-react";
+import { updateDocument } from "@/api/document";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import Permissions from "./Permissions";
 
 const Navbar = ({ title }: { title?: string }) => {
   const { currentUser, logout, login, isAuthenticated } = useAuth();
 
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const handleLogout = () => {
     logout();
   };
@@ -18,24 +32,10 @@ const Navbar = ({ title }: { title?: string }) => {
   const handleAuth0Login = () => {
     login(false);
   };
-  const onToggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-  const closeSidebar = () => setIsSidebarOpen(false);
-  const showSidebar = !title || title === "";
   return (
     <nav className="  px-6 py-2 flex justify-between items-center">
       {/* Logo and Brand */}
       <div className="flex gap-2">
-        {showSidebar && (
-          <div
-            onClick={onToggleSidebar}
-            aria-label="Toggle sidebar"
-            className="p-[12px] hover:bg-gray-300 cursor-pointer rounded-full"
-          >
-            <Menu size={20} />
-            <span className="sr-only">Toggle sidebar</span>
-          </div>
-        )}
-        <NavSidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
         <Link
           to="/"
           className="flex items-center gap-3 font-semibold text-gray-700 hover:text-gray-900 transition capitalize"
@@ -47,8 +47,8 @@ const Navbar = ({ title }: { title?: string }) => {
             className=" object-contain"
           />
         </Link>
-        <div className="flex flex-col">
-          <TitleWrapper title={title} />
+        <div className="flex flex-col w-fit">
+          <TitleWrapper title={title!} />
           <NavMenuList />
         </div>
       </div>
@@ -114,29 +114,71 @@ function ProfileArea({
   );
 }
 function TitleWrapper({ title }: { readonly title: string }) {
+  // Create a separate component for the input to avoid conditional hook calls
   if (!title) return null;
-  return (
-    <span className="text-md font-semibold text-gray-700 hover:text-gray-900 transition capitalize">
-      {title}
-    </span>
-  );
+  return <TitleInput initialTitle={title} />;
 }
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuPortal,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import Permissions from "./Permissions";
+// Separate component to handle the input logic
+function TitleInput({ initialTitle }: { initialTitle: string }) {
+  const [inputValue, setInputValue] = useState(initialTitle);
+  const { id } = useParams<{ id: string }>();
+  const queryClient = useQueryClient();
+
+  // Set up mutation for updating document title
+  const updateTitleMutation = useMutation({
+    mutationFn: async (newTitle: string) => {
+      if (!id) throw new Error("Document ID not found");
+      return await updateDocument(id, { identifier: newTitle });
+    },
+    onSuccess: () => {
+      // Invalidate and refetch document data
+      queryClient.invalidateQueries({ queryKey: ["document", id] });
+    },
+    onError: (error) => {
+      console.error("Failed to update document title:", error);
+      // Revert to original title on error
+      setInputValue(initialTitle);
+    },
+  });
+
+  // Update input value when it changes
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setInputValue(newValue);
+  };
+
+  // Handle form submission
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // Blur the input field to trigger the blur event
+    (document.activeElement as HTMLElement)?.blur();
+  };
+
+  // Handle blur event to save changes when focus is lost
+  const handleBlur = () => {
+    if (inputValue !== initialTitle && inputValue.trim()) {
+      updateTitleMutation.mutate(inputValue);
+    }
+  };
+
+  return (
+    <div className="inline-block">
+      <form onSubmit={handleSubmit}>
+        <input
+          value={inputValue}
+          onChange={handleInputChange}
+          onBlur={handleBlur}
+          className="text-md  text-gray-700 hover:text-gray-900 transition capitalize hover:outline hover:outline-gray-300 "
+          style={{
+            width: `${inputValue.length + 1}ch`,
+            minWidth: "50px",
+          }}
+        />
+      </form>
+    </div>
+  );
+}
 
 export function NavMenuList() {
   return (

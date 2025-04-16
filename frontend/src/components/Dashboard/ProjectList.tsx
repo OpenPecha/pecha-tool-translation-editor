@@ -23,7 +23,9 @@ const ProjectList = () => {
     <div className="flex flex-col border-t-gray-300">
       <div className="pt-14 px-6">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-xl font-medium mb-6">Translation Projects</h1>
+          <h1 className="text-xl font-medium mb-6 text-gray-600">
+            Translation Projects
+          </h1>
           <DocumentCreateModal />
         </div>
       </div>
@@ -64,7 +66,7 @@ const ProjectsGrid = ({
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-base font-medium">Your Projects</h2>
+        <h2 className="text-base font-medium text-gray-600">Your Projects</h2>
 
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="h-8 text-sm">

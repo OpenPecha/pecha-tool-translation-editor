@@ -33,7 +33,7 @@ function DocumentCreateModal() {
             Create Translation Project
           </DialogTitle>
         </DialogHeader>
-        <div className="grid w-full max-w-sm items-center gap-1.5 mb-2">
+        <div className="grid w-full items-center gap-1.5 mb-2">
           <Label htmlFor="projectName">Project Name</Label>
           <Input
             id="projectName"

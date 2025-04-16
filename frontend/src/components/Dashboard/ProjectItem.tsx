@@ -50,7 +50,7 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
 
         <div className="flex-grow min-w-0">
           <div className="flex items-center">
-            <h3 className="text-sm font-medium truncate">{title}</h3>
+            <h3 className="text-sm font-medium truncate capitalize">{title}</h3>
             {status && (
               <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-800">
                 {status}
@@ -60,7 +60,9 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
               <span className="ml-2 p-1 flex items-center">
                 <FileText size={16} className="text-gray-400" />
                 {documentCount > 0 && (
-                  <span className="ml-1 text-xs text-gray-500">{documentCount}</span>
+                  <span className="ml-1 text-xs text-gray-500">
+                    {documentCount}
+                  </span>
                 )}
               </span>
             )}
@@ -131,7 +133,9 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
               <div className="bg-blue-100 p-2 rounded-full flex items-center">
                 <FileText size={20} className="text-blue-500" />
                 {documentCount > 0 && (
-                  <span className="ml-1 text-xs font-medium text-blue-700">{documentCount}</span>
+                  <span className="ml-1 text-xs font-medium text-blue-700">
+                    {documentCount}
+                  </span>
                 )}
               </div>
             )}

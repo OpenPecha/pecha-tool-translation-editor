@@ -3,7 +3,14 @@
 
 @font-face {
   font-family: monlam;
-  src: url('/fonts/MonlamTBslim.woff2') format('woff2');
+  src: url('/font/MonlamTBslim.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: google-sans;
+  src: url('/font/ProductSans-Regular.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
 }
@@ -57,6 +64,7 @@
 
 @theme {
   --font-monlam: 'monlam', sans-serif;
+  --font-google-sans: 'google-sans', sans-serif;
   --primary-color: rgba(18,223,236,0.1);
 }
 
@@ -71,7 +79,7 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont,'monlam', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family: 'google-sans', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   line-height: 1.6;
   color: var(--text-color);
 }
