@@ -20,8 +20,8 @@ function SelectTranslation({
 }) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const { id } = useParams();
-  const rootDocId = id as string;
-  const { currentDoc } = useCurrentDoc(rootDocId);
+  const rootId = id as string;
+  const { currentDoc } = useCurrentDoc(rootId);
   const translations = useMemo(
     () => currentDoc?.translations ?? [],
     [currentDoc?.translations]
@@ -77,8 +77,8 @@ function SelectTranslation({
 
       {showCreateModal && (
         <CreateTranslationModal
-          rootDocId={rootDocId}
-          rootIdentifier={doc_info?.identifier || "document"}
+          rootId={rootId}
+          rootIdentifier={currentDoc?.identifier || "document"}
           onClose={() => setShowCreateModal(false)}
           onSuccess={handleCreateSuccess}
         />

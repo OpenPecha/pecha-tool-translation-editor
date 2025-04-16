@@ -23,6 +23,7 @@ module.exports = (getYDoc) => {
   router.post("/", authenticate, upload.single("file"), async (req, res) => {
     try {
       const { identifier, isRoot, rootId,language } = req.body;
+       console.log(req.body)
       if (!identifier)
         return res
           .status(400)

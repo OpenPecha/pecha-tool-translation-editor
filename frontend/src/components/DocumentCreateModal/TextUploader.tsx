@@ -9,12 +9,14 @@ const TextUploader = ({
   selectedLanguage,
   setRootId,
   disable,
+  rootId,
 }: {
   isRoot: boolean;
   isPublic: boolean;
   selectedLanguage: string;
   setRootId: (id: string) => void;
   disable?: boolean;
+  rootId?: string;
 }) => {
   const [file, setFile] = useState<File | null>(null);
 
@@ -30,8 +32,10 @@ const TextUploader = ({
       if (file) {
         formData.append("file", file);
       }
+      if (rootId) {
+        formData.append("rootId", rootId);
+      }
       const response = await createDocument(formData);
-      console.log(response);
       setRootId(response.id);
       return response;
     },

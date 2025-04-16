@@ -51,11 +51,11 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
         <div className="flex-grow min-w-0">
           <div className="flex items-center">
             <h3 className="text-sm font-medium truncate capitalize">{title}</h3>
-            {status && (
+            {/* {status && (
               <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-800">
                 {status}
               </span>
-            )}
+            )} */}
             {hasDocument && (
               <span className="ml-2 p-1 flex items-center">
                 <FileText size={16} className="text-gray-400" />

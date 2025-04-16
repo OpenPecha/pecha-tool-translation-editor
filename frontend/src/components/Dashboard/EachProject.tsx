@@ -91,6 +91,13 @@ export default function EachProject({ project, view }: EachProjectProps) {
     e.stopPropagation();
     setShowPermissionsModal(true);
   };
+
+  const documentCount =
+    (project.roots?.length || 0) +
+    (project.roots?.reduce(
+      (count, root) => count + (root.translations?.length ?? 0),
+      0
+    ) ?? 0);
   return (
     <>
       <Link
@@ -110,7 +117,7 @@ export default function EachProject({ project, view }: EachProjectProps) {
           }
           date={formatDate(project.updatedAt)}
           hasDocument={project.roots ? project.roots.length > 0 : false}
-          documentCount={project.roots?.length ?? 0}
+          documentCount={documentCount}
           hasSharedUsers={false}
           owner={
             project.ownerId === currentUser?.id

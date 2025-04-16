@@ -33,7 +33,12 @@ router.get("/", authenticate, async (req, res) => {
           select: {
             id: true,
             name: true,
-            updatedAt: true
+            updatedAt: true,
+            translations: {
+              select: {
+                id:true
+              }
+            }
           }
         }
       }

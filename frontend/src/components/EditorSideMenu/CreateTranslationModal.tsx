@@ -18,14 +18,14 @@ import TextUploader from "../DocumentCreateModal/TextUploader";
 import SelectPechas, { PechaType } from "../DocumentCreateModal/SelectPechas";
 
 interface CreateTranslationModalProps {
-  rootDocId: string;
+  rootId: string;
   rootIdentifier: string;
   onClose: () => void;
   onSuccess: (translationId: string) => void;
 }
 
 const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
-  rootDocId,
+  rootId,
   rootIdentifier,
   onClose,
   onSuccess,
@@ -33,8 +33,12 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
   const [identifier, setIdentifier] = useState(`${rootIdentifier}-translation`);
   const [language, setLanguage] = useState("");
   const [error, setError] = useState("");
-  const [uploadMethod, setUploadMethod] = useState<"file" | "openpecha">("file");
-  const [selectedRootPecha, setSelectedRootPecha] = useState<PechaType | null>(null);
+  const [uploadMethod, setUploadMethod] = useState<"file" | "openpecha">(
+    "file"
+  );
+  const [selectedRootPecha, setSelectedRootPecha] = useState<PechaType | null>(
+    null
+  );
   const [translationId, setTranslationId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
@@ -55,9 +59,9 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
       const formData = new FormData();
       formData.append("identifier", identifier);
       formData.append("isRoot", "false");
-      formData.append("rootId", rootDocId);
+      formData.append("rootId", rootId);
       formData.append("language", language);
-      
+
       // If using OpenPecha and a pecha is selected
       if (uploadMethod === "openpecha" && selectedRootPecha) {
         formData.append("openpechaId", selectedRootPecha.id);
@@ -66,7 +70,7 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
       return createDocument(formData);
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["document", rootDocId] });
+      queryClient.invalidateQueries({ queryKey: ["document", rootId] });
       onSuccess(data.id);
     },
     onError: (error: Error) => {
@@ -77,25 +81,25 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    
+
     // Validation for OpenPecha method
     if (uploadMethod === "openpecha" && !selectedRootPecha) {
       setError("Please select an OpenPecha document");
       return;
     }
-    
+
     // For file upload method, we should already have a translation ID
     // If not, show an error
     if (uploadMethod === "file" && !translationId) {
       setError("Please upload a translation file");
       return;
     }
-    
+
     createTranslationMutation.mutate();
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
       <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-lg font-semibold">Create Translation</h2>
@@ -124,8 +128,11 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
               selectedLanguage={language}
               setSelectedLanguage={setLanguage}
             />
-            
-            <Tabs value={uploadMethod} onValueChange={(v) => setUploadMethod(v as "file" | "openpecha")}>
+
+            <Tabs
+              value={uploadMethod}
+              onValueChange={(v) => setUploadMethod(v as "file" | "openpecha")}
+            >
               <TabsList className="w-full">
                 <TabsTrigger value="file" className="cursor-pointer">
                   Upload File
@@ -134,7 +141,7 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
                   OpenPecha URL
                 </TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="file" className="pt-2">
                 {!translationId && (
                   <TextUploader
@@ -142,6 +149,7 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
                     isPublic={false}
                     selectedLanguage={language}
                     setRootId={setTranslationId}
+                    rootId={rootId}
                   />
                 )}
                 {translationId && (
@@ -150,7 +158,7 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
                   </div>
                 )}
               </TabsContent>
-              
+
               <TabsContent value="openpecha" className="pt-2">
                 <SelectPechas
                   selectedRootPecha={selectedRootPecha}

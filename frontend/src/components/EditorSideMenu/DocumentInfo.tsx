@@ -12,12 +12,12 @@ function DocumentInfo() {
         Document Information
       </h3>
       <div className="space-y-2 text-sm">
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">language</span>
+        <div className="flex justify-between text-muted-foreground">
+          <span>language</span>
           <span>{currentDoc?.language}</span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Root</span>
+        <div className="flex justify-between text-muted-foreground">
+          <span>Root</span>
           <span>{currentDoc?.isRoot ? "true" : "false"}</span>
         </div>
       </div>
