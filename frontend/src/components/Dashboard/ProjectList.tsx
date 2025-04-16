@@ -22,7 +22,7 @@ const ProjectList = () => {
   return (
     <div className="flex flex-col border-t-gray-300">
       <div className="pt-14 px-6">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <h1 className="text-xl font-medium mb-6 text-gray-600">
             Translation Projects
           </h1>
@@ -35,7 +35,7 @@ const ProjectList = () => {
             {"Failed to fetch projects"}
           </div>
         )}
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           {isLoading && <div>Loading...</div>}
           {projects?.length > 0 && (
             <ProjectsGrid projects={projects} isLoading={isLoading} />
@@ -74,7 +74,7 @@ const ProjectsGrid = ({
           </Button>
 
           <Button variant="outline" size="sm" className="h-8 text-sm">
-            Recently Updated
+            Shared Projects
           </Button>
 
           <div className="flex gap-1">

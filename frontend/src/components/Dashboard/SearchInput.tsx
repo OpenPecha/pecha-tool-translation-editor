@@ -1,9 +1,9 @@
 // File: /frontend/src/components/Dashboard/SearchInput.tsx
-import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useSearch } from "@/contexts/SearchContext";
 import { useEffect, useState } from "react";
 import useDebounce from "@/hooks/useDebounce";
+import { MdOutlineSearch } from "react-icons/md";
 
 function SearchInput() {
   const { searchQuery, setSearchQuery } = useSearch();
@@ -18,13 +18,13 @@ function SearchInput() {
   return (
     <div className="flex-grow mx-8 max-w-2xl">
       <div className="relative">
-        <Search
-          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-          size={16}
+        <MdOutlineSearch
+          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black"
+          size={20}
         />
         <Input
           placeholder="Search documents"
-          className="pl-10 bg-gray-100 border-none"
+          className="pl-10 bg-gray-100 border-none rounded-full focus:shadow"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
         />
