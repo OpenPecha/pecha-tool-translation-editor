@@ -1,6 +1,6 @@
 export const MAX_HEADING_LEVEL = 20;
 export const EDITOR_READ_ONLY=false
-export const EDITOR_ENTER_ONLY=true
+export const EDITOR_ENTER_ONLY=false
 
 
 

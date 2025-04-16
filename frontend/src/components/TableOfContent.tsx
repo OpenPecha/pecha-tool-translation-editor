@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "./ui/button";
-import {
-  FaList,
-  FaArrowCircleLeft,
-  FaChevronDown,
-  FaChevronRight,
-} from "react-icons/fa";
+import { FaList, FaChevronDown, FaChevronRight } from "react-icons/fa";
 import { useEditor } from "@/contexts/EditorContext";
 import { MAX_HEADING_LEVEL } from "@/../config";
 import { cn } from "@/lib/utils";
 import { debounce } from "lodash";
 import { Switch } from "./ui/switch";
+import { HiArrowLeft } from "react-icons/hi2";
 
 interface Heading {
   text: string;
@@ -252,12 +248,12 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
                   </button>
                 )}
                 {!hasChildren && <div className="mr-2 w-5 h-5" />}
-                <span className="text-blue-600 text-xs font-medium mr-2 w-8">
+                {/* <span className="text-blue-600 text-xs font-medium  w-4">
                   {displayNumber}
-                </span>
+                </span> */}
                 <span
                   className={cn(
-                    "text-left truncate flex-1",
+                    "text-left truncate flex-1 font-monlam text-xs pt-1",
                     isNested ? "text-slate-700" : "font-medium text-slate-900",
                     isActive && "font-semibold"
                   )}
@@ -290,15 +286,17 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
           isOpen ? "translate-x-0 " : "-translate-x-full hidden"
         )}
       >
-        <div className="p-4 h-full flex flex-col">
-          <div className="flex justify-between items-center mb-4">
-            <button
-              onClick={() => setIsOpen(false)}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <FaArrowCircleLeft className="w-5 h-5" />
-            </button>
-            <h3 className="text-lg font-semibold">Table of Contents</h3>
+        <div className="p-4 h-full flex gap-4 flex-col">
+          <button
+            onClick={() => setIsOpen(false)}
+            className=" hover:text-gray-700 hover:bg-gray-200 hover:shadow rounded-full p-1 w-fit  cursor-pointer"
+          >
+            <HiArrowLeft className="w-5 h-5" />
+          </button>
+          <div className="flex justify-between gap-2 items-center mb-4">
+            <h3 className="text-md text-gray-600 font-semibold">
+              Table of Contents
+            </h3>
             {showSyncButton && (
               <Switch
                 checked={synced}
