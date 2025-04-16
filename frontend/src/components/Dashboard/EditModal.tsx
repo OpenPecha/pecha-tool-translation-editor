@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Project } from "@/api/project";
+import { Button } from "../ui/button";
 
 interface EditModalProps {
   project: Project;
@@ -33,9 +34,7 @@ const EditModal: React.FC<EditModalProps> = ({
     <div className="fixed inset-0 flex justify-center items-center z-50">
       <div className="bg-white rounded-lg w-full max-w-md shadow-lg">
         <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-          <h2 className="text-lg font-semibold">
-            Edit Project: {project.name}
-          </h2>
+          <h2 className="text-lg font-semibold">Edit</h2>
           <button
             className="text-gray-500 hover:text-gray-700 text-xl"
             onClick={onClose}
@@ -59,21 +58,21 @@ const EditModal: React.FC<EditModalProps> = ({
               />
             </div>
           </div>
-          <div className="p-4 border-t border-gray-200  flex justify-end gap-4">
-            <button
+          <div className=" p-4 border-t border-gray-200  flex justify-between gap-4">
+            <Button
               type="button"
               className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
               onClick={onClose}
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
               disabled={disable}
             >
               {isUpdating ? "Updating..." : "Update"}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

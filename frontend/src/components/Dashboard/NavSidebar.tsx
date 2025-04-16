@@ -37,7 +37,6 @@ const NavSidebar = ({ isOpen, onClose, trigger }: SidebarProps) => {
 
   const navItems = [
     { icon: Home, label: "Workspace", href: "https://workspace.pecha.tools" },
-    { icon: FileText, label: "Documents", href: "#" },
   ];
 
   return (
