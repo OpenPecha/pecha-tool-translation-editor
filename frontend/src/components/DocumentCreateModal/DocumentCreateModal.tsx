@@ -10,6 +10,7 @@ import {
 import { useState } from "react";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
+import PlusIcon from "@/assets/plus.png";
 function DocumentCreateModal() {
   const [projectName, setProjectName] = useState("");
   const [open, setOpen] = useState(false);
@@ -21,7 +22,7 @@ function DocumentCreateModal() {
         <div className="border rounded-lg p-4 flex items-center justify-center hover:border-blue-500 cursor-pointer mb-12 bg-white shadow-sm">
           <div className="flex flex-col items-center justify-center">
             <div className=" p-4 rounded-full flex items-center justify-center  transition-colors">
-              <img src="/icon/plus.png" width={70} alt="" />
+              <img src={PlusIcon} width={70} alt="" />
             </div>
             <p className="mt-4 text-sm text-gray-600">Create New Project</p>
           </div>

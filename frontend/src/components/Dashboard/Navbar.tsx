@@ -7,10 +7,9 @@ import { useState } from "react";
 import NavSidebar from "./NavSidebar";
 import { User } from "@auth0/auth0-react";
 import { useAuth } from "@/auth/use-auth-hook";
-import SidebarMenu from "./NavSidebar1";
 import AppLauncher from "../Applauncher";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-
+import DocIcon from "@/assets/doc_icon.png";
 const Navbar = ({ title }: { title?: string }) => {
   const { currentUser, logout, login, isAuthenticated } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -45,7 +44,7 @@ const Navbar = ({ title }: { title?: string }) => {
         >
           <img
             alt="icon"
-            src="/icon/doc.svg"
+            src={DocIcon}
             width={40}
             className=" object-contain"
           />

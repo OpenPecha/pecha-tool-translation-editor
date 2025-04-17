@@ -2,7 +2,7 @@ import { useQuillHistory } from "@/contexts/HistoryContext";
 import { useState, useEffect } from "react";
 import { IoMdClose } from "react-icons/io";
 import { getVersionDiff } from "@/api/version";
-import DiffViewer from "./DiffViewer";
+import DiffViewer from "../pages/DiffViewer";
 import { Button } from "@/components/ui/button";
 
 interface DeltaOperation {

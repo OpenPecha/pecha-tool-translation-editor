@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { QuillHistoryProvider } from "./contexts/HistoryContext";
-import DocumentList from "./components/Dashboard/ProjectList";
+import ProjectList from "./components/Dashboard/ProjectList";
 import DocumentsWrapper from "./components/DocumentWrapper";
 import { AuthProvider } from "./auth/auth-context-provider";
 import Login from "./pages/Login";
@@ -36,7 +36,7 @@ function AppContent() {
   // Try silent login on app initialization if not authenticated
 
   return (
-    <div className="flex flex-col max-h-screen overflow-hidden bg-[#fafbfd]">
+    <div className="flex flex-col min-h-screen  overflow-hidden bg-[#fafbfd]">
       <Routes>
         <Route
           path="/"
@@ -45,7 +45,7 @@ function AppContent() {
               {isAuthenticated && (
                 <SearchProvider>
                   <Navbar />
-                  <DocumentList />
+                  <ProjectList />
                 </SearchProvider>
               )}
             </Layout>

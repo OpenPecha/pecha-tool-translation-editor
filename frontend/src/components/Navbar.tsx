@@ -21,8 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Permissions from "./Permissions";
-import { FileText } from "lucide-react";
-
+import DocIcon from "@/assets/doc_icon.png";
 const Navbar = ({ title }: { title?: string }) => {
   const { currentUser, logout, login, isAuthenticated } = useAuth();
 
@@ -41,13 +40,12 @@ const Navbar = ({ title }: { title?: string }) => {
           to="/"
           className="flex items-center gap-3 font-semibold text-gray-700 hover:text-gray-900 transition capitalize"
         >
-          <FileText className="w-8 h-8 text-blue-400" />
-          {/* <img
+          <img
             alt="icon"
-            src="/icon/doc.svg"
-            width={52}
+            src={DocIcon}
+            width={40}
             className=" object-contain"
-          /> */}
+          />
         </Link>
         <div className="flex flex-col w-fit -space-y-1">
           <TitleWrapper title={title!} />

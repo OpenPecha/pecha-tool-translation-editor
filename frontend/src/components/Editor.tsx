@@ -12,7 +12,7 @@ import LineNumberVirtualized from "./LineNumbers";
 import CommentModal from "./Comment/CommentModal";
 import TableOfContent from "./TableOfContent";
 import { useEditor } from "@/contexts/EditorContext";
-import { EDITOR_ENTER_ONLY } from "@/../config";
+import { EDITOR_ENTER_ONLY } from "@/utils/editorConfig";
 
 quill_import();
 

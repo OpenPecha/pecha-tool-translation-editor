@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { MAX_HEADING_LEVEL } from "@/../config";
+import { MAX_HEADING_LEVEL } from "@/utils/editorConfig";
 
 interface HeaderDropdownProps {
   onChange: (value: string | number) => void;

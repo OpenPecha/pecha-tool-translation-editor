@@ -8,15 +8,13 @@ import {
   EDITOR_ENTER_ONLY,
   EDITOR_READ_ONLY,
   MAX_HEADING_LEVEL,
-} from "@/../config";
+} from "@/utils/editorConfig";
 import ExportButton from "./ExportButton";
 import { BiCommentAdd } from "react-icons/bi";
 import { Button } from "./ui/button";
 import { generateJsonFromText } from "@/lib/segmentFromText";
 import Quill from "quill";
-const VITE_DISABLE_DEVTOOL = import.meta.env.VITE_DISABLE_DEVTOOL;
 const isEnabled = !EDITOR_READ_ONLY;
-const keyLocked = EDITOR_ENTER_ONLY;
 interface ToolbarProps {
   addSuggestion: (data: string) => void;
   id: string;

@@ -2,7 +2,7 @@ import { useQuillHistory } from "@/contexts/HistoryContext";
 import { useState } from "react";
 import { MdDelete } from "react-icons/md";
 import { SiTicktick } from "react-icons/si";
-import VersionDiff from "@/pages/VersionDiff";
+import VersionDiff from "@/components/VersionDiff";
 import { createPortal } from "react-dom";
 
 interface DeltaOperation {

@@ -20,7 +20,7 @@ const ProjectList = () => {
     queryFn: () => fetchProjects({}),
   });
   return (
-    <div className="flex flex-col border-t-gray-300">
+    <div className="flex flex-1 flex-col ">
       <div className="pt-10 px-6">
         <div className="max-w-5xl mx-auto">
           <h1 className="text-lg font-medium mb-6 text-gray-600">

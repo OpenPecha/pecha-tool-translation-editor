@@ -1,6 +1,6 @@
 import React from "react";
 import { FileText, MoreVertical, Users } from "lucide-react";
-
+import DocIcon from "@/assets/doc_icon.png";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,9 +43,12 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
     return (
       <div className="flex items-center py-2 px-1 hover:bg-gray-50 rounded-md">
         <div className="flex-shrink-0 mr-4">
-          <div className="bg-blue-100 p-2 rounded-full">
-            <FileText size={20} className="text-blue-500" />
-          </div>
+          <img
+            alt="icon"
+            src={DocIcon}
+            width={26}
+            className=" object-contain"
+          />
         </div>
 
         <div className="flex-grow min-w-0">

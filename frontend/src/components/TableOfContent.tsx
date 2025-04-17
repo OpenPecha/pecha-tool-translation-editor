@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { FaList, FaChevronDown, FaChevronRight } from "react-icons/fa";
 import { useEditor } from "@/contexts/EditorContext";
-import { MAX_HEADING_LEVEL } from "@/../config";
+import { MAX_HEADING_LEVEL } from "@/utils/editorConfig";
 import { cn } from "@/lib/utils";
 import { debounce } from "lodash";
 import { Switch } from "./ui/switch";

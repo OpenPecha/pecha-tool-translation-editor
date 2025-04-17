@@ -10,7 +10,7 @@ import CommentBubble from "./Comment/CommentBubble";
 import { CommentProvider } from "@/contexts/CommentContext";
 import { useAuth } from "@/auth/use-auth-hook";
 
-import { EDITOR_ENTER_ONLY, EDITOR_READ_ONLY } from "@/../config";
+import { EDITOR_ENTER_ONLY, EDITOR_READ_ONLY } from "@/utils/editorConfig";
 import disableDevtool from "disable-devtool";
 
 const RealTimeEditor = ({ docId }: { docId: string | undefined }) => {

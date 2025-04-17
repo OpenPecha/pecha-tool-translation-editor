@@ -1,13 +1,9 @@
-import React, {
-  useState,
-  useEffect,
-  ReactNode,
-  useMemo,
-  useCallback,
-} from "react";
+import React, { useState, ReactNode, useMemo, useCallback } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
-import type { User } from "./types";
-import { AuthContext } from "./auth-context";
+import { createContext } from "react";
+import { AuthContextType } from "./types";
+
+export const AuthContext = createContext<AuthContextType | null>(null);
 
 interface AuthProviderProps {
   children: ReactNode;

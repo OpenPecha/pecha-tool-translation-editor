@@ -4,7 +4,7 @@ import QuillCursors from "quill-cursors";
 import CommentBlot from "./commentBlot";
 import { CustomParagraph } from "./customPtag";
 import HeaderNBlot from "./headerDynamicBlot";
-import { MAX_HEADING_LEVEL } from "@/../config";
+import { MAX_HEADING_LEVEL } from "@/utils/editorConfig";
 
 const customHeaders = [];
 export default function quill_import() {
