@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { memo, useContext, useEffect, useId, useRef, useState } from "react";
 import Quill from "quill";
 import { QuillBinding } from "y-quill";
 import YjsContext from "../lib/yjsProvider";
@@ -12,7 +12,7 @@ import LineNumberVirtualized from "./LineNumbers";
 import CommentModal from "./Comment/CommentModal";
 import TableOfContent from "./TableOfContent";
 import { useEditor } from "@/contexts/EditorContext";
-import { EDITOR_ENTER_ONLY } from "@/utils/editorConfig";
+import { editor_config, EDITOR_ENTER_ONLY } from "@/utils/editorConfig";
 
 quill_import();
 
@@ -24,20 +24,16 @@ const Editor = ({
   isEditable: boolean;
 }) => {
   const editorRef = useRef(null);
-  const toolbarId =
-    "toolbar-container" + "-" + Math.random().toString(36).substring(7);
-  const counterId =
-    "counter-container" + "-" + Math.random().toString(36).substring(7);
-
-  const { clearYjsProvider, toggleConnection, online, yText, yjsProvider } =
-    useContext(YjsContext);
+  const unique = useId().replaceAll(":", "");
+  const toolbarId = "toolbar-container" + "-" + unique;
+  const counterId = "counter-container" + "-" + unique;
+  const { clearYjsProvider, yText, yjsProvider } = useContext(YjsContext);
   const [synced, setSynced] = useState(false);
   const [showOverlay, setShowOverlay] = useState(true);
   const [showCommentModal, setShowCommentModal] = useState(false);
   const { registerQuill } = useQuillVersion();
   const { registerQuill: registerQuill2, unregisterQuill: unregisterQuill2 } =
     useEditor();
-  const [currentRange, setCurrentRange] = useState<Range | null>(null);
   useEffect(() => {
     const signal = new AbortController();
 
@@ -54,10 +50,16 @@ const Editor = ({
                 quill.format("headerN", value || false);
               }
             },
+            undo: function () {
+              quill.history.undo();
+            },
+            redo: function () {
+              quill.history.redo();
+            },
           },
         },
         cursors: { transformOnTextChange: false },
-        history: { delay: 2000, maxStack: 500 },
+        history: editor_config.HISTORY_CONFIG,
         counter: { container: `#${counterId}`, unit: "character" },
       },
       readOnly: !isEditable,
@@ -93,6 +95,7 @@ const Editor = ({
         }
       }
     });
+
     // Fetch comments when the editor loads
     quill.on("text-change", function (delta, oldDelta, source) {
       if (source === "user") {
@@ -100,15 +103,11 @@ const Editor = ({
           const shouldDelete = confirm(
             "Are you sure you want to delete all content?"
           );
-
           if (!shouldDelete) {
             quill.setContents(oldDelta);
           }
         }
       }
-    });
-    quill.on("selection-change", (range) => {
-      setCurrentRange(range);
     });
 
     return () => {
@@ -117,7 +116,6 @@ const Editor = ({
       signal.abort();
     };
   }, []);
-
   function addSuggestion(text: string) {
     if (text.length < 5) return;
     setShowCommentModal((p) => !p);
@@ -154,7 +152,6 @@ const Editor = ({
       {showCommentModal && (
         <CommentModal
           documentId={documentId}
-          range={currentRange}
           setShowCommentModal={setShowCommentModal}
         />
       )}
@@ -166,4 +163,4 @@ const Editor = ({
   );
 };
 
-export default Editor;
+export default memo(Editor);

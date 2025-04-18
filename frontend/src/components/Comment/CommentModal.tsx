@@ -5,13 +5,19 @@ import { useEditor } from "@/contexts/EditorContext";
 import React, { useState } from "react";
 import { Button } from "../ui/button";
 
-function CommentModal({ documentId, setShowCommentModal, range }) {
+function CommentModal({
+  documentId,
+  setShowCommentModal,
+}: {
+  readonly documentId: string;
+  readonly setShowCommentModal: (show: boolean) => void;
+}) {
   const [commentText, setCommentText] = useState("");
   const [isSuggestion, setIsSuggestion] = useState(false);
   const [suggestedText, setSuggestedText] = useState("");
-  const [currentRange, setCurrentRange] = useState<Range | null>(range);
   const { getQuill } = useEditor();
   const quill = getQuill(documentId);
+  const currentRange = quill?.getSelection();
   const { currentUser } = useAuth();
   const currentRangeText = quill?.getText(
     currentRange?.index,

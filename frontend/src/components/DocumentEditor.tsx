@@ -10,7 +10,7 @@ import CommentBubble from "./Comment/CommentBubble";
 import { CommentProvider } from "@/contexts/CommentContext";
 import { useAuth } from "@/auth/use-auth-hook";
 
-import { EDITOR_ENTER_ONLY, EDITOR_READ_ONLY } from "@/utils/editorConfig";
+import { EDITOR_READ_ONLY } from "@/utils/editorConfig";
 import disableDevtool from "disable-devtool";
 
 const RealTimeEditor = ({ docId }: { docId: string | undefined }) => {
@@ -24,7 +24,7 @@ const RealTimeEditor = ({ docId }: { docId: string | undefined }) => {
     fetchDocument(roomId).then((doc) => {
       if (doc?.permissions && !EDITOR_READ_ONLY) {
         doc?.permissions.find((permission) => {
-          if (permission?.userId === currentUser.id && permission?.canWrite) {
+          if (permission?.userId === currentUser?.id && permission?.canWrite) {
             setIsEditable(true);
           }
         });

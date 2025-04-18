@@ -147,6 +147,18 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
         >
           <div className="flex items-center gap-4 flex-1 h-10">
             <span className="ql-formats" style={isEnabledStyle}>
+              <button
+                className="ql-undo"
+                title="Undo"
+                disabled={quill?.history.stack.undo.length === 0}
+              />
+              <button
+                className="ql-redo"
+                title="Redo"
+                disabled={quill?.history.stack.redo.length === 0}
+              />
+            </span>
+            <span className="ql-formats" style={isEnabledStyle}>
               <select className="ql-font" title="Font">
                 <option value="sans-serif" selected>
                   Sans-serif
