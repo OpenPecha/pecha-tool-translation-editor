@@ -1,8 +1,8 @@
-import { useQuillHistory } from "@/contexts/HistoryContext";
+import { useQuillVersion } from "@/contexts/VersionContext";
 import { useState } from "react";
 import { MdDelete } from "react-icons/md";
 import { SiTicktick } from "react-icons/si";
-import VersionDiff from "@/components/VersionDiff";
+import VersionDiff from "@/components/Toolbar/VersionDiff";
 import { createPortal } from "react-dom";
 
 interface DeltaOperation {
@@ -28,7 +28,7 @@ interface Version {
 
 function VersionList() {
   const { versions, currentVersionId, loadVersion, deleteVersion } =
-    useQuillHistory();
+    useQuillVersion();
   const [showVersionDiff, setShowVersionDiff] = useState(false);
 
   const formatDate = (isoString: string) => {

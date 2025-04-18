@@ -1,8 +1,8 @@
-import { useQuillHistory } from "@/contexts/HistoryContext";
+import { useQuillVersion } from "@/contexts/VersionContext";
 import { useState, useEffect } from "react";
 import { IoMdClose } from "react-icons/io";
 import { getVersionDiff } from "@/api/version";
-import DiffViewer from "../pages/DiffViewer";
+import DiffViewer from "../../pages/DiffViewer";
 import { Button } from "@/components/ui/button";
 
 interface DeltaOperation {
@@ -26,7 +26,7 @@ interface Version {
   content: DeltaContent;
 }
 
-interface QuillHistoryContext {
+interface QuillVersionContext {
   versions: Version[];
   loadVersion: (id: string) => Promise<boolean>;
   isLoading: boolean;
@@ -44,7 +44,7 @@ interface VersionDiffProps {
 
 function VersionDiff({ onClose }: VersionDiffProps) {
   const { versions, isLoading, loadVersion } =
-    useQuillHistory() as QuillHistoryContext;
+    useQuillVersion() as QuillVersionContext;
   const [selectedVersionId, setSelectedVersionId] = useState<string | null>(
     null
   );
@@ -90,7 +90,7 @@ function VersionDiff({ onClose }: VersionDiffProps) {
   }
   const lastVersionId = versions?.[0]?.id;
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 z-[999999] ">
       {/* Header */}
       <div className="bg-white border-b px-4 py-2 flex justify-between items-center">
         <button

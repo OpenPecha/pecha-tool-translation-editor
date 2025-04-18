@@ -1,26 +1,30 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import { QuillHistoryProvider } from "./contexts/HistoryContext";
-import ProjectList from "./components/Dashboard/ProjectList";
-import DocumentsWrapper from "./components/DocumentWrapper";
+import { Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { lazy, Suspense, useEffect } from "react";
 import { AuthProvider } from "./auth/auth-context-provider";
-import Login from "./pages/Login";
 import { useAuth } from "./auth/use-auth-hook";
-import Callback from "./pages/Callback";
-import { useEffect } from "react";
-import Navbar from "./components/Dashboard/Navbar";
 import { SearchProvider } from "./contexts/SearchContext";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+
+// Lazy loaded components
+const Login = lazy(() => import("./pages/Login"));
+const Callback = lazy(() => import("./pages/Callback"));
+const ProjectList = lazy(() => import("./components/Dashboard/ProjectList"));
+const Navbar = lazy(() => import("./components/Dashboard/Navbar"));
+const DocumentsWrapper = lazy(() => import("./components/DocumentWrapper"));
+const QuillVersionProvider = lazy(() =>
+  import("./contexts/VersionContext").then((module) => ({
+    default: module.QuillVersionProvider,
+  }))
+);
 
 const queryClient = new QueryClient();
 
 function Layout({ children }) {
   const { isAuthenticated, login, isLoading, getToken } = useAuth();
   useEffect(() => {
-    // Only attempt silent login if not already authenticated and not currently loading
     if (!isAuthenticated && !isLoading) {
       console.log("No active session detected, attempting silent login");
-      login(true); // This wil
-      // l attempt silent login once
+      login(true);
     }
     if (isAuthenticated) {
       getToken().then((token) => {
@@ -31,40 +35,51 @@ function Layout({ children }) {
   return <>{children}</>;
 }
 
+function LoadingFallback() {
+  return (
+    <div className="flex justify-center items-center h-screen">Loading...</div>
+  );
+}
+
 function AppContent() {
   const { isAuthenticated } = useAuth();
-  // Try silent login on app initialization if not authenticated
 
   return (
-    <div className="flex flex-col min-h-screen  overflow-hidden bg-[#fafbfd]">
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <Layout>
-              {isAuthenticated && (
-                <SearchProvider>
-                  <Navbar />
-                  <ProjectList />
-                </SearchProvider>
-              )}
-            </Layout>
-          }
-        />
-        <Route path="/login" element={<Login />} />
-        <Route path="/callback" element={<Callback />} />
+    <div className="flex flex-col min-h-screen overflow-hidden bg-[#fafbfd]">
+      <Suspense fallback={<LoadingFallback />}>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <Layout>
+                {isAuthenticated && (
+                  <SearchProvider>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <Navbar />
+                      <ProjectList />
+                    </Suspense>
+                  </SearchProvider>
+                )}
+              </Layout>
+            }
+          />
+          <Route path="/login" element={<Login />} />
+          <Route path="/callback" element={<Callback />} />
 
-        <Route
-          path="/documents/:id"
-          element={
-            <QuillHistoryProvider>
-              <DocumentsWrapper />
-            </QuillHistoryProvider>
-          }
-        />
+          <Route
+            path="/documents/:id"
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <QuillVersionProvider>
+                  <DocumentsWrapper />
+                </QuillVersionProvider>
+              </Suspense>
+            }
+          />
 
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </Suspense>
     </div>
   );
 }

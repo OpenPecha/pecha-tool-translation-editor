@@ -4,7 +4,7 @@ import "quill/dist/quill.snow.css";
 import YjsContext from "../lib/yjsProvider";
 import Editor from "./Editor";
 import { fetchDocument } from "../api/document";
-import { QuillHistoryProvider } from "../contexts/HistoryContext";
+import { QuillVersionProvider } from "../contexts/VersionContext";
 import "../editor.css";
 import CommentBubble from "./Comment/CommentBubble";
 import { CommentProvider } from "@/contexts/CommentContext";
@@ -44,12 +44,12 @@ const RealTimeEditor = ({ docId }: { docId: string | undefined }) => {
 
   if (!ydoc || !yjsProvider || !yText || !roomId) return null;
   return (
-    <QuillHistoryProvider docId={roomId} maxVersions={50}>
+    <QuillVersionProvider docId={roomId} maxVersions={50}>
       <CommentProvider>
         <Editor documentId={roomId} isEditable={isEditable} />
         <CommentBubble />
       </CommentProvider>
-    </QuillHistoryProvider>
+    </QuillVersionProvider>
   );
 };
 

@@ -5,6 +5,7 @@ import React, {
   useEffect,
   useCallback,
   useMemo,
+  ReactNode,
 } from "react";
 
 import {
@@ -13,36 +14,66 @@ import {
   fetchVersion,
   deleteVersion as deleteVersionAPI,
 } from "../api/version";
+import Quill from "quill";
 
 const AUTOSAVE_INTERVAL = 900000; // 15min
 
+interface Version {
+  id: string;
+  content: any;
+  label: string;
+  createdAt: string;
+}
+
+interface QuillVersionContextType {
+  versions: Version[];
+  currentVersionId: string | null;
+  autoSaveEnabled: boolean;
+  autoSaveInterval: number;
+  isLoading: boolean;
+  registerQuill: (quill: Quill) => void;
+  saveVersion: (label?: string) => Promise<Version | null>;
+  loadVersion: (versionId: string) => Promise<boolean>;
+  deleteVersion: (versionId: string) => Promise<void>;
+  createNamedSnapshot: (name: string) => Promise<Version | null>;
+  toggleAutoSave: () => void;
+  setAutoSaveInterval: (milliseconds: number) => void;
+}
+
+interface QuillVersionProviderProps {
+  children: ReactNode;
+  docId?: string;
+  maxVersions?: number;
+}
+
 // Create the context
-const QuillHistoryContext = createContext();
+const QuillVersionContext = createContext<QuillVersionContextType | null>(null);
 
 // Custom hook to use the history context
-export const useQuillHistory = () => {
-  const context = useContext(QuillHistoryContext);
+export const useQuillVersion = (): QuillVersionContextType => {
+  const context = useContext(QuillVersionContext);
   if (!context) {
     throw new Error(
-      "useQuillHistory must be used within a QuillHistoryProvider"
+      "useQuillVersion must be used within a QuillVersionProvider"
     );
   }
   return context;
 };
 
 // Provider component
-export const QuillHistoryProvider = ({
+export const QuillVersionProvider = ({
   children,
   docId = "default-doc",
   maxVersions = 50,
-}) => {
-  const [quillInstance, setQuillInstance] = useState(null);
-  const [versions, setVersions] = useState([]);
-  const [currentVersionId, setCurrentVersionId] = useState(null);
-  const [autoSaveEnabled, setAutoSaveEnabled] = useState(false);
-  const [autoSaveInterval, setAutoSaveInterval] = useState(AUTOSAVE_INTERVAL);
-  const [intervalId, setIntervalId] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+}: QuillVersionProviderProps) => {
+  const [quillInstance, setQuillInstance] = useState<Quill | null>(null);
+  const [versions, setVersions] = useState<Version[]>([]);
+  const [currentVersionId, setCurrentVersionId] = useState<string | null>(null);
+  const [autoSaveEnabled, setAutoSaveEnabled] = useState<boolean>(false);
+  const [autoSaveInterval, setAutoSaveInterval] =
+    useState<number>(AUTOSAVE_INTERVAL);
+  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Load versions from API
   const loadVersions = useCallback(async () => {
@@ -68,7 +99,7 @@ export const QuillHistoryProvider = ({
 
   // Register Quill instance
   const registerQuill = useCallback(
-    (quill) => {
+    (quill: Quill) => {
       setQuillInstance(quill);
 
       if (quill && versions.length > 0) {
@@ -103,7 +134,7 @@ export const QuillHistoryProvider = ({
 
   // Save a version (API)
   const saveVersion = useCallback(
-    async (label = "Unnamed version") => {
+    async (label = "Unnamed version"): Promise<Version | null> => {
       if (!quillInstance) return null;
 
       try {
@@ -124,6 +155,7 @@ export const QuillHistoryProvider = ({
         return newVersion;
       } catch (error) {
         console.error("Error saving version:", error);
+        return null;
       }
     },
     [quillInstance, docId, maxVersions]
@@ -131,7 +163,7 @@ export const QuillHistoryProvider = ({
 
   // Load a specific version (API)
   const loadVersion = useCallback(
-    async (versionId) => {
+    async (versionId: string): Promise<boolean> => {
       if (!quillInstance) return false;
 
       try {
@@ -149,7 +181,7 @@ export const QuillHistoryProvider = ({
 
   // Delete a version (API)
   const deleteVersion = useCallback(
-    async (versionId) => {
+    async (versionId: string): Promise<void> => {
       try {
         await deleteVersionAPI(versionId);
         setVersions((prevVersions) =>
@@ -168,7 +200,7 @@ export const QuillHistoryProvider = ({
 
   // Create a named snapshot
   const createNamedSnapshot = useCallback(
-    (name) => {
+    (name: string): Promise<Version | null> => {
       return saveVersion(name);
     },
     [saveVersion]
@@ -180,13 +212,13 @@ export const QuillHistoryProvider = ({
   }, []);
 
   // Set auto-save interval
-  const setAutoSaveIntervalTime = useCallback((milliseconds) => {
+  const setAutoSaveIntervalTime = useCallback((milliseconds: number) => {
     setAutoSaveInterval(milliseconds);
   }, []);
 
   // Context value
   const value = useMemo(
-    () => ({
+    (): QuillVersionContextType => ({
       versions,
       currentVersionId,
       autoSaveEnabled,
@@ -217,10 +249,10 @@ export const QuillHistoryProvider = ({
   );
 
   return (
-    <QuillHistoryContext.Provider value={value}>
+    <QuillVersionContext.Provider value={value}>
       {children}
-    </QuillHistoryContext.Provider>
+    </QuillVersionContext.Provider>
   );
 };
 
-export default QuillHistoryContext;
+export default QuillVersionContext;

@@ -2,12 +2,12 @@ import { useContext, useEffect, useRef, useState } from "react";
 import Quill from "quill";
 import { QuillBinding } from "y-quill";
 import YjsContext from "../lib/yjsProvider";
-import Toolbar from "./Toolbar";
+import Toolbar from "./Toolbar/Toolbar";
 import "quill/dist/quill.snow.css";
 import quill_import from "./quillExtension";
 import OverlayLoading from "./OverlayLoading";
 import { fetchDocument } from "../api/document";
-import { useQuillHistory } from "../contexts/HistoryContext";
+import { useQuillVersion } from "../contexts/VersionContext";
 import LineNumberVirtualized from "./LineNumbers";
 import CommentModal from "./Comment/CommentModal";
 import TableOfContent from "./TableOfContent";
@@ -34,7 +34,7 @@ const Editor = ({
   const [synced, setSynced] = useState(false);
   const [showOverlay, setShowOverlay] = useState(true);
   const [showCommentModal, setShowCommentModal] = useState(false);
-  const { registerQuill } = useQuillHistory();
+  const { registerQuill } = useQuillVersion();
   const { registerQuill: registerQuill2, unregisterQuill: unregisterQuill2 } =
     useEditor();
   const [currentRange, setCurrentRange] = useState<Range | null>(null);

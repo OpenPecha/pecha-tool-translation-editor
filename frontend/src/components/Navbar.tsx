@@ -20,7 +20,6 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import Permissions from "./Permissions";
 import DocIcon from "@/assets/doc_icon.png";
 const Navbar = ({ title }: { title?: string }) => {
   const { currentUser, logout, login, isAuthenticated } = useAuth();
@@ -94,7 +93,9 @@ function ProfileArea({
       >
         <Avatar>
           <AvatarImage src={currentUser?.picture} />
-          <AvatarFallback>{currentUser?.name?.slice(0, 2)}</AvatarFallback>
+          <AvatarFallback style={{ backgroundColor: "#f59e0b", color: "#fff" }}>
+            {currentUser?.name?.slice(0, 2)}
+          </AvatarFallback>
         </Avatar>
       </div>
       {isOpen && (

@@ -89,7 +89,9 @@ function ProfileArea({
       <PopoverTrigger asChild>
         <Avatar>
           <AvatarImage src={currentUser?.picture} />
-          <AvatarFallback>{currentUser?.name?.slice(0, 2)}</AvatarFallback>
+          <AvatarFallback style={{ backgroundColor: "#f59e0b", color: "#fff" }}>
+            {currentUser?.name?.slice(0, 2)}
+          </AvatarFallback>
         </Avatar>
       </PopoverTrigger>
       <PopoverContent align="end">

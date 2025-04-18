@@ -1,5 +1,5 @@
 import Quill from "quill";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import CommentBlot from "../quillExtension/commentBlot";
 import { createComment, deleteComment } from "@/api/comment";
 import { useComment } from "@/contexts/CommentContext";
@@ -11,6 +11,7 @@ import { Label } from "../ui/label";
 import { useAuth } from "@/auth/use-auth-hook";
 import { Avatar, AvatarFallback } from "@radix-ui/react-avatar";
 import { AvatarImage } from "../ui/avatar";
+import { formatDate } from "@/lib/formatDate";
 
 interface User {
   id: string;
@@ -53,6 +54,22 @@ const CommentBubble = () => {
   const [isSuggestion, setIsSuggestion] = useState(false);
   const [suggestedText, setSuggestedText] = useState("");
   const { currentUser } = useAuth();
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        bubbleRef.current &&
+        !bubbleRef.current.contains(event.target as Node)
+      ) {
+        setIsModalOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [setIsModalOpen]);
 
   const handleDelete = (id: string, onlyComment: boolean): void => {
     deleteComment(id)
@@ -145,7 +162,11 @@ const CommentBubble = () => {
             className="p-2 flex gap-2 border-b border-gray-200"
           >
             <Avatar>
-              <AvatarFallback>{comment.user.username}</AvatarFallback>
+              <AvatarFallback
+                style={{ backgroundColor: "#f59e0b", color: "#fff" }}
+              >
+                {comment.user.username}
+              </AvatarFallback>
               <AvatarImage
                 className="rounded-full w-9 h-9"
                 src={comment.user.picture}
@@ -158,7 +179,7 @@ const CommentBubble = () => {
                   {comment.user.username}
                 </span>
                 <span className="text-sm text-nowrap text-[#6b7280]">
-                  {new Date(comment.createdAt).toLocaleString()}
+                  {formatDate(comment.createdAt)}
                 </span>
               </div>
 

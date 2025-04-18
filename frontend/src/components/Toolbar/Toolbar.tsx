@@ -1,19 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { FaHistory, FaObjectGroup } from "react-icons/fa";
-import QuillHistoryControls from "./QuillHistoryControls";
+import QuillVersionControls from "./QuillVersionControls";
 import { useEditor } from "@/contexts/EditorContext";
-import HeaderDropdown from "./quillExtension/HeaderDropdown";
-import {
-  EDITOR_ENTER_ONLY,
-  EDITOR_READ_ONLY,
-  MAX_HEADING_LEVEL,
-} from "@/utils/editorConfig";
+import HeaderDropdown from "../quillExtension/HeaderDropdown";
+import { EDITOR_READ_ONLY, MAX_HEADING_LEVEL } from "@/utils/editorConfig";
 import ExportButton from "./ExportButton";
 import { BiCommentAdd } from "react-icons/bi";
-import { Button } from "./ui/button";
-import { generateJsonFromText } from "@/lib/segmentFromText";
-import Quill from "quill";
+import { Button } from "../ui/button";
+
+import { PublishButton } from "./Publish";
 const isEnabled = !EDITOR_READ_ONLY;
 interface ToolbarProps {
   addSuggestion: (data: string) => void;
@@ -23,7 +19,7 @@ interface ToolbarProps {
 }
 
 const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
-  const historyRef = useRef<HTMLDivElement>(null);
+  const versionRef = useRef<HTMLDivElement>(null);
   const [openHistory, setOpenHistory] = useState(false);
 
   const { getQuill, activeEditor } = useEditor();
@@ -34,8 +30,8 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
     const signal = new AbortController();
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        historyRef.current &&
-        !historyRef.current.contains(event.target as Node)
+        versionRef.current &&
+        !versionRef.current.contains(event.target as Node)
       ) {
         setOpenHistory(false);
       }
@@ -214,13 +210,13 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
             </span>
 
             <div
-              ref={historyRef}
+              ref={versionRef}
               style={{
                 display: openHistory ? "block" : "none",
               }}
               className="absolute bg-gray-100 z-10 top-10 right-0"
             >
-              <QuillHistoryControls />
+              <QuillVersionControls />
             </div>
             <span className="ql-formats" title="Export">
               <ExportButton doc_id={documentId} />
@@ -263,22 +259,4 @@ export const ToolbarButton = ({ children, onClick, title, className }) => {
   );
 };
 
-export const PublishButton = ({ quill }: { quill: Quill }) => {
-  const handlePublish = () => {
-    const text = quill.getText();
-    const json = generateJsonFromText(text);
-    console.log("published", json);
-  };
-
-  return (
-    <div className="flex items-center mr-2">
-      <div
-        className="bg-blue-300 shadow rounded px-2 cursor-pointer capitalize text-gray-600"
-        onClick={handlePublish}
-      >
-        publish
-      </div>
-    </div>
-  );
-};
 export default Toolbar;

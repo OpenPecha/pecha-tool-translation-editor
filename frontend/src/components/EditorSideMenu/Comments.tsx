@@ -158,7 +158,9 @@ function EachComment({ comment, deleteComment }: EachCommentProps) {
                 src={comment.user.picture}
                 alt={comment.user.username}
               />
-              <AvatarFallback>
+              <AvatarFallback
+                style={{ backgroundColor: "#f59e0b", color: "#fff" }}
+              >
                 {comment.user.username[0].toUpperCase()}
               </AvatarFallback>
             </Avatar>

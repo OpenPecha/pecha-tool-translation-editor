@@ -9,6 +9,13 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+type UserType = {
+  id: string;
+  email: string;
+  name: string;
+  picture: string;
+};
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Auth0 hook
   const {
@@ -20,7 +27,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout: auth0Logout,
     error,
   } = useAuth0();
-
   const logout = useCallback(() => {
     // If using Auth0, use their logout function
     auth0Logout({
@@ -44,15 +50,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [getAccessTokenSilently]);
 
   // Ensure user object matches the User interface requirements
-  const currentUser = user
+  const currentUser: UserType | null = user
     ? {
-        id: user?.sub ?? "",
-        email: user?.email ?? "",
-        name: user?.name,
-        picture: user?.picture,
+        id: user.sub,
+        email: user.email,
+        name: user.name,
+        picture: user.picture,
       }
     : null;
-
   // Track silent auth attempts to prevent infinite loops
   const [silentAuthAttempted, setSilentAuthAttempted] = useState(false);
 

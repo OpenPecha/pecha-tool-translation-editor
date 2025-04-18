@@ -9,18 +9,13 @@ const DiffViewer = ({ diffDelta }: { diffDelta: [number, string][] }) => {
     if (!containerRef.current) return;
 
     if (!quillRef.current) {
-      const editor = document.createElement("div");
-      editor.style.minHeight = "400px";
-
-      quillRef.current = new Quill(editor, {
+      quillRef.current = new Quill(containerRef.current, {
         theme: "snow",
         readOnly: true,
         modules: {
           toolbar: false,
         },
       });
-
-      containerRef.current.appendChild(editor);
     }
 
     if (diffDelta) {
@@ -36,7 +31,7 @@ const DiffViewer = ({ diffDelta }: { diffDelta: [number, string][] }) => {
     }
   }, [diffDelta]);
 
-  return <div id="diff-container" ref={containerRef} className="font-monlam" />;
+  return <div ref={containerRef} className="font-monlam" />;
 };
 
 export default DiffViewer;

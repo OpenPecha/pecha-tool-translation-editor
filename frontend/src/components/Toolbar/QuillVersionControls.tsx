@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { useQuillHistory } from "../contexts/HistoryContext";
-import { Switch } from "./ui/switch";
-import { Button } from "./ui/button";
+import { useQuillVersion } from "../../contexts/VersionContext";
+import { Switch } from "../ui/switch";
+import { Button } from "../ui/button";
 import VersionList from "./VersionList";
 
-const QuillHistoryControls = () => {
+const QuillVersionControls = () => {
   const { autoSaveEnabled, saveVersion, createNamedSnapshot, toggleAutoSave } =
-    useQuillHistory();
+    useQuillVersion();
 
   const [snapshotName, setSnapshotName] = useState("");
 
@@ -62,4 +62,4 @@ const QuillHistoryControls = () => {
   );
 };
 
-export default QuillHistoryControls;
+export default QuillVersionControls;
