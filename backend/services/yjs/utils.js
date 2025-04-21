@@ -98,22 +98,23 @@ const closeConn = (doc, conn) => {
       }
     },
     writeState: async (ydoc) => {
-      const identifier = ydoc.name
+      const id = ydoc.name
       const state = Y.encodeStateAsUpdate(ydoc)
-      const base64Encoded = fromUint8Array(state)
-      const binaryEncoded = toUint8Array(base64Encoded)
-      const delta = ydoc.getText(identifier).toDelta()
+      // const base64Encoded = fromUint8Array(state)
+      // const binaryEncoded = toUint8Array(base64Encoded)
+      const delta = ydoc.getText(id).toDelta()
       const existingDoc = await prisma.doc.findUnique({
-        where: { id:identifier },
+        where: { id },
       });
       if (delta && delta.length > 0 ) {
         if (!existingDoc) {
           try {
             await prisma.doc.create({
               data: {
-                identifier,
+                id,
+                identifier:id,
                 docs_prosemirror_delta: delta,
-                docs_y_doc_state: state
+                docs_y_identifierdoc_state: state
               },
             });
           } catch (e) {
@@ -123,11 +124,12 @@ const closeConn = (doc, conn) => {
         } else {
           const deltaChanged = JSON.stringify(existingDoc.docs_prosemirror_delta) !== JSON.stringify(delta);
           const stateChanged = !equalUint8Arrays(existingDoc.docs_y_doc_state, state);
+          console.log(deltaChanged, stateChanged)
           if (deltaChanged || stateChanged) {
           try {
             console.log('updated database')
             await prisma.doc.update({
-              where: { id:identifier },
+              where: { id },
               data: {
                 docs_prosemirror_delta: delta,
                 docs_y_doc_state: state,

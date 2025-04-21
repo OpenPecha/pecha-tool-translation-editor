@@ -56,7 +56,6 @@
   border-radius: 4px;
   background-color: rgb(221, 221, 221);
 }
-
   .ql-toolbar.ql-snow{
     border: none !important;
     padding:10px !important;
@@ -64,12 +63,7 @@
     height: auto !important;
     transition: all 0.3s ease !important;
     background-color: rgb(240, 243, 248) !important;
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    
-    /* Apply left and right curve */
+    /* Apply curved borders */
     border-top-left-radius: 75px;
     border-bottom-left-radius: 75px;
     border-top-right-radius: 75px;
@@ -79,8 +73,8 @@
     z-index: 200 !important;
     max-width: 100dvw !important;
     margin: 6px 16px 8px 16px !important;
-
   }
+  
   .ql-toolbar.ql-snow .ql-formats{
     margin-right: 0px !important;
   }
@@ -131,6 +125,9 @@
 .ql-active .ql-stroke ,.ql-formats  button:hover .ql-stroke{
   stroke: black !important;
 }
+.ql-toolbar button{
+  fill: black;
+}
 .ql-toolbar button.ql-active {
   stroke: black !important;
   background-color: #d3e2fd !important;  /* your custom background, e.g., purple */
@@ -146,7 +143,8 @@
   height: 20px;
 }
 .ql-toolbar .ql-picker.ql-background:hover  {
-  background-color: #d3e2fd !important;  /* your custom background, e.g., purple */
+  background-color: #e3e3e3;
+  fill:#454746;
   border-radius: 6px;         /* optional: make it look nicer */
   font-weight: 700 !important; /* hide the default SVG icon */
 }

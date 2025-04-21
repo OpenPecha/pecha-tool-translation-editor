@@ -35,10 +35,10 @@ function ExportButton({ doc_id }: { readonly doc_id: string }) {
   return (
     <>
       <ToolbarButton onClick={exportText} title="Txt" className={""}>
-        <GrDocumentTxt />
+        <GrDocumentTxt color="#454746" />
       </ToolbarButton>
       <ToolbarButton onClick={exportWord} title="Docx" className={""}>
-        <GrDocumentWord />
+        <GrDocumentWord color="#454746" />
       </ToolbarButton>
     </>
   );

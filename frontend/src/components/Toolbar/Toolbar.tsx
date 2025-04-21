@@ -187,12 +187,11 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
                 <button className="ql-bold" title="Bold" />
                 <button className="ql-italic" title="Italic" />
                 <button className="ql-underline" title="Underline" />
-                <button className="ql-strike" title="Strike" />
               </span>
             </div>
             {/* <select className="ql-color"></select> */}
             <select
-              className="ql-background "
+              className="ql-background"
               style={isEnabledStyle}
               title="Highlight"
             ></select>

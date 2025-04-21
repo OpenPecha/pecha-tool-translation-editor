@@ -6,8 +6,13 @@ import SearchSvg from "@/assets/toolbar/search.svg";
 import JoinSvg from "@/assets/toolbar/join.svg";
 import UndoSvg from "@/assets/toolbar/undo.svg";
 import RedoSvg from "@/assets/toolbar/redo.svg";
+import UnderlineSvg from "@/assets/toolbar/underline.svg";
 import { ReactSVG } from "react-svg";
 const ICONS = {
+  Underline: {
+    component: UnderlineSvg,
+    alt: "Underline",
+  },
   Bold: {
     component: BoldSvg,
     alt: "Bold",
@@ -47,9 +52,19 @@ interface IconProps {
 }
 
 const createIconComponent = (iconKey: keyof typeof ICONS) => {
-  return ({ color }: IconProps) => {
+  return () => {
     const Icon = ICONS[iconKey].component;
-    return <ReactSVG src={Icon} className="toolbar-icon" />;
+    // return <ReactSVG src={Icon} className="toolbar-icon" />;
+    const encodedSvg = Icon.split(",")[1];
+    const decodedSvg = decodeURIComponent(encodedSvg);
+    const parser = new DOMParser();
+    const svgDoc = parser.parseFromString(decodedSvg, "image/svg+xml");
+    const element = svgDoc.querySelector("svg");
+    if (!element) return null;
+    element?.classList.add("fill-[#454746]");
+    const serializer = new XMLSerializer();
+    const svgString = serializer.serializeToString(element);
+    return svgString;
   };
 };
 
@@ -61,6 +76,7 @@ const SearchIcon = createIconComponent("Search");
 const JoinIcon = createIconComponent("Join");
 const UndoIcon = createIconComponent("Undo");
 const RedoIcon = createIconComponent("Redo");
+const underlineIcon = createIconComponent("Underline");
 
 export {
   BoldIcon,
@@ -71,4 +87,5 @@ export {
   JoinIcon,
   UndoIcon,
   RedoIcon,
+  underlineIcon,
 };
