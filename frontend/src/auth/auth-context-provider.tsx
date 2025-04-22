@@ -31,11 +31,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // If using Auth0, use their logout function
     auth0Logout({
       logoutParams: { returnTo: window.location.origin },
+      clientId: import.meta.env.VITE_AUTH0_CLIENT_ID,
     });
-    // If no token, just clear storage and reset state
-    localStorage.removeItem("auth_token");
-    localStorage.removeItem("auth_expires_at");
-    localStorage.removeItem("user_profile");
   }, [auth0Logout]);
 
   const getToken = useCallback(async (): Promise<string | null> => {
