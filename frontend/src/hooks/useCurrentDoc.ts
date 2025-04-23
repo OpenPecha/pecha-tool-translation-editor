@@ -1,6 +1,7 @@
- import { useState, useEffect } from 'react';
+ import { useState } from 'react';
 import { fetchDocument } from '../api/document';
 import { useAuth } from '@/auth/use-auth-hook';
+import { useQuery } from '@tanstack/react-query';
 
 interface Translation {
   id: string;
@@ -26,41 +27,31 @@ interface UseCurrentDocReturn {
 }
 
 export const useCurrentDoc = (docId: string | undefined): UseCurrentDocReturn => {
-  const [currentDoc, setCurrentDoc] = useState<Document | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [isEditable, setIsEditable] = useState(false);
-  
   const { currentUser } = useAuth();
-  useEffect(() => {
-    async function loadDocument() {
-      if (!docId) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        setError(null);
-        const doc = await fetchDocument(docId);
-        if(doc?.permissions){
-          doc?.permissions.find((permission) => {
-            if(permission.userId === currentUser?.id){
-              setIsEditable(true)
-            }
-          })
-        }
-        setCurrentDoc(doc);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load document');
-        setCurrentDoc(null);
-      } finally {
-        setLoading(false);
+  
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['document', docId],
+    queryFn: async () => {
+      if (!docId) return null;
+      return await fetchDocument(docId);
+    },
+    enabled: !!docId,
+    onSuccess: (doc) => {
+      if (doc?.permissions) {
+        doc.permissions.find((permission) => {
+          if (permission.userId === currentUser?.id) {
+            setIsEditable(true);
+          }
+        });
       }
     }
+  });
 
-    loadDocument();
-  }, [docId]);
-
-  return { currentDoc, loading, error, isEditable };
+  return {
+    currentDoc: data ?? null,
+    loading: isLoading,
+    error: error ? (error instanceof Error ? error.message : 'Failed to load document') : null,
+    isEditable
+  };
 };

@@ -1,6 +1,5 @@
-import { AuthProvider } from "@/auth/types";
 import { useAuth } from "@/auth/use-auth-hook";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 function Login() {
