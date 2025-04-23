@@ -1,5 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import React, { useContext, useEffect } from "react";
 import "quill/dist/quill.snow.css";
 import YjsContext from "../lib/yjsProvider";
 import Editor from "./Editor";
@@ -25,11 +24,11 @@ const RealTimeEditor = ({
     };
   }, []);
 
-  if (!ydoc || !yjsProvider || !yText || !roomId) return null;
+  if (!ydoc || !yjsProvider || !yText || !docId) return null;
   return (
-    <QuillVersionProvider docId={roomId} maxVersions={50}>
+    <QuillVersionProvider docId={docId} maxVersions={50}>
       <CommentProvider>
-        <Editor documentId={roomId} isEditable={isEditable} />
+        <Editor documentId={docId} isEditable={isEditable} />
         <CommentBubble />
       </CommentProvider>
     </QuillVersionProvider>
