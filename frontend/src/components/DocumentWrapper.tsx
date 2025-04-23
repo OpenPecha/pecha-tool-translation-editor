@@ -9,7 +9,6 @@ import SideMenu from "./EditorSideMenu/Sidemenu";
 import { ChevronRight } from "lucide-react";
 import MenuDrawer from "./MenuDrawer";
 import Navbar from "./Navbar";
-import disableDevtool from "disable-devtool";
 
 export interface Translation {
   id: string;
