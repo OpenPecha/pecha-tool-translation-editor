@@ -5,7 +5,7 @@ import CommentBlot from "./commentBlot";
 import { CustomParagraph } from "./customPtag";
 import HeaderNBlot from "./headerDynamicBlot";
 import { MAX_HEADING_LEVEL } from "@/utils/editorConfig";
-import { BoldIcon, BoldIconS, HighlightIcon, ItalicIcon, RedoIcon, underlineIcon, UndoIcon } from "../Toolbar/ToolbarIcons";
+import { BoldIcon, ItalicIcon, RedoIcon, underlineIcon, UndoIcon } from "../Toolbar/ToolbarIcons";
 
 const customHeaders = [];
 export default function quill_import() {

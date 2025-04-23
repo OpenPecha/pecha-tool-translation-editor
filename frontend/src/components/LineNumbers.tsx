@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect, useCallback, memo } from "react";
 import { debounce } from "lodash";
 import { useParams } from "react-router-dom";
 import { useEditor } from "@/contexts/EditorContext";
@@ -183,7 +183,6 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
   }, [editorRef, quill]);
 
   useEffect(() => {
-    updateLineNumbers();
     if (!quill) return;
 
     const debouncedUpdateLineNumbers = debounce(() => {
@@ -321,61 +320,32 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
         } text-right relative`}
         style={{ width: `${maxLineWidth + 1}ch` }}
       >
-        {lineNumbers.map((lineNum, index) => (
-          <EachLineNumber
-            key={index}
-            lineNumber={lineNum.number}
-            position={lineNum}
-            documentId={documentId}
-            onCLick={handleClickOnLineNumber}
-            handleDoubleClick={handleDoubleClick}
-            isBookmarked={bookmarks.includes(lineNum.number)}
-          />
+        {lineNumbers.map((lineNum) => (
+          <span
+            key={`${documentId}-line-${lineNum.number}`}
+            onDoubleClick={() => handleDoubleClick(lineNum.number)}
+            style={{
+              top: `${lineNum.top}px`,
+              height: `${lineNum.height}px`,
+            }}
+            onClick={handleClickOnLineNumber}
+            className={`line-number relative flex w-full items-center justify-start pl-1`}
+            id={`${documentId}-line-${lineNum.number}`}
+          >
+            <span
+              className={
+                bookmarks.includes(lineNum.number)
+                  ? "bg-amber-100 font-medium text-amber-900 border-l-2 text-right w-full border-amber-500"
+                  : "hover:bg-gray-100 text-right w-full"
+              }
+            >
+              {lineNum.number}
+            </span>
+          </span>
         ))}
       </div>
     </>
   );
 };
 
-interface EachLineNumberProps {
-  readonly lineNumber: number;
-  readonly position: { readonly top: number; readonly height: number };
-  readonly documentId: string;
-  readonly onCLick: (e: React.MouseEvent<HTMLSpanElement>) => void;
-  readonly handleDoubleClick: (lineNumber: number) => void;
-  readonly isBookmarked: boolean;
-}
-
-function EachLineNumber({
-  lineNumber,
-  position,
-  documentId,
-  onCLick,
-  handleDoubleClick,
-  isBookmarked,
-}: EachLineNumberProps) {
-  return (
-    <span
-      onDoubleClick={() => handleDoubleClick(lineNumber)}
-      style={{
-        top: `${position.top}px`,
-        height: `${position.height}px`,
-      }}
-      onClick={onCLick}
-      className={`line-number relative flex w-full items-center justify-start pl-1`}
-      id={`${documentId}-line-${lineNumber}`}
-    >
-      <span
-        className={
-          isBookmarked
-            ? "bg-amber-100 font-medium text-amber-900 border-l-2 text-right w-full border-amber-500"
-            : "hover:bg-gray-100 text-right w-full"
-        }
-      >
-        {lineNumber}
-      </span>
-    </span>
-  );
-}
-
-export default LineNumberVirtualized;
+export default memo(LineNumberVirtualized);

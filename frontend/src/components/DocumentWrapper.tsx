@@ -18,7 +18,7 @@ export interface Translation {
 
 function DocumentsWrapper() {
   const { id } = useParams();
-  const { currentDoc, loading, error } = useCurrentDoc(id);
+  const { currentDoc, loading, error, isEditable } = useCurrentDoc(id);
 
   const [selectedTranslationId, setSelectedTranslationId] = useState<
     string | null
@@ -40,14 +40,17 @@ function DocumentsWrapper() {
         <div id="toolbar-container"></div>
         <div className="relative flex px-2  h-[calc(100dvh-110px)] w-full">
           <YjsProvider>
-            <DocumentEditor docId={id} />
+            <DocumentEditor docId={id} isEditable={isEditable} />
           </YjsProvider>
 
           {!selectedTranslationId ? (
             <SideMenu setSelectedTranslationId={setSelectedTranslationId} />
           ) : (
             <YjsProvider key={selectedTranslationId}>
-              <DocumentEditor docId={selectedTranslationId} />
+              <DocumentEditor
+                docId={selectedTranslationId}
+                isEditable={isEditable}
+              />
             </YjsProvider>
           )}
 

@@ -23,7 +23,7 @@ const Editor = ({
   documentId: string;
   isEditable: boolean;
 }) => {
-  const editorRef = useRef(null);
+  const editorRef = useRef<HTMLDivElement>(null);
   const unique = useId().replaceAll(":", "");
   const toolbarId = "toolbar-container" + "-" + unique;
   const counterId = "counter-container" + "-" + unique;
@@ -38,7 +38,9 @@ const Editor = ({
     const signal = new AbortController();
 
     const editorId = documentId;
-    const quill = new Quill(editorRef?.current, {
+    if (!editorRef.current) return;
+
+    const quill = new Quill(editorRef.current, {
       theme: "snow",
       modules: {
         toolbar: {
@@ -64,7 +66,7 @@ const Editor = ({
       },
       readOnly: !isEditable,
       placeholder: "Start collaborating...",
-      className: "overflow-y-auto h-full ",
+      // className is not a valid Quill option, apply these styles to the container instead
     });
     registerQuill(quill);
     registerQuill2(editorId, quill);
@@ -131,10 +133,12 @@ const Editor = ({
       <TableOfContent documentId={documentId} />
       <div className="relative h-full flex justify-center">
         <div className="editor-container w-full max-w-[816px]  h-full flex relative overflow-hidden ">
-          <LineNumberVirtualized
-            editorRef={editorRef}
-            documentId={documentId}
-          />
+          {editorRef.current && (
+            <LineNumberVirtualized
+              editorRef={editorRef}
+              documentId={documentId}
+            />
+          )}
           <div
             ref={editorRef}
             className="editor-content flex-1 pb-3"
