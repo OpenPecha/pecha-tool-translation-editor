@@ -9,6 +9,7 @@ import SideMenu from "./EditorSideMenu/Sidemenu";
 import { ChevronRight } from "lucide-react";
 import MenuDrawer from "./MenuDrawer";
 import Navbar from "./Navbar";
+import disableDevtool from "disable-devtool";
 
 export interface Translation {
   id: string;
@@ -29,6 +30,12 @@ function DocumentsWrapper() {
   }
   if (error) {
     return <div className="error">{error}</div>;
+  }
+  if (!isEditable) {
+    disableDevtool({
+      url: "/",
+      disableMenu: true,
+    });
   }
   return (
     <EditorProvider>

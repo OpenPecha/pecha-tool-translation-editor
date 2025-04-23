@@ -1,4 +1,4 @@
- import { useState } from 'react';
+ import { useEffect, useState } from 'react';
 import { fetchDocument } from '../api/document';
 import { useAuth } from '@/auth/use-auth-hook';
 import { useQuery } from '@tanstack/react-query';
@@ -29,7 +29,6 @@ interface UseCurrentDocReturn {
 }
 
 export const useCurrentDoc = (docId: string | undefined): UseCurrentDocReturn => {
-  const [isEditable, setIsEditable] = useState(false);
   const { currentUser } = useAuth();
   
   const { data, isLoading, error } = useQuery({
@@ -38,25 +37,14 @@ export const useCurrentDoc = (docId: string | undefined): UseCurrentDocReturn =>
       if (!docId) return null;
       return await fetchDocument(docId);
     },
-    enabled: !!docId,
-    onSuccess: (doc) => {
-      if (doc?.permissions && !EDITOR_READ_ONLY) {
-        doc.permissions.find((permission) => {
-          if (permission.userId === currentUser?.id) {
-            setIsEditable(true);
-          }
-        });
-      } else{
-        disableDevtool({
-          url: "/",
-          disableMenu: true,
-        });
-      }
-    }
+    enabled: !!docId
   });
+  const hasPermission=data?.permissions?.some((permission: any) => permission.userId === currentUser?.id) ;
+  const isEditable =  !EDITOR_READ_ONLY && hasPermission; 
+ 
 
   return {
-    currentDoc: data ?? null,
+    currentDoc: data,
     loading: isLoading,
     error: error ? (error instanceof Error ? error.message : 'Failed to load document') : null,
     isEditable
