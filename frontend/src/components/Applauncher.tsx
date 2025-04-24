@@ -1,21 +1,12 @@
 import React, { useState } from "react";
-import { Square } from "lucide-react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { FileText, Image, Headphones, Edit } from "lucide-react";
-import { Link } from "react-router-dom";
 import { BsFillGrid3X3GapFill } from "react-icons/bs";
 import { useQuery } from "@tanstack/react-query";
 import { fetchTools } from "@/api/workspace/tools";
-interface AppItem {
-  title: string;
-  icon: React.ReactNode;
-  path: string;
-  color: string;
-}
 
 const AppLauncher: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -36,6 +27,7 @@ const AppLauncher: React.FC = () => {
       </PopoverTrigger>
       <PopoverContent className="w-72 p-2" align="end">
         <div className="grid grid-cols-3 gap-2">
+          {isLoading && <div>Loading...</div>}
           {toolList?.map((app) => (
             <a
               key={app.link}
