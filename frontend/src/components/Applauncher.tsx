@@ -10,9 +10,10 @@ import { fetchTools } from "@/api/workspace/tools";
 
 const AppLauncher: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const { data: toolList = [], isLoading } = useQuery({
+  const { data: toolList, isLoading } = useQuery({
     queryKey: ["tools"],
     queryFn: fetchTools,
+    staleTime: 1000 * 60 * 5, // 5 minutes (stays "fresh" for this duration)
   });
 
   return (

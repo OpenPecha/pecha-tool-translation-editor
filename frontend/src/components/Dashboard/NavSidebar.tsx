@@ -32,10 +32,12 @@ const NavSidebar = ({ isOpen, onClose, trigger }: SidebarProps) => {
     document.addEventListener("keydown", handleEscape, signal);
     return () => signal.abort();
   }, [isOpen, onClose]);
-  const { data: toolList = [] } = useQuery({
+  const { data: toolList = [], isLoading } = useQuery({
     queryKey: ["tools"],
     queryFn: fetchTools,
+    staleTime: 1000 * 60 * 5, // 5 minutes (stays "fresh" for this duration)
   });
+
   // Prevent body scrolling when sidebar is open on mobile
   useEffect(() => {
     if (isOpen) {
