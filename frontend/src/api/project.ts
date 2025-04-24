@@ -53,11 +53,14 @@ export interface UpdateProjectParams {
 }
 
 // Fetch all projects for the current user
-export const fetchProjects = async ({ status }: { status?: string } = {}) => {
+export const fetchProjects = async ({ status, searchQuery }: { status?: string; searchQuery?: string } = {}) => {
   try {
     let url = `${server_url}/projects`;
     if (status) {
       url += `?status=${status}`;
+    }
+    if (searchQuery) {
+      url += `?search=${searchQuery}`;
     }
     
     const response = await fetch(url, {

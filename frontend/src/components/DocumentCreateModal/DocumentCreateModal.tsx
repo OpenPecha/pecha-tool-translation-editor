@@ -30,9 +30,7 @@ function DocumentCreateModal() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[60%] w-[95%] max-h-[90vh] overflow-hidden">
         <DialogHeader>
-          <DialogTitle className="text-xl">
-            Create Translation Project
-          </DialogTitle>
+          <DialogTitle className="text-xl">Create Project</DialogTitle>
         </DialogHeader>
         <div className="grid w-full items-center gap-1.5 mb-2">
           <Label htmlFor="projectName">Project Name</Label>
@@ -50,7 +48,7 @@ function DocumentCreateModal() {
               Upload File
             </TabsTrigger>
             <TabsTrigger value="OpenPecha" className="cursor-pointer">
-              OpenPecha URL
+              OpenPecha
             </TabsTrigger>
           </TabsList>
           <TabsContent value="upload">

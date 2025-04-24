@@ -7,6 +7,9 @@ const prisma = new PrismaClient();
 
 // Get all projects
 router.get("/", authenticate, async (req, res) => {
+  const searchQuery = req.query.search || "";
+  const status = req.query.status || "active";
+  
   try {
     const projects = await prisma.project.findMany({
       where: {
@@ -20,7 +23,10 @@ router.get("/", authenticate, async (req, res) => {
             }
           }
         ],
-        status: { not: "deleted" }
+        status: status !== "all" ? status : undefined,
+        name: searchQuery ? {
+          contains: searchQuery
+        } : undefined
       },
       include: {
         owner: {
@@ -36,7 +42,7 @@ router.get("/", authenticate, async (req, res) => {
             updatedAt: true,
             translations: {
               select: {
-                id:true
+                id: true
               }
             }
           }

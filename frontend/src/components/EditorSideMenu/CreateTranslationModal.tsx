@@ -132,7 +132,7 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
                   Upload File
                 </TabsTrigger>
                 <TabsTrigger value="openpecha" className="cursor-pointer">
-                  OpenPecha URL
+                  OpenPecha
                 </TabsTrigger>
               </TabsList>
 

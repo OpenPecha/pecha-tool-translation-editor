@@ -14,7 +14,7 @@ function SelectLanguage({
   readonly selectedLanguage: string;
   readonly setSelectedLanguage: (language: string) => void;
 }) {
-  const { data: languages = [] } = useQuery<LanguageType[]>({
+  const { data: languages = [], isLoading } = useQuery<LanguageType[]>({
     queryKey: ["languages"],
     queryFn: fetchLanguage,
     staleTime: 1000 * 60 * 60 * 24, // 1 day
@@ -23,22 +23,26 @@ function SelectLanguage({
   return (
     <div className="flex gap-2 flex-col mb-2">
       <Label>Root Text Language:</Label>
-      {languages.length > 0 && (
-        <select
-          className=" p-2 border rounded"
-          onChange={(e) => setSelectedLanguage(e.target.value)}
-          value={selectedLanguage}
-        >
-          <option value="" disabled>
-            Select a language
-          </option>
-          {languages.map((language, index) => (
-            <option key={language.code} value={language.code}>
-              {language.name}
+      <select
+        className=" p-2 border rounded"
+        onChange={(e) => setSelectedLanguage(e.target.value)}
+        value={selectedLanguage}
+      >
+        {" "}
+        {isLoading && <option>Loading...</option>}
+        {languages.length > 0 && (
+          <>
+            <option value="" disabled>
+              Select a language
             </option>
-          ))}
-        </select>
-      )}
+            {languages.map((language, index) => (
+              <option key={language.code} value={language.code}>
+                {language.name}
+              </option>
+            ))}
+          </>
+        )}
+      </select>
     </div>
   );
 }

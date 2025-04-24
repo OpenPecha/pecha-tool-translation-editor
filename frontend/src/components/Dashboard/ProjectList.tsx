@@ -6,18 +6,18 @@ import { Button } from "../ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { fetchProjects, Project } from "@/api/project";
 import EachProject from "./EachProject";
+import { useSearch } from "@/contexts/SearchContext";
 
 const ProjectList = () => {
   // We can add search functionality later if needed
-  // const { searchQuery } = useSearch();
-
+  const { searchQuery } = useSearch();
   const {
     data: projects,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["projects"],
-    queryFn: () => fetchProjects({}),
+    queryKey: ["projects", searchQuery],
+    queryFn: () => fetchProjects({ searchQuery }),
   });
   return (
     <div className="flex flex-1 flex-col ">
