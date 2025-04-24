@@ -12,7 +12,7 @@ import { Button } from "../ui/button";
 import { PublishButton } from "./Publish";
 const isEnabled = !EDITOR_READ_ONLY;
 interface ToolbarProps {
-  addSuggestion: (data: string) => void;
+  addSuggestion: () => void;
   id: string;
   synced: boolean;
   documentId: string;
@@ -205,7 +205,7 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
               </ToolbarButton>
 
               <ToolbarButton
-                onClick={() => addSuggestion(quill?.getSelection())}
+                onClick={() => addSuggestion()}
                 title="Suggestion"
                 className=""
               >

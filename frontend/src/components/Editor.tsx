@@ -30,6 +30,8 @@ const Editor = ({
   const { clearYjsProvider, yText, yjsProvider } = useContext(YjsContext);
   const [synced, setSynced] = useState(false);
   const [showOverlay, setShowOverlay] = useState(true);
+  const [currentRange, setCurrentRange] = useState<Range | null>(null);
+
   const [showCommentModal, setShowCommentModal] = useState(false);
   const { registerQuill } = useQuillVersion();
   const { registerQuill: registerQuill2, unregisterQuill: unregisterQuill2 } =
@@ -111,17 +113,22 @@ const Editor = ({
         }
       }
     });
-
+    quill.on("selection-change", (range) => {
+      setCurrentRange(range);
+    });
     return () => {
       clearYjsProvider();
       unregisterQuill2("editor" + editorId);
       signal.abort();
     };
   }, []);
-  function addSuggestion(text: string) {
-    if (text.length < 5) return;
-    setShowCommentModal((p) => !p);
+  function addSuggestion() {
+    console.log(currentRange);
+    if (!currentRange) return;
+
+    setShowCommentModal(true);
   }
+
   return (
     <div className="w-full relative flex-1 h-full">
       <Toolbar
@@ -141,7 +148,7 @@ const Editor = ({
           )}
           <div
             ref={editorRef}
-            className="editor-content flex-1 pb-3"
+            className={`editor-content flex-1 pb-3 `}
             style={{ fontFamily: "Monlam", fontSize: "1rem", lineHeight: 1.5 }}
           />
         </div>
@@ -157,6 +164,7 @@ const Editor = ({
         <CommentModal
           documentId={documentId}
           setShowCommentModal={setShowCommentModal}
+          currentRange={currentRange}
         />
       )}
       {/* 🔥 Pass comments and update function to Comments */}
