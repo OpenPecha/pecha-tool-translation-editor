@@ -8,6 +8,8 @@ import {
 import { FileText, Image, Headphones, Edit } from "lucide-react";
 import { Link } from "react-router-dom";
 import { BsFillGrid3X3GapFill } from "react-icons/bs";
+import { useQuery } from "@tanstack/react-query";
+import { fetchTools } from "@/api/workspace/tools";
 interface AppItem {
   title: string;
   icon: React.ReactNode;
@@ -17,33 +19,10 @@ interface AppItem {
 
 const AppLauncher: React.FC = () => {
   const [open, setOpen] = useState(false);
-
-  const apps: AppItem[] = [
-    {
-      title: "Translator Editor",
-      icon: <FileText size={24} />,
-      path: "#",
-      color: "bg-blue-300",
-    },
-    {
-      title: "Image Transcriber",
-      icon: <Image size={24} />,
-      path: "#",
-      color: "bg-purple-300",
-    },
-    {
-      title: "Audio Transcriber",
-      icon: <Headphones size={24} />,
-      path: "#",
-      color: "bg-blue-300",
-    },
-    {
-      title: "Proofreading Editor",
-      icon: <Edit size={24} />,
-      path: "#",
-      color: "bg-purple-300",
-    },
-  ];
+  const { data: toolList = [], isLoading } = useQuery({
+    queryKey: ["tools"],
+    queryFn: fetchTools,
+  });
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -57,18 +36,16 @@ const AppLauncher: React.FC = () => {
       </PopoverTrigger>
       <PopoverContent className="w-72 p-2" align="end">
         <div className="grid grid-cols-3 gap-2">
-          {apps.map((app) => (
-            <Link
-              key={app.title}
-              to={app.path}
+          {toolList?.map((app) => (
+            <a
+              key={app.link}
+              href={app.link}
               className="flex flex-col items-center justify-center p-3 rounded-lg hover:bg-gray-100 transition-colors"
               onClick={() => setOpen(false)}
             >
-              <div className={`${app.color} p-2 rounded-full text-white mb-1`}>
-                {app.icon}
-              </div>
-              <span className="text-xs text-center">{app.title}</span>
-            </Link>
+              <img src={app.icon} alt={app.name} className="w-6 h-6" />
+              <span className="text-xs text-center">{app.name}</span>
+            </a>
           ))}
         </div>
       </PopoverContent>

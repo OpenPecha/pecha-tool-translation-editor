@@ -1,7 +1,17 @@
 import React, { useEffect } from "react";
-import { X, Home, Settings, User, BarChart2, FileText } from "lucide-react";
+import {
+  X,
+  Home,
+  Settings,
+  User,
+  BarChart2,
+  FileText,
+  Globe2Icon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { fetchTools } from "@/api/workspace/tools";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -22,7 +32,10 @@ const NavSidebar = ({ isOpen, onClose, trigger }: SidebarProps) => {
     document.addEventListener("keydown", handleEscape, signal);
     return () => signal.abort();
   }, [isOpen, onClose]);
-
+  const { data: toolList = [] } = useQuery({
+    queryKey: ["tools"],
+    queryFn: fetchTools,
+  });
   // Prevent body scrolling when sidebar is open on mobile
   useEffect(() => {
     if (isOpen) {
@@ -36,7 +49,17 @@ const NavSidebar = ({ isOpen, onClose, trigger }: SidebarProps) => {
   }, [isOpen]);
 
   const navItems = [
-    { icon: Home, label: "Workspace", href: "https://workspace.pecha.tools" },
+    {
+      iconComponent: Home,
+      name: "Workspace",
+      link: "https://workspace.pecha.tools",
+    },
+    ...toolList,
+    {
+      iconComponent: Globe2Icon,
+      name: "Forum",
+      link: "https://forum.openpecha.org",
+    },
   ];
 
   return (
@@ -61,33 +84,32 @@ const NavSidebar = ({ isOpen, onClose, trigger }: SidebarProps) => {
       >
         <div className="flex flex-col h-full">
           {/* Sidebar header */}
-          <div className="h-14 flex items-center px-4 border-b">
-            <div className="flex-1 font-semibold">Pecha Tool</div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="h-8 w-8 p-0"
-              aria-label="Close sidebar"
-            >
-              <X className="h-4 w-4" />
-              <span className="sr-only">Close sidebar</span>
-            </Button>
+          <div className="h-20 flex items-center p-6 border-b text-[#5f6368] font-google-sans text-xl tracking-widest">
+            <span className="flex-1 font-semibold text-[#8e57f1]">
+              {" "}
+              <span className="text-[#12dfec]">Pecha</span>Tool
+            </span>
           </div>
 
           {/* Navigation links */}
           <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-            {navItems.map((item) => (
+            {navItems?.map((tool) => (
               <a
-                key={item.label}
-                href={item.href}
+                key={tool.link}
+                href={tool.link}
                 className="flex items-center h-10 px-3 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground"
-                onClick={
-                  item.href === "#" ? (e) => e.preventDefault() : undefined
-                }
+                onClick={(e) => e.preventDefault()}
               >
-                <item.icon className="h-4 w-4 mr-3" />
-                {item.label}
+                {tool.iconComponent ? (
+                  <tool.iconComponent className="h-4 w-4 mr-3" />
+                ) : (
+                  <img
+                    src={tool.icon}
+                    alt={tool.name}
+                    className="h-4 w-4 mr-3"
+                  />
+                )}
+                {tool.name}
               </a>
             ))}
           </nav>
