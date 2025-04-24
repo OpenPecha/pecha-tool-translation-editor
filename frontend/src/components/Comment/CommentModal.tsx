@@ -2,12 +2,13 @@ import { createComment } from "@/api/comment";
 import { useAuth } from "@/auth/use-auth-hook";
 
 import { useEditor } from "@/contexts/EditorContext";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Checkbox } from "../ui/checkbox";
 import { Label } from "../ui/label";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Switch } from "../ui/switch";
 
 function CommentModal({
   documentId,
@@ -21,6 +22,7 @@ function CommentModal({
   const [isDisabled, setIsDisabled] = useState(true);
   const commentInputRef = useRef<HTMLDivElement | null>(null);
   const suggestionInputRef = useRef<HTMLDivElement | null>(null);
+  const modalRef = useRef<HTMLDivElement | null>(null);
   const [isSuggestion, setIsSuggestion] = useState(false);
   const { getQuill } = useEditor();
   const quill = getQuill(documentId);
@@ -31,6 +33,22 @@ function CommentModal({
     currentRange?.index,
     currentRange?.length
   );
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(event.target as Node)
+      ) {
+        setShowCommentModal(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [setShowCommentModal]);
 
   const commentMutation = useMutation({
     mutationFn: (data: {
@@ -84,7 +102,6 @@ function CommentModal({
       return;
     }
     if (isSuggestion && !suggestion) return;
-
     const end = currentRange.index + currentRange.length;
     const threadId = crypto.randomUUID();
 
@@ -97,62 +114,71 @@ function CommentModal({
     });
   }
 
+  const style: StyleProps = {
+    left: currentRange?.left,
+    top: currentRange?.top - 80,
+    boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+    zIndex: 1000,
+    maxWidth: "320px",
+    minWidth: "280px",
+    maxHeight: "250px",
+    overflowY: "auto",
+  };
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-        <div className="flex items-center mb-4 gap-2">
-          <Avatar>
-            <AvatarFallback></AvatarFallback>
-            <AvatarImage src={currentUser?.picture} />
-          </Avatar>
-          <div>{currentUser?.name}</div>
-        </div>
+    <div
+      ref={modalRef}
+      className="absolute bg-[#fff]  border border-[#e5e7eb] flex-col  p-2 rounded-lg "
+      style={style}
+    >
+      <div className="flex items-center mb-4 gap-2">
+        <Avatar>
+          <AvatarFallback></AvatarFallback>
+          <AvatarImage src={currentUser?.picture} />
+        </Avatar>
+        <div>{currentUser?.name}</div>
+      </div>
+      <div
+        contentEditable
+        className="w-full min-h-[40px] border rounded p-2 mb-4 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
+        ref={commentInputRef}
+        onInput={(e) => {
+          setIsDisabled(e.target.textContent === "");
+        }}
+        autoFocus
+        data-placeholder="Add a comment..."
+      />
+
+      {isSuggestion && (
         <div
           contentEditable
           className="w-full min-h-[40px] border rounded p-2 mb-4 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
-          ref={commentInputRef}
-          onInput={(e) => {
-            setIsDisabled(e.target.textContent === "");
-          }}
-          data-placeholder="Add a comment..."
+          ref={suggestionInputRef}
+          data-placeholder="Add a suggestion..."
         />
-        <div className="flex items-center mb-4">
-          <Checkbox
+      )}
+
+      <div className="flex justify-between gap-2">
+        <div className="flex items-center my-2 gap-2">
+          <Switch
+            id="isSuggestionCheckbox"
             checked={isSuggestion}
-            onCheckedChange={(checked) => setIsSuggestion(checked as boolean)}
-            id="isSuggestion"
-            className="mr-2"
+            onCheckedChange={() => setIsSuggestion(!isSuggestion)}
+            style={{ margin: 0 }}
           />
-          <Label htmlFor="isSuggestion">Include text suggestion</Label>
-        </div>
-
-        {isSuggestion && (
-          <div
-            contentEditable
-            className="w-full min-h-[40px] border rounded p-2 mb-4 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
-            ref={suggestionInputRef}
-            data-placeholder="Add a suggestion..."
-          />
-        )}
-
-        <div className="flex justify-end gap-2">
-          <Button
-            variant="ghost"
-            onClick={() => {
-              setShowCommentModal(false);
-            }}
-            className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
+          <Label
+            htmlFor="isSuggestionCheckbox"
+            style={{ fontSize: "11px", color: "#4b5563" }}
           >
-            Cancel
-          </Button>
-          <Button
-            disabled={isDisabled || commentMutation.isPending}
-            onClick={addComment}
-            className="px-4 py-2 rounded-full cursor-pointer bg-blue-500 text-white hover:bg-blue-600"
-          >
-            {commentMutation.isPending ? "Saving..." : "Comment"}
-          </Button>
+            Suggest
+          </Label>
         </div>
+        <Button
+          disabled={isDisabled || commentMutation.isPending}
+          onClick={addComment}
+          className="px-4 py-2 rounded-full cursor-pointer bg-blue-500 text-white hover:bg-blue-600"
+        >
+          {commentMutation.isPending ? "Saving..." : "Comment"}
+        </Button>
       </div>
     </div>
   );

@@ -94,8 +94,6 @@ const Editor = ({
           fetchDocument(documentId).then((doc) => {
             quill.setContents(doc.docs_prosemirror_delta);
           });
-        } else {
-          console.log("text is not empty");
         }
       }
     });
@@ -114,7 +112,20 @@ const Editor = ({
       }
     });
     quill.on("selection-change", (range) => {
-      setCurrentRange(range);
+      if (!range) return;
+      const selection = document.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const domrange = selection.getRangeAt(0);
+        const rect = domrange.getBoundingClientRect();
+        const { left, top } = rect;
+        const newRange = {
+          ...range,
+          left,
+          top,
+        };
+        // You can use left and top coordinates for positioning elements
+        setCurrentRange(newRange);
+      }
     });
     return () => {
       clearYjsProvider();
@@ -123,7 +134,6 @@ const Editor = ({
     };
   }, []);
   function addSuggestion() {
-    console.log(currentRange);
     if (!currentRange) return;
 
     setShowCommentModal(true);

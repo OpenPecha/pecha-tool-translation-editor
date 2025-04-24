@@ -159,10 +159,12 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
               />
             </span>
             <span className="ql-formats" style={isEnabledStyle}>
-              <select className="ql-font" title="Font">
-                <option value="sans-serif" selected>
-                  Sans-serif
-                </option>
+              <select
+                className="ql-font"
+                title="Font"
+                defaultValue="sans-serif"
+              >
+                <option value="sans-serif">Sans-serif</option>
                 <option value="serif">Serif</option>
                 <option value="monospace">Monospace</option>
                 <option value="monlam">Monlam</option> {/* Custom font */}

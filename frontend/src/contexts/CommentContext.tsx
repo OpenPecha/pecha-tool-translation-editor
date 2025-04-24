@@ -8,6 +8,7 @@ import {
   ReactNode,
   useMemo,
 } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 interface Position {
   top: number;
@@ -42,7 +43,13 @@ interface CommentProviderProps {
 export const CommentProvider = ({ children }: CommentProviderProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [position, setPosition] = useState<Position>({ top: 0, left: 0 });
-  const [commentThread, setCommentThread] = useState<Comment[] | null>(null);
+  const [threadId, setThreadId] = useState<string | null>(null);
+
+  const { data: commentThread = null } = useQuery({
+    queryKey: ["comments", threadId],
+    queryFn: () => fetchCommentsByThreadId(threadId!),
+    enabled: !!threadId,
+  });
 
   const value = useMemo(
     () => ({
@@ -58,9 +65,7 @@ export const CommentProvider = ({ children }: CommentProviderProps) => {
     const openHandler = (data: { position: Position; id: string }) => {
       setIsModalOpen(true);
       setPosition(data.position);
-      fetchCommentsByThreadId(data.id).then((comments) => {
-        setCommentThread(comments);
-      });
+      setThreadId(data.id);
     };
 
     emitter?.on("showCommentBubble", openHandler);

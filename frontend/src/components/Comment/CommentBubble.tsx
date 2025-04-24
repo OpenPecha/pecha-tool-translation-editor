@@ -12,6 +12,7 @@ import { useAuth } from "@/auth/use-auth-hook";
 import { Avatar, AvatarFallback } from "@radix-ui/react-avatar";
 import { AvatarImage } from "../ui/avatar";
 import { formatDate } from "@/lib/formatDate";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface User {
   id: string;
@@ -50,10 +51,12 @@ interface StyleProps {
 const CommentBubble = () => {
   const bubbleRef = useRef<HTMLDivElement>(null);
   const { isModalOpen, position, commentThread, setIsModalOpen } = useComment();
-  const [newComment, setNewComment] = useState("");
   const [isSuggestion, setIsSuggestion] = useState(false);
-  const [suggestedText, setSuggestedText] = useState("");
   const { currentUser } = useAuth();
+  const [isDisabled, setIsDisabled] = useState(true);
+  const queryClient = useQueryClient();
+  const commentInputRef = useRef<HTMLDivElement>(null);
+  const suggestionInputRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -71,67 +74,109 @@ const CommentBubble = () => {
     };
   }, [setIsModalOpen]);
 
-  const handleDelete = (id: string, onlyComment: boolean): void => {
-    deleteComment(id)
-      .then(() => {
-        if (onlyComment) {
-          const suggestionSpan = document.querySelector<HTMLSpanElement>(
-            `span.comments[data-id="${id}"]`
-          );
-          console.log(suggestionSpan);
-          if (suggestionSpan) {
-            const blot = Quill.find(suggestionSpan);
-            if (blot && blot instanceof CommentBlot) {
-              blot.delete();
-            }
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteComment(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ["comments"] });
+
+      const onlyComment = commentThread?.length === 1;
+      if (onlyComment) {
+        const suggestionSpan = document.querySelector<HTMLSpanElement>(
+          `span.comments[data-id="${commentThread[0].threadId}"]`
+        );
+
+        if (suggestionSpan) {
+          const blot = Quill.find(suggestionSpan);
+          if (blot && blot instanceof CommentBlot) {
+            blot.delete();
           }
         }
-        setIsModalOpen(false);
-      })
-      .catch((error) => console.error("Error deleting comment:", error));
+      }
+      setIsModalOpen(false);
+    },
+    onError: (error) => {
+      console.error("Error deleting comment:", error);
+    },
+  });
+
+  const commentMutation = useMutation({
+    mutationFn: (commentData: {
+      docId: string;
+      userId: string;
+      content: string;
+      startOffset: number;
+      endOffset: number;
+      threadId: string;
+      isSuggestion: boolean;
+      suggestedText: string | undefined;
+      commentedOn?: string;
+    }) =>
+      createComment(
+        commentData.docId,
+        commentData.userId,
+        commentData.content,
+        commentData.startOffset,
+        commentData.endOffset,
+        commentData.threadId,
+        commentData.isSuggestion,
+        commentData.suggestedText,
+        commentData.commentedOn
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["comments"] });
+      setIsSuggestion(false);
+      if (commentInputRef.current) {
+        commentInputRef.current.textContent = "";
+      }
+      if (suggestionInputRef.current) {
+        suggestionInputRef.current.textContent = "";
+      }
+      setIsDisabled(true);
+    },
+    onError: (error) => {
+      console.error("Error submitting comment:", error);
+    },
+  });
+
+  const handleDelete = (id: string): void => {
+    deleteMutation.mutate(id);
   };
 
-  const handleSubmit = (): void => {
-    if (!newComment.trim()) return;
-    if (isSuggestion && !suggestedText.trim()) {
+  const addComment = (): void => {
+    const comment = commentInputRef.current?.textContent ?? "";
+    const suggestion = suggestionInputRef.current?.textContent ?? "";
+    if (!comment.trim()) return;
+    if (isSuggestion && !suggestion.trim()) {
       alert("Please enter suggested text");
       return;
     }
 
-    const comment = commentThread?.[0];
-    const commented_on = comment?.comment_on;
-    if (!comment || !currentUser) return;
-
-    createComment(
-      comment.docId,
-      currentUser.id,
-      newComment.trim(),
-      comment.initial_start_offset,
-      comment.initial_end_offset,
-      comment.threadId,
-      isSuggestion,
-      isSuggestion ? suggestedText.trim() : undefined,
-      commented_on
-    )
-      .then(() => {
-        setIsModalOpen(false);
-        setNewComment("");
-        setSuggestedText("");
-        setIsSuggestion(false);
-      })
-      .catch((error) => console.error("Error submitting comment:", error));
+    const thread = commentThread?.[0];
+    const commented_on = thread?.comment_on;
+    if (!thread || !currentUser) return;
+    commentMutation.mutate({
+      docId: thread.docId,
+      userId: currentUser.id,
+      content: comment,
+      startOffset: thread.initial_start_offset,
+      endOffset: thread.initial_end_offset,
+      threadId: thread.threadId,
+      isSuggestion: isSuggestion,
+      suggestedText: isSuggestion ? suggestion : undefined,
+      commentedOn: commented_on,
+    });
   };
 
   if (!isModalOpen || !commentThread || commentThread.length === 0) return null;
 
   const style: StyleProps = {
     left: position.left,
-    top: position.top,
+    top: position.top - 100,
     boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
     zIndex: 1000,
     maxWidth: "320px",
     minWidth: "280px",
-    maxHeight: "500px",
+    maxHeight: "250px",
     overflowY: "auto",
   };
 
@@ -139,51 +184,55 @@ const CommentBubble = () => {
     <div
       ref={bubbleRef}
       style={style}
-      className="absolute bg-[#fff] border border-[#e5e7eb] flex-col  p-[2] rounded-lg "
+      className="absolute bg-[#fff]  border border-[#e5e7eb] flex-col  p-[2] rounded-lg "
     >
-      <button
-        onClick={() => setIsModalOpen(false)}
-        className="bg-transparent border-none text-gray-600 cursor-pointer p-2 rounded-full transition-all duration-200 absolute top-0 right-0"
-        onMouseOver={(e) => {
-          e.currentTarget.style.backgroundColor = "#f3f4f6";
-          e.currentTarget.style.color = "#1f2937";
-        }}
-        onMouseOut={(e) => {
-          e.currentTarget.style.backgroundColor = "transparent";
-          e.currentTarget.style.color = "#666";
-        }}
-      >
-        <IoClose size={16} />
-      </button>
-      <div style={{ maxHeight: "250px", overflowY: "auto", padding: "0 4px" }}>
+      <div style={{ padding: "0 4px" }}>
         {commentThread.map((comment: Comment) => (
           <div
             key={comment.id}
             className="p-2 flex gap-2 border-b border-gray-200"
           >
             <Avatar>
+              <AvatarImage src={currentUser?.picture} />
               <AvatarFallback
-                style={{ backgroundColor: "#f59e0b", color: "#fff" }}
+                style={{
+                  backgroundColor: "#f59e0b",
+                  color: "#fff",
+                  borderRadius: "50%",
+                  padding: "2px",
+                }}
               >
-                {comment.user.username}
+                {currentUser?.name?.slice(0, 2)}
               </AvatarFallback>
-              <AvatarImage
-                className="rounded-full w-9 h-9"
-                src={comment.user.picture}
-              />
             </Avatar>
 
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div className=" flex items-center gap-3 mb-2">
-                <span className="font-semibold text-sm text-gray-800">
-                  {comment.user.username}
-                </span>
-                <span className="text-sm text-nowrap text-[#6b7280]">
-                  {formatDate(comment.createdAt)}
-                </span>
+              <div className="flex justify-between">
+                <div className=" flex flex-col items-start mb-2">
+                  <span className="font-semibold text-sm text-[#1f1f1f]">
+                    {comment.user.username}
+                  </span>
+                  <span className="text-sm text-nowrap text-[#6b7280]">
+                    {formatDate(comment.createdAt)}
+                  </span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                  <button
+                    onClick={() => handleDelete(comment.id)}
+                    className="bg-transparent border-none text-gray-600 cursor-pointer p-2 rounded-full transition-all duration-200"
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.backgroundColor = "#fee2e2";
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.backgroundColor = "transparent";
+                    }}
+                    disabled={deleteMutation.isPending}
+                  >
+                    <FaTrash size={10} />
+                  </button>
+                </div>
               </div>
-
-              <div className="text-sm text-[#374151] mb-2 word-break-break-word">
+              <div className="text-sm text-[#374151] bg-gray-200 p-2 rounded-2xl -translate-x-3.5 mb-2 word-break-break-word">
                 {comment.content}
               </div>
 
@@ -193,23 +242,6 @@ const CommentBubble = () => {
                   {comment.suggested_text}"
                 </div>
               )}
-
-              <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                <button
-                  onClick={() =>
-                    handleDelete(comment.threadId, commentThread.length === 1)
-                  }
-                  className="bg-transparent border-none text-gray-600 cursor-pointer p-2 rounded-full transition-all duration-200"
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.backgroundColor = "#fee2e2";
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.backgroundColor = "transparent";
-                  }}
-                >
-                  <FaTrash size={10} />
-                </button>
-              </div>
             </div>
           </div>
         ))}
@@ -217,42 +249,48 @@ const CommentBubble = () => {
 
       {/* Comment input */}
       <div className="border-t border-gray-200 p-2 sticky bottom-0 bg-white z-2">
-        <textarea
-          placeholder="Add a comment..."
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          className="w-full border border-gray-200 p-2 rounded-md text-sm"
+        <div
+          contentEditable
+          className="w-full min-h-[40px] border rounded p-2 mb-4 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
+          ref={commentInputRef}
+          onInput={(e) => {
+            setIsDisabled(e.target.textContent === "");
+          }}
+          autoFocus
+          data-placeholder="Reply..."
         />
-        <div className="flex items-center my-2 gap-2">
-          <Switch
-            id="isSuggestionCheckbox"
-            checked={isSuggestion}
-            onCheckedChange={() => setIsSuggestion(!isSuggestion)}
-            style={{ margin: 0 }}
-          />
-          <Label
-            htmlFor="isSuggestionCheckbox"
-            style={{ fontSize: "11px", color: "#4b5563" }}
-          >
-            Suggest
-          </Label>
-        </div>
+
         {isSuggestion && (
-          <div style={{ marginTop: "4px" }}>
-            <textarea
-              placeholder="Suggested text..."
-              value={suggestedText}
-              onChange={(e) => setSuggestedText(e.target.value)}
-              className="w-full border border-gray-200 p-2 rounded-md text-sm"
-            />
-          </div>
+          <div
+            contentEditable
+            className="w-full min-h-[40px] border rounded p-2 mb-4 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
+            ref={suggestionInputRef}
+            data-placeholder="Add a suggestion..."
+          />
         )}
-        <Button
-          onClick={handleSubmit}
-          className="w-full border border-gray-200 p-2 rounded-md text-sm"
-        >
-          Submit
-        </Button>
+        <div className="flex justify-between">
+          <div className="flex items-center my-2 gap-2">
+            <Switch
+              id="isSuggestionCheckbox"
+              checked={isSuggestion}
+              onCheckedChange={() => setIsSuggestion(!isSuggestion)}
+              style={{ margin: 0 }}
+            />
+            <Label
+              htmlFor="isSuggestionCheckbox"
+              style={{ fontSize: "11px", color: "#4b5563" }}
+            >
+              Suggest
+            </Label>
+          </div>
+          <Button
+            disabled={isDisabled || commentMutation.isPending}
+            onClick={addComment}
+            className="px-4 py-2  rounded-full cursor-pointer bg-blue-500 text-white hover:bg-blue-600"
+          >
+            {commentMutation.isPending ? "Saving..." : "Reply"}
+          </Button>
+        </div>
       </div>
     </div>
   );
