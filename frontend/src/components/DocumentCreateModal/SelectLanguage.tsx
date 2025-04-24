@@ -1,6 +1,7 @@
 import { fetchLanguage } from "@/api/pecha";
 import { Label } from "../ui/label";
 import { useQuery } from "@tanstack/react-query";
+import { memo, useCallback } from "react";
 
 type LanguageType = {
   code: string;
@@ -18,24 +19,32 @@ function SelectLanguage({
     queryKey: ["languages"],
     queryFn: fetchLanguage,
     staleTime: 1000 * 60 * 60 * 24, // 1 day
+    retry: 2,
+    retryDelay: 1000,
   });
+
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setSelectedLanguage(e.target.value);
+    },
+    [setSelectedLanguage]
+  );
 
   return (
     <div className="flex gap-2 flex-col mb-2">
       <Label>Root Text Language:</Label>
       <select
         className=" p-2 border rounded"
-        onChange={(e) => setSelectedLanguage(e.target.value)}
+        onChange={handleChange}
         value={selectedLanguage}
       >
-        {" "}
         {isLoading && <option>Loading...</option>}
         {languages.length > 0 && (
           <>
             <option value="" disabled>
               Select a language
             </option>
-            {languages.map((language, index) => (
+            {languages.map((language) => (
               <option key={language.code} value={language.code}>
                 {language.name}
               </option>
@@ -47,4 +56,4 @@ function SelectLanguage({
   );
 }
 
-export default SelectLanguage;
+export default memo(SelectLanguage);

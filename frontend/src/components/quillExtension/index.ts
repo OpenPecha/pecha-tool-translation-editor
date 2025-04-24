@@ -7,7 +7,7 @@ import HeaderNBlot from "./headerDynamicBlot";
 import { MAX_HEADING_LEVEL } from "@/utils/editorConfig";
 import { BoldIcon, ItalicIcon, RedoIcon, underlineIcon, UndoIcon } from "../Toolbar/ToolbarIcons";
 
-const customHeaders = [];
+const customHeaders: any[] = [];
 export default function quill_import() {
   Quill.register("modules/cursors", QuillCursors);
   const fonts = Quill.import("attributors/style/font");
@@ -15,10 +15,10 @@ export default function quill_import() {
   Block.tagName = "p";
   fonts.whitelist = ["initial", "sans-serif", "serif", "monospace", "monlam"];
 
-  Quill.register("modules/counter", function (quill, options) {
-    var container = document.querySelector(options.container);
+  Quill.register("modules/counter", function (quill: any, options: any) {
+    const container = document.querySelector(options.container);
     quill.on("text-change", function () {
-      var text = quill.getText();
+      const text = quill.getText();
       if (options.unit === "word") {
         container.innerText = text.split(/\s+/).length + " words";
       } else {
@@ -35,7 +35,7 @@ export default function quill_import() {
   icons.bold=BoldIcon();
   icons.italic=ItalicIcon();
   icons.underline=underlineIcon();
-  // icons.background=HighlightIcon();
+  // No longer needed - removed commented code
   icons.undo=UndoIcon()
   icons.redo=RedoIcon()
   // Generate and register custom header blots

@@ -84,7 +84,7 @@ const Editor = ({
       },
       signal
     );
-    new QuillBinding(yText, quill, yjsProvider?.awareness);
+    new QuillBinding(yText!, quill, yjsProvider?.awareness);
     yjsProvider?.on("sync", (isSynced: boolean) => {
       setSynced(isSynced);
       if (isSynced) {
