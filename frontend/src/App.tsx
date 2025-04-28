@@ -4,13 +4,12 @@ import { AuthProvider } from "./auth/auth-context-provider";
 import { useAuth } from "./auth/use-auth-hook";
 import { SearchProvider } from "./contexts/SearchContext";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
-
+import Callback from "./pages/Callback";
+import Login from "./pages/Login";
+import DocumentsWrapper from "./components/DocumentWrapper";
 // Lazy loaded components
-const Login = lazy(() => import("./pages/Login"));
-const Callback = lazy(() => import("./pages/Callback"));
 const ProjectList = lazy(() => import("./components/Dashboard/ProjectList"));
 const Navbar = lazy(() => import("./components/Dashboard/Navbar"));
-const DocumentsWrapper = lazy(() => import("./components/DocumentWrapper"));
 const QuillVersionProvider = lazy(() =>
   import("./contexts/VersionContext").then((module) => ({
     default: module.QuillVersionProvider,

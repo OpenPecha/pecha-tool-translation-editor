@@ -8,9 +8,7 @@ import {
 } from "lucide-react";
 import SelectTranslation from "./SelectTranslation";
 import Comments from "./Comments";
-import DocumentInfo from "./DocumentInfo";
 import { Button } from "@/components/ui/button";
-import { Translation } from "../DocumentWrapper";
 
 type MenuOption =
   | "translations"
@@ -18,13 +16,6 @@ type MenuOption =
   | "main"
   | "comments"
   | "commentary";
-
-interface DocumentInfo {
-  id: string;
-  identifier: string;
-  isRoot: boolean;
-  [key: string]: any; // For other properties
-}
 
 function SideMenu({
   setSelectedTranslationId,
@@ -99,7 +90,6 @@ function SideMenu({
   return (
     <div className="bg-white border-l h-full w-1/4 shadow-sm">
       {renderContent()}
-      {currentView === "main" && <DocumentInfo />}
     </div>
   );
 }
@@ -108,8 +98,8 @@ function MenuButton({
   children,
   onClick,
 }: {
-  children: React.ReactNode;
-  onClick: () => void;
+  readonly children: React.ReactNode;
+  readonly onClick: () => void;
 }) {
   return (
     <Button

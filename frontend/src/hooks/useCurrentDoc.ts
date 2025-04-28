@@ -3,7 +3,7 @@ import { fetchDocument } from '../api/document';
 import { useAuth } from '@/auth/use-auth-hook';
 import { useQuery } from '@tanstack/react-query';
 import { EDITOR_READ_ONLY } from "@/utils/editorConfig";
-import disableDevtool from "disable-devtool";
+// import disableDevtool from "disable-devtool";
 
 interface Translation {
   id: string;
@@ -43,14 +43,14 @@ export const useCurrentDoc = (docId: string | undefined): UseCurrentDocReturn =>
           }
         });
       } else {
-        disableDevtool({
-          url: "/",
-          disableMenu: true,
-        });
+        // disableDevtool({
+        //   url: "/",
+        //   disableMenu: true,
+        // });
       }
       return doc;
     },
-    enabled: !!docId
+    enabled: !!docId,
   });
  
 

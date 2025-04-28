@@ -59,6 +59,22 @@ export const fetchDocument = async (id: string) => {
 };
 
 
+export const fetchDocumentWithContent = async (id: string) => {
+  try {
+    const response = await fetch(`${server_url}/documents/${id}/content`, {
+      headers: getHeaders(),
+    });
+    if (response.ok) {
+      const data = await response.json();
+      return data;
+    }
+    throw new Error("Failed to fetch document");
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
 
 export const createDocument = async (formData: FormData) => {
   const response = await fetch(`${server_url}/documents`, {

@@ -200,8 +200,48 @@ module.exports = (getYDoc) => {
           isRoot: true,
           isPublic: true,
           translations: true,
+        },
+      });
+      if (!document)
+        return res.status(404).json({ error: "Document not found" });
+
+      if (document.ownerId !== req.user.id) {
+        const permission = await prisma.permission.findFirst({
+          where: { projectId: document.rootProjectId, userId: req.user.id, canRead: true },
+        });
+        if (!permission && !document.isPublic)
+          return res.status(403).json({ error: "No access" });
+      }
+
+      // Decode Y.js state (if stored as Uint8Array) and convert to Delta
+      let delta = [];
+      if (document.docs_y_doc_state) {
+        const ydoc = new Y.Doc();
+        Y.applyUpdate(ydoc, document.docs_y_doc_state);
+        delta = ydoc.getText(document.identifier).toDelta(); // Convert to Quill-compatible Delta
+      } else if (document.docs_prosemirror_delta) {
+        delta = document.docs_prosemirror_delta;
+      }
+      res.json(document);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Error retrieving document" });
+    }
+  });
+
+  router.get("/:id/content", authenticate, async (req, res) => {
+    try {
+      const document = await prisma.doc.findUnique({
+        where: { id: req.params.id },
+        select: {
+          id: true,
+          name: true,
+          identifier: true,
+          ownerId: true,
+          permissions: true,
+          language: true,
+          isRoot: true,
           docs_prosemirror_delta: true,
-          rootProjectId:true,
         },
       });
       if (!document)

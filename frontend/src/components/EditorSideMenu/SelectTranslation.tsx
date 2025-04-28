@@ -7,12 +7,6 @@ import CreateTranslationModal from "./CreateTranslationModal";
 import { useParams } from "react-router-dom";
 import { useCurrentDoc } from "@/hooks/useCurrentDoc";
 
-interface DocumentInfo {
-  id: string;
-  identifier: string;
-  isRoot: boolean;
-}
-
 function SelectTranslation({
   setSelectedTranslationId,
 }: {
