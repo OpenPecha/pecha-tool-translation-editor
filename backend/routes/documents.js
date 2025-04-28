@@ -1,5 +1,5 @@
 const express = require("express");
-const authenticate = require("../middleware/authenticate");
+const {authenticate} = require("../middleware/authenticate");
 const { PrismaClient } = require("@prisma/client");
 const Y = require("yjs");
 const multer = require("multer");

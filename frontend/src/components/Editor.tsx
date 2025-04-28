@@ -6,7 +6,7 @@ import Toolbar from "./Toolbar/Toolbar";
 import "quill/dist/quill.snow.css";
 import quill_import from "./quillExtension";
 import OverlayLoading from "./OverlayLoading";
-import { fetchDocument } from "../api/document";
+import { fetchDocument, fetchDocumentWithContent } from "../api/document";
 import { useQuillVersion } from "../contexts/VersionContext";
 import LineNumberVirtualized from "./LineNumbers";
 import CommentModal from "./Comment/CommentModal";
@@ -27,7 +27,8 @@ const Editor = ({
   const unique = useId().replaceAll(":", "");
   const toolbarId = "toolbar-container" + "-" + unique;
   const counterId = "counter-container" + "-" + unique;
-  const { clearYjsProvider, yText, yjsProvider } = useContext(YjsContext);
+  const { clearYjsProvider, yText, yjsProvider, createYjsProvider } =
+    useContext(YjsContext);
   const [synced, setSynced] = useState(false);
   const [showOverlay, setShowOverlay] = useState(true);
   const [currentRange, setCurrentRange] = useState<Range | null>(null);
@@ -41,6 +42,9 @@ const Editor = ({
 
     const editorId = documentId;
     if (!editorRef.current) return;
+
+    // Initialize the Yjs document and text with awareness
+    createYjsProvider(documentId);
 
     const quill = new Quill(editorRef.current, {
       theme: "snow",
@@ -84,16 +88,22 @@ const Editor = ({
       },
       signal
     );
+
+    // Create the binding between Quill and YText
     new QuillBinding(yText!, quill, yjsProvider?.awareness);
+
+    // Listen for sync events from the provider
     yjsProvider?.on("sync", (isSynced: boolean) => {
       setSynced(isSynced);
       if (isSynced) {
         setShowOverlay(false);
+        // The text should already be in the editor via the YText binding
+        // If it's not, there might be an issue with the Y.Doc state or the binding
         const plainText = quill.getText();
-        if (plainText.trim().length === 0) {
-          fetchDocument(documentId).then((doc) => {
-            quill.setContents(doc.docs_prosemirror_delta);
-          });
+        if (plainText.trim().length === 0 && yText && yText.length > 0) {
+          // This should not normally be needed if the binding is working correctly
+          const delta = yText.toDelta();
+          quill.setContents(delta);
         }
       }
     });

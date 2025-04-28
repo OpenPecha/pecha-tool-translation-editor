@@ -16,10 +16,10 @@ const pechaRoutes = require("./routes/pecha");
 const textsRoutes = require("./routes/texts");
 const userRoutes = require("./routes/user");
 const projectRoutes= require("./routes/project");
+const { auth0VerifyToken } = require("./middleware/authenticate");
 const prisma = new PrismaClient();
 const app = express();
 const SECRET_KEY = process.env.SECRET_KEY || "super-secret-key";
-
 
 const ALLOWED_URLS = process.env.ALLOWED_URLS ? process.env.ALLOWED_URLS.split(",") : ["http://localhost:3000"];
 app.use(cors({
@@ -70,12 +70,14 @@ wss.on("connection", async (ws, request) => {
   let pingReceived = true;
   let userId = null;
 
-  const token = params?.split("=")[1] || "";
+  const token = params?.split("=")[1] || null;
   try {
-    const decoded = jwt.verify(token, SECRET_KEY);
-    userId = decoded.id;
+    if(token && token!==''){
+      let user=await auth0VerifyToken(token);
+      userId = user?.sub;
+    }
   } catch (e) {
-    userId = null;
+    console.log('errer user',e)
   }
 
   let doc = getYDoc(identifier, userId);
@@ -88,12 +90,17 @@ wss.on("connection", async (ws, request) => {
           docs_prosemirror_delta: true,
         },
       });
+      
 
       if (docObject) {
         // Apply stored Y.Doc state if it exists
         if (docObject.docs_y_doc_state) {
           Y.applyUpdate(doc, docObject.docs_y_doc_state);
+          
           // Log the content after applying the update
+          const ytext = doc.getText(identifier);
+        } else {
+          console.log(`[${identifier}] Document found but no Y.Doc state`);
         }
 
         try {
@@ -104,10 +111,15 @@ wss.on("connection", async (ws, request) => {
           );
         }
       } else {
-        console.log(`Creating new document in DB for: ${identifier}`);
 
         const state = Y.encodeStateAsUpdate(doc);
-        const delta = doc.getText("prosemirror").toDelta();
+        // Check if the document has a text with the identifier name
+        const textType = doc.getText(identifier);
+        
+        // Try to get text from "prosemirror" as a fallback
+        const prosemirrorText = doc.getText("prosemirror");
+        
+        const delta = prosemirrorText.toDelta();
 
         await prisma.doc.create({
           data: {
@@ -169,6 +181,10 @@ wss.on("connection", async (ws, request) => {
 
   // Send Initial Document State
   {
+    // Log the document state before sending
+    const ytext = doc.getText(identifier);
+ 
+    
     const encoder = utils.encoding.createEncoder();
     utils.encoding.writeVarUint(encoder, utils.messageSync);
     utils.syncProtocol.writeSyncStep1(encoder, doc);

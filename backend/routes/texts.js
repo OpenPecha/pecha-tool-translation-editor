@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { PrismaClient } = require("@prisma/client");
-const authenticate = require("../middleware/authenticate");
+const {authenticate} = require("../middleware/authenticate");
 const { diff_match_patch } = require("diff-match-patch");
 const Delta = require('quill-delta');
 

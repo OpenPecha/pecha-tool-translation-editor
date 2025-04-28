@@ -22,7 +22,7 @@ class WSSharedDoc extends Y.Doc {
      * @type {awarenessProtocol.Awareness}
      */
     this.awareness = new utils.awarenessProtocol.Awareness(this)
-    this.awareness.setLocalState(null)
+    // Don't set local state to null - let clients set their own state
 
     /**
      * @param {{ added: Array<number>, updated: Array<number>, removed: Array<number> }} changes

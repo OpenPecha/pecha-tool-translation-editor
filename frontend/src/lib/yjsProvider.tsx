@@ -70,17 +70,58 @@ const YjsProvider = ({ children }: YjsProviderProps) => {
       window.history.replaceState({}, identifier, `/${identifier}`);
     }
 
+    const awareness = new awarenessProtocol.Awareness(ydocInstance);
+
+    // Set up initial awareness state with user information
+    awareness.setLocalState({
+      user: {
+        name: localStorage.getItem("username") || "Anonymous User",
+        id: Math.floor(Math.random() * 100000),
+        color: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
+      },
+      cursor: {},
+      selection: null,
+    });
+
     const provider = new WebsocketProvider(
       CLIENT_WEBSOCKET_URL,
       identifier,
       ydocInstance,
       {
-        params: { token: localStorage.getItem("token") || "" },
+        params: { token: localStorage.getItem("access_token") ?? "" },
         WebSocketPolyfill: WebSocket,
         resyncInterval: 4000,
-        awareness: new awarenessProtocol.Awareness(ydocInstance),
+        awareness: awareness,
       }
     );
+
+    // Set up event listeners for WebSocket connection
+    provider.on("status", ({ status }: { status: string }) => {
+      console.log("Connection status:", status);
+
+      // When connected, ensure awareness state is set
+      if (status === "connected") {
+        // Force update the awareness state after connection
+        awareness.setLocalState({
+          user: {
+            name: localStorage.getItem("username") ?? "Anonymous User",
+            id: Math.floor(Math.random() * 100000),
+            color: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
+          },
+          cursor: {},
+          selection: null,
+        });
+        console.log(
+          "Set awareness state after connection:",
+          awareness.getLocalState()
+        );
+      }
+    });
+
+    // Log when awareness updates
+    awareness.on("update", () => {
+      console.log("Awareness updated:", awareness.getStates());
+    });
 
     setYjsProvider(provider);
   };

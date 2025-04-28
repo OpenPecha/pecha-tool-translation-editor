@@ -2,7 +2,7 @@ const { PrismaClient } = require("@prisma/client");
 const jwt = require("jsonwebtoken");
 const prisma = new PrismaClient();
 const { auth, claimCheck } = require('express-oauth2-jwt-bearer');
-
+const jwksClient = require('jwks-rsa');
 // Auth0 configuration
 const AUTH0_DOMAIN = process.env.AUTH0_DOMAIN;
 const AUTH0_AUDIENCE = process.env.AUTH0_AUDIENCE;
@@ -14,10 +14,43 @@ const validateAuth0Token = auth({
   tokenSigningAlg: 'RS256'
 });
 
+
+const client = jwksClient({
+  jwksUri: `https://${AUTH0_DOMAIN}/.well-known/jwks.json`
+});
+function getKey(header, callback) {
+  client.getSigningKey(header.kid, function (err, key) {
+    if (err) {
+      callback(err);
+    } else {
+      const signingKey = key.getPublicKey();
+      callback(null, signingKey);
+    }
+  });
+}
+async function auth0VerifyToken(token) {
+  return new Promise((resolve, reject) => {
+    jwt.verify(
+      token,
+      getKey,
+      {
+        audience: AUTH0_AUDIENCE,
+        issuer: `https://${AUTH0_DOMAIN}/`,
+        algorithms: ['RS256']
+      },
+      (err, decoded) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve(decoded);
+      }
+    );
+  });
+}
 /**
  * Middleware that authenticates requests using Auth0 access tokens
  */
-const authenticateToken = async (req, res, next) => {
+const authenticate = async (req, res, next) => {
   try {
     // First validate the token with Auth0
     await validateAuth0Token(req, res, async () => {
@@ -69,4 +102,4 @@ const authenticateToken = async (req, res, next) => {
   }
 };
 
-module.exports = authenticateToken;
+module.exports = {authenticate, auth0VerifyToken};

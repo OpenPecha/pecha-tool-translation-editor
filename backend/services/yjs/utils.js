@@ -118,13 +118,11 @@ const closeConn = (doc, conn) => {
               },
             });
           } catch (e) {
-            console.log(`Insert Query`)
             console.log(e)
           }
         } else {
           const deltaChanged = JSON.stringify(existingDoc.docs_prosemirror_delta) !== JSON.stringify(delta);
           const stateChanged = !equalUint8Arrays(existingDoc.docs_y_doc_state, state);
-          console.log(deltaChanged, stateChanged)
           if (deltaChanged || stateChanged) {
           try {
             console.log('updated database')
@@ -137,7 +135,6 @@ const closeConn = (doc, conn) => {
             });
            
           } catch (e) {
-            console.log(`Patch Query`)
             console.log(e)
           }
         }
