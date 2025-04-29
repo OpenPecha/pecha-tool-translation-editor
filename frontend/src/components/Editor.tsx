@@ -97,14 +97,6 @@ const Editor = ({
       setSynced(isSynced);
       if (isSynced) {
         setShowOverlay(false);
-        // The text should already be in the editor via the YText binding
-        // If it's not, there might be an issue with the Y.Doc state or the binding
-        const plainText = quill.getText();
-        if (plainText.trim().length === 0 && yText && yText.length > 0) {
-          // This should not normally be needed if the binding is working correctly
-          const delta = yText.toDelta();
-          quill.setContents(delta);
-        }
       }
     });
 
@@ -138,7 +130,6 @@ const Editor = ({
       }
     });
     return () => {
-      console.log("diconnected");
       clearYjsProvider();
       unregisterQuill2("editor" + editorId);
       signal.abort();
