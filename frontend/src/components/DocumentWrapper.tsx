@@ -23,7 +23,6 @@ function DocumentsWrapper() {
   const [selectedTranslationId, setSelectedTranslationId] = useState<
     string | null
   >(null);
-
   if (loading) {
     return <div className="loading">Loading...</div>;
   }

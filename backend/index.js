@@ -94,26 +94,11 @@ wss.on("connection", async (ws, request) => {
       if (docObject) {
         // Apply stored Y.Doc state if it exists
         if (docObject.docs_y_doc_state) {
-          // Apply the Y.Doc state from the database
           Y.applyUpdate(doc, docObject.docs_y_doc_state);
-          const ytext = doc.getText(docId);
-          ytext.applyDelta(docObject.docs_prosemirror_delta);
-          
-          // If we have a delta, we could also apply it directly to the text
-          // But Y.applyUpdate is the preferred method as it preserves all Y.Doc metadata
-          
           // Log the content after applying the update
-        } else {     
-          console.log(`[${docId}] Document found but no Y.Doc state`);
         }
 
-        try {
-          await addMemberAsViewer(docId, userId);
-        } catch (err) {
-          console.log(
-            `Error adding user ${userId} to document ${identifier}: ${err.message}`
-          );
-        }
+        await addMemberAsViewer(docId, userId);
       } 
     }
   } catch (error) {
@@ -124,12 +109,12 @@ wss.on("connection", async (ws, request) => {
 
   ws.on("message", async (message) => {
     messageListener(injectedWS, doc, new Uint8Array(message));
-    // clients.add(ws);
-    // for (const client of clients) {
-    //   if (client !== ws && client.readyState === WebSocket.OPEN) {
-    //     client.send(message.toString());
-    //   }
-    // }
+    clients.add(ws);
+    for (const client of clients) {
+      if (client !== ws && client.readyState === WebSocket.OPEN) {
+        client.send(message.toString());
+      }
+    }
   });
 
   const pingInterval = setInterval(() => {

@@ -27,8 +27,7 @@ const Editor = ({
   const unique = useId().replaceAll(":", "");
   const toolbarId = "toolbar-container" + "-" + unique;
   const counterId = "counter-container" + "-" + unique;
-  const { clearYjsProvider, yText, yjsProvider, createYjsProvider } =
-    useContext(YjsContext);
+  const { yText, yjsProvider } = useContext(YjsContext);
   const [synced, setSynced] = useState(false);
   const [showOverlay, setShowOverlay] = useState(true);
   const [currentRange, setCurrentRange] = useState<Range | null>(null);
@@ -44,7 +43,6 @@ const Editor = ({
     if (!editorRef.current) return;
 
     // Initialize the Yjs document and text with awareness
-    createYjsProvider(documentId);
 
     const quill = new Quill(editorRef.current, {
       theme: "snow",
@@ -90,7 +88,7 @@ const Editor = ({
     );
 
     // Create the binding between Quill and YText
-    new QuillBinding(yText!, quill, yjsProvider?.awareness);
+    const binding = new QuillBinding(yText!, quill, yjsProvider?.awareness);
 
     // Listen for sync events from the provider
     yjsProvider?.on("sync", (isSynced: boolean) => {
@@ -130,8 +128,8 @@ const Editor = ({
       }
     });
     return () => {
-      clearYjsProvider();
       unregisterQuill2("editor" + editorId);
+      binding.destroy();
       signal.abort();
     };
   }, []);
