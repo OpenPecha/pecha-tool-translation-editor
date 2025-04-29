@@ -138,6 +138,7 @@ const Editor = ({
       }
     });
     return () => {
+      console.log("diconnected");
       clearYjsProvider();
       unregisterQuill2("editor" + editorId);
       signal.abort();

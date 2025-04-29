@@ -90,16 +90,20 @@ wss.on("connection", async (ws, request) => {
           docs_prosemirror_delta: true,
         },
       });
-      
 
       if (docObject) {
         // Apply stored Y.Doc state if it exists
         if (docObject.docs_y_doc_state) {
+          // Apply the Y.Doc state from the database
           Y.applyUpdate(doc, docObject.docs_y_doc_state);
+          const ytext = doc.getText(identifier);
+          ytext.applyDelta(docObject.docs_prosemirror_delta);
+          
+          // If we have a delta, we could also apply it directly to the text
+          // But Y.applyUpdate is the preferred method as it preserves all Y.Doc metadata
           
           // Log the content after applying the update
-          const ytext = doc.getText(identifier);
-        } else {
+        } else {     
           console.log(`[${identifier}] Document found but no Y.Doc state`);
         }
 
@@ -114,10 +118,9 @@ wss.on("connection", async (ws, request) => {
 
         const state = Y.encodeStateAsUpdate(doc);
         // Check if the document has a text with the identifier name
-        const textType = doc.getText(identifier);
         
         // Try to get text from "prosemirror" as a fallback
-        const prosemirrorText = doc.getText("prosemirror");
+        const prosemirrorText = doc.getText(identifier);
         
         const delta = prosemirrorText.toDelta();
 
@@ -184,7 +187,6 @@ wss.on("connection", async (ws, request) => {
     // Log the document state before sending
     const ytext = doc.getText(identifier);
  
-    
     const encoder = utils.encoding.createEncoder();
     utils.encoding.writeVarUint(encoder, utils.messageSync);
     utils.syncProtocol.writeSyncStep1(encoder, doc);

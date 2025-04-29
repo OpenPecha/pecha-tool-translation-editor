@@ -111,17 +111,10 @@ const YjsProvider = ({ children }: YjsProviderProps) => {
           cursor: {},
           selection: null,
         });
-        console.log(
-          "Set awareness state after connection:",
-          awareness.getLocalState()
-        );
       }
     });
 
     // Log when awareness updates
-    awareness.on("update", () => {
-      console.log("Awareness updated:", awareness.getStates());
-    });
 
     setYjsProvider(provider);
   };

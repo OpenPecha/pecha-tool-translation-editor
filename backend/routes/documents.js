@@ -22,30 +22,30 @@ module.exports = (getYDoc) => {
   // Create a new document
   router.post("/", authenticate, upload.single("file"), async (req, res) => {
     try {
+      const document_id = crypto.randomUUID();
       const { identifier, isRoot, rootId,language } = req.body;
       if (!identifier)
         return res
           .status(400)
           .json({ error: "Missing identifier in query params" });
 
-      const doc = getYDoc(identifier, req.user.email);
+      const doc = getYDoc(document_id, req.user.id);
       // Update the Y.doc with file content
-      const ytext = doc.getText(identifier);
+      const prosemirrorText = doc.getText(document_id);
       if (req?.file) {
         const textContent = req.file.buffer.toString("utf-8");
         if (textContent) {
-          ytext.delete(0, ytext.length);
-          ytext.insert(0, textContent);
+          prosemirrorText.delete(0, prosemirrorText.length);
+          prosemirrorText.insert(0, textContent);
         }
       }
-
+      const delta = prosemirrorText.toDelta();
       const state = Y.encodeStateAsUpdate(doc);
-      const delta = ytext.toDelta();
-
 
       const document = await prisma.$transaction(async (tx) => {
       const doc = await tx.doc.create({
         data: {
+          id:document_id,
           identifier,
           name: identifier,
           ownerId: req.user.id,
