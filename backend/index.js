@@ -185,7 +185,6 @@ wss.on("connection", async (ws, request) => {
   // Send Initial Document State
   {
     // Log the document state before sending
-    const ytext = doc.getText(identifier);
  
     const encoder = utils.encoding.createEncoder();
     utils.encoding.writeVarUint(encoder, utils.messageSync);
