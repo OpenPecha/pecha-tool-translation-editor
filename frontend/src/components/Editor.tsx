@@ -177,10 +177,6 @@ const Editor = ({
           currentRange={currentRange}
         />
       )}
-      {/* 🔥 Pass comments and update function to Comments */}
-      {/* <div className="comment-container w-1/4">
-        <Comments  comments={comments}  />
-      </div> */}
     </div>
   );
 };
