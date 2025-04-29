@@ -18,7 +18,7 @@ const YjsContext = React.createContext<YjsContextType>({} as YjsContextType);
 
 const { Provider, Consumer } = YjsContext;
 const CLIENT_WEBSOCKET_URL =
-  import.meta.env.VITE_CLIENT_WEB_SOCKET || "ws://localhost:1234";
+  import.meta.env.VITE_CLIENT_WEB_SOCKET || "ws://localhost:8000";
 
 const withYjs = <P extends object>(
   Component: React.ComponentType<P & YjsContextType>

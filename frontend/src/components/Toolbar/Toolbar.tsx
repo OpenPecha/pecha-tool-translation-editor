@@ -229,7 +229,7 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
               }}
               className="absolute bg-gray-100 z-10 top-10 right-0"
             >
-              <QuillVersionControls />
+              <QuillVersionControls openHistory={openHistory} />
             </div>
             <span className="ql-formats" title="Export">
               <ExportButton doc_id={documentId} />

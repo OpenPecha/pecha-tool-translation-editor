@@ -4,7 +4,7 @@ import { Switch } from "../ui/switch";
 import { Button } from "../ui/button";
 import VersionList from "./VersionList";
 
-const QuillVersionControls = () => {
+const QuillVersionControls = ({ openHistory }: { openHistory: boolean }) => {
   const { autoSaveEnabled, saveVersion, createNamedSnapshot, toggleAutoSave } =
     useQuillVersion();
 
@@ -57,7 +57,7 @@ const QuillVersionControls = () => {
           </Button>
         </form>
       </div>
-      <VersionList />
+      {openHistory && <VersionList />}
     </div>
   );
 };

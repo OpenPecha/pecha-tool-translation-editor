@@ -1,5 +1,5 @@
 import { useQuillVersion } from "@/contexts/VersionContext";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MdDelete } from "react-icons/md";
 import { SiTicktick } from "react-icons/si";
 import VersionDiff from "@/components/Toolbar/VersionDiff";
@@ -27,8 +27,13 @@ interface Version {
 }
 
 function VersionList() {
-  const { versions, currentVersionId, loadVersion, deleteVersion } =
-    useQuillVersion();
+  const {
+    versions,
+    currentVersionId,
+    loadVersion,
+    deleteVersion,
+    loadVersions,
+  } = useQuillVersion();
   const [showVersionDiff, setShowVersionDiff] = useState(false);
 
   const formatDate = (isoString: string) => {
@@ -38,7 +43,9 @@ function VersionList() {
   const handleViewAll = () => {
     setShowVersionDiff(true);
   };
-
+  useEffect(() => {
+    loadVersions();
+  }, []);
   return (
     <>
       <div className="versions-list">

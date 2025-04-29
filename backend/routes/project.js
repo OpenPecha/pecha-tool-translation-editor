@@ -367,7 +367,7 @@ router.post("/", authenticate, async (req, res) => {
     const project = await prisma.project.create({
       data: {
         name,
-        identifier,
+        identifier:identifier+"_"+Date.now(),
         ownerId: req.user.id,
         metadata,
         roots: rootId ? {

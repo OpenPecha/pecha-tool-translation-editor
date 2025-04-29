@@ -66,7 +66,7 @@ const clients = new Set();
 wss.on("connection", async (ws, request) => {
   const injectedWS = ws;
   injectedWS.binaryType = "arraybuffer";
-  const [identifier, params] = request.url.slice(1).split("?");
+  const [docId, params] = request.url.slice(1).split("?");
   let pingReceived = true;
   let userId = null;
 
@@ -80,11 +80,11 @@ wss.on("connection", async (ws, request) => {
     console.log('errer user',e)
   }
 
-  let doc = getYDoc(identifier, userId);
+  let doc = getYDoc(docId, userId);
   try {
     if (userId) {
       const docObject = await prisma.doc.findUnique({
-        where: { id: identifier },
+        where: { id: docId },
         select: {
           docs_y_doc_state: true,
           docs_prosemirror_delta: true,
@@ -96,7 +96,7 @@ wss.on("connection", async (ws, request) => {
         if (docObject.docs_y_doc_state) {
           // Apply the Y.Doc state from the database
           Y.applyUpdate(doc, docObject.docs_y_doc_state);
-          const ytext = doc.getText(identifier);
+          const ytext = doc.getText(docId);
           ytext.applyDelta(docObject.docs_prosemirror_delta);
           
           // If we have a delta, we could also apply it directly to the text
@@ -104,35 +104,17 @@ wss.on("connection", async (ws, request) => {
           
           // Log the content after applying the update
         } else {     
-          console.log(`[${identifier}] Document found but no Y.Doc state`);
+          console.log(`[${docId}] Document found but no Y.Doc state`);
         }
 
         try {
-          await addMemberAsViewer(identifier, userId);
+          await addMemberAsViewer(docId, userId);
         } catch (err) {
           console.log(
             `Error adding user ${userId} to document ${identifier}: ${err.message}`
           );
         }
-      } else {
-
-        const state = Y.encodeStateAsUpdate(doc);
-        // Check if the document has a text with the identifier name
-        
-        // Try to get text from "prosemirror" as a fallback
-        const prosemirrorText = doc.getText(identifier);
-        
-        const delta = prosemirrorText.toDelta();
-
-        await prisma.doc.create({
-          data: {
-            identifier,
-            docs_prosemirror_delta: delta,
-            docs_y_doc_state: state,
-            ownerId: userId,
-          },
-        });
-      }
+      } 
     }
   } catch (error) {
     console.error(error);
@@ -142,12 +124,12 @@ wss.on("connection", async (ws, request) => {
 
   ws.on("message", async (message) => {
     messageListener(injectedWS, doc, new Uint8Array(message));
-    clients.add(ws);
-    for (const client of clients) {
-      if (client !== ws && client.readyState === WebSocket.OPEN) {
-        client.send(message.toString());
-      }
-    }
+    // clients.add(ws);
+    // for (const client of clients) {
+    //   if (client !== ws && client.readyState === WebSocket.OPEN) {
+    //     client.send(message.toString());
+    //   }
+    // }
   });
 
   const pingInterval = setInterval(() => {
@@ -182,30 +164,30 @@ wss.on("connection", async (ws, request) => {
     pingReceived = true;
   });
 
-  // Send Initial Document State
+  // Check if document is large before sending initial state
   {
-    // Log the document state before sending
- 
-    const encoder = utils.encoding.createEncoder();
-    utils.encoding.writeVarUint(encoder, utils.messageSync);
-    utils.syncProtocol.writeSyncStep1(encoder, doc);
-    const message = utils.encoding.toUint8Array(encoder);
+    
+      
+      const encoder = utils.encoding.createEncoder();
+      utils.encoding.writeVarUint(encoder, utils.messageSync);
+      utils.syncProtocol.writeSyncStep1(encoder, doc);
+      const message = utils.encoding.toUint8Array(encoder);
 
-    utils.send(doc, injectedWS, message);
+      utils.send(doc, injectedWS, message);
 
-    const awarenessStates = doc.awareness.getStates();
-    if (awarenessStates.size > 0) {
-      const encoder1 = utils.encoding.createEncoder();
-      utils.encoding.writeVarUint(encoder1, utils.messageAwareness);
-      utils.encoding.writeVarUint8Array(
-        encoder1,
-        utils.awarenessProtocol.encodeAwarenessUpdate(
-          doc.awareness,
-          Array.from(awarenessStates.keys())
-        )
-      );
-      utils.send(doc, injectedWS, utils.encoding.toUint8Array(encoder1));
-    }
+      const awarenessStates = doc.awareness.getStates();
+      if (awarenessStates.size > 0) {
+        const encoder1 = utils.encoding.createEncoder();
+        utils.encoding.writeVarUint(encoder1, utils.messageAwareness);
+        utils.encoding.writeVarUint8Array(
+          encoder1,
+          utils.awarenessProtocol.encodeAwarenessUpdate(
+            doc.awareness,
+            Array.from(awarenessStates.keys())
+          )
+        );
+        utils.send(doc, injectedWS, utils.encoding.toUint8Array(encoder1));
+      }
   }
 });
 

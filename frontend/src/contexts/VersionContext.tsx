@@ -34,6 +34,7 @@ interface QuillVersionContextType {
   registerQuill: (quill: Quill) => void;
   saveVersion: (label?: string) => Promise<Version | null>;
   loadVersion: (versionId: string) => Promise<boolean>;
+  loadVersions: () => void;
   deleteVersion: (versionId: string) => Promise<void>;
   createNamedSnapshot: (name: string) => Promise<Version | null>;
   toggleAutoSave: () => void;
@@ -93,9 +94,6 @@ export const QuillVersionProvider = ({
   }, [docId]);
 
   // Initialize - Load versions from API on mount
-  useEffect(() => {
-    loadVersions();
-  }, [loadVersions]);
 
   // Register Quill instance
   const registerQuill = useCallback(
@@ -227,6 +225,7 @@ export const QuillVersionProvider = ({
       registerQuill,
       saveVersion,
       loadVersion,
+      loadVersions,
       deleteVersion,
       createNamedSnapshot,
       toggleAutoSave,
@@ -241,6 +240,7 @@ export const QuillVersionProvider = ({
       registerQuill,
       saveVersion,
       loadVersion,
+      loadVersions,
       deleteVersion,
       createNamedSnapshot,
       toggleAutoSave,
