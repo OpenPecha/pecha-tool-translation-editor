@@ -215,7 +215,7 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
               </ToolbarButton>
               <ToolbarButton
                 title="Versions"
-                className="ql-history"
+                className=""
                 onClick={() => setOpenHistory(!openHistory)}
               >
                 <FaHistory />

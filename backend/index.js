@@ -55,7 +55,7 @@ app.use(express.json({ limit: "50mb" })); // Increase JSON payload limit
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use("/comments", commentsRoutes);
 app.use("/versions", versionsRoutes);
-app.use("/documents", documentsRoutes(getYDoc));
+app.use("/documents", documentsRoutes);
 app.use("/pecha", pechaRoutes);
 app.use("/texts", textsRoutes);
 app.use("/users",userRoutes)
@@ -92,12 +92,6 @@ wss.on("connection", async (ws, request) => {
       });
 
       if (docObject) {
-        // Apply stored Y.Doc state if it exists
-        if (docObject.docs_y_doc_state) {
-          Y.applyUpdate(doc, docObject.docs_y_doc_state);
-          // Log the content after applying the update
-        }
-
         await addMemberAsViewer(docId, userId);
       } 
     }

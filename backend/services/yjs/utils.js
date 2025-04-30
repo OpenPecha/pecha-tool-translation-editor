@@ -93,53 +93,34 @@ const closeConn = (doc, conn) => {
         where: { id:identifier },
         select: { docs_y_doc_state: true },
       });
-      if (docInstance && docInstance.docsYDocState) {
-        Y.applyUpdate(doc, docInstance.docsYDocState);
-      }
+      if (docInstance && docInstance.docs_y_doc_state) {
+        Y.applyUpdate(doc, docInstance.docs_y_doc_state);
+      } 
     },
     writeState: async (ydoc) => {
       const id = ydoc.name
       const state = Y.encodeStateAsUpdate(ydoc)
-      // const base64Encoded = fromUint8Array(state)
-      // const binaryEncoded = toUint8Array(base64Encoded)
       const delta = ydoc.getText(id).toDelta()
-      const existingDoc = await prisma.doc.findUnique({
-        where: { id },
-      });
       if (delta && delta.length > 0 ) {
-        if (!existingDoc) {
-          try {
-            await prisma.doc.create({
-              data: {
-                id,
-                identifier:id,
-                docs_prosemirror_delta: delta,
-                docs_y_identifierdoc_state: state
-              },
-            });
-          } catch (e) {
-            console.log(e)
-          }
-        } else {
-          const deltaChanged = JSON.stringify(existingDoc.docs_prosemirror_delta) !== JSON.stringify(delta);
-          const stateChanged = !equalUint8Arrays(existingDoc.docs_y_doc_state, state);
-          if (deltaChanged || stateChanged) {
-          try {
-            console.log('updated database')
-            await prisma.doc.update({
-              where: { id },
-              data: {
-                docs_prosemirror_delta: delta,
-                docs_y_doc_state: state,
-              },
-            });
+        console.log('updated database', JSON.stringify(delta, null, 2))
+  
+        try {
            
-          } catch (e) {
-            console.log(e)
-          }
-        }
+          await prisma.doc.update({
+            where: { id },
+            data: {
+              docs_prosemirror_delta: delta,
+              docs_y_doc_state: state,
+            },
+          });
+          
+        } catch (e) {
+          console.log(e)
         }
       }
+
+
+        
     },
   }
 

@@ -6,7 +6,6 @@ const messageListener = (conn, doc, message) => {
     const encoder = utils.encoding.createEncoder();
     const decoder = utils.decoding.createDecoder(message);
     const messageType = utils.decoding.readVarUint(decoder);
-
     // eslint-disable-next-line default-casec
     switch (messageType) {
       case utils.messageSync:

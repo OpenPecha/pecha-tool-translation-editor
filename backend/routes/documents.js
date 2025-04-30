@@ -3,7 +3,7 @@ const {authenticate} = require("../middleware/authenticate");
 const { PrismaClient } = require("@prisma/client");
 const Y = require("yjs");
 const multer = require("multer");
-const fs = require("fs").promises;
+const { WSSharedDoc } = require("../services");
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -18,9 +18,9 @@ const upload = multer({
   },
 });
 
-module.exports = (getYDoc) => {
   // Create a new document
   router.post("/", authenticate, upload.single("file"), async (req, res) => {
+
     try {
       const document_id = crypto.randomUUID();
       const { identifier, isRoot, rootId,language } = req.body;
@@ -29,7 +29,7 @@ module.exports = (getYDoc) => {
           .status(400)
           .json({ error: "Missing identifier in query params" });
 
-      const doc = getYDoc(document_id, req.user.id);
+      const doc = new WSSharedDoc(document_id, req.user.id);
       // Update the Y.doc with file content
       const prosemirrorText = doc.getText(document_id);
       if (req?.file) {
@@ -217,7 +217,7 @@ module.exports = (getYDoc) => {
       let delta = [];
       if (document.docs_y_doc_state) {
         const ydoc = new Y.Doc();
-        Y.applyUpdate(ydoc, document.docs_y_doc_state);
+        // Y.applyUpdate(ydoc, document.docs_y_doc_state);
         delta = ydoc.getText(document.identifier).toDelta(); // Convert to Quill-compatible Delta
       } else if (document.docs_prosemirror_delta) {
         delta = document.docs_prosemirror_delta;
@@ -259,7 +259,7 @@ module.exports = (getYDoc) => {
       let delta = [];
       if (document.docs_y_doc_state) {
         const ydoc = new Y.Doc();
-        Y.applyUpdate(ydoc, document.docs_y_doc_state);
+        // Y.applyUpdate(ydoc, document.docs_y_doc_state);
         delta = ydoc.getText(document.identifier).toDelta(); // Convert to Quill-compatible Delta
       } else if (document.docs_prosemirror_delta) {
         delta = document.docs_prosemirror_delta;
@@ -565,5 +565,4 @@ module.exports = (getYDoc) => {
     }
   });
 
-  return router;
-};
+  module.exports = router;

@@ -40,8 +40,7 @@ const Editor = ({
     const signal = new AbortController();
 
     const editorId = documentId;
-    if (!editorRef.current) return;
-
+    if (!editorRef.current || !yText || !yjsProvider?.awareness) return;
     // Initialize the Yjs document and text with awareness
 
     const quill = new Quill(editorRef.current, {
@@ -64,12 +63,12 @@ const Editor = ({
             },
           },
         },
-        cursors: { transformOnTextChange: false },
         history: editor_config.HISTORY_CONFIG,
         counter: { container: `#${counterId}`, unit: "character" },
       },
       readOnly: !isEditable,
       placeholder: "Start collaborating...",
+
       // className is not a valid Quill option, apply these styles to the container instead
     });
     registerQuill(quill);
@@ -86,18 +85,20 @@ const Editor = ({
       },
       signal
     );
-
+    let binding = null;
     // Create the binding between Quill and YText
-    const binding = new QuillBinding(yText!, quill, yjsProvider?.awareness);
-
-    // Listen for sync events from the provider
-    yjsProvider?.on("sync", (isSynced: boolean) => {
+    if (quill && yText.length > 0 && yjsProvider?.awareness) {
+      binding = new QuillBinding(yText, quill, yjsProvider?.awareness);
+    }
+    const handleSync = (isSynced: boolean) => {
       setSynced(isSynced);
       if (isSynced) {
         setShowOverlay(false);
       }
-    });
+    };
 
+    // Listen for sync events from the provider
+    yjsProvider?.on("sync", handleSync);
     // Fetch comments when the editor loads
     quill.on("text-change", function (delta, oldDelta, source) {
       if (source === "user") {
@@ -128,11 +129,12 @@ const Editor = ({
       }
     });
     return () => {
+      yjsProvider?.off("sync", handleSync);
+      binding?.destroy();
       unregisterQuill2("editor" + editorId);
-      binding.destroy();
       signal.abort();
     };
-  }, []);
+  }, [editorRef, yText?.length, yjsProvider, documentId, isEditable]);
   function addSuggestion() {
     if (!currentRange) return;
 
@@ -150,12 +152,10 @@ const Editor = ({
       <TableOfContent documentId={documentId} />
       <div className="relative h-full flex justify-center">
         <div className="editor-container w-full max-w-[816px]  h-full flex relative overflow-hidden ">
-          {editorRef.current && (
-            <LineNumberVirtualized
-              editorRef={editorRef}
-              documentId={documentId}
-            />
-          )}
+          <LineNumberVirtualized
+            editorRef={editorRef}
+            documentId={documentId}
+          />
           <div
             ref={editorRef}
             className={`editor-content flex-1 pb-3 `}

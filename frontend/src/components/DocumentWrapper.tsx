@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { useCurrentDoc } from "@/hooks/useCurrentDoc";
 import { EditorProvider } from "@/contexts/EditorContext";
@@ -19,16 +19,96 @@ export interface Translation {
 function DocumentsWrapper() {
   const { id } = useParams();
   const { currentDoc, loading, error, isEditable } = useCurrentDoc(id);
+  const previousIdRef = useRef<string | null>(null);
 
   const [selectedTranslationId, setSelectedTranslationId] = useState<
     string | null
   >(null);
+  
+  // Track previous translation ID for cleanup
+  const previousTranslationIdRef = useRef<string | null>(null);
+  
+  // Use useEffect to properly clean up WebSocket connections when component unmounts or document changes
+  useEffect(() => {
+    // Store the current ID for comparison on next render
+    const previousId = previousIdRef.current;
+    previousIdRef.current = id ?? null;
+    
+    // If ID changed (not first render), clean up previous connections
+    if (previousId && previousId !== id) {
+      console.log(`Document ID changed from ${previousId} to ${id}, cleaning up connections`);
+      cleanupWebSocketConnections(previousId);
+    }
+    
+    // This will run when the component unmounts
+    return () => {
+      console.log('DocumentsWrapper unmounting, cleaning up all connections');
+      // Force cleanup of any lingering WebSocket connections
+      cleanupAllWebSocketConnections();
+    };
+  }, [id]);
+  
+  // Function to clean up all WebSocket connections
+  const cleanupAllWebSocketConnections = () => {
+    if (window.yjsWebsocketInstances && window.yjsWebsocketInstances.length > 0) {
+      console.log(`Cleaning up ${window.yjsWebsocketInstances.length} WebSocket connections`);
+      window.yjsWebsocketInstances.forEach(provider => {
+        if (provider && provider.wsconnected) {
+          provider.disconnect();
+        }
+      });
+      // Clear the instances array
+      window.yjsWebsocketInstances = [];
+    }
+  };
+  
+  // Function to clean up WebSocket connections for a specific document
+  const cleanupWebSocketConnections = (documentId: string) => {
+    if (window.yjsWebsocketInstances && window.yjsWebsocketInstances.length > 0) {
+      // Find providers associated with this document ID
+      const providersToRemove = window.yjsWebsocketInstances.filter(
+        provider => provider.roomname === documentId
+      );
+      
+      if (providersToRemove.length > 0) {
+        console.log(`Found ${providersToRemove.length} connections for document ${documentId}`);
+        providersToRemove.forEach(provider => {
+          if (provider.wsconnected) {
+            console.log(`Disconnecting WebSocket for document ${provider.roomname}`);
+            provider.disconnect();
+          }
+        });
+        
+        // Update the global tracking array
+        window.yjsWebsocketInstances = window.yjsWebsocketInstances.filter(
+          provider => provider.roomname !== documentId
+        );
+      }
+    }
+  };
+
+  // Handle translation selection with proper cleanup
+  const handleSelectTranslation = (translationId: string | null) => {
+    // Store the current translation ID for cleanup
+    const previousTranslationId = previousTranslationIdRef.current;
+    previousTranslationIdRef.current = translationId;
+    
+    // Clean up previous translation provider if exists
+    if (previousTranslationId) {
+      console.log(`Translation changed from ${previousTranslationId} to ${translationId}, cleaning up`);
+      cleanupWebSocketConnections(previousTranslationId);
+    }
+    
+    setSelectedTranslationId(translationId);
+  };
+  
   if (loading) {
     return <div className="loading">Loading...</div>;
   }
   if (error) {
     return <div className="error">{error}</div>;
   }
+  
   return (
     <EditorProvider>
       <>
@@ -43,7 +123,7 @@ function DocumentsWrapper() {
           </YjsProvider>
 
           {!selectedTranslationId ? (
-            <SideMenu setSelectedTranslationId={setSelectedTranslationId} />
+            <SideMenu setSelectedTranslationId={handleSelectTranslation} />
           ) : (
             <YjsProvider key={selectedTranslationId}>
               <DocumentEditor
@@ -56,7 +136,7 @@ function DocumentsWrapper() {
           {selectedTranslationId && (
             <div className="relative">
               <button
-                onClick={() => setSelectedTranslationId(null)}
+                onClick={() => handleSelectTranslation(null)}
                 className="absolute right-2 top-2 z-10 rounded-full bg-white p-1 shadow-md hover:bg-gray-100"
                 aria-label="Close translation view"
               >
