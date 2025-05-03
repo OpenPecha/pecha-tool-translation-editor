@@ -183,11 +183,12 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
   }, [editorRef, quill]);
 
   useEffect(() => {
-    if (!quill) return;
-
     const debouncedUpdateLineNumbers = debounce(() => {
       requestAnimationFrame(() => updateLineNumbers());
     }, 300);
+    console.log("linenumber trigger");
+    debouncedUpdateLineNumbers();
+    if (!quill) return;
 
     const editorContainer = editorRef?.current?.querySelector(".ql-editor");
     if (editorContainer) {

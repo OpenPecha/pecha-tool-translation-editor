@@ -98,12 +98,12 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
     if (value === "") {
       // Clear all header formats (h1-h6)
       for (let i = 1; i <= MAX_HEADING_LEVEL; i++) {
-        quill.format(`header${i}`, false);
+        quill.format(`h${i}`, false);
       }
       // Set to paragraph
-      quill.format("header", false);
+      quill.format("h", false);
     } else {
-      quill.format(`header${value}`, true);
+      quill.format(`h${value}`, true);
     }
   };
   const handleSectionCreation = () => {
@@ -151,11 +151,13 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
                 className="ql-undo"
                 title="Undo"
                 disabled={quill?.history.stack.undo.length === 0}
+                onClick={() => quill?.history.undo()}
               />
               <button
                 className="ql-redo"
                 title="Redo"
                 disabled={quill?.history.stack.redo.length === 0}
+                onClick={() => quill?.history.redo()}
               />
             </span>
             <span className="ql-formats" style={isEnabledStyle}>
@@ -196,7 +198,13 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
               className="ql-background"
               style={isEnabledStyle}
               title="Highlight"
-            ></select>
+            >
+              <option value=""></option>
+              <option value="#ffff00">Yellow</option>
+              <option value="#ffd700">Gold</option>
+              <option value="#90ee90">Light Green</option>
+              <option value="#add8e6">Light Blue</option>
+            </select>
             <span className="ql-formats" title="Section" style={isEnabledStyle}>
               <ToolbarButton
                 onClick={handleSectionCreation}

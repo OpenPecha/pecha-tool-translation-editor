@@ -40,7 +40,7 @@ const upload = multer({
         }
       }
       const delta = prosemirrorText.toDelta();
-      const state = Y.encodeStateAsUpdate(doc);
+      const state = Y.encodeStateAsUpdateV2(doc);
 
       const document = await prisma.$transaction(async (tx) => {
       const doc = await tx.doc.create({

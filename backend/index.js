@@ -31,19 +31,27 @@ app.use(cors({
 
 
 const server = http.createServer(app);
+const pingTimeout = 30000
 const wss = new WebSocket.Server({
   server,
   clientTracking: true,
-  maxPayload: 1024 * 1024 * 50,
+  maxPayload: 1024 * 1024 * 1024 * 50,
+  WebSocket: WebSocket
 });
-
-const getYDoc = (docName, userId) =>
-  map.setIfUndefined(utils.docs, docName, () => {
-    const doc = new WSSharedDoc(docName, userId);
-    doc.gc = false; // Disable garbage collection for large docs
-    if (utils.persistence !== null) {
-      utils.persistence.bindState(docName, doc);
+let count=0;
+const getYDoc = (docId, userId) =>
+  map.setIfUndefined(utils.docs, docId, () => {
+    const doc = new WSSharedDoc(docId, userId);
+    // Disable garbage collection for large docs
+    doc.gc = false; 
+    if(utils.persistence !== null) {
+      utils.persistence.bindState(docId, doc)
     }
+    utils.docs.set(docId, doc)
+    doc.on("update", (update) => {
+      console.log("Doc updated:",count++)
+
+    })
     return doc;
   });
  
@@ -60,7 +68,6 @@ app.use("/pecha", pechaRoutes);
 app.use("/texts", textsRoutes);
 app.use("/users",userRoutes)
 app.use("/projects",projectRoutes)
-const pingTimeout = 30000;
 const clients = new Set();
 
 wss.on("connection", async (ws, request) => {
@@ -79,7 +86,6 @@ wss.on("connection", async (ws, request) => {
   } catch (e) {
     console.log('errer user',e)
   }
-
   let doc = getYDoc(docId, userId);
   try {
     if (userId) {
@@ -101,7 +107,7 @@ wss.on("connection", async (ws, request) => {
 
   doc.conns.set(injectedWS, new Set());
 
-  ws.on("message", async (message) => {
+  ws.on("message", async (message) => {  
     messageListener(injectedWS, doc, new Uint8Array(message));
     clients.add(ws);
     for (const client of clients) {
@@ -135,9 +141,6 @@ wss.on("connection", async (ws, request) => {
     clearInterval(pingInterval);
   });
 
-  ws.on("error", (error) => {
-    console.error("WebSocket Error:", error.message);
-  });
 
   ws.on("ping", () => {
     pingReceived = true;

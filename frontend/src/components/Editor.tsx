@@ -13,7 +13,6 @@ import CommentModal from "./Comment/CommentModal";
 import TableOfContent from "./TableOfContent";
 import { useEditor } from "@/contexts/EditorContext";
 import { editor_config, EDITOR_ENTER_ONLY } from "@/utils/editorConfig";
-
 quill_import();
 
 const Editor = ({
@@ -27,16 +26,16 @@ const Editor = ({
   const unique = useId().replaceAll(":", "");
   const toolbarId = "toolbar-container" + "-" + unique;
   const counterId = "counter-container" + "-" + unique;
-  const { yText, yjsProvider } = useContext(YjsContext);
-  const [synced, setSynced] = useState(false);
-  const [showOverlay, setShowOverlay] = useState(true);
+  const { yText, yjsProvider, isSynced, ydoc } = useContext(YjsContext);
   const [currentRange, setCurrentRange] = useState<Range | null>(null);
 
   const [showCommentModal, setShowCommentModal] = useState(false);
   const { registerQuill } = useQuillVersion();
   const { registerQuill: registerQuill2, unregisterQuill: unregisterQuill2 } =
     useEditor();
+  const bindingRef = useRef<QuillBinding | null>(null);
   useEffect(() => {
+    console.log("render");
     const signal = new AbortController();
 
     const editorId = documentId;
@@ -85,20 +84,21 @@ const Editor = ({
       },
       signal
     );
-    let binding = null;
     // Create the binding between Quill and YText
-    if (quill && yText.length > 0 && yjsProvider?.awareness) {
-      binding = new QuillBinding(yText, quill, yjsProvider?.awareness);
+    if (
+      quill &&
+      yText.length > 0 &&
+      yjsProvider?.awareness &&
+      !bindingRef.current
+    ) {
+      bindingRef.current = new QuillBinding(
+        yText,
+        quill,
+        yjsProvider?.awareness
+      );
+      console.log(bindingRef.current);
     }
-    const handleSync = (isSynced: boolean) => {
-      setSynced(isSynced);
-      if (isSynced) {
-        setShowOverlay(false);
-      }
-    };
 
-    // Listen for sync events from the provider
-    yjsProvider?.on("sync", handleSync);
     // Fetch comments when the editor loads
     quill.on("text-change", function (delta, oldDelta, source) {
       if (source === "user") {
@@ -129,12 +129,12 @@ const Editor = ({
       }
     });
     return () => {
-      yjsProvider?.off("sync", handleSync);
-      binding?.destroy();
+      bindingRef.current?.destroy();
       unregisterQuill2("editor" + editorId);
       signal.abort();
     };
-  }, [editorRef, yText?.length, yjsProvider, documentId, isEditable]);
+  }, [yText?.length, yjsProvider?.awareness, documentId, isEditable]);
+
   function addSuggestion() {
     if (!currentRange) return;
 
@@ -146,7 +146,7 @@ const Editor = ({
       <Toolbar
         id={toolbarId}
         addSuggestion={addSuggestion}
-        synced={synced}
+        synced={isSynced}
         documentId={documentId}
       />
       <TableOfContent documentId={documentId} />
@@ -162,7 +162,7 @@ const Editor = ({
             style={{ fontFamily: "Monlam", fontSize: "1rem", lineHeight: 1.5 }}
           />
         </div>
-        <OverlayLoading isLoading={showOverlay} />
+        <OverlayLoading isLoading={!isSynced} />
         <div
           className="absolute bottom-2 right-2 bg-white rounded-lg shadow-md px-4 py-2 text-gray-600 text-sm border border-gray-200"
           id={`${counterId}`}

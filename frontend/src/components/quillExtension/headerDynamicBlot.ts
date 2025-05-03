@@ -4,17 +4,20 @@ const Block = Quill.import("blots/block");
 // Factory function to create custom header blots
 function createHeaderBlot(level) {
   class HeaderBlot extends Block {
-    static blotName = `header${level}`;
+    static blotName = `h${level}`;
     static tagName = `h${level}`; // This will create <h7>, <h8>, etc.
 
     static create(value) {
       const node = super.create();
-      node.setAttribute("data-level", level);
+      // We only need to track that this is a header of this level
+      // The value will be true when the format is applied
       return node;
     }
 
-    static formats(node) {
-      return node.getAttribute("data-level");
+    static formats() {
+      // Return true to indicate this format is applied
+      // This makes it consistent with other formats like bold, italic
+      return true;
     }
   }
 

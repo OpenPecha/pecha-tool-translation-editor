@@ -11,7 +11,7 @@ interface YjsContextType {
   yComments: Y.Array<any> | null;
   clearYjsProvider: () => void;
   toggleConnection: () => void;
-  online: boolean;
+  isSynced: boolean;
 }
 
 const YjsContext = React.createContext<YjsContextType>({} as YjsContextType);
@@ -19,11 +19,6 @@ const YjsContext = React.createContext<YjsContextType>({} as YjsContextType);
 const { Provider, Consumer } = YjsContext;
 const CLIENT_WEBSOCKET_URL =
   import.meta.env.VITE_CLIENT_WEB_SOCKET || "ws://localhost:8000";
-
-// Initialize global tracking for WebSocket instances
-if (typeof window !== 'undefined' && !window.yjsWebsocketInstances) {
-  window.yjsWebsocketInstances = [];
-}
 
 const withYjs = <P extends object>(
   Component: React.ComponentType<P & YjsContextType>
@@ -40,6 +35,7 @@ const withYjs = <P extends object>(
 
 interface YjsProviderProps {
   children: ReactNode;
+  onDocumentReady?: (doc: Y.Doc) => void;
 }
 
 const YjsProvider = ({ children }: YjsProviderProps) => {
@@ -49,73 +45,39 @@ const YjsProvider = ({ children }: YjsProviderProps) => {
   const [ydoc, setYDoc] = useState<Y.Doc | null>(null);
   const [yText, setYText] = useState<Y.Text | null>(null);
   const [yComments, setYComments] = useState<Y.Array<any> | null>(null);
-  const [online, setOnline] = useState<boolean>(true);
   const awarenessProtocol = { Awareness };
-
+  const [isSynced, setIsSynced] = useState<boolean>(false);
   // Keep track of event listeners for cleanup
   type YjsEventHandler = (data: Record<string, unknown>) => void;
-  const eventListenersRef = useRef<{[key: string]: YjsEventHandler[]}>({});
 
   // Cleanup function to properly handle WebSocket disconnection
   useEffect(() => {
+    if (yjsProvider) {
+      yjsProvider.on("sync", setIsSynced);
+    }
+
     // Return cleanup function that runs when component unmounts
     return () => {
-      if (yjsProvider) {
-        console.log('Cleaning up YjsProvider on unmount');
-        
-        // Remove all registered event listeners
-        if (eventListenersRef.current) {
-          Object.keys(eventListenersRef.current).forEach(eventName => {
-            const typedEventName = eventName as "sync" | "status" | "connection-close" | "connection-error";
-            eventListenersRef.current[eventName].forEach(listener => {
-              yjsProvider.off(typedEventName, listener);
-            });
-          });
-        }
-        
-        // Disconnect WebSocket if connected
-        if (yjsProvider.wsconnected) {
-          console.log('Disconnecting WebSocket');
-          yjsProvider.disconnect();
-        }
-        
-        // Remove from global tracking
-        if (window.yjsWebsocketInstances) {
-          window.yjsWebsocketInstances = window.yjsWebsocketInstances.filter(
-            provider => provider !== yjsProvider
-          );
-        }
+      if (yjsProvider && yjsProvider.wsconnected) {
+        yjsProvider.disconnect();
+        yjsProvider.off("sync", setIsSynced);
       }
-      
+
       // Destroy Y.Doc to free memory
       if (ydoc) {
-        console.log('Destroying Y.Doc');
         ydoc.destroy();
       }
     };
   }, [yjsProvider, ydoc]);
-
-  // Helper function to register event listeners for cleanup
-  const registerEventListener = (
-    provider: WebsocketProvider, 
-    eventName: "sync" | "status" | "connection-close" | "connection-error", 
-    listener: YjsEventHandler
-  ) => {
-    if (!eventListenersRef.current[eventName]) {
-      eventListenersRef.current[eventName] = [];
-    }
-    eventListenersRef.current[eventName].push(listener);
-    provider.on(eventName, listener);
-  };
 
   const createYjsProvider = (docIdentifier: string | null = null) => {
     // First clean up any existing provider to prevent memory leaks
     if (yjsProvider) {
       clearYjsProvider();
     }
-    
+
     let identifier = docIdentifier;
-    
+
     // Always create a new Y.Doc instance to prevent reuse issues
     const ydocInstance = new Y.Doc();
     setYDoc(ydocInstance);
@@ -154,80 +116,37 @@ const YjsProvider = ({ children }: YjsProviderProps) => {
       identifier,
       ydocInstance,
       {
-        params: { token: localStorage.getItem("access_token") ?? "" },
-        WebSocketPolyfill: WebSocket,
-        resyncInterval: 4000,
+        params: {
+          token: localStorage.getItem("access_token") ?? "",
+        },
         awareness: awareness,
+        connect: true,
+        resyncInterval: 3000,
+        WebSocketPolyfill: WebSocket,
       }
     );
 
-    // Add this provider to global tracking for cleanup
-    if (window.yjsWebsocketInstances) {
-      window.yjsWebsocketInstances.push(provider);
+    // Ensure proper binary type for WebSocket
+    if (provider.ws) {
+      provider.ws.binaryType = "arraybuffer";
     }
 
-    // Set up event listeners for WebSocket connection with tracking for cleanup
-    const statusListener = ({ status }: { status: string }) => {
-      console.log("Connection status:", status);
-
-      // When connected, ensure awareness state is set
-      if (status === "connected") {
-        awareness.setLocalState({
-          user: {
-            name: localStorage.getItem("username") ?? "Anonymous User",
-            id: Math.floor(Math.random() * 100000),
-            color: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
-          },
-          cursor: {},
-          selection: null,
-        });
-      }
-    };
-    
-    // Register event listener for cleanup tracking
-    registerEventListener(provider, "status", statusListener as YjsEventHandler);
-    
-    console.log(`Created new YjsProvider for document: ${identifier}`);
     setYjsProvider(provider);
   };
 
   const clearYjsProvider = () => {
-    console.log('Manually clearing YjsProvider');
-    
     if (yjsProvider) {
-      // Remove all registered event listeners
-      if (eventListenersRef.current) {
-        Object.keys(eventListenersRef.current).forEach(eventName => {
-          const typedEventName = eventName as "sync" | "status" | "connection-close" | "connection-error";
-          eventListenersRef.current[eventName].forEach(listener => {
-            yjsProvider.off(typedEventName, listener);
-          });
-        });
-      }
-      
-      // Reset event listeners tracking
-      eventListenersRef.current = {};
-      
       // Disconnect WebSocket if connected
       if (yjsProvider.wsconnected) {
-        console.log('Disconnecting WebSocket');
         yjsProvider.disconnect();
       }
-      
-      // Remove from global tracking
-      if (window.yjsWebsocketInstances) {
-        window.yjsWebsocketInstances = window.yjsWebsocketInstances.filter(
-          provider => provider !== yjsProvider
-        );
-      }
     }
-    
+
     // Destroy Y.Doc to free memory
     if (ydoc) {
-      console.log('Destroying Y.Doc');
       ydoc.destroy();
     }
-    
+
     // Reset state
     setYjsProvider(null);
     setYDoc(null);
@@ -239,10 +158,8 @@ const YjsProvider = ({ children }: YjsProviderProps) => {
     if (!yjsProvider) return;
     if (yjsProvider.wsconnected) {
       yjsProvider.disconnect();
-      setOnline(false);
     } else {
       yjsProvider.connect();
-      setOnline(true);
     }
   };
 
@@ -256,7 +173,7 @@ const YjsProvider = ({ children }: YjsProviderProps) => {
         yComments,
         clearYjsProvider,
         toggleConnection,
-        online,
+        isSynced,
       }}
     >
       {children}

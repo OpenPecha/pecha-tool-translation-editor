@@ -5,8 +5,7 @@ const encoding = require('lib0/encoding')
 const decoding = require('lib0/decoding')
 const Y = require('yjs')
 const { PrismaClient } = require("@prisma/client");
-const { fromUint8Array, toUint8Array } = require('js-base64')
-
+const logger = require('../../utils/logger');
 
 const prisma = new PrismaClient();
 
@@ -88,24 +87,29 @@ const closeConn = (doc, conn) => {
 
   persistence = {
 
-    bindState: async (identifier, doc) => {
+    bindState: async (id, doc) => {
       const docInstance = await prisma.doc.findUnique({
-        where: { id:identifier },
+        where: { id },
         select: { docs_y_doc_state: true },
       });
-      if (docInstance && docInstance.docs_y_doc_state) {
-        Y.applyUpdate(doc, docInstance.docs_y_doc_state);
-      } 
+      
+      if (docInstance?.docs_y_doc_state) {
+          Y.applyUpdateV2(doc, docInstance.docs_y_doc_state);
+      }
     },
     writeState: async (ydoc) => {
+
       const id = ydoc.name
-      const state = Y.encodeStateAsUpdate(ydoc)
-      const delta = ydoc.getText(id).toDelta()
-      if (delta && delta.length > 0 ) {
-        console.log('updated database', JSON.stringify(delta, null, 2))
-  
+      const state = Y.encodeStateAsUpdateV2(ydoc)
+      const stateSizeInBytes = state.byteLength;
+      const yText = ydoc.getText(id)
+      const delta = yText.toDelta()
+      console.log('Yjs document state size:', stateSizeInBytes, 'bytes');
+      // ✅ Build a fresh Y.Doc and apply delta
+      // Get the text content and delta with proper encoding
         try {
-           
+          
+          // Update the database with proper encoding
           await prisma.doc.update({
             where: { id },
             data: {
@@ -113,22 +117,24 @@ const closeConn = (doc, conn) => {
               docs_y_doc_state: state,
             },
           });
-          
-        } catch (e) {
-          console.log(e)
+          // Write delta to a separate file for debugging/tracking changes
+          const fs = require('fs');
+          const path = require('path');
+          const dataDir = path.join(__dirname, '../../../logs');
+          if (!fs.existsSync(dataDir)) {
+            fs.mkdirSync(dataDir, { recursive: true });
+          }
+          const dataFile = path.join(dataDir, 'data.txt');
+          fs.writeFileSync(dataFile, `${new Date().toISOString()} - Doc ID: ${id}\n${JSON.stringify(delta, null, 2)}\n\n`);
+        } catch (error) {
+          console.log(error)
         }
-      }
 
 
         
     },
   }
 
-
-  const equalUint8Arrays = (a, b) => {
-    if (a.length !== b.length) return false;
-    return a.every((val, i) => val === b[i]);
-  }
 
 module.exports = {
   syncProtocol,
