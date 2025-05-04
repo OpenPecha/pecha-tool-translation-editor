@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, ReactNode } from "react";
 import { WebsocketProvider } from "y-websocket";
 import * as Y from "yjs";
 import { Awareness } from "y-protocols/awareness.js";
+import { useAuth } from "@/auth/use-auth-hook";
 
 interface YjsContextType {
   yjsProvider: WebsocketProvider | null;
@@ -47,6 +48,8 @@ const YjsProvider = ({ children }: YjsProviderProps) => {
   const [yComments, setYComments] = useState<Y.Array<any> | null>(null);
   const awarenessProtocol = { Awareness };
   const [isSynced, setIsSynced] = useState<boolean>(false);
+  const { currentUser } = useAuth();
+
   // Keep track of event listeners for cleanup
   type YjsEventHandler = (data: Record<string, unknown>) => void;
 
@@ -74,7 +77,13 @@ const YjsProvider = ({ children }: YjsProviderProps) => {
     let identifier = docIdentifier;
 
     // Always create a new Y.Doc instance to prevent reuse issues
-    const ydocInstance = new Y.Doc();
+    const ydocInstance = new Y.Doc({
+      gc: true,
+      gcFilter: () => true,
+      meta: {
+        identifier,
+      },
+    });
     setYDoc(ydocInstance);
 
     if (!identifier) {
@@ -97,7 +106,7 @@ const YjsProvider = ({ children }: YjsProviderProps) => {
     // Set up initial awareness state with user information
     awareness.setLocalState({
       user: {
-        name: localStorage.getItem("username") || "Anonymous User",
+        name: currentUser?.name ?? "Anonymous User",
         id: Math.floor(Math.random() * 100000),
         color: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
       },
@@ -116,8 +125,10 @@ const YjsProvider = ({ children }: YjsProviderProps) => {
         },
         awareness: awareness,
         connect: true,
-        resyncInterval: 3000,
+        resyncInterval: 10000,
         WebSocketPolyfill: WebSocket,
+        maxBackoffTime: 60000,
+        disableBc: true,
       }
     );
 
