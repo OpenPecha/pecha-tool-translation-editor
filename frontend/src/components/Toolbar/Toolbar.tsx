@@ -25,7 +25,6 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
   const { getQuill, activeEditor } = useEditor();
   const [currentHeader, setCurrentHeader] = useState<string | number>("");
   const quill = getQuill(documentId);
-
   useEffect(() => {
     const signal = new AbortController();
     const handleClickOutside = (event: MouseEvent) => {
@@ -69,9 +68,9 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
     const handleSelectionChange = (range: any) => {
       if (range) {
         const format = quill.getFormat(range);
-        // Check for custom headers
-        for (let i = 1; i <= MAX_HEADING_LEVEL + 1; i++) {
-          const key_name = `header${i}`;
+        // Check for custom headers using the h1, h2, etc. format that's used in handleHeadingChange
+        for (let i = 1; i <= MAX_HEADING_LEVEL; i++) {
+          const key_name = `h${i}`;
 
           if (format[key_name]) {
             setCurrentHeader(i);
@@ -81,8 +80,11 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
         // fallback to default Quill header if no custom match
         if (format.header) {
           setCurrentHeader(format.header);
+        } else if (format.headerN) {
+          // Also check for headerN format which is used in some places
+          setCurrentHeader(format.headerN);
         } else {
-          setCurrentHeader("");
+          setCurrentHeader("" as string | number);
         }
       }
     };
@@ -133,7 +135,6 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
 
   const showToolbar = activeEditor === documentId;
   const isEnabledStyle = { display: isEnabled ? "flex" : "none" };
-
   return (
     <>
       {createPortal(

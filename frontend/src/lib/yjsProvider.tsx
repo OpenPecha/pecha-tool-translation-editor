@@ -62,13 +62,8 @@ const YjsProvider = ({ children }: YjsProviderProps) => {
         yjsProvider.disconnect();
         yjsProvider.off("sync", setIsSynced);
       }
-
-      // Destroy Y.Doc to free memory
-      if (ydoc) {
-        ydoc.destroy();
-      }
     };
-  }, [yjsProvider, ydoc]);
+  }, [yjsProvider]);
 
   const createYjsProvider = (docIdentifier: string | null = null) => {
     // First clean up any existing provider to prevent memory leaks

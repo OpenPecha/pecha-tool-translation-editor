@@ -6,7 +6,6 @@ import Toolbar from "./Toolbar/Toolbar";
 import "quill/dist/quill.snow.css";
 import quill_import from "./quillExtension";
 import OverlayLoading from "./OverlayLoading";
-import { fetchDocument, fetchDocumentWithContent } from "../api/document";
 import { useQuillVersion } from "../contexts/VersionContext";
 import LineNumberVirtualized from "./LineNumbers";
 import CommentModal from "./Comment/CommentModal";
@@ -28,7 +27,7 @@ const Editor = ({
   const counterId = "counter-container" + "-" + unique;
   const { yText, yjsProvider, isSynced, ydoc } = useContext(YjsContext);
   const [currentRange, setCurrentRange] = useState<Range | null>(null);
-
+  const [initialSyncComplete, setInitialSyncComplete] = useState(false);
   const [showCommentModal, setShowCommentModal] = useState(false);
   const { registerQuill } = useQuillVersion();
   const { registerQuill: registerQuill2, unregisterQuill: unregisterQuill2 } =
@@ -40,18 +39,37 @@ const Editor = ({
 
     const editorId = documentId;
     if (!editorRef.current || !yText || !yjsProvider?.awareness) return;
-    // Initialize the Yjs document and text with awareness
 
+    function handleFormatChange(type: string) {
+      const range = quill.getSelection();
+      if (range) {
+        const format = quill.getFormat(range);
+        quill.format(type, !format[type]);
+      } else {
+        // If no selection, create one at cursor position
+        quill.focus();
+        const newRange = quill.getSelection(true);
+        if (newRange) {
+          const format = quill.getFormat(newRange);
+          quill.format(type, !format[type]);
+        }
+      }
+    }
+
+    // Initialize the Yjs document and text with awareness
     const quill = new Quill(editorRef.current, {
       theme: "snow",
       modules: {
         toolbar: {
           container: `#${toolbarId}`,
           handlers: {
-            headerN: function (value) {
+            bold: () => handleFormatChange("bold"),
+            italic: () => handleFormatChange("italic"),
+            underline: () => handleFormatChange("underline"),
+            headerN: function (value: string | number | null) {
               const range = quill.getSelection();
               if (range) {
-                quill.format("headerN", value || false);
+                quill.format("h", value || false);
               }
             },
             undo: function () {
@@ -131,12 +149,21 @@ const Editor = ({
       }
     });
     return () => {
+      console.log("editor unmount");
       bindingRef.current?.destroy();
       bindingRef.current = null;
+      quill.disable();
       unregisterQuill2("editor" + editorId);
       signal.abort();
     };
   }, [isSynced, yjsProvider?.awareness, documentId, isEditable]);
+
+  // Effect to track initial sync completion
+  useEffect(() => {
+    if (isSynced && !initialSyncComplete) {
+      setInitialSyncComplete(true);
+    }
+  }, [isSynced, initialSyncComplete]);
 
   function addSuggestion() {
     if (!currentRange) return;
@@ -165,7 +192,7 @@ const Editor = ({
             style={{ fontFamily: "Monlam", fontSize: "1rem", lineHeight: 1.5 }}
           />
         </div>
-        <OverlayLoading isLoading={!isSynced} />
+        <OverlayLoading isLoading={!isSynced && !initialSyncComplete} />
         <div
           className="absolute bottom-2 right-2 bg-white rounded-lg shadow-md px-4 py-2 text-gray-600 text-sm border border-gray-200"
           id={`${counterId}`}
