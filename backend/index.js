@@ -137,6 +137,7 @@ wss.on("connection", async (ws, request) => {
   }, pingTimeout);
 
   ws.on("close", async () => {
+    console.log("Client disconnected");
     utils.closeConn(doc, injectedWS);
     clearInterval(pingInterval);
   });

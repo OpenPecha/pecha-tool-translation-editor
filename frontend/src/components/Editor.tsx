@@ -62,6 +62,9 @@ const Editor = ({
             },
           },
         },
+        cursors: {
+          transformOnTextChange: false,
+        },
         history: editor_config.HISTORY_CONFIG,
         counter: { container: `#${counterId}`, unit: "character" },
       },
@@ -96,7 +99,6 @@ const Editor = ({
         quill,
         yjsProvider?.awareness
       );
-      console.log(bindingRef.current);
     }
 
     // Fetch comments when the editor loads
@@ -130,10 +132,11 @@ const Editor = ({
     });
     return () => {
       bindingRef.current?.destroy();
+      bindingRef.current = null;
       unregisterQuill2("editor" + editorId);
       signal.abort();
     };
-  }, [yText?.length, yjsProvider?.awareness, documentId, isEditable]);
+  }, [isSynced, yjsProvider?.awareness, documentId, isEditable]);
 
   function addSuggestion() {
     if (!currentRange) return;

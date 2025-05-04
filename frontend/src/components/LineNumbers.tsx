@@ -186,7 +186,6 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
     const debouncedUpdateLineNumbers = debounce(() => {
       requestAnimationFrame(() => updateLineNumbers());
     }, 300);
-    console.log("linenumber trigger");
     debouncedUpdateLineNumbers();
     if (!quill) return;
 

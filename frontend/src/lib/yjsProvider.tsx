@@ -56,7 +56,7 @@ const YjsProvider = ({ children }: YjsProviderProps) => {
       yjsProvider.on("sync", setIsSynced);
     }
 
-    // Return cleanup function that runs when component unmounts
+    // Rturn cleanup function that runs when component unmounts
     return () => {
       if (yjsProvider && yjsProvider.wsconnected) {
         yjsProvider.disconnect();
