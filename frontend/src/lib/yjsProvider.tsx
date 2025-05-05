@@ -13,6 +13,7 @@ interface YjsContextType {
   clearYjsProvider: () => void;
   toggleConnection: () => void;
   isSynced: boolean;
+  activeUsers: any;
 }
 
 const YjsContext = React.createContext<YjsContextType>({} as YjsContextType);
@@ -43,13 +44,13 @@ const YjsProvider = ({ children }: YjsProviderProps) => {
   const [yjsProvider, setYjsProvider] = useState<WebsocketProvider | null>(
     null
   );
+  const [activeUsers, setActiveUsers] = useState<any[]>([]);
   const [ydoc, setYDoc] = useState<Y.Doc | null>(null);
   const [yText, setYText] = useState<Y.Text | null>(null);
   const [yComments, setYComments] = useState<Y.Array<any> | null>(null);
   const awarenessProtocol = { Awareness };
   const [isSynced, setIsSynced] = useState<boolean>(false);
   const { currentUser } = useAuth();
-
   // Keep track of event listeners for cleanup
   type YjsEventHandler = (data: Record<string, unknown>) => void;
 
@@ -68,6 +69,26 @@ const YjsProvider = ({ children }: YjsProviderProps) => {
     };
   }, [yjsProvider]);
 
+  useEffect(() => {
+    if (!yjsProvider?.awareness) return;
+
+    const awareness = yjsProvider.awareness;
+
+    const onChange = () => {
+      const states = Array.from(awareness.getStates().values());
+      setActiveUsers(states);
+    };
+
+    awareness.on("change", onChange);
+
+    // Initial load
+    onChange();
+
+    return () => {
+      awareness.off("change", onChange);
+    };
+  }, [yjsProvider?.awareness]);
+
   const createYjsProvider = (docIdentifier: string | null = null) => {
     // First clean up any existing provider to prevent memory leaks
     if (yjsProvider) {
@@ -75,7 +96,6 @@ const YjsProvider = ({ children }: YjsProviderProps) => {
     }
 
     let identifier = docIdentifier;
-
     // Always create a new Y.Doc instance to prevent reuse issues
     const ydocInstance = new Y.Doc({
       gc: true,
@@ -127,8 +147,6 @@ const YjsProvider = ({ children }: YjsProviderProps) => {
         connect: true,
         resyncInterval: 10000,
         WebSocketPolyfill: WebSocket,
-        maxBackoffTime: 60000,
-        disableBc: true,
       }
     );
 
@@ -179,7 +197,8 @@ const YjsProvider = ({ children }: YjsProviderProps) => {
         yComments,
         clearYjsProvider,
         toggleConnection,
-        isSynced,
+        activeUsers,
+        isSynced: isSynced,
       }}
     >
       {children}

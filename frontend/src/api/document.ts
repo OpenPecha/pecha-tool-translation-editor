@@ -1,3 +1,4 @@
+import { Op } from "quill";
 import { getHeaders, getHeadersMultipart } from "./utils";
 
 const server_url = import.meta.env.VITE_SERVER_URL;
@@ -135,11 +136,7 @@ export const deleteDocument = async (id: string) => {
 };
 
 interface UpdateDocumentParams {
-  isRoot?: boolean;
-  rootId?: string | null;
-  identifier?: string;
-  name?: string;
-  isPublic?: boolean;
+  docs_prosemirror_delta: Op[];
 }
 
 export const updateDocument = async (
@@ -158,6 +155,28 @@ export const updateDocument = async (
       throw new Error(errorData.error || "Failed to update document");
     }
 
+    const updatedData = await response.json();
+    return updatedData.data;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+    throw new Error("Failed to update document");
+  }
+};
+
+
+export const updateContentDocument=async(id:string, data:UpdateDocumentParams)=>{
+  try {
+    const response = await fetch(`${server_url}/documents/${id}/content`, {
+      method: "PATCH", 
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to update document");
+    }
     const updatedData = await response.json();
     return updatedData.data;
   } catch (error) {

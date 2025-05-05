@@ -12,6 +12,8 @@ import CommentModal from "./Comment/CommentModal";
 import TableOfContent from "./TableOfContent";
 import { useEditor } from "@/contexts/EditorContext";
 import { editor_config, EDITOR_ENTER_ONLY } from "@/utils/editorConfig";
+import { updateContentDocument } from "@/api/document";
+import { LARGEDOCUMENT_SIZE } from "@/utils/Constants";
 quill_import();
 
 const Editor = ({
@@ -25,7 +27,8 @@ const Editor = ({
   const unique = useId().replaceAll(":", "");
   const toolbarId = "toolbar-container" + "-" + unique;
   const counterId = "counter-container" + "-" + unique;
-  const { yText, yjsProvider, isSynced, ydoc } = useContext(YjsContext);
+  const { yText, yjsProvider, isSynced, ydoc, activeUsers } =
+    useContext(YjsContext);
   const [currentRange, setCurrentRange] = useState<Range | null>(null);
   const [initialSyncComplete, setInitialSyncComplete] = useState(false);
   const [showCommentModal, setShowCommentModal] = useState(false);
@@ -33,6 +36,7 @@ const Editor = ({
   const { registerQuill: registerQuill2, unregisterQuill: unregisterQuill2 } =
     useEditor();
   const bindingRef = useRef<QuillBinding | null>(null);
+  const quillRef = useRef<Quill | null>(null);
   useEffect(() => {
     console.log("render");
     const signal = new AbortController();
@@ -92,6 +96,7 @@ const Editor = ({
       // className is not a valid Quill option, apply these styles to the container instead
     });
     registerQuill(quill);
+    quillRef.current = quill;
     registerQuill2(editorId, quill);
     quill?.root.addEventListener(
       "keydown",
@@ -148,8 +153,11 @@ const Editor = ({
         setCurrentRange(newRange);
       }
     });
+    if (yjsProvider._resyncInterval !== null && isSynced) {
+      clearInterval(yjsProvider._resyncInterval);
+      yjsProvider._resyncInterval = null; // Prevent it from being cleared again or reused
+    }
     return () => {
-      console.log("editor unmount");
       bindingRef.current?.destroy();
       bindingRef.current = null;
       quill.disable();
@@ -164,6 +172,29 @@ const Editor = ({
       setInitialSyncComplete(true);
     }
   }, [isSynced, initialSyncComplete]);
+
+  useEffect(() => {
+    return () => {
+      if (!quillRef.current) return;
+
+      const content = quillRef.current?.getText();
+      const delta = quillRef.current?.getContents();
+      const activeUsersCount = Array.from(
+        new Set(activeUsers.map((user) => user.name))
+      ).length;
+      if (content.length > LARGEDOCUMENT_SIZE && activeUsersCount === 1) {
+        updateContentDocument(documentId, {
+          docs_prosemirror_delta: delta.ops,
+        })
+          .then((data) => {
+            console.log(data.json());
+          })
+          .catch((error) => {
+            console.error("Error updating document content:", error);
+          });
+      }
+    };
+  }, []);
 
   function addSuggestion() {
     if (!currentRange) return;

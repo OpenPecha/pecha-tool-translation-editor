@@ -1,9 +1,10 @@
 const express = require("express");
 const {authenticate} = require("../middleware/authenticate");
 const { PrismaClient } = require("@prisma/client");
-const Y = require("yjs");
 const multer = require("multer");
 const { WSSharedDoc } = require("../services");
+const Y = require("yjs");
+const Delta = require('quill-delta');
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -564,5 +565,113 @@ const upload = multer({
       res.status(500).json({ error: error.message });
     }
   });
+
+  // Update document content
+  router.patch("/:id/content", authenticate, async (req, res) => {
+    const { docs_prosemirror_delta } = req.body;
+    try {
+      const document = await prisma.doc.findUnique({
+        where: { id: req.params.id },
+      });
+      if (!document)
+        return res.status(404).json({ error: "Document not found" });
+  
+      if (document.ownerId !== req.user.id) {
+        const permission = await prisma.permission.findFirst({
+          where: { docId: document.id, userId: req.user.id, canWrite: true },
+        });
+        if (!permission)
+          return res.status(403).json({ error: "No edit access" });
+      }
+      
+      // Approach 1: If we need to merge with existing Y.doc state
+      const ydoc = new Y.Doc();
+      
+      // If the document already has Y.doc state, we should first apply that
+      if (document.docs_y_doc_state) {
+        Y.applyUpdateV2(ydoc, document.docs_y_doc_state);
+      }
+      
+      // Get the shared text type from the Y.doc
+      const ytext = ydoc.getText(req.params.id);
+      
+      // Convert ProseMirror delta to Y.js compatible operations
+      // This is the critical part that was missing
+      if (docs_prosemirror_delta) {
+        // Process the delta operations to make them compatible with Y.js
+        // You may need a custom conversion function depending on your delta format
+        const yDelta = convertProseMirrorDeltaToYDelta(docs_prosemirror_delta);
+        ytext.applyDelta(yDelta);
+      }
+  
+      // Encode the updated Y.doc state
+      const docs_y_doc_state = Y.encodeStateAsUpdateV2(ydoc);
+      
+      // Validate the state isn't too small/empty
+      if (docs_y_doc_state.length < 100) {
+        console.log('Y.js state is too small, skipping update');
+        return res.status(400).json({ error: "Invalid document state" });
+      }
+      
+      // Uncomment this to actually update the database
+      const updatedDocument = await prisma.doc.update({
+        where: { id: document.id },
+        data: { 
+          docs_prosemirror_delta, 
+          docs_y_doc_state 
+        },
+      });
+  
+      res.json({
+        success: true,
+        data: updatedDocument
+      });
+    } catch (error) {
+      console.error("Error updating document content:", error);
+      res.status(500).json({ error: "Error updating document content" });
+    }
+  });
+  
+  /**
+   * Convert ProseMirror delta format to Y.js delta format
+   * You'll need to customize this based on your specific delta format
+   */
+  function convertProseMirrorDeltaToYDelta(prosemirrorDelta) {
+    // This is a simplified example - your actual conversion will depend on 
+    // the specific structure of your ProseMirror delta
+    const yDelta = [];
+    
+    // If prosemirrorDelta is an array of operations
+    if (Array.isArray(prosemirrorDelta)) {
+      for (const op of prosemirrorDelta) {
+        if (op.insert) {
+          // Convert insert operations
+          yDelta.push({ insert: op.insert });
+        } else if (op.delete) {
+          // Convert delete operations
+          yDelta.push({ delete: op.delete });
+        } else if (op.retain) {
+          // Convert retain operations
+          yDelta.push({ retain: op.retain });
+        }
+        // Add attributes if they exist
+        if (op.attributes) {
+          const lastOp = yDelta[yDelta.length - 1];
+          if (lastOp) {
+            lastOp.attributes = op.attributes;
+          }
+        }
+      }
+    } else if (typeof prosemirrorDelta === 'object') {
+      // If it's a single operation object
+      return [prosemirrorDelta];
+    }
+    
+    return yDelta;
+  }
+  
+  // Alternative approach: If you're using prosemirror-y-binding or a similar library
+  // You might want to use their built-in conversion functions instead
+
 
   module.exports = router;

@@ -1,0 +1,1207 @@
+[2025-05-05T06:04:41.929Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:04:44.010Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1265785 bytes
+[2025-05-05T06:04:44.511Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:04:52.792Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:04:54.821Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1265785 bytes
+[2025-05-05T06:04:55.301Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:05:33.441Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1265814 bytes
+[2025-05-05T06:05:33.955Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:08:03.441Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:08:03.460Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:08:05.479Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1265814 bytes
+[2025-05-05T06:08:06.000Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:08:08.610Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:08:08.631Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:08:10.657Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1265814 bytes
+[2025-05-05T06:08:11.202Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:08:33.488Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10370699
+[2025-05-05T06:08:33.803Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10370699
+[2025-05-05T06:08:34.273Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10370699
+[2025-05-05T06:08:34.351Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10370699
+[2025-05-05T06:08:34.755Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10370699
+[2025-05-05T06:08:34.811Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10370699
+[2025-05-05T06:08:34.883Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10370699
+[2025-05-05T06:08:35.257Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10370699
+[2025-05-05T06:08:37.276Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1265845 bytes
+[2025-05-05T06:08:37.766Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:08:55.993Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 632
+[2025-05-05T06:08:58.003Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1265894 bytes
+[2025-05-05T06:08:58.510Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:08:59.274Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10370699
+[2025-05-05T06:09:01.283Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1265902 bytes
+[2025-05-05T06:09:01.779Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:09:09.735Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10370699
+[2025-05-05T06:09:11.755Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1265920 bytes
+[2025-05-05T06:09:11.880Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 632
+[2025-05-05T06:09:12.343Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:09:13.894Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1265980 bytes
+[2025-05-05T06:09:14.372Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:09:18.818Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1265980 bytes
+[2025-05-05T06:09:19.339Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:09:20.173Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:09:20.181Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:09:22.193Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1265980 bytes
+[2025-05-05T06:09:22.696Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:10:21.794Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1265980 bytes
+[2025-05-05T06:10:22.161Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:10:22.170Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:10:22.318Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:10:24.185Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1265980 bytes
+[2025-05-05T06:10:24.703Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:11:23.231Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1265980 bytes
+[2025-05-05T06:11:23.741Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:11:23.938Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:11:23.947Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:11:25.962Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1265980 bytes
+[2025-05-05T06:11:26.462Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:11:37.647Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:11:37.666Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:11:39.039Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:11:39.061Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:11:41.080Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1265980 bytes
+[2025-05-05T06:11:41.639Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:12:07.695Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 2809737
+[2025-05-05T06:12:07.984Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 2809737
+[2025-05-05T06:12:08.455Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 2809737
+[2025-05-05T06:12:08.517Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 2809737
+[2025-05-05T06:12:08.778Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 2809737
+[2025-05-05T06:12:09.014Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 2809737
+[2025-05-05T06:12:09.063Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 2809737
+[2025-05-05T06:12:09.538Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 2809737
+[2025-05-05T06:12:11.553Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:12:12.086Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:14:49.773Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:14:50.369Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:14:50.552Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:14:50.562Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:14:52.584Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:14:53.180Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:19:57.091Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:19:57.288Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:19:57.300Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:19:57.643Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:19:59.321Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:19:59.943Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:20:58.132Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:20:58.249Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:20:58.261Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:20:58.761Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:21:00.281Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:21:00.923Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:21:44.175Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:21:44.718Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:21:44.727Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:21:44.768Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:21:46.747Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:21:47.273Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:21:52.983Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:21:53.012Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:21:53.024Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:21:53.589Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:21:55.045Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:21:55.576Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:21:58.131Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:21:58.701Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:21:58.794Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:21:58.809Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:22:00.823Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:22:01.318Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:22:31.409Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:22:31.437Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:22:31.448Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:22:31.970Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:22:33.466Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:22:33.996Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:22:40.214Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:22:40.845Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:22:42.108Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:22:42.120Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:22:44.127Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:22:44.640Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:23:05.191Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:23:05.220Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:23:05.232Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:23:05.832Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:23:07.256Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:23:07.793Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:23:20.952Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:23:20.982Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:23:20.993Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:23:21.514Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:23:23.001Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:23:23.497Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:23:23.827Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:23:24.369Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:23:25.779Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:23:25.788Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:23:27.801Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:23:28.298Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:24:07.271Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:24:07.355Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:24:07.367Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:24:07.916Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:24:09.389Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:24:10.093Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:24:12.584Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:24:13.159Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:24:14.502Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:24:14.520Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:24:16.543Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:24:17.032Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:24:53.659Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:24:53.693Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:24:53.705Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:24:54.212Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:24:55.722Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:24:56.221Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:25:35.580Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:25:35.657Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:25:35.667Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:25:36.162Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:25:37.686Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:25:38.240Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:26:30.236Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:26:30.831Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:27:09.209Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:27:09.217Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:27:11.244Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:27:11.825Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:27:13.954Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:27:14.536Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:27:27.323Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:27:27.337Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:27:29.346Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:27:29.880Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:28:11.358Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:28:11.470Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:28:11.481Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:28:11.936Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:28:13.493Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:28:13.863Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:28:14.093Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:28:14.456Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:29:42.332Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:29:42.343Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:29:44.100Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:29:44.365Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:29:44.674Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:29:44.917Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:29:46.100Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:29:46.114Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:29:48.136Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:29:48.629Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:30:46.183Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:30:46.809Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:30:48.141Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:30:48.160Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:30:50.176Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:30:50.671Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:31:48.259Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:31:48.894Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:31:54.091Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:31:54.105Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:31:56.119Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:31:56.819Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:32:54.187Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:32:54.756Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:32:59.548Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:32:59.561Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:33:01.581Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:33:02.127Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:33:59.630Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:34:00.322Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:34:08.484Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:34:08.500Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:34:10.517Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:34:11.178Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:35:08.604Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:35:09.262Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:35:14.225Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:35:14.234Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:35:16.255Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:35:16.842Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:36:14.317Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:36:15.043Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:36:20.236Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:36:20.256Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:36:22.282Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:36:22.872Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:37:20.413Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:37:21.053Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:37:26.266Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:37:26.285Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:37:28.300Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:37:28.935Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:38:26.379Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:38:27.074Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:38:32.241Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:38:32.257Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:38:34.282Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:38:34.965Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:39:32.351Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:39:33.010Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:39:38.241Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:39:38.260Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:39:40.274Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:39:40.875Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:40:38.331Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:40:39.009Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:40:44.289Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:40:44.297Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:40:46.321Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:40:46.881Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:41:44.364Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:41:45.060Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:41:51.231Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:41:51.250Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:41:53.270Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:41:53.872Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:42:51.371Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:42:52.065Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:42:57.710Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:42:57.727Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:42:59.745Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:43:00.341Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:43:57.817Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:43:58.411Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:44:00.155Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:44:00.168Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:44:02.191Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:44:02.700Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:44:40.891Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:44:40.932Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:44:40.945Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:44:41.453Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:44:42.960Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:44:43.482Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:44:54.377Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:44:54.923Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:44:56.496Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:44:56.504Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:44:58.513Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:44:59.012Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:46:00.163Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:46:00.701Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:46:02.242Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:46:02.253Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:46:04.271Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:46:04.925Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:47:02.326Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:47:02.866Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:47:04.324Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:47:04.335Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:47:06.344Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:47:06.846Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:48:04.435Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:48:04.953Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:48:06.451Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:48:06.462Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:48:08.482Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:48:09.009Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:49:06.524Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:49:07.034Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:49:08.405Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:49:08.415Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:49:10.429Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:49:10.974Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:50:08.498Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:50:09.034Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:50:10.353Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:50:10.361Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:50:12.375Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:50:12.861Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:51:10.427Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:51:11.031Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:51:12.516Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:51:12.527Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:51:14.547Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:51:15.115Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:52:12.580Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:52:13.146Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:52:18.265Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:52:18.281Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:52:20.300Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:52:20.840Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:53:18.426Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:53:18.979Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:53:24.853Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:53:24.867Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:53:26.880Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266013 bytes
+[2025-05-05T06:53:27.510Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:54:02.257Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10743720
+[2025-05-05T06:54:02.595Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10743720
+[2025-05-05T06:54:03.055Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10743720
+[2025-05-05T06:54:03.171Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10743720
+[2025-05-05T06:54:03.469Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10743720
+[2025-05-05T06:54:03.519Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10743720
+[2025-05-05T06:54:05.534Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266038 bytes
+[2025-05-05T06:54:06.062Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:54:17.794Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266038 bytes
+[2025-05-05T06:54:18.386Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:54:21.837Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:54:21.845Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:54:23.858Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266038 bytes
+[2025-05-05T06:54:24.362Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:55:01.694Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 6008467
+[2025-05-05T06:55:01.997Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 6008467
+[2025-05-05T06:55:02.590Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 6008467
+[2025-05-05T06:55:02.650Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 6008467
+[2025-05-05T06:55:03.064Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 6008467
+[2025-05-05T06:55:03.125Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 6008467
+[2025-05-05T06:55:05.144Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266068 bytes
+[2025-05-05T06:55:05.639Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:55:05.979Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 6008467
+[2025-05-05T06:55:06.589Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 6008467
+[2025-05-05T06:55:07.188Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:55:09.195Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266087 bytes
+[2025-05-05T06:55:09.664Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:55:10.420Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 9819422
+[2025-05-05T06:55:11.918Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 6008467
+[2025-05-05T06:55:13.940Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266124 bytes
+[2025-05-05T06:55:14.421Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:55:21.912Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266124 bytes
+[2025-05-05T06:55:22.438Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:55:23.329Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:55:23.339Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:55:25.355Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266124 bytes
+[2025-05-05T06:55:25.846Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:55:30.134Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 1375196275
+[2025-05-05T06:55:30.946Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 46941
+[2025-05-05T06:55:31.497Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 20976296
+[2025-05-05T06:55:31.549Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 20976296
+[2025-05-05T06:55:31.638Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 20976296
+[2025-05-05T06:55:31.738Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 20976296
+[2025-05-05T06:55:32.748Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 20976296
+[2025-05-05T06:55:33.342Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 20976296
+[2025-05-05T06:55:33.590Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 2467926
+[2025-05-05T06:55:34.077Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 2467926
+[2025-05-05T06:55:34.563Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 2467926
+[2025-05-05T06:55:34.620Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 2467926
+[2025-05-05T06:55:35.074Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 2467926
+[2025-05-05T06:55:35.142Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 2467926
+[2025-05-05T06:55:37.149Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266221 bytes
+[2025-05-05T06:55:37.696Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:56:01.070Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 615
+[2025-05-05T06:56:01.257Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:56:01.705Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10370699
+[2025-05-05T06:56:03.444Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 6008467
+[2025-05-05T06:56:04.394Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 6008467
+[2025-05-05T06:56:06.406Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266216 bytes
+[2025-05-05T06:56:06.910Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:56:20.782Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 17622962
+[2025-05-05T06:56:22.793Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266216 bytes
+[2025-05-05T06:56:23.287Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:56:23.402Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266216 bytes
+[2025-05-05T06:56:23.929Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:56:24.783Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:56:24.796Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:56:26.804Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266216 bytes
+[2025-05-05T06:56:27.341Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:56:34.817Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:56:36.836Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266224 bytes
+[2025-05-05T06:56:37.336Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:56:40.044Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:56:42.056Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266223 bytes
+[2025-05-05T06:56:42.573Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:56:52.521Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:56:54.144Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:56:56.165Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266238 bytes
+[2025-05-05T06:56:56.681Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:56:56.699Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:56:58.724Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266244 bytes
+[2025-05-05T06:56:58.757Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:56:59.288Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:57:00.573Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:57:01.639Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:57:02.656Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 6008467
+[2025-05-05T06:57:04.668Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266268 bytes
+[2025-05-05T06:57:05.149Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:57:10.674Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:57:11.465Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:57:12.744Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:57:14.059Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 6008467
+[2025-05-05T06:57:16.100Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266282 bytes
+[2025-05-05T06:57:16.188Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:57:16.629Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:57:18.202Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266288 bytes
+[2025-05-05T06:57:18.677Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:57:22.490Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:57:24.503Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266297 bytes
+[2025-05-05T06:57:24.862Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266297 bytes
+[2025-05-05T06:57:25.021Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:57:25.376Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:57:27.986Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:57:27.997Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:57:30.015Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266297 bytes
+[2025-05-05T06:57:30.720Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:57:36.297Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:57:37.777Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:57:39.796Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266297 bytes
+[2025-05-05T06:57:40.299Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:57:41.065Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:57:41.830Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:57:43.840Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266303 bytes
+[2025-05-05T06:57:44.357Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:57:45.734Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:57:45.986Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:57:48.007Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266310 bytes
+[2025-05-05T06:57:48.524Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:57:49.881Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:57:50.615Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:57:52.632Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266316 bytes
+[2025-05-05T06:57:53.163Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:57:56.789Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:57:57.562Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:57:59.570Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266326 bytes
+[2025-05-05T06:58:00.067Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:58:01.193Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:58:02.016Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:58:04.023Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266335 bytes
+[2025-05-05T06:58:04.526Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:58:05.286Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:58:06.045Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:58:08.060Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266344 bytes
+[2025-05-05T06:58:08.552Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:58:08.959Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:58:09.847Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:58:11.863Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266353 bytes
+[2025-05-05T06:58:12.380Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:58:13.420Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:58:14.229Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:58:16.249Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266362 bytes
+[2025-05-05T06:58:16.766Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:58:22.486Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:58:23.339Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:58:24.653Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:58:25.880Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 6008467
+[2025-05-05T06:58:27.897Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266380 bytes
+[2025-05-05T06:58:28.111Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266380 bytes
+[2025-05-05T06:58:28.477Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:58:28.738Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:58:30.695Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:58:30.704Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:58:32.712Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266380 bytes
+[2025-05-05T06:58:33.248Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:58:39.637Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:58:39.906Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:58:41.917Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266386 bytes
+[2025-05-05T06:58:42.461Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:59:07.380Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:59:09.147Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:59:09.748Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 6008467
+[2025-05-05T06:59:11.180Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:59:13.201Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266402 bytes
+[2025-05-05T06:59:13.846Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:59:14.004Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:59:16.022Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266408 bytes
+[2025-05-05T06:59:16.169Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:59:16.572Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:59:18.190Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266410 bytes
+[2025-05-05T06:59:18.711Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:59:20.596Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:59:22.614Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266412 bytes
+[2025-05-05T06:59:23.302Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:59:24.782Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:59:25.627Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T06:59:27.640Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266418 bytes
+[2025-05-05T06:59:28.221Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:59:30.759Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266418 bytes
+[2025-05-05T06:59:31.281Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:59:32.598Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:59:32.608Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:59:34.624Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266418 bytes
+[2025-05-05T06:59:35.132Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:59:40.041Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266418 bytes
+[2025-05-05T06:59:40.875Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:59:42.490Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T06:59:42.507Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T06:59:44.517Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266418 bytes
+[2025-05-05T06:59:45.020Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:00:05.390Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T07:00:07.403Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266412 bytes
+[2025-05-05T07:00:07.901Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:00:17.003Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T07:00:17.988Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 8387131
+[2025-05-05T07:00:19.998Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266442 bytes
+[2025-05-05T07:00:20.476Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:00:28.619Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T07:00:30.627Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266448 bytes
+[2025-05-05T07:00:31.121Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:00:42.538Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T07:00:42.592Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266454 bytes
+[2025-05-05T07:00:43.115Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:00:44.167Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:00:44.176Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:00:46.190Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266454 bytes
+[2025-05-05T07:00:46.728Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:01:44.242Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266454 bytes
+[2025-05-05T07:01:44.764Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:01:45.667Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:01:45.677Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:01:47.689Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266454 bytes
+[2025-05-05T07:01:48.213Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:02:45.743Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266454 bytes
+[2025-05-05T07:02:46.242Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:02:47.037Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:02:47.048Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:02:49.065Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266454 bytes
+[2025-05-05T07:02:49.570Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:03:20.654Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T07:03:21.576Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T07:03:22.096Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T07:03:22.436Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T07:03:24.123Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T07:03:26.133Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266449 bytes
+[2025-05-05T07:03:26.613Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:03:26.822Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T07:03:28.839Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266455 bytes
+[2025-05-05T07:03:29.330Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:03:31.637Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T07:03:32.603Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 8387131
+[2025-05-05T07:03:34.619Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266465 bytes
+[2025-05-05T07:03:35.133Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:03:36.577Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T07:03:37.538Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 8387131
+[2025-05-05T07:03:39.547Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266476 bytes
+[2025-05-05T07:03:40.028Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:03:47.138Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266476 bytes
+[2025-05-05T07:03:47.671Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:03:49.023Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:03:49.033Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:03:51.048Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266476 bytes
+[2025-05-05T07:03:51.550Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:04:49.083Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266476 bytes
+[2025-05-05T07:04:49.613Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:04:50.357Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:04:50.369Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:04:52.386Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266476 bytes
+[2025-05-05T07:04:52.905Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:05:50.447Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266476 bytes
+[2025-05-05T07:05:50.965Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:05:52.114Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:05:52.122Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:05:54.131Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266476 bytes
+[2025-05-05T07:05:54.630Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:06:52.183Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266476 bytes
+[2025-05-05T07:06:52.721Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:06:53.410Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:06:53.420Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:06:55.428Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266476 bytes
+[2025-05-05T07:06:55.924Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:07:05.293Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266476 bytes
+[2025-05-05T07:07:05.883Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:07:07.018Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:07:07.036Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:07:09.060Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266476 bytes
+[2025-05-05T07:07:09.627Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:08:07.112Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266476 bytes
+[2025-05-05T07:08:07.626Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:08:08.467Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:08:08.477Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:08:10.490Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266476 bytes
+[2025-05-05T07:08:10.984Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:08:58.959Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T07:09:00.969Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:09:01.475Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:09:08.569Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:09:09.085Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:09:09.941Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:09:09.951Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:09:11.961Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:09:12.461Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:10:10.011Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:10:10.520Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:10:11.584Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:10:11.592Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:10:13.602Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:10:14.121Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:11:11.650Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:11:12.175Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:11:12.923Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:11:12.932Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:11:14.943Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:11:15.457Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:12:13.007Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:12:13.540Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:12:14.339Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:12:14.349Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:12:16.376Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:12:16.936Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:13:14.413Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:13:14.961Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:13:16.088Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:13:16.100Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:13:18.109Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:13:18.623Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:14:16.200Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:14:16.737Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:14:18.328Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:14:18.342Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:14:20.356Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:14:20.873Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:15:18.416Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:15:18.956Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:15:19.694Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:15:19.704Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:15:21.714Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:15:22.210Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:16:19.756Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:16:20.269Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:16:21.058Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:16:21.072Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:16:23.084Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:16:23.580Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:17:21.142Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:17:21.661Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:17:22.794Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:17:22.806Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:17:24.816Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:17:25.304Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:18:22.864Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:18:23.351Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:18:24.141Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:18:24.151Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:18:26.172Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:18:26.655Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:19:24.261Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:19:24.813Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:19:25.602Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:19:25.612Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:19:27.620Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:19:28.100Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:20:25.683Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:20:26.231Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:20:26.982Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:20:26.995Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:20:29.012Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:20:29.500Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:21:27.056Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:21:27.840Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:21:28.574Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:21:28.584Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:21:30.600Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:21:31.093Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:22:28.659Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:22:29.201Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:22:30.030Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:22:30.041Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:22:32.061Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:22:32.560Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:23:30.108Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:23:30.658Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:23:31.359Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:23:31.369Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:23:33.380Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:23:33.885Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:24:31.484Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:24:32.157Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:24:36.882Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:24:36.899Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:24:38.910Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:24:39.541Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:25:36.974Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:25:37.624Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:25:40.357Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:25:40.375Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:25:42.393Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:25:42.956Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:26:40.477Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:26:41.188Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:26:45.711Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:26:45.720Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:26:47.736Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:26:48.496Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:27:45.806Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:27:46.509Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:27:50.451Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:27:50.465Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:27:52.484Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:27:53.140Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:28:50.533Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:28:51.093Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:28:53.688Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:28:53.702Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:28:55.720Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:28:56.353Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:29:53.828Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:29:54.586Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:29:58.515Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:29:58.526Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:30:00.586Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:30:01.331Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:30:58.599Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:30:59.160Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:31:07.109Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:31:07.128Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:31:09.144Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:31:09.711Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:32:07.211Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:32:07.832Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:32:11.329Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:32:11.345Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:32:13.373Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:32:13.934Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:33:11.429Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:33:12.079Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:33:15.389Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:33:15.404Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:33:17.424Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:33:18.066Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:34:15.490Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:34:16.154Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:34:18.500Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:34:18.516Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:34:20.526Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:34:21.127Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:35:18.662Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:35:19.230Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:35:20.875Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:35:20.884Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:35:22.910Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:35:23.665Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:36:20.966Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:36:21.581Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:36:24.689Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:36:24.707Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:36:26.731Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:36:27.355Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:37:24.810Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:37:25.432Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:37:29.181Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:37:29.193Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:37:31.201Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:37:31.771Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:38:29.255Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:38:29.906Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:38:33.317Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:38:33.332Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:38:35.349Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:38:35.992Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:39:33.425Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:39:34.121Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:39:38.794Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:39:38.807Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:39:40.817Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:39:41.600Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:40:38.944Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:40:39.562Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:40:43.379Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:40:43.397Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:40:45.416Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:40:46.174Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:41:43.476Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:41:44.164Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:41:46.581Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:41:46.598Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:41:48.613Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:41:49.285Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:42:46.688Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:42:47.396Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:42:50.778Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:42:50.793Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:42:52.809Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:42:53.435Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:43:50.873Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:43:51.582Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:43:53.479Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:43:53.495Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:43:55.506Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:43:56.175Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:44:53.564Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:44:54.270Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:44:56.417Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:44:56.430Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:44:58.439Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:44:59.135Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:45:56.522Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:45:57.152Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:46:01.059Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:46:01.077Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:46:03.093Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:46:03.700Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:47:01.155Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:47:01.761Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:47:07.058Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:47:07.067Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:47:09.084Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:47:09.775Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:48:07.130Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:48:07.794Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:48:09.424Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:48:09.439Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:48:11.451Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:48:12.192Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:49:09.518Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:49:10.165Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:49:13.126Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:49:13.140Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:49:15.161Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:49:15.806Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:50:13.223Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:50:13.910Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:50:17.284Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:50:17.294Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:50:19.309Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:50:20.010Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:51:17.411Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:51:18.151Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:51:21.331Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:51:21.349Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:51:23.367Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:51:24.026Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:52:21.433Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:52:22.052Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:52:24.973Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:52:24.983Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:52:27.000Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:52:27.608Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:53:25.051Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:53:25.714Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:53:27.281Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:53:27.290Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:53:29.312Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:53:30.041Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:54:27.363Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:54:27.964Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:54:30.600Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:54:30.611Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:54:32.633Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:54:33.200Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:55:30.693Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:55:31.339Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:55:34.060Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:55:34.070Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:55:36.081Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:55:36.674Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:56:34.176Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:56:34.842Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:56:37.166Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:56:37.183Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:56:39.195Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:56:39.794Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:57:37.261Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:57:37.847Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:57:39.541Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:57:39.551Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:57:41.563Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:57:42.244Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:58:39.633Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:58:40.335Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:58:42.995Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:58:43.011Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:58:45.038Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:58:45.789Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:59:43.086Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:59:43.776Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:59:45.435Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T07:59:45.453Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T07:59:47.476Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T07:59:48.208Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:00:45.538Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:00:46.275Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:00:48.944Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:00:48.961Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:00:50.983Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:00:51.542Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:01:49.089Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:01:49.777Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:01:51.463Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:01:51.477Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:01:53.495Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:01:54.231Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:02:51.558Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:02:52.208Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:02:54.621Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:02:54.634Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:02:56.646Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:02:57.248Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:03:54.709Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:03:55.423Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:03:57.925Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:03:57.936Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:03:59.953Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:04:00.603Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:04:58.017Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:04:58.651Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:05:05.850Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:05:05.862Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:05:07.883Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:05:08.600Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:06:05.933Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:06:06.604Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:06:10.510Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:06:10.528Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:06:12.540Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:06:13.148Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:07:10.685Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:07:11.249Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:07:12.379Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:07:12.390Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:07:14.409Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:07:14.997Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:08:12.473Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:08:13.038Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:08:14.377Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:08:14.392Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:08:16.411Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:08:16.946Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:09:14.471Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:09:15.053Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:09:17.060Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:09:17.077Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:09:19.100Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:09:19.624Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:10:17.147Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:10:17.869Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:10:20.141Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:10:20.153Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:10:22.162Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:10:22.687Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:11:20.224Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:11:20.866Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:11:23.255Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:11:23.265Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:11:25.290Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:11:26.119Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:12:23.416Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:12:24.129Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:12:25.980Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:12:25.993Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:12:28.015Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:12:28.586Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:13:26.084Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:13:26.666Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:13:28.501Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:13:28.513Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:13:30.539Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:13:31.094Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:14:28.590Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:14:29.149Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:14:30.545Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:14:30.555Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:14:32.565Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:14:33.202Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:15:30.636Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:15:31.197Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:15:33.117Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:15:33.130Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:15:35.147Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:15:35.698Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:16:33.223Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:16:33.844Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:16:39.369Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:16:39.384Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:16:41.408Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:16:43.367Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:17:39.515Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:17:40.218Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:17:43.919Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:17:43.932Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:17:45.954Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:17:46.536Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:18:44.014Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:18:44.687Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:18:48.931Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:18:48.946Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:18:50.975Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:18:52.197Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:19:49.045Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:19:49.621Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:19:53.217Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:19:53.229Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:19:55.241Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:19:55.787Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:20:53.324Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:20:53.960Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:21:03.324Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:21:03.344Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:21:05.356Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:21:05.958Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:22:03.468Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:22:05.324Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:35:19.927Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:35:19.962Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:35:21.985Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:35:22.518Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:35:41.741Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:35:41.771Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:35:41.781Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:35:42.333Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:35:43.795Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:35:44.373Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:35:52.798Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:35:53.394Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:35:56.042Z] [INFO] Loading database state for document 148c1a6a-101b-4a8a-968b-2a61fc727cd3
+[2025-05-05T08:35:56.051Z] [ERROR] Failed to apply update to doc 148c1a6a-101b-4a8a-968b-2a61fc727cd3: Invalid typed array length: 251642
+[2025-05-05T08:35:57.744Z] [INFO] Saving document 148c1a6a-101b-4a8a-968b-2a61fc727cd3: 9437 bytes
+[2025-05-05T08:35:57.750Z] [INFO] Successfully saved document 148c1a6a-101b-4a8a-968b-2a61fc727cd3
+[2025-05-05T08:35:58.062Z] [INFO] Saving document 148c1a6a-101b-4a8a-968b-2a61fc727cd3: 9437 bytes
+[2025-05-05T08:35:58.069Z] [INFO] Successfully saved document 148c1a6a-101b-4a8a-968b-2a61fc727cd3
+[2025-05-05T08:37:35.714Z] [INFO] Loading database state for document 148c1a6a-101b-4a8a-968b-2a61fc727cd3
+[2025-05-05T08:37:35.722Z] [ERROR] Failed to apply update to doc 148c1a6a-101b-4a8a-968b-2a61fc727cd3: Invalid typed array length: 251642
+[2025-05-05T08:37:37.733Z] [INFO] Saving document 148c1a6a-101b-4a8a-968b-2a61fc727cd3: 9437 bytes
+[2025-05-05T08:37:37.742Z] [INFO] Successfully saved document 148c1a6a-101b-4a8a-968b-2a61fc727cd3
+[2025-05-05T08:37:38.323Z] [INFO] Saving document 148c1a6a-101b-4a8a-968b-2a61fc727cd3: 9437 bytes
+[2025-05-05T08:37:38.329Z] [INFO] Successfully saved document 148c1a6a-101b-4a8a-968b-2a61fc727cd3
+[2025-05-05T08:37:40.185Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:37:40.201Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:37:42.223Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:37:42.826Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:38:32.520Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:38:33.270Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:38:36.254Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:38:36.269Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:38:38.280Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266482 bytes
+[2025-05-05T08:38:38.794Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:38:55.343Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T08:38:55.579Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T08:38:56.332Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T08:38:56.405Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T08:38:57.479Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T08:38:58.193Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 89425
+[2025-05-05T08:39:00.207Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266514 bytes
+[2025-05-05T08:39:00.677Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:39:01.582Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 89425
+[2025-05-05T08:39:03.604Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266526 bytes
+[2025-05-05T08:39:04.093Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:39:05.016Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 89425
+[2025-05-05T08:39:07.025Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266552 bytes
+[2025-05-05T08:39:07.501Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:39:36.344Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266552 bytes
+[2025-05-05T08:39:36.876Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:39:37.587Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:39:37.596Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:39:39.611Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266552 bytes
+[2025-05-05T08:39:40.102Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:39:42.391Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T08:39:42.610Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T08:39:43.131Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 10091288
+[2025-05-05T08:39:45.137Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266554 bytes
+[2025-05-05T08:39:45.641Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:39:45.987Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 89425
+[2025-05-05T08:39:48.001Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266570 bytes
+[2025-05-05T08:39:48.488Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:39:48.740Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 89425
+[2025-05-05T08:39:50.760Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266586 bytes
+[2025-05-05T08:39:51.249Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:39:52.231Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 89425
+[2025-05-05T08:39:54.252Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266599 bytes
+[2025-05-05T08:39:54.772Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:39:57.060Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266599 bytes
+[2025-05-05T08:39:57.578Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:40:00.032Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:40:00.042Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:40:02.055Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266599 bytes
+[2025-05-05T08:40:02.547Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:41:00.117Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266599 bytes
+[2025-05-05T08:41:00.706Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:41:01.922Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:41:01.930Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:41:03.941Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266599 bytes
+[2025-05-05T08:41:04.452Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:41:04.909Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266599 bytes
+[2025-05-05T08:41:05.447Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:41:05.669Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:41:05.680Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:41:07.691Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266599 bytes
+[2025-05-05T08:41:08.286Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:41:31.904Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266599 bytes
+[2025-05-05T08:41:32.538Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:51:05.467Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:51:05.484Z] [ERROR] Failed to apply update to doc d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Invalid typed array length: 33358603
+[2025-05-05T08:51:07.517Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266599 bytes
+[2025-05-05T08:51:08.102Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:51:22.766Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 1266599 bytes
+[2025-05-05T08:51:23.297Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:51:51.066Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:51:51.067Z] [ERROR] Error loading state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Unexpected end of array
+[2025-05-05T08:52:15.852Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 13 bytes
+[2025-05-05T08:52:15.857Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:52:18.872Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:53:18.894Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 13 bytes
+[2025-05-05T08:53:18.904Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:53:19.011Z] [INFO] Loading database state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:53:19.012Z] [ERROR] Error loading state for document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: Unexpected end of array
+[2025-05-05T08:53:45.405Z] [INFO] Saving document d740f5ca-d4c6-4f17-8125-77abf29cd5f2: 13 bytes
+[2025-05-05T08:53:45.411Z] [INFO] Successfully saved document d740f5ca-d4c6-4f17-8125-77abf29cd5f2
+[2025-05-05T08:54:01.413Z] [ERROR] Failed to apply update to doc 2ed08ea7-b0b6-4d5c-a0f1-414b2b5af42e: Invalid typed array length: 23260729
+[2025-05-05T08:54:09.885Z] [INFO] Loading database state for document 2ed08ea7-b0b6-4d5c-a0f1-414b2b5af42e
+[2025-05-05T08:54:09.906Z] [ERROR] Failed to apply update to doc 2ed08ea7-b0b6-4d5c-a0f1-414b2b5af42e: Invalid typed array length: 23260729
+[2025-05-05T08:54:11.927Z] [INFO] Saving document 2ed08ea7-b0b6-4d5c-a0f1-414b2b5af42e: 1264080 bytes
+[2025-05-05T08:54:12.433Z] [INFO] Successfully saved document 2ed08ea7-b0b6-4d5c-a0f1-414b2b5af42e
+[2025-05-05T08:54:26.501Z] [ERROR] Failed to apply update to doc 2ed08ea7-b0b6-4d5c-a0f1-414b2b5af42e: Invalid typed array length: 7567
+[2025-05-05T08:54:28.512Z] [INFO] Saving document 2ed08ea7-b0b6-4d5c-a0f1-414b2b5af42e: 1264117 bytes
+[2025-05-05T08:54:29.086Z] [INFO] Successfully saved document 2ed08ea7-b0b6-4d5c-a0f1-414b2b5af42e
+[2025-05-05T08:54:29.776Z] [ERROR] Failed to apply update to doc 2ed08ea7-b0b6-4d5c-a0f1-414b2b5af42e: Invalid typed array length: 7567
+[2025-05-05T08:54:31.786Z] [INFO] Saving document 2ed08ea7-b0b6-4d5c-a0f1-414b2b5af42e: 1264137 bytes
+[2025-05-05T08:54:32.565Z] [INFO] Successfully saved document 2ed08ea7-b0b6-4d5c-a0f1-414b2b5af42e
+[2025-05-05T08:54:35.505Z] [ERROR] Failed to apply update to doc 2ed08ea7-b0b6-4d5c-a0f1-414b2b5af42e: Invalid typed array length: 7567
+[2025-05-05T08:54:37.514Z] [INFO] Saving document 2ed08ea7-b0b6-4d5c-a0f1-414b2b5af42e: 1264155 bytes
+[2025-05-05T08:54:38.051Z] [INFO] Successfully saved document 2ed08ea7-b0b6-4d5c-a0f1-414b2b5af42e
+[2025-05-05T08:54:39.953Z] [ERROR] Failed to apply update to doc 2ed08ea7-b0b6-4d5c-a0f1-414b2b5af42e: Invalid typed array length: 7567
+[2025-05-05T08:54:41.976Z] [INFO] Saving document 2ed08ea7-b0b6-4d5c-a0f1-414b2b5af42e: 1264173 bytes
+[2025-05-05T08:54:42.543Z] [INFO] Successfully saved document 2ed08ea7-b0b6-4d5c-a0f1-414b2b5af42e
+[2025-05-05T08:54:50.751Z] [INFO] Saving document 2ed08ea7-b0b6-4d5c-a0f1-414b2b5af42e: 1264173 bytes
+[2025-05-05T08:54:51.322Z] [INFO] Successfully saved document 2ed08ea7-b0b6-4d5c-a0f1-414b2b5af42e
+[2025-05-05T08:54:55.443Z] [INFO] Loading database state for document 2ed08ea7-b0b6-4d5c-a0f1-414b2b5af42e
+[2025-05-05T08:54:55.444Z] [ERROR] Error loading state for document 2ed08ea7-b0b6-4d5c-a0f1-414b2b5af42e: Unexpected end of array
+[2025-05-05T08:55:43.362Z] [INFO] Saving document 2ed08ea7-b0b6-4d5c-a0f1-414b2b5af42e: 13 bytes
+[2025-05-05T08:55:43.368Z] [INFO] Successfully saved document 2ed08ea7-b0b6-4d5c-a0f1-414b2b5af42e
+[2025-05-05T08:59:10.109Z] [ERROR] Failed to apply update to doc 8f99d49a-d87c-4c81-8777-d947d0d0c8db: Invalid typed array length: 30325408
+[2025-05-05T08:59:18.654Z] [INFO] Loading database state for document 8f99d49a-d87c-4c81-8777-d947d0d0c8db
+[2025-05-05T08:59:18.664Z] [ERROR] Failed to apply update to doc 8f99d49a-d87c-4c81-8777-d947d0d0c8db: Invalid typed array length: 30325408
+[2025-05-05T08:59:20.680Z] [INFO] Saving document 8f99d49a-d87c-4c81-8777-d947d0d0c8db: 1264080 bytes
+[2025-05-05T08:59:21.181Z] [INFO] Successfully saved document 8f99d49a-d87c-4c81-8777-d947d0d0c8db
+[2025-05-05T08:59:32.618Z] [INFO] Saving document 8f99d49a-d87c-4c81-8777-d947d0d0c8db: 1264080 bytes
+[2025-05-05T08:59:33.169Z] [INFO] Successfully saved document 8f99d49a-d87c-4c81-8777-d947d0d0c8db
+[2025-05-05T08:59:37.988Z] [INFO] Loading database state for document 8f99d49a-d87c-4c81-8777-d947d0d0c8db
+[2025-05-05T08:59:37.990Z] [ERROR] Error loading state for document 8f99d49a-d87c-4c81-8777-d947d0d0c8db: Unexpected end of array
+[2025-05-05T09:00:38.082Z] [INFO] Saving document 8f99d49a-d87c-4c81-8777-d947d0d0c8db: 13 bytes
+[2025-05-05T09:00:38.089Z] [INFO] Successfully saved document 8f99d49a-d87c-4c81-8777-d947d0d0c8db
+[2025-05-05T09:00:38.198Z] [INFO] Loading database state for document 8f99d49a-d87c-4c81-8777-d947d0d0c8db
+[2025-05-05T09:00:54.067Z] [INFO] Loading database state for document 8f99d49a-d87c-4c81-8777-d947d0d0c8db
+[2025-05-05T09:01:04.830Z] [INFO] Saving document 8f99d49a-d87c-4c81-8777-d947d0d0c8db: 13 bytes
+[2025-05-05T09:01:04.839Z] [INFO] Successfully saved document 8f99d49a-d87c-4c81-8777-d947d0d0c8db
+[2025-05-05T09:01:06.686Z] [INFO] Loading database state for document 2ed08ea7-b0b6-4d5c-a0f1-414b2b5af42e
+[2025-05-05T09:01:07.847Z] [INFO] Saving document 2ed08ea7-b0b6-4d5c-a0f1-414b2b5af42e: 13 bytes
+[2025-05-05T09:01:07.851Z] [INFO] Successfully saved document 2ed08ea7-b0b6-4d5c-a0f1-414b2b5af42e
+[2025-05-05T09:01:20.448Z] [ERROR] Failed to apply update to doc f15643dd-1fed-4e6d-964b-92bff50d05ad: Invalid typed array length: 28087000
+[2025-05-05T09:01:29.986Z] [INFO] Loading database state for document f15643dd-1fed-4e6d-964b-92bff50d05ad
+[2025-05-05T09:01:29.991Z] [ERROR] Failed to apply update to doc f15643dd-1fed-4e6d-964b-92bff50d05ad: Invalid typed array length: 28087000
+[2025-05-05T09:01:32.006Z] [INFO] Saving document f15643dd-1fed-4e6d-964b-92bff50d05ad: 302547 bytes
+[2025-05-05T09:01:32.182Z] [INFO] Successfully saved document f15643dd-1fed-4e6d-964b-92bff50d05ad
+[2025-05-05T09:01:49.725Z] [INFO] Saving document f15643dd-1fed-4e6d-964b-92bff50d05ad: 302547 bytes
+[2025-05-05T09:01:49.883Z] [INFO] Successfully saved document f15643dd-1fed-4e6d-964b-92bff50d05ad
+[2025-05-05T09:02:27.261Z] [ERROR] Failed to apply update to doc 84542f6c-651a-4094-bb4a-e353b813e753: Invalid typed array length: 9445641
+[2025-05-05T09:02:31.952Z] [INFO] Loading database state for document 84542f6c-651a-4094-bb4a-e353b813e753
+[2025-05-05T09:02:31.956Z] [ERROR] Failed to apply update to doc 84542f6c-651a-4094-bb4a-e353b813e753: Invalid typed array length: 9445641
+[2025-05-05T09:02:33.976Z] [INFO] Saving document 84542f6c-651a-4094-bb4a-e353b813e753: 302547 bytes
+[2025-05-05T09:02:34.124Z] [INFO] Successfully saved document 84542f6c-651a-4094-bb4a-e353b813e753
+[2025-05-05T09:02:41.811Z] [ERROR] Failed to apply update to doc 84542f6c-651a-4094-bb4a-e353b813e753: Invalid typed array length: 131640
+[2025-05-05T09:02:43.830Z] [INFO] Saving document 84542f6c-651a-4094-bb4a-e353b813e753: 302577 bytes
+[2025-05-05T09:02:43.982Z] [INFO] Successfully saved document 84542f6c-651a-4094-bb4a-e353b813e753
+[2025-05-05T09:02:45.164Z] [ERROR] Failed to apply update to doc 84542f6c-651a-4094-bb4a-e353b813e753: Invalid typed array length: 131640
+[2025-05-05T09:02:47.174Z] [INFO] Saving document 84542f6c-651a-4094-bb4a-e353b813e753: 302597 bytes
+[2025-05-05T09:02:47.290Z] [INFO] Successfully saved document 84542f6c-651a-4094-bb4a-e353b813e753
+[2025-05-05T09:02:47.473Z] [INFO] Saving document 84542f6c-651a-4094-bb4a-e353b813e753: 302597 bytes
+[2025-05-05T09:02:47.621Z] [INFO] Successfully saved document 84542f6c-651a-4094-bb4a-e353b813e753
+[2025-05-05T09:02:50.818Z] [INFO] Loading database state for document 84542f6c-651a-4094-bb4a-e353b813e753
+[2025-05-05T09:02:50.819Z] [ERROR] Error loading state for document 84542f6c-651a-4094-bb4a-e353b813e753: Unexpected end of array
+[2025-05-05T09:03:50.855Z] [INFO] Saving document 84542f6c-651a-4094-bb4a-e353b813e753: 13 bytes
+[2025-05-05T09:03:50.865Z] [INFO] Successfully saved document 84542f6c-651a-4094-bb4a-e353b813e753
+[2025-05-05T09:03:50.969Z] [INFO] Loading database state for document 84542f6c-651a-4094-bb4a-e353b813e753
+[2025-05-05T09:04:50.987Z] [INFO] Saving document 84542f6c-651a-4094-bb4a-e353b813e753: 13 bytes
+[2025-05-05T09:04:50.993Z] [INFO] Successfully saved document 84542f6c-651a-4094-bb4a-e353b813e753
+[2025-05-05T09:04:51.103Z] [INFO] Loading database state for document 84542f6c-651a-4094-bb4a-e353b813e753
+[2025-05-05T09:05:11.824Z] [INFO] Loading database state for document 84542f6c-651a-4094-bb4a-e353b813e753
+[2025-05-05T09:05:30.957Z] [INFO] Saving document 84542f6c-651a-4094-bb4a-e353b813e753: 13 bytes
+[2025-05-05T09:05:30.978Z] [ERROR] Error saving document 84542f6c-651a-4094-bb4a-e353b813e753: 
+Invalid `prisma.doc.update()` invocation in
+D:\work\pecha-translation-editor\backend\services\yjs\utils.js:142:24
+
+  139 
+  140 try {
+  141   // Update the database with proper encoding
+→ 142   await prisma.doc.update(
+An operation failed because it depends on one or more records that were required but not found. Record to update not found.
+[2025-05-05T09:05:45.342Z] [ERROR] Failed to apply update to doc 98fc0423-7692-4e93-b44a-2ac3e4fce7aa: Invalid typed array length: 13878712

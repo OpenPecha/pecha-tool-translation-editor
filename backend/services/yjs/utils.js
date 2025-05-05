@@ -14,6 +14,7 @@ let persistence = null
 const messageSync = 0
 const messageAwareness = 1
 const wsReadyStateConnecting = 0
+const largeContentCharacterLength = 10000; 
 const wsReadyStateOpen = 1
 const docs = new Map()
 
@@ -105,18 +106,21 @@ const closeConn = (doc, conn) => {
       const yText = ydoc.getText(id)
       const delta = yText.toDelta()
       console.log('Yjs document state size:', stateSizeInBytes, 'bytes');
+      const text_length= yText.toString().length;
+      
       // ✅ Build a fresh Y.Doc and apply delta
       // Get the text content and delta with proper encoding
         try {
-          
-          // Update the database with proper encoding
-          await prisma.doc.update({
-            where: { id },
-            data: {
-              docs_prosemirror_delta: delta,
-              docs_y_doc_state: state,
-            },
-          });
+          if(text_length < largeContentCharacterLength)   {
+            // Update the database with proper encoding
+            await prisma.doc.update({
+              where: { id },
+              data: {
+                docs_prosemirror_delta: delta,
+                docs_y_doc_state: state,
+              },
+            });
+          }
           // Write delta to a separate file for debugging/tracking changes
           const fs = require('fs');
           const path = require('path');
