@@ -187,8 +187,8 @@ const Editor = ({
         updateContentDocument(documentId, {
           docs_prosemirror_delta: delta.ops,
         })
-          .then((data) => {
-            console.log(data.json());
+          .then(() => {
+            console.log("Document content updated successfully");
           })
           .catch((error) => {
             console.error("Error updating document content:", error);
