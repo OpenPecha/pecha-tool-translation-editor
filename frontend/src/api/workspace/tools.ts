@@ -2,7 +2,8 @@ import { getHeaders } from "../utils";
 
 export const fetchTools = async () => {
   try {
-    const response = await fetch('https://pecha-workspace-1.onrender.com/api/tools/', {
+    const url=import.meta.env.VITE_SERVER_URL;
+    const response = await fetch(url+'/api/tools/', {
       method: 'GET',
       headers: {
         'accept': 'application/json',
@@ -20,3 +21,4 @@ export const fetchTools = async () => {
     throw error;
   }
 };
+    
