@@ -147,6 +147,8 @@ const YjsProvider = ({ children }: YjsProviderProps) => {
         connect: true,
         resyncInterval: 10000,
         WebSocketPolyfill: WebSocket,
+        maxBackoffTime: 10000,
+        disableBc: true,
       }
     );
 

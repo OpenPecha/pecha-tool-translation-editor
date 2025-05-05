@@ -2,8 +2,8 @@ import { getHeaders } from "../utils";
 
 export const fetchTools = async () => {
   try {
-    const url=import.meta.env.VITE_SERVER_URL;
-    const response = await fetch(url+'/api/tools/', {
+    const url=import.meta.env.VITE_WORKSPACE_URL;
+    const response = await fetch(url.replace("workspace","api-workspace")+'/api/tools/', {
       method: 'GET',
       headers: {
         'accept': 'application/json',

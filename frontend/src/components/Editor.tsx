@@ -155,6 +155,7 @@ const Editor = ({
     });
     if (yjsProvider._resyncInterval !== null && isSynced) {
       clearInterval(yjsProvider._resyncInterval);
+      console.log("close interval socket");
       yjsProvider._resyncInterval = null; // Prevent it from being cleared again or reused
     }
     return () => {
@@ -182,7 +183,7 @@ const Editor = ({
       const activeUsersCount = Array.from(
         new Set(activeUsers.map((user) => user.name))
       ).length;
-      if (content.length > LARGEDOCUMENT_SIZE && activeUsersCount === 1) {
+      if (content.length > LARGEDOCUMENT_SIZE && activeUsersCount < 1) {
         updateContentDocument(documentId, {
           docs_prosemirror_delta: delta.ops,
         })
