@@ -31,7 +31,7 @@ export const useCurrentDoc = (docId: string | undefined): UseCurrentDocReturn =>
   const { currentUser } = useAuth();
   const [isEditable,setIsEditable] =useState(false);
   const { data, isLoading, error } = useQuery({
-    queryKey: ['document', docId],
+    queryKey: [`document-${docId}`],
     queryFn: async () => {
       if (!docId) return null;
       const doc=await fetchDocument(docId)

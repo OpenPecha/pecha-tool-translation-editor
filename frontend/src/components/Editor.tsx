@@ -12,7 +12,7 @@ import { useEditor } from "@/contexts/EditorContext";
 import { editor_config, EDITOR_ENTER_ONLY } from "@/utils/editorConfig";
 import { updateContentDocument } from "@/api/document";
 import { useCurrentDoc } from "@/hooks/useCurrentDoc";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 quill_import();
 
 const Editor = ({
@@ -37,6 +37,7 @@ const Editor = ({
   // const bindingRef = useRef<QuillBinding | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const quillRef = useRef<Quill | null>(null);
+  const queryClient = useQueryClient();
   const updateDocumentMutation = useMutation({
     mutationFn: (content: any) =>
       updateContentDocument(documentId as string, {
@@ -44,6 +45,10 @@ const Editor = ({
       }),
     onSuccess: () => {
       console.log("Document content updated successfully");
+      queryClient.invalidateQueries({
+        queryKey: [`document-${documentId}`],
+        refetchType: "active",
+      });
     },
     onError: (error) => {
       console.error("Error updating document content:", error);
