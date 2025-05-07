@@ -4,8 +4,9 @@ export const EDITOR_ENTER_ONLY=false
 
 
 const HISTORY_CONFIG={
-     delay: 2000, maxStack: 500 ,
-     userOnly:true
+     delay: 2000,
+     maxStack: 500,
+     userOnly:false
 }
 
 export const editor_config={

@@ -19,6 +19,7 @@ function createHeaderBlot(level) {
       // This makes it consistent with other formats like bold, italic
       return true;
     }
+  
   }
 
   return HeaderBlot;

@@ -96,6 +96,7 @@ const Editor = ({
     const quill = new Quill(editorRef.current, {
       theme: "snow",
       modules: {
+        history: editor_config.HISTORY_CONFIG,
         toolbar: {
           container: `#${toolbarId}`,
           handlers: {
@@ -108,18 +109,12 @@ const Editor = ({
                 quill.format("h", value || false);
               }
             },
-            undo: function () {
-              quill.history.undo();
-            },
-            redo: function () {
-              quill.history.redo();
-            },
           },
         },
         cursors: {
           transformOnTextChange: false,
         },
-        history: editor_config.HISTORY_CONFIG,
+        keyboard: true,
         counter: { container: `#${counterId}`, unit: "character" },
       },
       readOnly: !isEditable,
@@ -142,31 +137,12 @@ const Editor = ({
       },
       signal
     );
-    quill.setContents(currentDoc?.docs_prosemirror_delta || []);
-    // Create the binding between Quill and YText
-    // if (
-    //   quill &&
-    //   yText.length > 0 &&
-    //   yjsProvider?.awareness &&
-    //   !bindingRef.current
-    // ) {
-    //   bindingRef.current = new QuillBinding(
-    //     yText,
-    //     quill,
-    //     yjsProvider?.awareness
-    //   );
-    // }
 
     // Fetch comments when the editor loads
     quill.on("text-change", function (delta, oldDelta, source) {
       if (source === "user") {
         if (quill.getLength() <= 1) {
-          const shouldDelete = confirm(
-            "Are you sure you want to delete all content?"
-          );
-          if (!shouldDelete) {
-            quill.setContents(oldDelta);
-          }
+          quill.setContents(oldDelta);
         }
       }
       const currentContent = quill.getContents();
@@ -188,14 +164,8 @@ const Editor = ({
         setCurrentRange(newRange);
       }
     });
-    // if (yjsProvider._resyncInterval !== null && isSynced) {
-    //   clearInterval(yjsProvider._resyncInterval);
-    //   console.log("close interval socket");
-    //   yjsProvider._resyncInterval = null; // Prevent it from being cleared again or reused
-    // }
+
     return () => {
-      // bindingRef.current?.destroy();
-      // bindingRef.current = null;
       quill.disable();
       unregisterQuill2("editor" + editorId);
       signal.abort();
@@ -203,6 +173,7 @@ const Editor = ({
   }, []);
 
   useEffect(() => {
+    quillRef.current?.setContents(currentDoc?.docs_prosemirror_delta || []);
     return () => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
