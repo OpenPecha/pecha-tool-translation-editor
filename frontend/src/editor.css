@@ -35,10 +35,11 @@
   }
   .ql-editor {
     min-height: 100% !important;
+    max-width: 900px !important;
     padding:0 !important;
     padding-inline: 16px !important;
     background-color: white;
-    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    border: 0 !important;
     line-height: normal;
   }
   .ql-editor::selection{
@@ -71,11 +72,10 @@
     border-bottom-left-radius: 75px;
     border-top-right-radius: 75px;
     border-bottom-right-radius: 75px;
-    margin-inline: 2px !important;
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
     z-index: 200 !important;
     max-width: 100dvw !important;
-    margin: 6px 16px 8px 16px !important;
+    margin:0 !important;
   }
   
   .ql-toolbar.ql-snow .ql-formats{
@@ -109,10 +109,14 @@
   }
 
   [data-id].comments {
-    color: blue;
+    background-color: #fef2cd;
     cursor: pointer;
   }
 
+  [data-id].comments:hover {
+    background-color: #fabd07;
+    cursor: pointer;
+  }
 
   h3,h4,h5,h6,h7, h8, h9, h10, h11, h12, h13, h14, h15, h16, h17, h18, h19, h20 {
     font-size: 1.4rem !important;

@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import { FaHistory, FaObjectGroup } from "react-icons/fa";
 import QuillVersionControls from "./QuillVersionControls";
 import { useEditor } from "@/contexts/EditorContext";
@@ -20,7 +19,6 @@ interface ToolbarProps {
 const Toolbar = ({ addSuggestion, synced, documentId }: ToolbarProps) => {
   const versionRef = useRef<HTMLDivElement>(null);
   const [openHistory, setOpenHistory] = useState(false);
-
   const { getQuill, activeEditor } = useEditor();
   const [currentHeader, setCurrentHeader] = useState<string | number>("");
   const quill = getQuill(documentId);
@@ -134,7 +132,7 @@ const Toolbar = ({ addSuggestion, synced, documentId }: ToolbarProps) => {
 
   const showToolbar = activeEditor === documentId;
   const isEnabledStyle = { display: isEnabled ? "flex" : "none" };
-  const d = document.getElementById("toolbar-container")!;
+
   return (
     <div
       id={"toolbar-container" + "-" + documentId}
@@ -148,7 +146,7 @@ const Toolbar = ({ addSuggestion, synced, documentId }: ToolbarProps) => {
         right: "3vw",
       }}
     >
-      <div className="flex items-center gap-4 flex-1 h-10">
+      <div className="flex items-center gap-4 flex-1 h-full">
         <span className="ql-formats" style={isEnabledStyle}>
           <button
             className="ql-undo"
@@ -242,7 +240,7 @@ const Toolbar = ({ addSuggestion, synced, documentId }: ToolbarProps) => {
           <ExportButton doc_id={documentId} />
         </span>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 h-full">
         <PublishButton quill={quill!} />
         <div>
           {synced ? (

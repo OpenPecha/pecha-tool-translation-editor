@@ -38,15 +38,16 @@ function SelectTranslation({
   return (
     <div className="mt-3 rounded-lg overflow-hidden">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="font-medium">Translations</h3>
+        <h3 className="font-medium font-google-sans text-gray-600">
+          Translations
+        </h3>
         {isRoot && (
           <Button
             onClick={() => setShowCreateModal(true)}
             size="sm"
-            className="flex items-center gap-1 h-8"
+            className="flex items-center gap-1 h-8 cursor-pointer"
           >
             <Plus className="h-4 w-4" />
-            Add Translation
           </Button>
         )}
       </div>

@@ -27,7 +27,6 @@ const RealTimeEditor = ({
     <QuillVersionProvider docId={docId} maxVersions={50}>
       <CommentProvider>
         <Editor documentId={docId} isEditable={isEditable} />
-        <CommentBubble />
       </CommentProvider>
     </QuillVersionProvider>
   );

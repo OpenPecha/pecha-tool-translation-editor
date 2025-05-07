@@ -170,7 +170,7 @@ const CommentBubble = () => {
   if (!isModalOpen || !commentThread || commentThread.length === 0) return null;
 
   const style: StyleProps = {
-    left: position.left,
+    right: 0,
     top: position.top - 100,
     boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
     zIndex: 1000,
@@ -190,49 +190,53 @@ const CommentBubble = () => {
         {commentThread.map((comment: Comment) => (
           <div
             key={comment.id}
-            className="p-2 flex gap-2 border-b border-gray-200"
+            className="p-2 flex gap-2 border-b border-gray-200 flex-col"
           >
-            <Avatar>
-              <AvatarImage src={currentUser?.picture} />
-              <AvatarFallback
-                style={{
-                  backgroundColor: "#f59e0b",
-                  color: "#fff",
-                  borderRadius: "50%",
-                  padding: "2px",
-                }}
-              >
-                {currentUser?.name?.slice(0, 2)}
-              </AvatarFallback>
-            </Avatar>
-
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div className="flex justify-between">
-                <div className=" flex flex-col items-start mb-2">
-                  <span className="font-semibold text-sm text-[#1f1f1f]">
-                    {comment.user.username}
-                  </span>
-                  <span className="text-sm text-nowrap text-[#6b7280]">
-                    {formatDate(comment.createdAt)}
-                  </span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                  <button
-                    onClick={() => handleDelete(comment.id)}
-                    className="bg-transparent border-none text-gray-600 cursor-pointer p-2 rounded-full transition-all duration-200"
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.backgroundColor = "#fee2e2";
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.backgroundColor = "transparent";
-                    }}
-                    disabled={deleteMutation.isPending}
-                  >
-                    <FaTrash size={10} />
-                  </button>
+            <div className="flex items-center gap-2">
+              <Avatar>
+                <AvatarImage src={currentUser?.picture} />
+                <AvatarFallback
+                  style={{
+                    backgroundColor: "#f59e0b",
+                    color: "#fff",
+                    borderRadius: "50%",
+                    padding: "2px",
+                  }}
+                >
+                  {currentUser?.name?.slice(0, 2)}
+                </AvatarFallback>
+              </Avatar>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="flex justify-between">
+                  <div className=" flex flex-col items-start mb-2">
+                    <span className="font-semibold text-sm text-[#1f1f1f]">
+                      {comment.user.username}
+                    </span>
+                    <span className="text-sm text-nowrap text-[#6b7280]">
+                      {formatDate(comment.createdAt)}
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                    <button
+                      onClick={() => handleDelete(comment.id)}
+                      className="bg-transparent border-none text-gray-600 cursor-pointer p-2 rounded-full transition-all duration-200"
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.backgroundColor = "#fee2e2";
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.backgroundColor = "transparent";
+                      }}
+                      disabled={deleteMutation.isPending}
+                    >
+                      <FaTrash size={10} />
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div className="text-sm text-[#374151] bg-gray-200 p-2 rounded-2xl -translate-x-3.5 mb-2 word-break-break-word">
+            </div>
+
+            <div className="w-full">
+              <div className="text-sm text-[#374151] cursor-pointer hover:bg-gray-200 px-2 rounded-2xl  mb-2 ">
                 {comment.content}
               </div>
 
@@ -251,7 +255,7 @@ const CommentBubble = () => {
       <div className="border-t border-gray-200 p-2 sticky bottom-0 bg-white z-2">
         <div
           contentEditable
-          className="w-full min-h-[40px] border rounded p-2 mb-4 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
+          className="w-full min-h-[40px] rounded-[18px] border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 p-2 mb-4 empty:before:content-[attr(data-placeholder)] cursor-text empty:before:text-gray-400"
           ref={commentInputRef}
           onInput={(e) => {
             setIsDisabled(e.target.textContent === "");
@@ -263,34 +267,37 @@ const CommentBubble = () => {
         {isSuggestion && (
           <div
             contentEditable
-            className="w-full min-h-[40px] border rounded p-2 mb-4 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
+            className="w-full min-h-[40px] border cursor-text rounded-[18px]  p-2 mb-4 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400    border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
             ref={suggestionInputRef}
             data-placeholder="Add a suggestion..."
           />
         )}
-        <div className="flex justify-between">
-          <div className="flex items-center my-2 gap-2">
-            <Switch
-              id="isSuggestionCheckbox"
-              checked={isSuggestion}
-              onCheckedChange={() => setIsSuggestion(!isSuggestion)}
-              style={{ margin: 0 }}
-            />
-            <Label
-              htmlFor="isSuggestionCheckbox"
-              style={{ fontSize: "11px", color: "#4b5563" }}
+
+        {!isDisabled && (
+          <div className="flex justify-between">
+            <div className="flex items-center my-2 gap-2">
+              <Switch
+                id="isSuggestionCheckbox"
+                checked={isSuggestion}
+                onCheckedChange={() => setIsSuggestion(!isSuggestion)}
+                style={{ margin: 0 }}
+              />
+              <Label
+                htmlFor="isSuggestionCheckbox"
+                style={{ fontSize: "11px", color: "#4b5563" }}
+              >
+                Suggest
+              </Label>
+            </div>
+            <Button
+              disabled={commentMutation.isPending}
+              onClick={addComment}
+              className="px-4 py-2 rounded-full cursor-pointer bg-blue-500 text-white hover:bg-blue-600"
             >
-              Suggest
-            </Label>
+              {commentMutation.isPending ? "Saving..." : "Reply"}
+            </Button>
           </div>
-          <Button
-            disabled={isDisabled || commentMutation.isPending}
-            onClick={addComment}
-            className="px-4 py-2  rounded-full cursor-pointer bg-blue-500 text-white hover:bg-blue-600"
-          >
-            {commentMutation.isPending ? "Saving..." : "Reply"}
-          </Button>
-        </div>
+        )}
       </div>
     </div>
   );

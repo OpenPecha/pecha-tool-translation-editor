@@ -147,7 +147,7 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
     <>
       <Button
         onClick={() => setIsOpen(!isOpen)}
-        className={`absolute top-3  p-3 z-2 ${isOpen ? "hidden" : ""}`}
+        className={`top-3  p-3 z-2 ${isOpen ? "hidden" : ""}`}
         aria-label="Toggle Table of Contents"
         size="sm"
         variant="outline"

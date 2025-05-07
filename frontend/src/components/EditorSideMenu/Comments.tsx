@@ -13,7 +13,7 @@ function Comments() {
   const { id } = useParams();
   const { getQuill } = useEditor();
   const queryClient = useQueryClient();
-
+  const quill = getQuill(id!);
   // Fetch comments using React Query
   const {
     data: comments = [],
@@ -35,7 +35,6 @@ function Comments() {
 
       // Handle UI updates that need to happen immediately
       const comment = comments.find((c: Comment) => c.id === commentId);
-      const quill = getQuill(id!);
 
       // Check if this was the last comment in its thread
       const threadComments = comments.filter(
@@ -95,6 +94,7 @@ function Comments() {
               comment={comment}
               key={comment.id}
               deleteComment={handleDeleteComment}
+              quill={quill}
             />
           ))}
         </div>
@@ -106,17 +106,18 @@ function Comments() {
 interface EachCommentProps {
   readonly comment: Comment;
   readonly deleteComment: (commentId: string) => void;
+  readonly quill: Quill;
 }
 
-function EachComment({ comment, deleteComment }: EachCommentProps) {
+function EachComment({ comment, deleteComment, quill }: EachCommentProps) {
   const handleCommentClick = () => {
     const threadId = comment.threadId;
-    const span = document.querySelector(
+    const span = quill.container.querySelector(
       `span[data-id="${threadId}"]`
     ) as HTMLElement;
     if (span) {
       // Scroll the span into view
-      span.scrollIntoView({ behavior: "smooth", block: "center" });
+      // span.scrollIntoView({ behavior: "smooth", block: "center" });
 
       // Highlight with yellow background temporarily
       const originalBg = span.style.backgroundColor;

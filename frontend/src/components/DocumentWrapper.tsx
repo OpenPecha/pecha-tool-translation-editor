@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 
 import { useCurrentDoc } from "@/hooks/useCurrentDoc";
 import { EditorProvider } from "@/contexts/EditorContext";
@@ -30,21 +30,14 @@ function DocumentsWrapper() {
     setSelectedTranslationId(translationId);
   };
 
-  if (loading) {
-    return <div className="loading">Loading...</div>;
-  }
-  if (error) {
-    return <div className="error">{error}</div>;
-  }
-
   return (
     <EditorProvider>
       <Navbar title={currentDoc?.name} />
+      <div id="toolbar-container"></div>
       {selectedTranslationId && (
         <MenuDrawer rootId={id!} translationId={selectedTranslationId} />
       )}
-      <div id="toolbar-container"></div>
-      <div className="relative flex px-2  h-[calc(100dvh-110px)] w-full">
+      <div className="relative flex px-2  h-[calc(100dvh-55px)] w-full bg-white">
         <DocumentEditor docId={id} isEditable={isEditable} />
         {!selectedTranslationId ? (
           <SideMenu setSelectedTranslationId={handleSelectTranslation} />

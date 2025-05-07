@@ -115,7 +115,7 @@ function CommentModal({
   }
 
   const style: StyleProps = {
-    left: currentRange?.left,
+    right: 0,
     top: currentRange?.top - 80,
     boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
     zIndex: 1000,
@@ -139,11 +139,11 @@ function CommentModal({
       </div>
       <div
         contentEditable
-        className="w-full min-h-[40px] border rounded p-2 mb-4 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
         ref={commentInputRef}
         onInput={(e) => {
           setIsDisabled(e.target.textContent === "");
         }}
+        className="w-full min-h-[40px]  border rounded-[18px] scroll-auto p-2 mb-4 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
         autoFocus
         data-placeholder="Add a comment..."
       />
@@ -151,35 +151,36 @@ function CommentModal({
       {isSuggestion && (
         <div
           contentEditable
-          className="w-full min-h-[40px] border rounded p-2 mb-4 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
+          className="w-full min-h-[40px] border rounded-[18px] p-2 mb-4 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
           ref={suggestionInputRef}
           data-placeholder="Add a suggestion..."
         />
       )}
-
-      <div className="flex justify-between gap-2">
-        <div className="flex items-center my-2 gap-2">
-          <Switch
-            id="isSuggestionCheckbox"
-            checked={isSuggestion}
-            onCheckedChange={() => setIsSuggestion(!isSuggestion)}
-            style={{ margin: 0 }}
-          />
-          <Label
-            htmlFor="isSuggestionCheckbox"
-            style={{ fontSize: "11px", color: "#4b5563" }}
+      {!isDisabled && (
+        <div className="flex justify-between gap-2">
+          <div className="flex items-center my-2 gap-2">
+            <Switch
+              id="isSuggestionCheckbox"
+              checked={isSuggestion}
+              onCheckedChange={() => setIsSuggestion(!isSuggestion)}
+              style={{ margin: 0 }}
+            />
+            <Label
+              htmlFor="isSuggestionCheckbox"
+              style={{ fontSize: "11px", color: "#4b5563" }}
+            >
+              Suggest
+            </Label>
+          </div>
+          <Button
+            disabled={isDisabled || commentMutation.isPending}
+            onClick={addComment}
+            className="px-4 py-2 rounded-full cursor-pointer bg-blue-500 text-white hover:bg-blue-600"
           >
-            Suggest
-          </Label>
+            {commentMutation.isPending ? "Saving..." : "Comment"}
+          </Button>
         </div>
-        <Button
-          disabled={isDisabled || commentMutation.isPending}
-          onClick={addComment}
-          className="px-4 py-2 rounded-full cursor-pointer bg-blue-500 text-white hover:bg-blue-600"
-        >
-          {commentMutation.isPending ? "Saving..." : "Comment"}
-        </Button>
-      </div>
+      )}
     </div>
   );
 }

@@ -13,6 +13,7 @@ import { editor_config, EDITOR_ENTER_ONLY } from "@/utils/editorConfig";
 import { updateContentDocument } from "@/api/document";
 import { useCurrentDoc } from "@/hooks/useCurrentDoc";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import CommentBubble from "./Comment/CommentBubble";
 quill_import();
 
 const Editor = ({
@@ -44,7 +45,6 @@ const Editor = ({
         docs_prosemirror_delta: content.ops,
       }),
     onSuccess: () => {
-      console.log("Document content updated successfully");
       queryClient.invalidateQueries({
         queryKey: [`document-${documentId}`],
         refetchType: "active",
@@ -140,11 +140,14 @@ const Editor = ({
 
     // Fetch comments when the editor loads
     quill.on("text-change", function (delta, oldDelta, source) {
-      if (source === "user") {
-        if (quill.getLength() <= 1) {
-          quill.setContents(oldDelta);
-        }
+      // Handle all changes, not just those with source='user'
+      // This ensures formatting changes are also captured
+      if (quill.getLength() <= 1 && source === "user") {
+        quill.setContents(oldDelta);
+        return;
       }
+
+      // Save all changes including formatting changes
       const currentContent = quill.getContents();
       debouncedSave(currentContent);
     });
@@ -183,28 +186,6 @@ const Editor = ({
     };
   }, [currentDoc?.docs_prosemirror_delta]);
 
-  // useEffect(() => {
-  //   return () => {
-  //     if (!quillRef.current) return;
-
-  //     const content = quillRef.current?.getText();
-  //     const delta = quillRef.current?.getContents();
-  //     const activeUsersCount = Array.from(
-  //       new Set(activeUsers.map((user) => user.name))
-  //     ).length;
-  //     if (content.length > LARGEDOCUMENT_SIZE && activeUsersCount < 1) {
-  //       updateContentDocument(documentId, {
-  //         docs_prosemirror_delta: delta.ops,
-  //       })
-  //         .then(() => {
-  //           console.log("Document content updated successfully");
-  //         })
-  //         .catch((error) => {
-  //           console.error("Error updating document content:", error);
-  //         });
-  //     }
-  //   };
-  // }, []);
   function addSuggestion() {
     if (!currentRange) return;
 
@@ -218,7 +199,7 @@ const Editor = ({
         synced={isSynced}
         documentId={documentId}
       />
-      <div className="relative h-full w-full flex mt-14">
+      <div className="relative h-full w-full flex mt-10">
         <TableOfContent documentId={documentId} />
         <div className="editor-container w-full  h-full flex relative max-w-6xl mx-auto overflow-hidden ">
           <LineNumberVirtualized
@@ -230,6 +211,14 @@ const Editor = ({
             className={`editor-content flex-1 pb-3 `}
             style={{ fontFamily: "Monlam", fontSize: "1rem", lineHeight: 1.5 }}
           />
+          <CommentBubble />
+          {showCommentModal && (
+            <CommentModal
+              documentId={documentId}
+              setShowCommentModal={setShowCommentModal}
+              currentRange={currentRange}
+            />
+          )}
         </div>
         {/* <OverlayLoading isLoading={!isSynced} /> */}
         <div
@@ -239,13 +228,6 @@ const Editor = ({
           0 characters
         </div>
       </div>
-      {showCommentModal && (
-        <CommentModal
-          documentId={documentId}
-          setShowCommentModal={setShowCommentModal}
-          currentRange={currentRange}
-        />
-      )}
     </div>
   );
 };

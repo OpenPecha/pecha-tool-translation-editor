@@ -201,7 +201,15 @@ const upload = multer({
           isRoot: true,
           isPublic: true,
           docs_prosemirror_delta:true,
-          translations: true,
+          translations: {
+            select:{
+              id:true,
+              name:true,
+              language:true,
+              identifier:true,
+              updatedAt:true
+            }
+          },
         },
       });
       if (!document)

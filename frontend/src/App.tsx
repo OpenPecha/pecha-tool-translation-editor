@@ -44,7 +44,7 @@ function AppContent() {
   const { isAuthenticated } = useAuth();
 
   return (
-    <div className="flex flex-col min-h-screen overflow-hidden bg-[#fafbfd]">
+    <div className="flex flex-col  ">
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
           <Route
