@@ -64,7 +64,7 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
       return createDocument(formData);
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["document", rootId] });
+      queryClient.invalidateQueries({ queryKey: ["document-" + rootId] });
       onSuccess(data.id);
     },
     onError: (error: Error) => {

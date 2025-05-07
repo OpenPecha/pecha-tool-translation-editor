@@ -627,7 +627,6 @@ const upload = multer({
           docs_y_doc_state 
         },
       });
-      console.log(updatedDocument)
       res.json({
         success: true,
         data: updatedDocument

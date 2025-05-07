@@ -22,9 +22,19 @@ function SelectTranslation({
   );
   const handleCreateSuccess = (translationId: string) => {
     setShowCreateModal(false);
-    setSelectedTranslationId(translationId);
+    // setSelectedTranslationId(translationId);
   };
   const isRoot = currentDoc?.isRoot;
+  const getTranslationDate = (identifier: string) => {
+    const parts = identifier.split("-");
+    const timestamp = parts.length > 1 ? parts[parts.length - 1] : "";
+    const name =
+      parts.length > 1
+        ? parts.slice(0, parts.length - 1).join("-")
+        : identifier;
+    const time = new Date(parseInt(timestamp)).toLocaleDateString();
+    return { name, time };
+  };
   return (
     <div className="mt-3 rounded-lg overflow-hidden">
       <div className="flex justify-between items-center mb-4">
@@ -59,7 +69,12 @@ function SelectTranslation({
             >
               <GrDocument className="flex-shrink-0" />
               <div className="flex-1 overflow-hidden">
-                <div className="truncate">{translation.identifier}</div>
+                <div className="flex justify-between">
+                  <div className="truncate">
+                    {getTranslationDate(translation.identifier).name}
+                  </div>
+                  <div>{getTranslationDate(translation.identifier).time}</div>
+                </div>
                 <div className="text-xs text-gray-500 capitalize">
                   {translation.language}
                 </div>

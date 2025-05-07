@@ -45,8 +45,9 @@ export const useCurrentDoc = (docId: string | undefined): UseCurrentDocReturn =>
       return doc;
     },
     enabled: !!docId,
+    staleTime:0,
   });
- 
+ console.log(data)
 
   return {
     currentDoc: data,
