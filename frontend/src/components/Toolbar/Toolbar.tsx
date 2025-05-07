@@ -11,12 +11,12 @@ import { Button } from "../ui/button";
 import { PublishButton } from "./Publish";
 const isEnabled = !EDITOR_READ_ONLY;
 interface ToolbarProps {
-  addSuggestion: () => void;
+  addComment: () => void;
   synced: boolean;
   documentId: string;
 }
 
-const Toolbar = ({ addSuggestion, synced, documentId }: ToolbarProps) => {
+const Toolbar = ({ addComment, synced, documentId }: ToolbarProps) => {
   const versionRef = useRef<HTMLDivElement>(null);
   const [openHistory, setOpenHistory] = useState(false);
   const { getQuill, activeEditor } = useEditor();
@@ -139,11 +139,8 @@ const Toolbar = ({ addSuggestion, synced, documentId }: ToolbarProps) => {
       style={{
         display: showToolbar ? "flex" : "none",
         opacity: showToolbar ? 1 : 0,
-        position: "fixed",
         width: "94vw",
         margin: "0 auto",
-        left: "3vw",
-        right: "3vw",
       }}
     >
       <div className="flex items-center gap-4 flex-1 h-full">
@@ -212,7 +209,7 @@ const Toolbar = ({ addSuggestion, synced, documentId }: ToolbarProps) => {
           </ToolbarButton>
 
           <ToolbarButton
-            onClick={() => addSuggestion()}
+            onClick={() => addComment()}
             title="Suggestion"
             className=""
           >

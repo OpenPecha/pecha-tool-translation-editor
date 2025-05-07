@@ -9,6 +9,7 @@ import { ChevronRight } from "lucide-react";
 import MenuDrawer from "./MenuDrawer";
 import Navbar from "./Navbar";
 import { useDevToolsStatus } from "@/hooks/useDevToolStatus";
+import { createPortal } from "react-dom";
 
 export interface Translation {
   id: string;
@@ -32,12 +33,14 @@ function DocumentsWrapper() {
 
   return (
     <EditorProvider>
-      <Navbar title={currentDoc?.name} />
-      <div id="toolbar-container"></div>
+      {createPortal(
+        <Navbar title={currentDoc?.name} />,
+        document.getElementById("navbar")
+      )}
       {selectedTranslationId && (
         <MenuDrawer rootId={id!} translationId={selectedTranslationId} />
       )}
-      <div className="relative flex px-2  h-[calc(100dvh-55px)] w-full bg-white">
+      <div className="relative flex px-2 w-full max-h-[calc(100vh-88px)] overflow-hidden bg-white">
         <DocumentEditor docId={id} isEditable={isEditable} />
         {!selectedTranslationId ? (
           <SideMenu setSelectedTranslationId={handleSelectTranslation} />

@@ -3,7 +3,6 @@ import { useRef, useState, useEffect } from "react";
 import CommentBlot from "../quillExtension/commentBlot";
 import { createComment, deleteComment } from "@/api/comment";
 import { useComment } from "@/contexts/CommentContext";
-import { IoClose } from "react-icons/io5";
 import { FaTrash } from "react-icons/fa";
 import { Button } from "../ui/button";
 import { Switch } from "../ui/switch";

@@ -62,7 +62,12 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
       const editorContainer = editorRef?.current?.querySelector(".ql-editor");
       if (editorContainer && lineNumberSpan) {
         const targetTop = parseFloat(lineNumberSpan.style.top);
-        editorContainer.scrollTop = targetTop;
+
+        // Use scrollTo with smooth behavior instead of directly setting scrollTop
+        editorContainer.scrollTo({
+          top: targetTop,
+          behavior: 'smooth'
+        });
       }
     }
   };

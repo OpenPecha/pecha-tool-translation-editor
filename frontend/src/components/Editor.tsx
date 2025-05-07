@@ -3,7 +3,6 @@ import Quill from "quill";
 import Toolbar from "./Toolbar/Toolbar";
 import "quill/dist/quill.snow.css";
 import quill_import from "./quillExtension";
-import OverlayLoading from "./OverlayLoading";
 import { useQuillVersion } from "../contexts/VersionContext";
 import LineNumberVirtualized from "./LineNumbers";
 import CommentModal from "./Comment/CommentModal";
@@ -14,6 +13,7 @@ import { updateContentDocument } from "@/api/document";
 import { useCurrentDoc } from "@/hooks/useCurrentDoc";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import CommentBubble from "./Comment/CommentBubble";
+import { createPortal } from "react-dom";
 quill_import();
 
 const Editor = ({
@@ -23,7 +23,7 @@ const Editor = ({
   documentId?: string;
   isEditable: boolean;
 }) => {
-  const { currentDoc, loading, error } = useCurrentDoc(documentId);
+  const { currentDoc } = useCurrentDoc(documentId);
 
   const editorRef = useRef<HTMLDivElement>(null);
   const toolbarId = "toolbar-container" + "-" + documentId;
@@ -186,49 +186,57 @@ const Editor = ({
     };
   }, [currentDoc?.docs_prosemirror_delta]);
 
-  function addSuggestion() {
+  function addComment() {
     if (!currentRange) return;
-
     setShowCommentModal(true);
   }
   if (!documentId) return null;
   return (
-    <div className="w-full  flex-1 h-full">
-      <Toolbar
-        addSuggestion={addSuggestion}
-        synced={isSynced}
-        documentId={documentId}
-      />
-      <div className="relative h-full w-full flex mt-10">
-        <TableOfContent documentId={documentId} />
-        <div className="editor-container w-full  h-full flex relative max-w-6xl mx-auto overflow-hidden ">
-          <LineNumberVirtualized
-            editorRef={editorRef}
-            documentId={documentId}
-          />
-          <div
-            ref={editorRef}
-            className={`editor-content flex-1 pb-3 `}
-            style={{ fontFamily: "Monlam", fontSize: "1rem", lineHeight: 1.5 }}
-          />
-          <CommentBubble />
-          {showCommentModal && (
-            <CommentModal
+    <>
+      {createPortal(
+        <Toolbar
+          addComment={addComment}
+          synced={isSynced}
+          documentId={documentId}
+        />,
+        document.getElementById("toolbar-container")!
+      )}
+      <div className="w-full  flex-1 h-full ">
+        <div className="relative h-full w-full flex ">
+          <TableOfContent documentId={documentId} />
+          <div className="editor-container w-full  h-full flex relative max-w-6xl mx-auto overflow-hidden ">
+            <LineNumberVirtualized
+              editorRef={editorRef}
               documentId={documentId}
-              setShowCommentModal={setShowCommentModal}
-              currentRange={currentRange}
             />
-          )}
-        </div>
-        {/* <OverlayLoading isLoading={!isSynced} /> */}
-        <div
-          className="absolute bottom-2 right-2 bg-white rounded-lg shadow-md px-4 py-2 text-gray-600 text-sm border border-gray-200"
-          id={`${counterId}`}
-        >
-          0 characters
+            <div
+              ref={editorRef}
+              className={`editor-content flex-1 pb-3`}
+              style={{
+                fontFamily: "Monlam",
+                fontSize: "1rem",
+                lineHeight: 1.5,
+              }}
+            />
+            <CommentBubble />
+            {showCommentModal && (
+              <CommentModal
+                documentId={documentId}
+                setShowCommentModal={setShowCommentModal}
+                currentRange={currentRange}
+              />
+            )}
+          </div>
+          {/* <OverlayLoading isLoading={!isSynced} /> */}
+          <div
+            className="absolute bottom-2 right-2 bg-white rounded-lg shadow-md px-4 py-2 text-gray-600 text-sm border border-gray-200"
+            id={`${counterId}`}
+          >
+            0 characters
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

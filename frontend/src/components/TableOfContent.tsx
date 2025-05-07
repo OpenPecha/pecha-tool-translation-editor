@@ -241,16 +241,42 @@ const Toc = ({
       if (quill2) {
         const el = quill2.root.querySelector(`#${id}`);
         if (el) {
-          el.scrollIntoView({ behavior: "smooth" });
-          setActiveHeadingId(id);
+          // Get the parent editor container instead of scrolling the whole page
+          const editorContainer = quill2.root.closest('.ql-editor');
+          if (editorContainer) {
+            // Calculate the position of the element relative to the editor container
+            const containerRect = editorContainer.getBoundingClientRect();
+            const elRect = el.getBoundingClientRect();
+            const relativeTop = elRect.top - containerRect.top + editorContainer.scrollTop;
+            
+            // Smooth scroll the editor container to the element
+            editorContainer.scrollTo({
+              top: relativeTop,
+              behavior: 'smooth'
+            });
+            setActiveHeadingId(id);
+          }
         }
       }
     }
 
     const el = quill.root.querySelector(`#${id}`);
     if (el) {
-      el.scrollIntoView({ behavior: "smooth" });
-      setActiveHeadingId(id);
+      // Get the parent editor container instead of scrolling the whole page
+      const editorContainer = quill.root.closest('.ql-editor');
+      if (editorContainer) {
+        // Calculate the position of the element relative to the editor container
+        const containerRect = editorContainer.getBoundingClientRect();
+        const elRect = el.getBoundingClientRect();
+        const relativeTop = elRect.top - containerRect.top + editorContainer.scrollTop;
+        
+        // Smooth scroll the editor container to the element
+        editorContainer.scrollTo({
+          top: relativeTop,
+          behavior: 'smooth'
+        });
+        setActiveHeadingId(id);
+      }
     }
   };
   return (
