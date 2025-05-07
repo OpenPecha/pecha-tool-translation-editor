@@ -200,6 +200,7 @@ const upload = multer({
           language: true,
           isRoot: true,
           isPublic: true,
+          docs_prosemirror_delta:true,
           translations: true,
         },
       });
@@ -217,7 +218,7 @@ const upload = multer({
       // Decode Y.js state (if stored as Uint8Array) and convert to Delta
       let delta = [];
       if (document.docs_y_doc_state) {
-        const ydoc = new Y.Doc();
+        const ydoc = new Y.Doc({gc:true});
         // Y.applyUpdate(ydoc, document.docs_y_doc_state);
         delta = ydoc.getText(document.identifier).toDelta(); // Convert to Quill-compatible Delta
       } else if (document.docs_prosemirror_delta) {
@@ -259,7 +260,7 @@ const upload = multer({
       // Decode Y.js state (if stored as Uint8Array) and convert to Delta
       let delta = [];
       if (document.docs_y_doc_state) {
-        const ydoc = new Y.Doc();
+        const ydoc = new Y.Doc({gc:true});
         // Y.applyUpdate(ydoc, document.docs_y_doc_state);
         delta = ydoc.getText(document.identifier).toDelta(); // Convert to Quill-compatible Delta
       } else if (document.docs_prosemirror_delta) {
@@ -572,6 +573,10 @@ const upload = multer({
     try {
       const document = await prisma.doc.findUnique({
         where: { id: req.params.id },
+        select:{ownerId:true,
+          id:true,
+          docs_prosemirror_delta:true
+        }
       });
       if (!document)
         return res.status(404).json({ error: "Document not found" });
@@ -585,12 +590,12 @@ const upload = multer({
       }
       
       // Approach 1: If we need to merge with existing Y.doc state
-      const ydoc = new Y.Doc();
+      const ydoc = new Y.Doc({gc:true});
       
       // If the document already has Y.doc state, we should first apply that
-      if (document.docs_y_doc_state) {
-        Y.applyUpdateV2(ydoc, document.docs_y_doc_state);
-      }
+      // if (document.docs_y_doc_state) {
+      //   Y.applyUpdateV2(ydoc, document.docs_y_doc_state);
+      // }
       
       // Get the shared text type from the Y.doc
       const ytext = ydoc.getText(req.params.id);
@@ -605,8 +610,9 @@ const upload = multer({
       }
   
       // Encode the updated Y.doc state
-      const docs_y_doc_state = Y.encodeStateAsUpdateV2(ydoc);
       
+      const docs_y_doc_state = Y.encodeStateAsUpdateV2(ydoc);
+
       // Validate the state isn't too small/empty
       if (docs_y_doc_state.length < 100) {
         console.log('Y.js state is too small, skipping update');
@@ -621,7 +627,7 @@ const upload = multer({
           docs_y_doc_state 
         },
       });
-  
+      console.log(updatedDocument)
       res.json({
         success: true,
         data: updatedDocument

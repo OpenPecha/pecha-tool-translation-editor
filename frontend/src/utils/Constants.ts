@@ -1,1 +1,1 @@
-export const LARGEDOCUMENT_SIZE = 10000;  //sync with backend utils.js largeContentCharacterLength
+export const LARGEDOCUMENT_SIZE = 900000;  //sync with backend utils.js largeContentCharacterLength

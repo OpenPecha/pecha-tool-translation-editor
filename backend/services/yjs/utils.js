@@ -14,7 +14,7 @@ let persistence = null
 const messageSync = 0
 const messageAwareness = 1
 const wsReadyStateConnecting = 0
-const largeContentCharacterLength = 10000; 
+const largeContentCharacterLength = 900000; 
 const wsReadyStateOpen = 1
 const docs = new Map()
 
@@ -93,7 +93,7 @@ const closeConn = (doc, conn) => {
         where: { id },
         select: { docs_y_doc_state: true },
       });
-      
+      console.log("applying update, document size:", docInstance?.docs_y_doc_state?.byteLength || 0, "bytes");
       if (docInstance?.docs_y_doc_state) {
           Y.applyUpdateV2(doc, docInstance.docs_y_doc_state);
       }
@@ -110,29 +110,38 @@ const closeConn = (doc, conn) => {
       
       // ✅ Build a fresh Y.Doc and apply delta
       // Get the text content and delta with proper encoding
-        try {
-          if(text_length < largeContentCharacterLength)   {
-            // Update the database with proper encoding
-            await prisma.doc.update({
-              where: { id },
-              data: {
-                docs_prosemirror_delta: delta,
-                docs_y_doc_state: state,
-              },
-            });
-          }
-          // Write delta to a separate file for debugging/tracking changes
-          const fs = require('fs');
-          const path = require('path');
-          const dataDir = path.join(__dirname, '../../../logs');
-          if (!fs.existsSync(dataDir)) {
-            fs.mkdirSync(dataDir, { recursive: true });
-          }
-          const dataFile = path.join(dataDir, 'data.txt');
-          fs.writeFileSync(dataFile, `${new Date().toISOString()} - Doc ID: ${id}\n${JSON.stringify(delta, null, 2)}\n\n`);
-        } catch (error) {
-          console.log(error)
-        }
+      
+  try {
+    if (text_length < largeContentCharacterLength) {
+      await prisma.doc.update({
+        where: { id },
+        data: {
+          docs_prosemirror_delta: delta,
+          docs_y_doc_state: state,
+        },
+      });
+    }
+
+    // Write delta for debug
+    const fs = require('fs');
+    const path = require('path');
+    const dataDir = path.join(__dirname, '../../../logs');
+    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+    const dataFile = path.join(dataDir, 'data.txt');
+    fs.writeFileSync(dataFile, `${new Date().toISOString()} - Doc ID: ${id}\n${JSON.stringify(delta, null, 2)}\n\n`);
+
+    // ✅ Compact: Replace the in-memory doc with fresh Y.Doc
+    const freshDoc = new Y.Doc();
+    freshDoc.name = id;
+    Y.applyUpdateV2(freshDoc, state);
+    freshDoc.awareness = ydoc.awareness;
+    freshDoc.conns = ydoc.conns;
+
+    docs.set(id, freshDoc); // Replace in your doc map
+    ydoc.destroy(); // Destroy old doc
+  } catch (error) {
+    console.log(error);
+  }
 
 
         

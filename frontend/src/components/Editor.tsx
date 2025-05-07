@@ -1,7 +1,5 @@
-import { memo, useContext, useEffect, useId, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useId, useRef, useState } from "react";
 import Quill from "quill";
-import { QuillBinding } from "y-quill";
-import YjsContext from "../lib/yjsProvider";
 import Toolbar from "./Toolbar/Toolbar";
 import "quill/dist/quill.snow.css";
 import quill_import from "./quillExtension";
@@ -13,36 +11,61 @@ import TableOfContent from "./TableOfContent";
 import { useEditor } from "@/contexts/EditorContext";
 import { editor_config, EDITOR_ENTER_ONLY } from "@/utils/editorConfig";
 import { updateContentDocument } from "@/api/document";
-import { LARGEDOCUMENT_SIZE } from "@/utils/Constants";
+import { useCurrentDoc } from "@/hooks/useCurrentDoc";
 quill_import();
 
 const Editor = ({
   documentId,
   isEditable,
 }: {
-  documentId: string;
+  documentId?: string;
   isEditable: boolean;
 }) => {
+  const { currentDoc, loading, error } = useCurrentDoc(documentId);
+
   const editorRef = useRef<HTMLDivElement>(null);
-  const unique = useId().replaceAll(":", "");
-  const toolbarId = "toolbar-container" + "-" + unique;
-  const counterId = "counter-container" + "-" + unique;
-  const { yText, yjsProvider, isSynced, ydoc, activeUsers } =
-    useContext(YjsContext);
+  const toolbarId = "toolbar-container" + "-" + documentId;
+  const counterId = "counter-container" + "-" + documentId;
+  const isSynced = true;
+  // const { yText, yjsProvider, isSynced, ydoc, activeUsers } =
+  //   useContext(YjsContext);
   const [currentRange, setCurrentRange] = useState<Range | null>(null);
-  const [initialSyncComplete, setInitialSyncComplete] = useState(false);
   const [showCommentModal, setShowCommentModal] = useState(false);
   const { registerQuill } = useQuillVersion();
   const { registerQuill: registerQuill2, unregisterQuill: unregisterQuill2 } =
     useEditor();
-  const bindingRef = useRef<QuillBinding | null>(null);
+  // const bindingRef = useRef<QuillBinding | null>(null);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const quillRef = useRef<Quill | null>(null);
+  const debouncedSave = useCallback(
+    (content: any) => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+
+      saveTimeoutRef.current = setTimeout(() => {
+        if (!documentId) return;
+
+        updateContentDocument(documentId, {
+          docs_prosemirror_delta: content.ops,
+        })
+          .then(() => {
+            console.log("Document content updated successfully");
+          })
+          .catch((error) => {
+            console.error("Error updating document content:", error);
+          });
+      }, 3000); // 3 second debounce
+    },
+    [documentId]
+  );
+
   useEffect(() => {
-    console.log("render");
     const signal = new AbortController();
 
     const editorId = documentId;
-    if (!editorRef.current || !yText || !yjsProvider?.awareness) return;
+    const tool = document.getElementById(toolbarId);
+    if (!editorRef.current || !tool) return;
 
     function handleFormatChange(type: string) {
       const range = quill.getSelection();
@@ -95,6 +118,7 @@ const Editor = ({
 
       // className is not a valid Quill option, apply these styles to the container instead
     });
+    quill.setContents(currentDoc?.docs_prosemirror_delta || []);
     registerQuill(quill);
     quillRef.current = quill;
     registerQuill2(editorId, quill);
@@ -111,18 +135,18 @@ const Editor = ({
       signal
     );
     // Create the binding between Quill and YText
-    if (
-      quill &&
-      yText.length > 0 &&
-      yjsProvider?.awareness &&
-      !bindingRef.current
-    ) {
-      bindingRef.current = new QuillBinding(
-        yText,
-        quill,
-        yjsProvider?.awareness
-      );
-    }
+    // if (
+    //   quill &&
+    //   yText.length > 0 &&
+    //   yjsProvider?.awareness &&
+    //   !bindingRef.current
+    // ) {
+    //   bindingRef.current = new QuillBinding(
+    //     yText,
+    //     quill,
+    //     yjsProvider?.awareness
+    //   );
+    // }
 
     // Fetch comments when the editor loads
     quill.on("text-change", function (delta, oldDelta, source) {
@@ -136,6 +160,8 @@ const Editor = ({
           }
         }
       }
+      const currentContent = quill.getContents();
+      debouncedSave(currentContent);
     });
     quill.on("selection-change", (range) => {
       if (!range) return;
@@ -153,60 +179,59 @@ const Editor = ({
         setCurrentRange(newRange);
       }
     });
-    if (yjsProvider._resyncInterval !== null && isSynced) {
-      clearInterval(yjsProvider._resyncInterval);
-      console.log("close interval socket");
-      yjsProvider._resyncInterval = null; // Prevent it from being cleared again or reused
-    }
+    // if (yjsProvider._resyncInterval !== null && isSynced) {
+    //   clearInterval(yjsProvider._resyncInterval);
+    //   console.log("close interval socket");
+    //   yjsProvider._resyncInterval = null; // Prevent it from being cleared again or reused
+    // }
     return () => {
-      bindingRef.current?.destroy();
-      bindingRef.current = null;
+      // bindingRef.current?.destroy();
+      // bindingRef.current = null;
       quill.disable();
       unregisterQuill2("editor" + editorId);
       signal.abort();
     };
-  }, [isSynced, yjsProvider?.awareness, documentId, isEditable]);
-
-  // Effect to track initial sync completion
-  useEffect(() => {
-    if (isSynced && !initialSyncComplete) {
-      setInitialSyncComplete(true);
-    }
-  }, [isSynced, initialSyncComplete]);
+  }, []);
 
   useEffect(() => {
     return () => {
-      if (!quillRef.current) return;
-
-      const content = quillRef.current?.getText();
-      const delta = quillRef.current?.getContents();
-      const activeUsersCount = Array.from(
-        new Set(activeUsers.map((user) => user.name))
-      ).length;
-      if (content.length > LARGEDOCUMENT_SIZE && activeUsersCount < 1) {
-        updateContentDocument(documentId, {
-          docs_prosemirror_delta: delta.ops,
-        })
-          .then(() => {
-            console.log("Document content updated successfully");
-          })
-          .catch((error) => {
-            console.error("Error updating document content:", error);
-          });
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
       }
     };
   }, []);
 
+  // useEffect(() => {
+  //   return () => {
+  //     if (!quillRef.current) return;
+
+  //     const content = quillRef.current?.getText();
+  //     const delta = quillRef.current?.getContents();
+  //     const activeUsersCount = Array.from(
+  //       new Set(activeUsers.map((user) => user.name))
+  //     ).length;
+  //     if (content.length > LARGEDOCUMENT_SIZE && activeUsersCount < 1) {
+  //       updateContentDocument(documentId, {
+  //         docs_prosemirror_delta: delta.ops,
+  //       })
+  //         .then(() => {
+  //           console.log("Document content updated successfully");
+  //         })
+  //         .catch((error) => {
+  //           console.error("Error updating document content:", error);
+  //         });
+  //     }
+  //   };
+  // }, []);
   function addSuggestion() {
     if (!currentRange) return;
 
     setShowCommentModal(true);
   }
-
+  if (!documentId) return null;
   return (
     <div className="w-full relative flex-1 h-full">
       <Toolbar
-        id={toolbarId}
         addSuggestion={addSuggestion}
         synced={isSynced}
         documentId={documentId}
@@ -224,7 +249,7 @@ const Editor = ({
             style={{ fontFamily: "Monlam", fontSize: "1rem", lineHeight: 1.5 }}
           />
         </div>
-        <OverlayLoading isLoading={!isSynced && !initialSyncComplete} />
+        <OverlayLoading isLoading={!isSynced} />
         <div
           className="absolute bottom-2 right-2 bg-white rounded-lg shadow-md px-4 py-2 text-gray-600 text-sm border border-gray-200"
           id={`${counterId}`}

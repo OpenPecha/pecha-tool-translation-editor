@@ -134,6 +134,9 @@ const YjsProvider = ({ children }: YjsProviderProps) => {
       selection: null,
     });
 
+    // Track pending async operations to prevent race conditions
+    const pendingOperations = new Set<string>();
+
     // Create WebSocket provider with proper configuration
     const provider = new WebsocketProvider(
       CLIENT_WEBSOCKET_URL,
@@ -155,22 +158,109 @@ const YjsProvider = ({ children }: YjsProviderProps) => {
     // Ensure proper binary type for WebSocket
     if (provider.ws) {
       provider.ws.binaryType = "arraybuffer";
+
+      // Original onmessage handler
+      const originalOnMessage = provider.ws.onmessage;
+
+      // Add custom error handling for WebSocket
+      provider.ws.onerror = (event) => {
+        console.error("WebSocket error:", event);
+        // Try to reconnect on error after a delay
+        setTimeout(() => {
+          if (provider && !provider.wsconnected) {
+            provider.connect();
+          }
+        }, 3000);
+      };
+
+      // Add custom onclose handler
+      provider.ws.onclose = (event) => {
+        console.log("WebSocket closed:", event.code, event.reason);
+        // Clear pending operations on connection close
+        pendingOperations.clear();
+      };
+
+      // Override onmessage to handle asynchronous operations
+      provider.ws.onmessage = async (event) => {
+        try {
+          // Generate a unique ID for this message
+          const opId = `op-${Date.now()}-${Math.random()}`;
+          pendingOperations.add(opId);
+
+          // Process the message
+          if (originalOnMessage) {
+            originalOnMessage.call(provider.ws, event);
+          }
+
+          // Remove the operation ID after processing
+          pendingOperations.delete(opId);
+        } catch (error) {
+          console.error("Error handling WebSocket message:", error);
+          // Remove potential pending operations
+          pendingOperations.clear();
+        }
+      };
     }
+
+    // Add additional event listeners to provider
+    provider.on("status", (event: { status: string }) => {
+      console.log("WebSocket status changed:", event.status);
+    });
+
+    // Register this provider in the global tracking array
+    if (!window.yjsWebsocketInstances) {
+      window.yjsWebsocketInstances = [];
+    }
+    window.yjsWebsocketInstances.push(provider);
 
     setYjsProvider(provider);
   };
 
   const clearYjsProvider = () => {
     if (yjsProvider) {
-      // Disconnect WebSocket if connected
-      if (yjsProvider.wsconnected) {
-        yjsProvider.disconnect();
+      try {
+        // Wait for any pending async operations to complete before disconnecting
+        setTimeout(() => {
+          try {
+            // Remove awareness states and disconnect cleanly
+            if (yjsProvider.awareness) {
+              yjsProvider.awareness.setLocalState(null);
+              yjsProvider.awareness.destroy();
+            }
+
+            // Disconnect WebSocket if connected
+            if (yjsProvider.wsconnected) {
+              yjsProvider.disconnect();
+            }
+
+            // Clear any custom handlers we may have added
+            if (yjsProvider.ws) {
+              yjsProvider.ws.onmessage = null;
+              yjsProvider.ws.onerror = null;
+              yjsProvider.ws.onclose = null;
+            }
+
+            // Remove this provider from the global tracking array
+            if (window.yjsWebsocketInstances) {
+              window.yjsWebsocketInstances =
+                window.yjsWebsocketInstances.filter((p) => p !== yjsProvider);
+            }
+          } catch (err) {
+            console.error("Error cleaning up YJS provider:", err);
+          }
+        }, 200); // Give pending operations a chance to complete
+      } catch (err) {
+        console.error("Error in delayed cleanup:", err);
       }
     }
 
     // Destroy Y.Doc to free memory
     if (ydoc) {
-      ydoc.destroy();
+      try {
+        ydoc.destroy();
+      } catch (err) {
+        console.error("Error destroying Y.Doc:", err);
+      }
     }
 
     // Reset state

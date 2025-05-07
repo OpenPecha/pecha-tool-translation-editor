@@ -43,7 +43,8 @@ const getYDoc = (docId, userId) =>
   map.setIfUndefined(utils.docs, docId, () => {
     const doc = new WSSharedDoc(docId, userId);
     // Disable garbage collection for large docs
-    doc.gc = false; 
+    doc.gc = true; 
+    console.log()
     if(utils.persistence !== null) {
       utils.persistence.bindState(docId, doc)
     }

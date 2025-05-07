@@ -29,7 +29,7 @@
     "@tanstack/react-query": "^5.74.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "disable-devtool": "^0.3.8",
+    "devtools-detect": "^4.0.2",
     "express-oauth2-jwt-bearer": "^1.6.1",
     "file-saver": "^2.0.5",
     "html-docx-js": "^0.3.1",

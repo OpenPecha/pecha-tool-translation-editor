@@ -1,9 +1,8 @@
- import { useEffect, useState } from 'react';
+ import { useState } from 'react';
 import { fetchDocument } from '../api/document';
 import { useAuth } from '@/auth/use-auth-hook';
 import { useQuery } from '@tanstack/react-query';
 import { EDITOR_READ_ONLY } from "@/utils/editorConfig";
-// import disableDevtool from "disable-devtool";
 
 interface Translation {
   id: string;
@@ -42,12 +41,7 @@ export const useCurrentDoc = (docId: string | undefined): UseCurrentDocReturn =>
             setIsEditable(true);
           }
         });
-      } else {
-        // disableDevtool({
-        //   url: "/",
-        //   disableMenu: true,
-        // });
-      }
+      } 
       return doc;
     },
     enabled: !!docId,
@@ -58,6 +52,7 @@ export const useCurrentDoc = (docId: string | undefined): UseCurrentDocReturn =>
     currentDoc: data,
     loading: isLoading,
     error: error ? (error instanceof Error ? error.message : 'Failed to load document') : null,
-    isEditable
+    isEditable:true
   };
 };
+ 

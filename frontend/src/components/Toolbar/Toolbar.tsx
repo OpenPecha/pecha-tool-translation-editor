@@ -13,12 +13,11 @@ import { PublishButton } from "./Publish";
 const isEnabled = !EDITOR_READ_ONLY;
 interface ToolbarProps {
   addSuggestion: () => void;
-  id: string;
   synced: boolean;
   documentId: string;
 }
 
-const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
+const Toolbar = ({ addSuggestion, synced, documentId }: ToolbarProps) => {
   const versionRef = useRef<HTMLDivElement>(null);
   const [openHistory, setOpenHistory] = useState(false);
 
@@ -135,51 +134,46 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
 
   const showToolbar = activeEditor === documentId;
   const isEnabledStyle = { display: isEnabled ? "flex" : "none" };
+  const d = document.getElementById("toolbar-container")!;
   return (
-    <>
-      {createPortal(
-        <div
-          id={id}
-          style={{
-            display: showToolbar ? "flex" : "none",
-            opacity: showToolbar ? 1 : 0,
-            position: "relative",
-          }}
-        >
-          <div className="flex items-center gap-4 flex-1 h-10">
-            <span className="ql-formats" style={isEnabledStyle}>
-              <button
-                className="ql-undo"
-                title="Undo"
-                disabled={quill?.history.stack.undo.length === 0}
-                onClick={() => quill?.history.undo()}
-              />
-              <button
-                className="ql-redo"
-                title="Redo"
-                disabled={quill?.history.stack.redo.length === 0}
-                onClick={() => quill?.history.redo()}
-              />
-            </span>
-            <span className="ql-formats" style={isEnabledStyle}>
-              <select
-                className="ql-font"
-                title="Font"
-                defaultValue="sans-serif"
-              >
-                <option value="sans-serif">Sans-serif</option>
-                <option value="serif">Serif</option>
-                <option value="monospace">Monospace</option>
-                <option value="monlam">Monlam</option> {/* Custom font */}
-              </select>
-            </span>
-            <span className="ql-formats" title="Heading" style={isEnabledStyle}>
-              <HeaderDropdown
-                value={currentHeader}
-                onChange={handleHeadingChange}
-              />
-            </span>
-            {/* <span className="ql-formats" title="Size" style={isEnabledStyle}>
+    <div
+      id={"toolbar-container" + "-" + documentId}
+      style={{
+        display: showToolbar ? "flex" : "none",
+        opacity: showToolbar ? 1 : 0,
+        position: "relative",
+      }}
+    >
+      <div className="flex items-center gap-4 flex-1 h-10">
+        <span className="ql-formats" style={isEnabledStyle}>
+          <button
+            className="ql-undo"
+            title="Undo"
+            disabled={quill?.history.stack.undo.length === 0}
+            onClick={() => quill?.history.undo()}
+          />
+          <button
+            className="ql-redo"
+            title="Redo"
+            disabled={quill?.history.stack.redo.length === 0}
+            onClick={() => quill?.history.redo()}
+          />
+        </span>
+        <span className="ql-formats" style={isEnabledStyle}>
+          <select className="ql-font" title="Font" defaultValue="sans-serif">
+            <option value="sans-serif">Sans-serif</option>
+            <option value="serif">Serif</option>
+            <option value="monospace">Monospace</option>
+            <option value="monlam">Monlam</option> {/* Custom font */}
+          </select>
+        </span>
+        <span className="ql-formats" title="Heading" style={isEnabledStyle}>
+          <HeaderDropdown
+            value={currentHeader}
+            onChange={handleHeadingChange}
+          />
+        </span>
+        {/* <span className="ql-formats" title="Size" style={isEnabledStyle}>
               <select className="ql-size">
                 <option value="small" />
                 <option selected />
@@ -187,80 +181,74 @@ const Toolbar = ({ addSuggestion, id, synced, documentId }: ToolbarProps) => {
                 <option value="huge" />
               </select>
             </span> */}
-            <div className="flex items-center gap-2" style={isEnabledStyle}>
-              <span className="ql-formats">
-                <button className="ql-bold" title="Bold" />
-                <button className="ql-italic" title="Italic" />
-                <button className="ql-underline" title="Underline" />
-              </span>
-            </div>
-            {/* <select className="ql-color"></select> */}
-            <select
-              className="ql-background"
-              style={isEnabledStyle}
-              title="Highlight"
-            >
-              <option value=""></option>
-              <option value="#ffff00">Yellow</option>
-              <option value="#ffd700">Gold</option>
-              <option value="#90ee90">Light Green</option>
-              <option value="#add8e6">Light Blue</option>
-            </select>
-            <span className="ql-formats" title="Section" style={isEnabledStyle}>
-              <ToolbarButton
-                onClick={handleSectionCreation}
-                title="Section"
-                className=""
-              >
-                <FaObjectGroup />
-              </ToolbarButton>
+        <div className="flex items-center gap-2" style={isEnabledStyle}>
+          <span className="ql-formats">
+            <button className="ql-bold" title="Bold" />
+            <button className="ql-italic" title="Italic" />
+            <button className="ql-underline" title="Underline" />
+          </span>
+        </div>
+        {/* <select className="ql-color"></select> */}
+        <select
+          className="ql-background"
+          style={isEnabledStyle}
+          title="Highlight"
+        >
+          <option value=""></option>
+          <option value="#ffff00">Yellow</option>
+          <option value="#ffd700">Gold</option>
+          <option value="#90ee90">Light Green</option>
+          <option value="#add8e6">Light Blue</option>
+        </select>
+        <span className="ql-formats" title="Section" style={isEnabledStyle}>
+          <ToolbarButton
+            onClick={handleSectionCreation}
+            title="Section"
+            className=""
+          >
+            <FaObjectGroup />
+          </ToolbarButton>
 
-              <ToolbarButton
-                onClick={() => addSuggestion()}
-                title="Suggestion"
-                className=""
-              >
-                <BiCommentAdd size={28} />
-              </ToolbarButton>
-              <ToolbarButton
-                title="Versions"
-                className=""
-                onClick={() => setOpenHistory(!openHistory)}
-              >
-                <FaHistory />
-              </ToolbarButton>
-            </span>
+          <ToolbarButton
+            onClick={() => addSuggestion()}
+            title="Suggestion"
+            className=""
+          >
+            <BiCommentAdd size={28} />
+          </ToolbarButton>
+          <ToolbarButton
+            title="Versions"
+            className=""
+            onClick={() => setOpenHistory(!openHistory)}
+          >
+            <FaHistory />
+          </ToolbarButton>
+        </span>
 
-            <div
-              ref={versionRef}
-              style={{
-                display: openHistory ? "block" : "none",
-              }}
-              className="absolute bg-gray-100 z-10 top-10 right-0"
-            >
-              <QuillVersionControls openHistory={openHistory} />
-            </div>
-            <span className="ql-formats" title="Export">
-              <ExportButton doc_id={documentId} />
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <PublishButton quill={quill!} />
-            <div>
-              {synced ? (
-                "🟢"
-              ) : (
-                <span className="text-xs text-gray-400 italic">
-                  {" "}
-                  saving...{" "}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>,
-        document.getElementById("toolbar-container")!
-      )}
-    </>
+        <div
+          ref={versionRef}
+          style={{
+            display: openHistory ? "block" : "none",
+          }}
+          className="absolute bg-gray-100 z-10 top-10 right-0"
+        >
+          <QuillVersionControls openHistory={openHistory} />
+        </div>
+        <span className="ql-formats" title="Export">
+          <ExportButton doc_id={documentId} />
+        </span>
+      </div>
+      <div className="flex items-center gap-2">
+        <PublishButton quill={quill!} />
+        <div>
+          {synced ? (
+            "🟢"
+          ) : (
+            <span className="text-xs text-gray-400 italic"> saving... </span>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 

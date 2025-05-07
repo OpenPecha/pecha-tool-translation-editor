@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { AuthProvider } from "./auth/auth-context-provider";
 import { useAuth } from "./auth/use-auth-hook";
 import { SearchProvider } from "./contexts/SearchContext";
@@ -7,9 +7,9 @@ import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import Callback from "./pages/Callback";
 import Login from "./pages/Login";
 import DocumentsWrapper from "./components/DocumentWrapper";
+import Navbar from "./components/Dashboard/Navbar";
 // Lazy loaded components
 const ProjectList = lazy(() => import("./components/Dashboard/ProjectList"));
-const Navbar = lazy(() => import("./components/Dashboard/Navbar"));
 const QuillVersionProvider = lazy(() =>
   import("./contexts/VersionContext").then((module) => ({
     default: module.QuillVersionProvider,

@@ -9,6 +9,7 @@ import SideMenu from "./EditorSideMenu/Sidemenu";
 import { ChevronRight } from "lucide-react";
 import MenuDrawer from "./MenuDrawer";
 import Navbar from "./Navbar";
+import { useDevToolsStatus } from "@/hooks/useDevToolStatus";
 
 export interface Translation {
   id: string;
@@ -18,9 +19,10 @@ export interface Translation {
 
 function DocumentsWrapper() {
   const { id } = useParams();
+  useDevToolsStatus();
+
   const { currentDoc, loading, error, isEditable } = useCurrentDoc(id);
   const previousIdRef = useRef<string | null>(null);
-
   const [selectedTranslationId, setSelectedTranslationId] = useState<
     string | null
   >(null);
@@ -111,41 +113,39 @@ function DocumentsWrapper() {
 
   return (
     <EditorProvider>
-      <>
-        <Navbar title={currentDoc?.name} />
-        {selectedTranslationId && (
-          <MenuDrawer rootId={id!} translationId={selectedTranslationId} />
-        )}
-        <div id="toolbar-container"></div>
-        <div className="relative flex px-2  h-[calc(100dvh-110px)] w-full">
-          <YjsProvider key={id}>
-            <DocumentEditor docId={id} isEditable={isEditable} />
+      <Navbar title={currentDoc?.name} />
+      {selectedTranslationId && (
+        <MenuDrawer rootId={id!} translationId={selectedTranslationId} />
+      )}
+      <div id="toolbar-container"></div>
+      <div className="relative flex px-2  h-[calc(100dvh-110px)] w-full">
+        <YjsProvider key={id}>
+          <DocumentEditor docId={id} isEditable={isEditable} />
+        </YjsProvider>
+
+        {!selectedTranslationId ? (
+          <SideMenu setSelectedTranslationId={handleSelectTranslation} />
+        ) : (
+          <YjsProvider key={selectedTranslationId}>
+            <DocumentEditor
+              docId={selectedTranslationId}
+              isEditable={isEditable}
+            />
           </YjsProvider>
+        )}
 
-          {!selectedTranslationId ? (
-            <SideMenu setSelectedTranslationId={handleSelectTranslation} />
-          ) : (
-            <YjsProvider key={selectedTranslationId}>
-              <DocumentEditor
-                docId={selectedTranslationId}
-                isEditable={isEditable}
-              />
-            </YjsProvider>
-          )}
-
-          {selectedTranslationId && (
-            <div className="relative">
-              <button
-                onClick={() => handleSelectTranslation(null)}
-                className="absolute right-2 top-2 z-10 rounded-full bg-white p-1 shadow-md hover:bg-gray-100"
-                aria-label="Close translation view"
-              >
-                <ChevronRight size={20} />
-              </button>
-            </div>
-          )}
-        </div>
-      </>
+        {selectedTranslationId && (
+          <div className="relative">
+            <button
+              onClick={() => handleSelectTranslation(null)}
+              className="absolute right-2 top-2 z-10 rounded-full bg-white p-1 shadow-md hover:bg-gray-100"
+              aria-label="Close translation view"
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
+        )}
+      </div>
     </EditorProvider>
   );
 }
