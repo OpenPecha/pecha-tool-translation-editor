@@ -3,9 +3,8 @@ import Quill from "quill";
 
 export const PublishButton = ({ quill }: { quill: Quill }) => {
   const handlePublish = () => {
-    // const text = quill.getText();
-    // const json = generateJsonFromText(text);
-    const json = quill.getContents();
+    const text = quill.getText();
+    const json = generateJsonFromText(text);
     console.log("published", json);
   };
 
