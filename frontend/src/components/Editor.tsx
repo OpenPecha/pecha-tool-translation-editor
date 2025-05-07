@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useId, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import Quill from "quill";
 import Toolbar from "./Toolbar/Toolbar";
 import "quill/dist/quill.snow.css";
@@ -12,6 +12,7 @@ import { useEditor } from "@/contexts/EditorContext";
 import { editor_config, EDITOR_ENTER_ONLY } from "@/utils/editorConfig";
 import { updateContentDocument } from "@/api/document";
 import { useCurrentDoc } from "@/hooks/useCurrentDoc";
+import { useMutation } from "@tanstack/react-query";
 quill_import();
 
 const Editor = ({
@@ -26,7 +27,6 @@ const Editor = ({
   const editorRef = useRef<HTMLDivElement>(null);
   const toolbarId = "toolbar-container" + "-" + documentId;
   const counterId = "counter-container" + "-" + documentId;
-  const isSynced = true;
   // const { yText, yjsProvider, isSynced, ydoc, activeUsers } =
   //   useContext(YjsContext);
   const [currentRange, setCurrentRange] = useState<Range | null>(null);
@@ -37,6 +37,19 @@ const Editor = ({
   // const bindingRef = useRef<QuillBinding | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const quillRef = useRef<Quill | null>(null);
+  const updateDocumentMutation = useMutation({
+    mutationFn: (content: any) =>
+      updateContentDocument(documentId as string, {
+        docs_prosemirror_delta: content.ops,
+      }),
+    onSuccess: () => {
+      console.log("Document content updated successfully");
+    },
+    onError: (error) => {
+      console.error("Error updating document content:", error);
+    },
+  });
+  const isSynced = !updateDocumentMutation.isPending;
   const debouncedSave = useCallback(
     (content: any) => {
       if (saveTimeoutRef.current) {
@@ -45,19 +58,10 @@ const Editor = ({
 
       saveTimeoutRef.current = setTimeout(() => {
         if (!documentId) return;
-
-        updateContentDocument(documentId, {
-          docs_prosemirror_delta: content.ops,
-        })
-          .then(() => {
-            console.log("Document content updated successfully");
-          })
-          .catch((error) => {
-            console.error("Error updating document content:", error);
-          });
+        updateDocumentMutation.mutate(content);
       }, 3000); // 3 second debounce
     },
-    [documentId]
+    [documentId, updateDocumentMutation]
   );
 
   useEffect(() => {
@@ -230,14 +234,14 @@ const Editor = ({
   }
   if (!documentId) return null;
   return (
-    <div className="w-full relative flex-1 h-full">
+    <div className="w-full  flex-1 h-full">
       <Toolbar
         addSuggestion={addSuggestion}
         synced={isSynced}
         documentId={documentId}
       />
-      <TableOfContent documentId={documentId} />
-      <div className="relative h-full flex justify-center">
+      <div className="relative h-full flex justify-center mt-14">
+        <TableOfContent documentId={documentId} />
         <div className="editor-container w-full max-w-[816px]  h-full flex relative overflow-hidden ">
           <LineNumberVirtualized
             editorRef={editorRef}
@@ -249,7 +253,7 @@ const Editor = ({
             style={{ fontFamily: "Monlam", fontSize: "1rem", lineHeight: 1.5 }}
           />
         </div>
-        <OverlayLoading isLoading={!isSynced} />
+        {/* <OverlayLoading isLoading={!isSynced} /> */}
         <div
           className="absolute bottom-2 right-2 bg-white rounded-lg shadow-md px-4 py-2 text-gray-600 text-sm border border-gray-200"
           id={`${counterId}`}

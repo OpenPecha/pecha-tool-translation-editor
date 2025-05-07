@@ -53,7 +53,7 @@ function SideMenu({
         );
       default:
         return (
-          <div className="flex flex-col p-4 gap-3">
+          <div className="flex flex-col p-4 gap-3 ">
             <MenuButton onClick={() => setCurrentView("translations")}>
               <div className="flex items-center gap-2">
                 <Languages size={16} />
@@ -88,7 +88,7 @@ function SideMenu({
   };
 
   return (
-    <div className="bg-white border-l h-full w-1/4 shadow-sm">
+    <div className="bg-white border-l h-full w-1/4 shadow-sm mt-14">
       {renderContent()}
     </div>
   );
