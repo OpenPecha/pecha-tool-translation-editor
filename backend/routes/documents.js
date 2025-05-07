@@ -614,10 +614,10 @@ const upload = multer({
       const docs_y_doc_state = Y.encodeStateAsUpdateV2(ydoc);
 
       // Validate the state isn't too small/empty
-      if (docs_y_doc_state.length < 100) {
-        console.log('Y.js state is too small, skipping update');
-        return res.status(400).json({ error: "Invalid document state" });
-      }
+      // if (docs_y_doc_state.length < 100) {
+      //   console.log('Y.js state is too small, skipping update');
+      //   return res.status(400).json({ error: "Invalid document state" });
+      // }
       
       // Uncomment this to actually update the database
       const updatedDocument = await prisma.doc.update({
