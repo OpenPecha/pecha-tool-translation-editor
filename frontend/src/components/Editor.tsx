@@ -240,9 +240,9 @@ const Editor = ({
         synced={isSynced}
         documentId={documentId}
       />
-      <div className="relative h-full flex justify-center mt-14">
+      <div className="relative h-full w-full flex mt-14">
         <TableOfContent documentId={documentId} />
-        <div className="editor-container w-full max-w-[816px]  h-full flex relative overflow-hidden ">
+        <div className="editor-container w-full  h-full flex relative max-w-6xl mx-auto overflow-hidden ">
           <LineNumberVirtualized
             editorRef={editorRef}
             documentId={documentId}

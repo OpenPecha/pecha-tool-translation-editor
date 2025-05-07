@@ -147,7 +147,7 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
     <>
       <Button
         onClick={() => setIsOpen(!isOpen)}
-        className="absolute top-3 left-4 p-3 z-2"
+        className={`absolute top-3  p-3 z-2 ${isOpen ? "hidden" : ""}`}
         aria-label="Toggle Table of Contents"
         size="sm"
         variant="outline"
@@ -157,7 +157,7 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
 
       <div
         className={cn(
-          "absolute inset-y-0 left-0 w-64 bg-white shadow-xl transition-transform duration-300 ease-in-out z-20",
+          "relative inset-y-0 left-0 max-w-64 transition-transform duration-300 ease-in-out z-20",
           isOpen ? "translate-x-0 " : "-translate-x-full hidden"
         )}
       >

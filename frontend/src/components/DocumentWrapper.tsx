@@ -119,31 +119,28 @@ function DocumentsWrapper() {
       )}
       <div id="toolbar-container"></div>
       <div className="relative flex px-2  h-[calc(100dvh-110px)] w-full">
-        <YjsProvider key={id}>
-          <DocumentEditor docId={id} isEditable={isEditable} />
-        </YjsProvider>
+        {/* <YjsProvider key={id}> */}
+        <DocumentEditor docId={id} isEditable={isEditable} />
+        {/* </YjsProvider> */}
 
         {!selectedTranslationId ? (
           <SideMenu setSelectedTranslationId={handleSelectTranslation} />
         ) : (
-          <YjsProvider key={selectedTranslationId}>
+          // <YjsProvider key={selectedTranslationId}>
+          <>
             <DocumentEditor
               docId={selectedTranslationId}
               isEditable={isEditable}
             />
-          </YjsProvider>
-        )}
-
-        {selectedTranslationId && (
-          <div className="relative">
             <button
               onClick={() => handleSelectTranslation(null)}
-              className="absolute right-2 top-2 z-10 rounded-full bg-white p-1 shadow-md hover:bg-gray-100"
+              className="absolute right-4 top-16 z-10 cursor-pointer rounded-full bg-white p-1 shadow-md hover:bg-gray-100"
               aria-label="Close translation view"
             >
               <ChevronRight size={20} />
             </button>
-          </div>
+          </>
+          // </YjsProvider>
         )}
       </div>
     </EditorProvider>
