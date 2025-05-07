@@ -127,7 +127,6 @@ const Editor = ({
 
       // className is not a valid Quill option, apply these styles to the container instead
     });
-    quill.setContents(currentDoc?.docs_prosemirror_delta || []);
     registerQuill(quill);
     quillRef.current = quill;
     registerQuill2(editorId, quill);
@@ -143,6 +142,7 @@ const Editor = ({
       },
       signal
     );
+    quill.setContents(currentDoc?.docs_prosemirror_delta || []);
     // Create the binding between Quill and YText
     // if (
     //   quill &&
