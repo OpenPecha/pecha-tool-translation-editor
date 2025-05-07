@@ -173,13 +173,15 @@ const Editor = ({
   }, []);
 
   useEffect(() => {
-    quillRef.current?.setContents(currentDoc?.docs_prosemirror_delta || []);
+    if (quillRef.current?.getText().trim() === "") {
+      quillRef.current?.setContents(currentDoc?.docs_prosemirror_delta || []);
+    }
     return () => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, []);
+  }, [currentDoc?.docs_prosemirror_delta]);
 
   // useEffect(() => {
   //   return () => {
