@@ -63,8 +63,8 @@
 }
   .ql-toolbar.ql-snow{
     border: none !important;
-    padding:10px !important;
-    padding-block: 2px !important;
+    padding:3px !important;
+    padding-block: 5px !important;
     height: auto !important;
     transition: all 0.3s ease !important;
     background-color: rgb(240, 243, 248) !important;
@@ -76,7 +76,7 @@
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
     z-index: 200 !important;
     max-width: 100dvw !important;
-    margin:0 auto !important;
+    margin:10px auto !important;
   }
   
   .ql-toolbar.ql-snow .ql-formats{

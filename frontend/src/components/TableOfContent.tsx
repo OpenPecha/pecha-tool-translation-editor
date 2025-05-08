@@ -1,4 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+} from "react";
 import { Button } from "./ui/button";
 import { FaList, FaChevronDown, FaChevronRight } from "react-icons/fa";
 import { useEditor } from "@/contexts/EditorContext";
@@ -30,12 +36,59 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
   const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null);
 
   const quill = getQuill(documentId);
-  const generateList = () => {
+  const generateList = useCallback(() => {
     return Array.from(
       { length: MAX_HEADING_LEVEL },
       (_, i) => `h${i + 1}`
     ).join(",");
-  };
+  }, []);
+
+  // Create a debounced version of setActiveHeadingId
+  const debouncedSetActiveHeadingIdRef = useRef(
+    debounce((id: string | null) => {
+      setActiveHeadingId(id);
+    }, 100)
+  );
+
+  // Cleanup the debounced function when component unmounts
+  useEffect(() => {
+    return () => {
+      debouncedSetActiveHeadingIdRef.current.cancel();
+    };
+  }, []);
+
+  // Define updateActiveHeading at the component level so it can be used in multiple places
+  const updateActiveHeading = useCallback(() => {
+    if (!quill) return;
+    const container = quill.root;
+    const containerRect = container.getBoundingClientRect();
+    const headingElements = Array.from(
+      container.querySelectorAll(generateList())
+    );
+
+    if (headingElements.length === 0) return;
+
+    let currentHeading = null;
+    let lastVisibleHeading = null;
+
+    for (const heading of headingElements) {
+      const rect = heading.getBoundingClientRect();
+      if (rect.top <= containerRect.top + 100) {
+        lastVisibleHeading = heading;
+      } else {
+        currentHeading = lastVisibleHeading;
+        break;
+      }
+    }
+
+    if (!currentHeading && lastVisibleHeading) {
+      currentHeading = lastVisibleHeading;
+    }
+
+    if (currentHeading && currentHeading.id) {
+      debouncedSetActiveHeadingIdRef.current(currentHeading.id);
+    }
+  }, [quill, generateList, debouncedSetActiveHeadingIdRef]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -44,12 +97,12 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
       const headingElements = quill.root.querySelectorAll(generateList());
 
       // Create a numbering system for headings with subsection restart
-      let counters = Array(MAX_HEADING_LEVEL).fill(0);
+      const counters = Array(MAX_HEADING_LEVEL).fill(0);
 
       const headingsData: Heading[] = Array.from(headingElements)
         .filter((f) => f.textContent !== "")
         .map((heading, index) => {
-          let id = `heading-${index}`;
+          const id = `heading-${index}`;
           heading.setAttribute("id", id);
 
           const level = parseInt(heading.tagName[1]);
@@ -92,38 +145,7 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
       });
     }
 
-    const updateActiveHeading = () => {
-      if (!quill) return;
-      const container = quill.root;
-      const containerRect = container.getBoundingClientRect();
-      const headingElements = Array.from(
-        container.querySelectorAll(generateList())
-      );
-
-      if (headingElements.length === 0) return;
-
-      let currentHeading = null;
-      let lastVisibleHeading = null;
-
-      for (const heading of headingElements) {
-        const rect = heading.getBoundingClientRect();
-        if (rect.top <= containerRect.top + 10) {
-          lastVisibleHeading = heading;
-        } else {
-          currentHeading = lastVisibleHeading;
-          break;
-        }
-      }
-
-      if (!currentHeading && lastVisibleHeading) {
-        currentHeading = lastVisibleHeading;
-      }
-
-      if (currentHeading && currentHeading.id) {
-        setActiveHeadingId(currentHeading.id);
-      }
-    };
-
+    // Use the updateActiveHeading function defined above
     const debouncedUpdate = debounce(updateActiveHeading, 100);
 
     const editorContainer = quill?.root;
@@ -140,7 +162,7 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
         observer.disconnect();
       };
     }
-  }, [quill, isOpen]);
+  }, [quill, isOpen, generateList, updateActiveHeading]);
 
   const showSyncButton = quillEditors.size > 1;
   return (
@@ -168,18 +190,24 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
           >
             <HiArrowLeft className="w-5 h-5" />
           </button>
-          <div className="flex justify-between gap-2 items-center mb-4">
+          <div className="flex flex-col justify-between">
             <h3 className="text-md text-gray-600 font-semibold">
               Table of Contents
             </h3>
-            {showSyncButton && (
-              <Switch
-                checked={synced}
-                onCheckedChange={setSynced}
-                className="ml-2"
-              />
-            )}
+            <div className="flex items-center">
+              {showSyncButton && (
+                <>
+                  lock:
+                  <Switch
+                    checked={!synced}
+                    onCheckedChange={() => setSynced((p) => !p)}
+                    className="ml-2"
+                  />
+                </>
+              )}
+            </div>
           </div>
+
           <div className="overflow-y-auto flex-grow">
             <Toc
               headings={headings}
@@ -188,7 +216,8 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
               expandedSections={expandedSections}
               setExpandedSections={setExpandedSections}
               activeHeadingId={activeHeadingId}
-              setActiveHeadingId={setActiveHeadingId}
+              setActiveHeadingId={debouncedSetActiveHeadingIdRef.current}
+              updateActiveHeading={updateActiveHeading}
             />
           </div>
         </div>
@@ -197,15 +226,7 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
   );
 };
 
-const Toc = ({
-  headings,
-  synced,
-  documentId,
-  expandedSections,
-  activeHeadingId,
-  setExpandedSections,
-  setActiveHeadingId,
-}: {
+interface TocProps {
   headings: Heading[];
   synced: boolean;
   documentId: string;
@@ -213,75 +234,103 @@ const Toc = ({
   activeHeadingId: string | null;
   setExpandedSections: (sections: { [key: string]: boolean }) => void;
   setActiveHeadingId: (id: string | null) => void;
-}) => {
+  updateActiveHeading: () => void;
+}
+
+const Toc = React.memo(function Toc({
+  headings,
+  synced,
+  documentId,
+  expandedSections,
+  activeHeadingId,
+  setExpandedSections,
+  setActiveHeadingId,
+  updateActiveHeading,
+}: TocProps) {
   const { getQuill, quillEditors } = useEditor();
   const quill = getQuill(documentId);
 
-  const toggleExpand = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setExpandedSections((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
+  const scrollToHeading = useCallback(
+    (id: string) => {
+      if (!quill) return;
 
-  if (!headings.length)
-    return (
-      <div className="text-sm italic text-gray-400">No headings found</div>
-    );
+      const el = quill.root.querySelector(`#${id}`);
+      if (!el) return;
 
-  const scrollToHeading = (id: string) => {
-    if (!quill) return;
-    let otherKey = null;
-    if (quillEditors.size > 1 && synced) {
-      for (const key of quillEditors.keys()) {
-        if (key !== documentId) {
-          otherKey = key;
-          break;
-        }
-      }
-      const quill2 = getQuill(otherKey);
-      if (quill2) {
-        const el = quill2.root.querySelector(`#${id}`);
-        if (el) {
-          // Get the parent editor container instead of scrolling the whole page
-          const editorContainer = quill2.root.closest('.ql-editor');
-          if (editorContainer) {
-            // Calculate the position of the element relative to the editor container
-            const containerRect = editorContainer.getBoundingClientRect();
-            const elRect = el.getBoundingClientRect();
-            const relativeTop = elRect.top - containerRect.top + editorContainer.scrollTop;
-            
-            // Smooth scroll the editor container to the element
-            editorContainer.scrollTo({
-              top: relativeTop,
-              behavior: 'smooth'
-            });
-            setActiveHeadingId(id);
+      const editorContainer = quill.root.closest(".ql-editor");
+      if (!editorContainer) return;
+
+      const containerRect = editorContainer.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      const relativeTop =
+        elRect.top - containerRect.top + editorContainer.scrollTop;
+      editorContainer.scrollTo({
+        top: relativeTop,
+        behavior: "smooth",
+      });
+
+      // Call updateActiveHeading after scrolling to ensure UI is updated
+      setTimeout(() => {
+        updateActiveHeading();
+      }, 100);
+
+      if (quillEditors.size > 1 && synced) {
+        requestAnimationFrame(() => {
+          for (const key of quillEditors.keys()) {
+            if (key !== documentId) {
+              const otherQuill = getQuill(key);
+              if (!otherQuill) continue;
+
+              const otherEl = otherQuill.root.querySelector(`#${id}`);
+              if (!otherEl) continue;
+
+              const otherEditorContainer =
+                otherQuill.root.closest(".ql-editor");
+              if (!otherEditorContainer) continue;
+
+              const otherContainerRect =
+                otherEditorContainer.getBoundingClientRect();
+              const otherElRect = otherEl.getBoundingClientRect();
+              const otherRelativeTop =
+                otherElRect.top -
+                otherContainerRect.top +
+                otherEditorContainer.scrollTop;
+
+              otherEditorContainer.scrollTo({
+                top: otherRelativeTop,
+                behavior: "smooth",
+              });
+            }
           }
-        }
-      }
-    }
-
-    const el = quill.root.querySelector(`#${id}`);
-    if (el) {
-      // Get the parent editor container instead of scrolling the whole page
-      const editorContainer = quill.root.closest('.ql-editor');
-      if (editorContainer) {
-        // Calculate the position of the element relative to the editor container
-        const containerRect = editorContainer.getBoundingClientRect();
-        const elRect = el.getBoundingClientRect();
-        const relativeTop = elRect.top - containerRect.top + editorContainer.scrollTop;
-        
-        // Smooth scroll the editor container to the element
-        editorContainer.scrollTo({
-          top: relativeTop,
-          behavior: 'smooth'
         });
-        setActiveHeadingId(id);
       }
-    }
-  };
-  return (
-    <div className="space-y-1">
-      {headings.map((heading, index) => {
+    },
+    [
+      quill,
+      documentId,
+      quillEditors,
+      synced,
+      setActiveHeadingId,
+      getQuill,
+      updateActiveHeading,
+    ]
+  );
+
+  const toggleExpand = useCallback(
+    (id: string, e: React.MouseEvent) => {
+      e.stopPropagation();
+      setExpandedSections((prev) => {
+        // Create a new state object to avoid mutating the previous state
+        return { ...prev, [id]: !prev[id] };
+      });
+    },
+    [setExpandedSections]
+  );
+
+  // Memoize the visibility calculation for headings
+  const visibleHeadings = useMemo(() => {
+    return headings
+      .map((heading, index) => {
         const isNested = heading.level > 1;
         const hasChildren =
           index < headings.length - 1 &&
@@ -306,6 +355,29 @@ const Toc = ({
         }
 
         if (!isVisible || !heading.text.trim()) return null;
+
+        return {
+          heading,
+          isNested,
+          hasChildren,
+          isExpanded,
+          isActive,
+        };
+      })
+      .filter(Boolean);
+  }, [headings, expandedSections, activeHeadingId]);
+
+  if (!headings.length) {
+    return (
+      <div className="text-sm italic text-gray-400">No headings found</div>
+    );
+  }
+
+  return (
+    <div className="space-y-1">
+      {visibleHeadings.map((item) => {
+        if (!item) return null;
+        const { heading, isNested, hasChildren, isExpanded, isActive } = item;
 
         return (
           <div
@@ -343,9 +415,6 @@ const Toc = ({
                 </button>
               )}
               {!hasChildren && <div className="mr-2 w-5 h-5" />}
-              {/* <span className="text-blue-600 text-xs font-medium  w-4">
-                {displayNumber}
-              </span> */}
               <span
                 className={cn(
                   "text-left truncate flex-1 font-monlam text-xs pt-1",
@@ -361,5 +430,5 @@ const Toc = ({
       })}
     </div>
   );
-};
+});
 export default TableOfContent;

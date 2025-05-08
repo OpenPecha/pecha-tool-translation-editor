@@ -1,13 +1,6 @@
 import React, { useState } from "react";
-import {
-  ChevronLeft,
-  Settings,
-  MessageSquare,
-  BookOpen,
-  Languages,
-} from "lucide-react";
+import { ChevronLeft, Settings, BookOpen, Languages } from "lucide-react";
 import SelectTranslation from "./SelectTranslation";
-import Comments from "./Comments";
 import { Button } from "@/components/ui/button";
 
 type MenuOption =
@@ -74,7 +67,7 @@ function SideMenu({
 
   return (
     <div
-      className="bg-white border-l  h-full shadow-sm mt-10"
+      className=" h-[calc(100vh-88px)]"
       style={{
         width: currentView === "main" ? "" : "calc(var(--spacing) * 64)",
       }}
