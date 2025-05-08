@@ -16,7 +16,8 @@ router.get("/:docId", authenticate, async (req, res) => {
       where: { docId },
       select:{label:true,
         id:true,
-        timestamp:true
+        timestamp:true,
+        user:true
       },
       orderBy: { timestamp: "desc" },
     });
@@ -45,6 +46,7 @@ router.post("/", authenticate, async (req, res) => {
         docId,
         label,
         content,
+        userId: req.user.id,
       },
     });
 
@@ -64,6 +66,9 @@ router.get("/version/:id", authenticate, async (req, res) => {
     const { id } = req.params;
     const version = await prisma.version.findUnique({
       where: { id },
+      include:{
+        user:true
+      }
     });
 
     if (!version) {

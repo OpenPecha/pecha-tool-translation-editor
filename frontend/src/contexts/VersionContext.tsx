@@ -15,6 +15,7 @@ import {
   deleteVersion as deleteVersionAPI,
 } from "../api/version";
 import Quill from "quill";
+import { User } from "@/auth/types";
 
 const AUTOSAVE_INTERVAL = 900000; // 15min
 
@@ -23,6 +24,9 @@ interface Version {
   content: any;
   label: string;
   createdAt: string;
+  timestamp: string;
+  userId?: string;
+  user?: User;
 }
 
 interface QuillVersionContextType {

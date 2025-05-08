@@ -17,6 +17,7 @@ model User {
   comments    Comment[] // A user can have multiple comments
   createdAt   DateTime     @default(now())
   Project     Project[]
+  Version     Version[]
 }
 
 model Project {
@@ -109,5 +110,7 @@ model Version {
   docId     String // Document identifier
   label     String // Version label (e.g., "Auto-save", "Manual Save")
   timestamp DateTime @default(now()) // When the version was saved
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   content   Json // Quill delta contents stored as JSON
 }

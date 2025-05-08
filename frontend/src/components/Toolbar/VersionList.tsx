@@ -4,6 +4,7 @@ import { MdDelete } from "react-icons/md";
 import { SiTicktick } from "react-icons/si";
 import VersionDiff from "@/components/Toolbar/VersionDiff";
 import { createPortal } from "react-dom";
+import { formatDate } from "@/lib/formatDate";
 
 interface DeltaOperation {
   insert: string;
@@ -27,18 +28,8 @@ interface Version {
 }
 
 function VersionList() {
-  const {
-    versions,
-    currentVersionId,
-    loadVersion,
-    deleteVersion,
-    loadVersions,
-  } = useQuillVersion();
+  const { versions, loadVersions } = useQuillVersion();
   const [showVersionDiff, setShowVersionDiff] = useState(false);
-
-  const formatDate = (isoString: string) => {
-    return new Date(isoString).toLocaleString();
-  };
 
   const handleViewAll = () => {
     setShowVersionDiff(true);
@@ -49,58 +40,21 @@ function VersionList() {
   return (
     <>
       <div className="versions-list">
-        <div className="flex justify-between items-center">
-          <h4 className="font-bold mb-2 text-xs">Versions</h4>
-          <h4
+        <div className="flex  items-center">
+          <span className="font-bold mb-2 text-xs flex-1">Versions</span>
+          <span
             className="text-xs text-gray-500 hover:text-gray-700 cursor-pointer"
             onClick={handleViewAll}
           >
             View all
-          </h4>
+          </span>
         </div>
         {versions.length === 0 ? (
           <p className="text-gray-500">No saved versions yet</p>
         ) : (
           <div className="max-h-60 overflow-y-auto border">
             {versions.map((version: Version) => (
-              <div
-                key={version.id}
-                className={`px-2  flex justify-between items-center border-b hover:bg-gray-100 ${
-                  version.id === currentVersionId ? "bg-blue-100" : ""
-                }`}
-              >
-                <div>
-                  <div className="font-sm">{version.label}</div>
-                  <div className="text-xs text-gray-500">
-                    {formatDate(version.timestamp)}
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => loadVersion(version.id)}
-                    disabled={version.id === currentVersionId}
-                    title="Load version"
-                    className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm"
-                  >
-                    <SiTicktick />
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          "Are you sure you want to delete this version?"
-                        )
-                      ) {
-                        deleteVersion(version.id);
-                      }
-                    }}
-                    title="Delete version"
-                    className="px-2 py-1 bg-red-100 rounded hover:bg-red-200 text-sm"
-                  >
-                    <MdDelete />
-                  </button>
-                </div>
-              </div>
+              <EachVersion key={version.id} version={version} />
             ))}
           </div>
         )}
@@ -120,6 +74,48 @@ function VersionList() {
           document.getElementById("diff-portal")
         )}
     </>
+  );
+}
+
+function EachVersion({ version }: { version: Version }) {
+  const { currentVersionId, loadVersion, deleteVersion } = useQuillVersion();
+  return (
+    <div
+      key={version.id}
+      className={`px-2  flex justify-between items-center border-b hover:bg-gray-100 ${
+        version.id === currentVersionId ? "bg-blue-100" : ""
+      }`}
+    >
+      <div>
+        <div className="font-sm">{version.label}</div>
+        <div className="text-xs text-gray-500">
+          {formatDate(version.timestamp)}
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <button
+          onClick={() => loadVersion(version.id)}
+          disabled={version.id === currentVersionId}
+          title="Load version"
+          className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm"
+        >
+          <SiTicktick />
+        </button>
+        <button
+          onClick={() => {
+            if (
+              window.confirm("Are you sure you want to delete this version?")
+            ) {
+              deleteVersion(version.id);
+            }
+          }}
+          title="Delete version"
+          className="px-2 py-1 bg-red-100 rounded hover:bg-red-200 text-sm"
+        >
+          <MdDelete />
+        </button>
+      </div>
+    </div>
   );
 }
 
