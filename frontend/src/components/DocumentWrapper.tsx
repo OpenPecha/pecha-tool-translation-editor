@@ -10,6 +10,7 @@ import MenuDrawer from "./MenuDrawer";
 import Navbar from "./Navbar";
 import { useDevToolsStatus } from "@/hooks/useDevToolStatus";
 import { createPortal } from "react-dom";
+import { IoIosArrowForward } from "react-icons/io";
 
 export interface Translation {
   id: string;
@@ -45,19 +46,24 @@ function DocumentsWrapper() {
         {!selectedTranslationId ? (
           <SideMenu setSelectedTranslationId={handleSelectTranslation} />
         ) : (
-          <>
+          <div className="flex-1 relative gap-2 flex items-center group">
+            <div className="relative h-full">
+              {/* Vertical Line (hidden by default, shows on hover) */}
+              <div className="absolute left-1/2 top-0 h-full w-px bg-gray-300 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+
+              {/* Arrow (hidden by default, shows on hover) */}
+              <div
+                className="absolute bg-white border rounded-full p-2 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 cursor-pointer text-gray-700 text-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                onClick={() => handleSelectTranslation(null)}
+              >
+                <IoIosArrowForward />
+              </div>
+            </div>
             <DocumentEditor
               docId={selectedTranslationId}
               isEditable={isEditable}
             />
-            <button
-              onClick={() => handleSelectTranslation(null)}
-              className="absolute right-4 top-16 z-10 cursor-pointer rounded-full bg-white p-1 shadow-md hover:bg-gray-100"
-              aria-label="Close translation view"
-            >
-              <ChevronRight size={20} />
-            </button>
-          </>
+          </div>
         )}
       </div>
     </EditorProvider>

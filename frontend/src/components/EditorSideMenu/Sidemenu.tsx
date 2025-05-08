@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { ChevronLeft, Settings, BookOpen, Languages } from "lucide-react";
 import SelectTranslation from "./SelectTranslation";
 import { Button } from "@/components/ui/button";
+import { IoIosArrowForward } from "react-icons/io";
 
 type MenuOption =
   | "translations"
@@ -107,15 +108,22 @@ function InMenuWrapper({
   readonly onBackClick: () => void;
 }) {
   return (
-    <div className="h-full">
-      <Button
-        variant="ghost"
-        onClick={onBackClick}
-        className="flex items-center gap-2  hover:bg-gray-100 rounded-md mx-1 my-2 cursor-pointer"
-      >
-        <ChevronLeft size={16} />
-        Back
-      </Button>
+    <div className="h-full flex group relative">
+      {/* Line container */}
+      <div className="relative h-full w-6">
+        {/* Vertical Line (hidden by default, shows on hover) */}
+        <div className="absolute left-1/2 top-0 h-full w-px bg-gray-300 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+
+        {/* Arrow (hidden by default, shows on hover) */}
+        <div
+          className="absolute bg-white border rounded-full p-2 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 cursor-pointer text-gray-700 text-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          onClick={onBackClick}
+        >
+          <IoIosArrowForward />
+        </div>
+      </div>
+
+      {/* Content area */}
       <div className="p-4">{children}</div>
     </div>
   );
