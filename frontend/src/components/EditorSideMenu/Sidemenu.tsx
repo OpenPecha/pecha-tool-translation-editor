@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { ChevronLeft, Settings, BookOpen, Languages } from "lucide-react";
+import { Settings, BookOpen, Languages, MessageSquare } from "lucide-react";
 import SelectTranslation from "./SelectTranslation";
 import { Button } from "@/components/ui/button";
 import { IoIosArrowForward } from "react-icons/io";
-
+import Comments from "./Comments";
 type MenuOption =
   | "translations"
   | "settings"
@@ -33,6 +33,12 @@ function SideMenu({
             <div>Settings Content</div>
           </InMenuWrapper>
         );
+      case "comments":
+        return (
+          <InMenuWrapper onBackClick={() => setCurrentView("main")}>
+            <Comments />
+          </InMenuWrapper>
+        );
       case "commentary":
         return (
           <InMenuWrapper onBackClick={() => setCurrentView("main")}>
@@ -54,6 +60,12 @@ function SideMenu({
               title={"commentary"}
             >
               <BookOpen size={16} />
+            </MenuButton>
+            <MenuButton
+              onClick={() => setCurrentView("comments")}
+              title="comments"
+            >
+              <MessageSquare size={16} />
             </MenuButton>
             <MenuButton
               onClick={() => setCurrentView("settings")}

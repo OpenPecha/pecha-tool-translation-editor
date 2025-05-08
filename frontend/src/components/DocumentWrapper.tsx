@@ -55,6 +55,7 @@ function DocumentsWrapper() {
               <div
                 className="absolute bg-white border rounded-full p-2 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 cursor-pointer text-gray-700 text-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                 onClick={() => handleSelectTranslation(null)}
+                title="close"
               >
                 <IoIosArrowForward />
               </div>
