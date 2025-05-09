@@ -53,7 +53,9 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
 
         <div className="flex-grow min-w-0">
           <div className="flex items-center">
-            <h3 className="text-sm font-medium truncate capitalize">{title}</h3>
+            <span className="text-sm font-medium truncate capitalize">
+              {title}
+            </span>
             {/* {status && (
               <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-800">
                 {status}
