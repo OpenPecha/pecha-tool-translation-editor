@@ -30,7 +30,7 @@ function DocumentsWrapper() {
     <EditorProvider>
       {createPortal(
         <Navbar title={currentDoc?.name} />,
-        document.getElementById("navbar")
+        document.getElementById("navbar")!
       )}
       {selectedTranslationId && (
         <MenuDrawer rootId={id!} translationId={selectedTranslationId} />
@@ -46,13 +46,15 @@ function DocumentsWrapper() {
               <div className="absolute left-1/2 top-0 h-full w-px bg-gray-300 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
 
               {/* Arrow (hidden by default, shows on hover) */}
-              <div
+              <button
                 className="absolute bg-white border rounded-full p-2 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 cursor-pointer text-gray-700 text-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                 onClick={() => handleSelectTranslation(null)}
-                title="close"
+                aria-label="Close translation view"
+                title="Close translation view"
+                type="button"
               >
                 <IoIosArrowForward />
-              </div>
+              </button>
             </div>
             <DocumentEditor
               docId={selectedTranslationId}

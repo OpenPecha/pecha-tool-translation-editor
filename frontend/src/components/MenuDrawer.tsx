@@ -32,7 +32,7 @@ function MenuDrawer({
 
       {/* Drawer */}
       <div
-        className={`fixed inset-y-0 right-0 w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out z-20 ${
+        className={`fixed inset-y-0 right-0 w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out z-[999] ${
           isDrawerOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -58,7 +58,7 @@ function MenuDrawer({
       {/* Overlay */}
       {isDrawerOpen && (
         <div
-          className="fixed inset-0 bg-[rgba(0,0,0,0.3)] bg-opacity-50 z-10"
+          className="fixed inset-0 bg-[rgba(0,0,0,0.3)] bg-opacity-50 z-[999]"
           onClick={() => setIsDrawerOpen(false)}
         />
       )}

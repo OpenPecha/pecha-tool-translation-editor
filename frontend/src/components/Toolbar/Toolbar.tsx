@@ -17,9 +17,15 @@ interface ToolbarProps {
   addComment: () => void;
   synced: boolean;
   documentId: string;
+  toolbarId: string;
 }
 
-const Toolbar = ({ addComment, synced, documentId }: ToolbarProps) => {
+const Toolbar = ({
+  addComment,
+  synced,
+  documentId,
+  toolbarId,
+}: ToolbarProps) => {
   const versionRef = useRef<HTMLDivElement>(null);
   const [openHistory, setOpenHistory] = useState(false);
   const { getQuill, activeEditor } = useEditor();
@@ -155,7 +161,7 @@ const Toolbar = ({ addComment, synced, documentId }: ToolbarProps) => {
 
   return (
     <div
-      id={"toolbar-container" + "-" + documentId}
+      id={toolbarId}
       style={{
         display: showToolbar ? "flex" : "none",
         opacity: showToolbar ? 1 : 0,

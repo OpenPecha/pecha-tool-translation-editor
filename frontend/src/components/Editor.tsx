@@ -25,7 +25,7 @@ const Editor = ({
 }) => {
   const { currentDoc } = useCurrentDoc(documentId);
   const editorRef = useRef<HTMLDivElement>(null);
-  const toolbarId = "toolbar-container" + "-" + documentId;
+  const toolbarId = "toolbar-container" + "-" + documentId?.substring(0, 4);
   const counterId = "counter-container" + "-" + documentId;
   const [currentRange, setCurrentRange] = useState<Range | null>(null);
   const [showCommentModal, setShowCommentModal] = useState(false);
@@ -201,6 +201,7 @@ const Editor = ({
           addComment={addComment}
           synced={isSynced}
           documentId={documentId}
+          toolbarId={toolbarId}
         />,
         document.getElementById("toolbar-container")!
       )}
