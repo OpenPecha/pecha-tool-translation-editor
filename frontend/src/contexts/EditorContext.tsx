@@ -18,8 +18,8 @@ const EditorContext = createContext<EditorContextType>({
   activeQuill: null,
   setActiveQuill: () => {},
   quillEditors: new Map(),
-  registerQuill: () => {},
-  unregisterQuill: () => {},
+  registerQuill: (id: string) => {},
+  unregisterQuill: (id: string) => {},
   getQuill: () => undefined,
 });
 

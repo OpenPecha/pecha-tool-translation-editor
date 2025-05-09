@@ -17,11 +17,15 @@ function SideMenu({
   readonly setSelectedTranslationId: (id: string) => void;
 }) {
   const [currentView, setCurrentView] = useState<MenuOption>("main");
+  const reset = () => {
+    setCurrentView("main");
+  };
+
   const renderContent = () => {
     switch (currentView) {
       case "translations":
         return (
-          <InMenuWrapper onBackClick={() => setCurrentView("main")}>
+          <InMenuWrapper onBackClick={reset}>
             <SelectTranslation
               setSelectedTranslationId={setSelectedTranslationId}
             />
@@ -29,19 +33,19 @@ function SideMenu({
         );
       case "settings":
         return (
-          <InMenuWrapper onBackClick={() => setCurrentView("main")}>
+          <InMenuWrapper onBackClick={reset}>
             <div>Settings Content</div>
           </InMenuWrapper>
         );
       case "comments":
         return (
-          <InMenuWrapper onBackClick={() => setCurrentView("main")}>
+          <InMenuWrapper onBackClick={reset}>
             <Comments />
           </InMenuWrapper>
         );
       case "commentary":
         return (
-          <InMenuWrapper onBackClick={() => setCurrentView("main")}>
+          <InMenuWrapper onBackClick={reset}>
             <div>Commentary Content</div>
           </InMenuWrapper>
         );
@@ -80,9 +84,9 @@ function SideMenu({
 
   return (
     <div
-      className=" h-[calc(100vh-88px)]"
+      className=" h-[calc(100vh-88px)] "
       style={{
-        width: currentView === "main" ? "" : "calc(var(--spacing) * 64)",
+        width: currentView === "main" ? "" : "calc(var(--spacing) * 84)",
       }}
     >
       {renderContent()}
@@ -103,7 +107,7 @@ function MenuButton({
     <Button
       type="button"
       onClick={onClick}
-      variant="ghost"
+      variant="outline"
       title={title}
       className="text-left py-2 px-4 rounded-lg cursor-pointer font-medium text-gray-700 transition-colors flex items-center justify-between"
     >
@@ -120,9 +124,9 @@ function InMenuWrapper({
   readonly onBackClick: () => void;
 }) {
   return (
-    <div className="h-full flex group relative">
+    <div className="h-full flex group relative  w-full">
       {/* Line container */}
-      <div className="relative h-full w-6">
+      <div className="relative h-full">
         {/* Vertical Line (hidden by default, shows on hover) */}
         <div className="absolute left-1/2 top-0 h-full w-px bg-gray-300 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
 
@@ -136,7 +140,7 @@ function InMenuWrapper({
       </div>
 
       {/* Content area */}
-      <div className="p-4">{children}</div>
+      <div className="p-4 w-full">{children}</div>
     </div>
   );
 }

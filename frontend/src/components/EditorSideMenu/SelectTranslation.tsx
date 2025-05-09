@@ -36,7 +36,7 @@ function SelectTranslation({
     return { name, time };
   };
   return (
-    <div className="rounded-lg overflow-hidden">
+    <div className="rounded-lg overflow-hidden ">
       <div className="flex justify-between items-center mb-4">
         <h3 className="font-medium font-google-sans text-gray-600">
           Translations

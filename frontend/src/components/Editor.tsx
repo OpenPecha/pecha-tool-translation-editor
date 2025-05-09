@@ -167,7 +167,7 @@ const Editor = ({
     return () => {
       const currentContent = quill.getContents();
       updateDocumentMutation.mutate(currentContent);
-      unregisterQuill2("editor" + editorId);
+      unregisterQuill2(editorId);
       signal.abort();
       quill.disable();
     };
