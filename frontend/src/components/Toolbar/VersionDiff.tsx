@@ -113,10 +113,7 @@ function VersionDiff({ onClose }: VersionDiffProps) {
         {/* Left panel - Diff view */}
         <div className="flex-1 bg-white p-6 overflow-y-auto">
           {selectedVersionId && diffData ? (
-            <div>
-              <h2 className="text-xl font-semibold mb-4">Changes</h2>
-              <DiffViewer diffDelta={diffData.diffs} />
-            </div>
+            <DiffViewer diffDelta={diffData.diffs} />
           ) : (
             <div className="text-center text-gray-500 mt-20">
               Select a version to see the changes
@@ -127,7 +124,7 @@ function VersionDiff({ onClose }: VersionDiffProps) {
         {/* Right panel - Version list */}
         <div className="w-1/4 border-l bg-white overflow-y-auto">
           <div className="p-4">
-            <h2 className="text-xl font-semibold mb-4">Version History</h2>
+            <h2 className=" font-semibold mb-4">Version History</h2>
             {versions && versions.length > 0 ? (
               versions.map((version: Version) => (
                 <div
@@ -141,7 +138,7 @@ function VersionDiff({ onClose }: VersionDiffProps) {
                 >
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="font-medium">{version.label}</h3>
+                      <span>{version.label}</span>
                       <p className="text-sm text-gray-500">
                         {formatDate(version.timestamp)}
                       </p>

@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback } from "@radix-ui/react-avatar";
 import { AvatarImage } from "../ui/avatar";
 import { formatDate } from "@/lib/formatDate";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import AvatarWrapper from "../ui/custom-avatar";
 
 interface User {
   id: string;
@@ -33,7 +34,7 @@ export interface Comment {
 
 interface StyleProps {
   position: "absolute";
-  left: number;
+  right: number;
   top: number;
   background: string;
   border: string;
@@ -192,19 +193,11 @@ const CommentBubble = () => {
             className="p-2 flex gap-2 border-b border-gray-200 flex-col"
           >
             <div className="flex items-center gap-2">
-              <Avatar>
-                <AvatarImage src={currentUser?.picture} />
-                <AvatarFallback
-                  style={{
-                    backgroundColor: "#f59e0b",
-                    color: "#fff",
-                    borderRadius: "50%",
-                    padding: "2px",
-                  }}
-                >
-                  {currentUser?.name?.slice(0, 2)}
-                </AvatarFallback>
-              </Avatar>
+              <AvatarWrapper
+                imageUrl={currentUser?.picture}
+                name={currentUser?.name}
+                size={32}
+              />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="flex justify-between">
                   <div className=" flex flex-col items-start mb-2">

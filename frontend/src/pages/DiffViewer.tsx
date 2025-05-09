@@ -17,7 +17,6 @@ const DiffViewer = ({ diffDelta }: { diffDelta: [number, string][] }) => {
         },
       });
     }
-
     if (diffDelta) {
       try {
         // Create a delta from the previous content
@@ -31,7 +30,15 @@ const DiffViewer = ({ diffDelta }: { diffDelta: [number, string][] }) => {
     }
   }, [diffDelta]);
 
-  return <div ref={containerRef} className="font-monlam" />;
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        border: "none",
+      }}
+      className="font-monlam"
+    />
+  );
 };
 
 export default DiffViewer;

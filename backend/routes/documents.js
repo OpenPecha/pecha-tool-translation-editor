@@ -632,8 +632,10 @@ const upload = multer({
         where: { id: document.id },
         data: { 
           docs_prosemirror_delta, 
-          docs_y_doc_state 
         },
+        select:{
+          id:true
+        }
       });
       res.json({
         success: true,

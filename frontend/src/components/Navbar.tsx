@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import DocIcon from "@/assets/doc_icon.png";
+import AvatarWrapper from "./ui/custom-avatar";
 const Navbar = ({ title }: { title?: string }) => {
   const { currentUser, logout, login, isAuthenticated } = useAuth();
 
@@ -91,12 +92,11 @@ function ProfileArea({
         className="text-gray-700 text-sm flex gap-1 items-center cursor-pointer"
         onClick={toggleDropdown}
       >
-        <Avatar>
-          <AvatarImage src={currentUser?.picture} />
-          <AvatarFallback style={{ backgroundColor: "#f59e0b", color: "#fff" }}>
-            {currentUser?.name?.slice(0, 2)}
-          </AvatarFallback>
-        </Avatar>
+        <AvatarWrapper
+          imageUrl={currentUser?.picture}
+          name={currentUser?.name}
+          size={32}
+        />
       </div>
       {isOpen && (
         <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-[999999]">

@@ -9,6 +9,8 @@ import { BiCommentAdd } from "react-icons/bi";
 import { Button } from "../ui/button";
 
 import { PublishButton } from "./Publish";
+import { createPortal } from "react-dom";
+import VersionDiff from "./VersionDiff";
 const isEnabled = !EDITOR_READ_ONLY;
 interface ToolbarProps {
   addComment: () => void;
@@ -20,6 +22,7 @@ const Toolbar = ({ addComment, synced, documentId }: ToolbarProps) => {
   const versionRef = useRef<HTMLDivElement>(null);
   const [openHistory, setOpenHistory] = useState(false);
   const { getQuill, activeEditor } = useEditor();
+  const [showVersionDiff, setShowVersionDiff] = useState(false);
   const [currentHeader, setCurrentHeader] = useState<string | number>("");
   const quill = getQuill(documentId);
   useEffect(() => {
@@ -140,6 +143,7 @@ const Toolbar = ({ addComment, synced, documentId }: ToolbarProps) => {
         display: showToolbar ? "flex" : "none",
         opacity: showToolbar ? 1 : 0,
         width: "94vw",
+        position: "relative",
         margin: "0 auto",
       }}
     >
@@ -224,15 +228,31 @@ const Toolbar = ({ addComment, synced, documentId }: ToolbarProps) => {
           </ToolbarButton>
         </span>
 
-        <div
-          ref={versionRef}
-          style={{
-            display: openHistory ? "block" : "none",
-          }}
-          className="absolute bg-gray-100 z-10 top-10 right-0"
-        >
-          <QuillVersionControls openHistory={openHistory} />
-        </div>
+        {openHistory && (
+          <div
+            ref={versionRef}
+            className="absolute bg-gray-100 z-10 top-10 right-0"
+          >
+            <QuillVersionControls
+              openHistory={openHistory}
+              setShowVersionDiff={setShowVersionDiff}
+            />
+          </div>
+        )}
+
+        {showVersionDiff &&
+          createPortal(
+            <div className="fixed inset-0 z-50 overflow-hidden">
+              <div className="absolute inset-0 bg-opacity-50" />
+              <div className="absolute inset-0 flex flex-col">
+                <div className="flex-1 bg-white rounded-lg shadow-xl  overflow-hidden">
+                  <VersionDiff onClose={() => setShowVersionDiff(false)} />
+                </div>
+              </div>
+            </div>,
+            document.getElementById("diff-portal")
+          )}
+
         <span className="ql-formats" title="Export">
           <ExportButton doc_id={documentId} />
         </span>

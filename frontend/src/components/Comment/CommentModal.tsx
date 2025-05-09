@@ -9,6 +9,7 @@ import { Checkbox } from "../ui/checkbox";
 import { Label } from "../ui/label";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Switch } from "../ui/switch";
+import AvatarWrapper from "../ui/custom-avatar";
 
 function CommentModal({
   documentId,
@@ -131,10 +132,11 @@ function CommentModal({
       style={style}
     >
       <div className="flex items-center mb-4 gap-2">
-        <Avatar>
-          <AvatarFallback></AvatarFallback>
-          <AvatarImage src={currentUser?.picture} />
-        </Avatar>
+        <AvatarWrapper
+          imageUrl={currentUser?.picture}
+          name={currentUser?.name}
+          size={32}
+        />
         <div>{currentUser?.name}</div>
       </div>
       <div

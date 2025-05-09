@@ -4,7 +4,13 @@ import { Switch } from "../ui/switch";
 import { Button } from "../ui/button";
 import VersionList from "./VersionList";
 
-const QuillVersionControls = ({ openHistory }: { openHistory: boolean }) => {
+const QuillVersionControls = ({
+  openHistory,
+  setShowVersionDiff,
+}: {
+  openHistory: boolean;
+  setShowVersionDiff: (show: boolean) => void;
+}) => {
   const { autoSaveEnabled, saveVersion, createNamedSnapshot, toggleAutoSave } =
     useQuillVersion();
 
@@ -17,22 +23,11 @@ const QuillVersionControls = ({ openHistory }: { openHistory: boolean }) => {
       setSnapshotName("");
     }
   };
+  const handleViewAll = () => {
+    setShowVersionDiff(true);
+  };
   return (
     <div className="p-4 border rounded bg-white shadow-md w-72">
-      {/* Auto Versioning Section */}
-      <div className="flex justify-between mb-4">
-        <h4 className=" flex-1 text-xs font-semibold mb-2">Auto</h4>
-        <Switch
-          checked={autoSaveEnabled}
-          onCheckedChange={toggleAutoSave}
-          style={{
-            backgroundColor: autoSaveEnabled ? "black" : "#ccc",
-            color: autoSaveEnabled ? "#fff" : "#000",
-            width: "40px",
-          }}
-        />
-      </div>
-
       {/* Manual Versioning Section */}
       <div className="mb-4">
         <form onSubmit={handleCreateSnapshot} className="flex gap-2">
@@ -57,7 +52,7 @@ const QuillVersionControls = ({ openHistory }: { openHistory: boolean }) => {
           </Button>
         </form>
       </div>
-      {openHistory && <VersionList />}
+      {openHistory && <VersionList handleViewAll={handleViewAll} />}
     </div>
   );
 };

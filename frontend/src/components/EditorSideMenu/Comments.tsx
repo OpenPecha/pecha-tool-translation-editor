@@ -8,6 +8,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ScrollArea } from "../ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Comment } from "../Comment/CommentBubble";
+import AvatarWrapper from "../ui/custom-avatar";
 
 function Comments() {
   const { id } = useParams();
@@ -154,17 +155,11 @@ function EachComment({ comment, deleteComment, quill }: EachCommentProps) {
       <div className="border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer bg-white">
         <div className="p-3 pb-0 flex flex-row items-center justify-between">
           <div className="flex items-center gap-2">
-            <Avatar>
-              <AvatarImage
-                src={comment.user.picture}
-                alt={comment.user.username}
-              />
-              <AvatarFallback
-                style={{ backgroundColor: "#f59e0b", color: "#fff" }}
-              >
-                {comment.user.username[0].toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <AvatarWrapper
+              imageUrl={comment.user.picture}
+              name={comment.user.username}
+              size={32}
+            />
             <div>
               <p className="text-sm font-medium">{comment.user.username}</p>
               <p className="text-xs text-muted-foreground">{formattedDate}</p>
