@@ -13,19 +13,19 @@ import SelectPechas, { PechaType } from "../DocumentCreateModal/SelectPechas";
 
 interface CreateTranslationModalProps {
   rootId: string;
-  rootIdentifier: string;
+  rootName: string;
   onClose: () => void;
   onSuccess: (translationId: string) => void;
 }
 
 const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
   rootId,
-  rootIdentifier,
+  rootName,
   onClose,
   onSuccess,
 }) => {
   const [translationName, setTranslationName] = useState(
-    `${rootIdentifier}-translation`
+    `${rootName}-translation`
   );
   const [language, setLanguage] = useState("");
   const [error, setError] = useState("");
@@ -40,8 +40,8 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
 
   const createTranslationMutation = useMutation({
     mutationFn: async () => {
-      if (!identifier.trim()) {
-        throw new Error("Identifier is required");
+      if (!translationName.trim()) {
+        throw new Error("Translation name is required");
       }
       if (!language) {
         throw new Error("Language is required");
@@ -53,7 +53,7 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
       }
 
       const formData = new FormData();
-      const identifier = `${rootIdentifier}-translation`;
+      const identifier = `${rootName}-${Date.now()}-translation`;
       formData.append("name", translationName);
       formData.append("identifier", identifier);
       formData.append("isRoot", "false");

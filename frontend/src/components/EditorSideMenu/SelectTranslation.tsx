@@ -66,11 +66,11 @@ function SelectTranslation({
                 e.key === "Enter" && setSelectedTranslationId(translation.id)
               }
               className="cursor-pointer flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md w-full text-left"
-              aria-label={`Open translation: ${translation.identifier}`}
+              aria-label={`Open translation: ${translation.name}`}
             >
               <GrDocument className="flex-shrink-0" />
-              <div className="flex-1 overflow-hidden">
-                <div className="flex justify-between">
+              <div className="flex-1 overflow-hidden ">
+                <div className="flex justify-between justify-between gap-2">
                   <div className="truncate">
                     {getTranslationDate(translation.identifier).name}
                   </div>
@@ -88,7 +88,7 @@ function SelectTranslation({
       {showCreateModal && (
         <CreateTranslationModal
           rootId={rootId}
-          rootIdentifier={currentDoc?.identifier || "document"}
+          rootName={currentDoc?.name ?? "document"}
           onClose={() => setShowCreateModal(false)}
           onSuccess={handleCreateSuccess}
         />
