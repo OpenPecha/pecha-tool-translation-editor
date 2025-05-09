@@ -22,6 +22,7 @@ function MenuDrawer({
   );
   return (
     <>
+      {/* sync setting */}
       <button
         onClick={() => setIsDrawerOpen(true)}
         className="fixed bottom-4 right-4 p-3 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 z-10"
@@ -58,7 +59,7 @@ function MenuDrawer({
       {/* Overlay */}
       {isDrawerOpen && (
         <div
-          className="fixed inset-0 bg-[rgba(0,0,0,0.3)] bg-opacity-50 z-[999]"
+          className="fixed inset-0 bg-[rgba(0,0,0,0.3)] bg-opacity-50 z-[998]"
           onClick={() => setIsDrawerOpen(false)}
         />
       )}
