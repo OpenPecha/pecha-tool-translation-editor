@@ -28,14 +28,12 @@ const Editor = ({
   const editorRef = useRef<HTMLDivElement>(null);
   const toolbarId = "toolbar-container" + "-" + documentId;
   const counterId = "counter-container" + "-" + documentId;
-  // const { yText, yjsProvider, isSynced, ydoc, activeUsers } =
-  //   useContext(YjsContext);
   const [currentRange, setCurrentRange] = useState<Range | null>(null);
   const [showCommentModal, setShowCommentModal] = useState(false);
   const { registerQuill } = useQuillVersion();
   const { registerQuill: registerQuill2, unregisterQuill: unregisterQuill2 } =
     useEditor();
-  // const bindingRef = useRef<QuillBinding | null>(null);
+  const isInitializingRef = useRef(true);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const quillRef = useRef<Quill | null>(null);
   const queryClient = useQueryClient();
@@ -119,7 +117,6 @@ const Editor = ({
       },
       readOnly: !isEditable,
       placeholder: "Start collaborating...",
-
       // className is not a valid Quill option, apply these styles to the container instead
     });
     registerQuill(quill);
@@ -137,7 +134,6 @@ const Editor = ({
       },
       signal
     );
-
     // Fetch comments when the editor loads
     quill.on("text-change", function (delta, oldDelta, source) {
       // Handle all changes, not just those with source='user'
@@ -146,8 +142,9 @@ const Editor = ({
         quill.setContents(oldDelta);
         return;
       }
-
-      // Save all changes including formatting changes
+      if (isInitializingRef.current) {
+        return;
+      }
       const currentContent = quill.getContents();
       debouncedSave(currentContent);
     });
@@ -169,15 +166,22 @@ const Editor = ({
     });
 
     return () => {
-      quill.disable();
+      const currentContent = quill.getContents();
+      updateDocumentMutation.mutate(currentContent);
       unregisterQuill2("editor" + editorId);
       signal.abort();
+      quill.disable();
     };
   }, []);
 
   useEffect(() => {
-    if (quillRef.current?.getText().trim() === "") {
-      quillRef.current?.setContents(currentDoc?.docs_prosemirror_delta || []);
+    if (
+      quillRef.current &&
+      quillRef.current.getText().trim() === "" &&
+      currentDoc?.docs_prosemirror_delta
+    ) {
+      quillRef.current.setContents(currentDoc.docs_prosemirror_delta);
+      isInitializingRef.current = false; // ✅ Reset the flag here
     }
     return () => {
       if (saveTimeoutRef.current) {
