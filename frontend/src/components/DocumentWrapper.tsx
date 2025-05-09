@@ -5,28 +5,22 @@ import { EditorProvider } from "@/contexts/EditorContext";
 import { useParams } from "react-router-dom";
 import DocumentEditor from "./DocumentEditor";
 import SideMenu from "./EditorSideMenu/Sidemenu";
-import { ChevronRight } from "lucide-react";
 import MenuDrawer from "./MenuDrawer";
 import Navbar from "./Navbar";
 import { useDevToolsStatus } from "@/hooks/useDevToolStatus";
 import { createPortal } from "react-dom";
 import { IoIosArrowForward } from "react-icons/io";
 
-export interface Translation {
-  id: string;
-  identifier: string;
-  language: string;
-}
+export type { Translation } from "@/hooks/useCurrentDoc";
 
 function DocumentsWrapper() {
   const { id } = useParams();
   useDevToolsStatus();
 
-  const { currentDoc, loading, error, isEditable } = useCurrentDoc(id);
+  const { currentDoc, isEditable } = useCurrentDoc(id);
   const [selectedTranslationId, setSelectedTranslationId] = useState<
     string | null
   >(null);
-
   // Handle translation selection with proper cleanup
   const handleSelectTranslation = (translationId: string | null) => {
     setSelectedTranslationId(translationId);

@@ -9,8 +9,9 @@ const RealTimeEditor = ({
   isEditable,
 }: {
   docId: string | undefined;
-  isEditable: boolean;
+  isEditable: boolean | undefined;
 }) => {
+  if (isEditable === undefined) return null;
   return (
     <QuillVersionProvider docId={docId} maxVersions={50}>
       <CommentProvider>

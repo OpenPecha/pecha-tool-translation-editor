@@ -24,7 +24,6 @@ const Editor = ({
   isEditable: boolean;
 }) => {
   const { currentDoc } = useCurrentDoc(documentId);
-
   const editorRef = useRef<HTMLDivElement>(null);
   const toolbarId = "toolbar-container" + "-" + documentId;
   const counterId = "counter-container" + "-" + documentId;
@@ -172,7 +171,7 @@ const Editor = ({
       signal.abort();
       quill.disable();
     };
-  }, []);
+  }, [isEditable]);
 
   useEffect(() => {
     if (

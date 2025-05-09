@@ -4,9 +4,10 @@ import { useAuth } from '@/auth/use-auth-hook';
 import { useQuery } from '@tanstack/react-query';
 import { EDITOR_READ_ONLY } from "@/utils/editorConfig";
 
-interface Translation {
+export interface Translation {
   id: string;
   identifier: string;
+  language: string;
 }
 
 interface Document {
@@ -24,12 +25,12 @@ interface UseCurrentDocReturn {
   currentDoc: Document | null;
   loading: boolean;
   error: string | null;
-  isEditable: boolean;
+  isEditable: boolean | undefined;
 }
 
 export const useCurrentDoc = (docId: string | undefined): UseCurrentDocReturn => {
   const { currentUser } = useAuth();
-  const [isEditable,setIsEditable] =useState(false);
+  const [isEditable,setIsEditable] =useState<boolean|undefined>(undefined);
   const { data, isLoading, error } = useQuery({
     queryKey: [`document-${docId}`],
     queryFn: async () => {
@@ -47,12 +48,11 @@ export const useCurrentDoc = (docId: string | undefined): UseCurrentDocReturn =>
     enabled: !!docId,
     staleTime:0,
   });
-
   return {
     currentDoc: data,
     loading: isLoading,
     error: error ? (error instanceof Error ? error.message : 'Failed to load document') : null,
-    isEditable:true
+    isEditable
   };
 };
  
