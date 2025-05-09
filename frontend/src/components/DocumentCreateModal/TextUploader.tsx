@@ -19,12 +19,13 @@ const TextUploader = ({
   rootId?: string;
 }) => {
   const [file, setFile] = useState<File | null>(null);
-
+  const [fileContent, setFileContent] = useState<string>("");
   const uploadMutation = useMutation({
     mutationFn: async (file: File) => {
       const formData = new FormData();
       const fileNameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
       const uniqueIdentifier = `${fileNameWithoutExt}-${Date.now()}`;
+      formData.append("name", fileNameWithoutExt);
       formData.append("identifier", uniqueIdentifier);
       formData.append("isRoot", isRoot.toString());
       formData.append("isPublic", isPublic.toString());
@@ -48,6 +49,13 @@ const TextUploader = ({
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
       setFile(selectedFile);
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setFileContent(event.target?.result as string);
+      };
+      reader.readAsText(selectedFile);
+
       uploadMutation.mutate(selectedFile);
     }
   };
@@ -75,7 +83,15 @@ const TextUploader = ({
             <span className="ml-2 text-amber-600">Uploading...</span>
           )}
           {uploadMutation.isSuccess && (
-            <span className="ml-2 text-green-600">✓ Uploaded</span>
+            <div>
+              <span className="ml-2 text-green-600">✓ Uploaded</span>
+              <textarea
+                className="mt-2 w-full border rounded-md p-2 text-md font-monlam leading-normal "
+                rows={10}
+                readOnly
+                value={fileContent}
+              />
+            </div>
           )}
         </div>
       )}

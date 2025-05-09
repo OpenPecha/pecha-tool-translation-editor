@@ -2,10 +2,11 @@ import Quill from "quill";
 import QuillCursors from "quill-cursors";
 
 import CommentBlot from "./commentBlot";
-import { CustomParagraph } from "./customPtag";
+import CustomParagraph from "./customPtag";
 import HeaderNBlot from "./headerDynamicBlot";
 import { MAX_HEADING_LEVEL } from "@/utils/editorConfig";
 import { BoldIcon, ItalicIcon, RedoIcon, underlineIcon, UndoIcon } from "../Toolbar/ToolbarIcons";
+
 
 const customHeaders: any[] = [];
 export default function quill_import() {
@@ -28,9 +29,11 @@ export default function quill_import() {
   });
   Quill.register(fonts, true);
   Quill.register(Block, true);
-
   Quill.register(CustomParagraph);
   Quill.register(CommentBlot);
+
+
+
   const icons = Quill.import('ui/icons');
   icons.bold=BoldIcon();
   icons.italic=ItalicIcon();

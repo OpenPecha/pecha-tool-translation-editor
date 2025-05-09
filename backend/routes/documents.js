@@ -23,16 +23,15 @@ const upload = multer({
   router.post("/", authenticate, upload.single("file"), async (req, res) => {
 
     try {
-      const document_id = crypto.randomUUID();
-      const { identifier, isRoot, rootId,language } = req.body;
+      const { identifier, isRoot, rootId,language, name } = req.body;
       if (!identifier)
         return res
           .status(400)
           .json({ error: "Missing identifier in query params" });
 
-      const doc = new WSSharedDoc(document_id, req.user.id);
+      const doc = new WSSharedDoc(identifier, req.user.id);
       // Update the Y.doc with file content
-      const prosemirrorText = doc.getText(document_id);
+      const prosemirrorText = doc.getText(identifier);
       if (req?.file) {
         const textContent = req.file.buffer.toString("utf-8");
         if (textContent) {
@@ -46,9 +45,9 @@ const upload = multer({
       const document = await prisma.$transaction(async (tx) => {
       const doc = await tx.doc.create({
         data: {
-          id:document_id,
+          id:identifier,
           identifier,
-          name: identifier,
+          name,
           ownerId: req.user.id,
           docs_y_doc_state: state,
           docs_prosemirror_delta: delta,

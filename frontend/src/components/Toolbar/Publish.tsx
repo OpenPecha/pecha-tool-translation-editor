@@ -5,7 +5,8 @@ export const PublishButton = ({ quill }: { quill: Quill }) => {
   const handlePublish = () => {
     const text = quill.getText();
     const json = generateJsonFromText(text);
-    alert("data:" + json);
+    console.log(quill.getContents());
+    // alert("data:" + json);
   };
 
   return (

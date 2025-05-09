@@ -24,7 +24,9 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
   onClose,
   onSuccess,
 }) => {
-  const [identifier, setIdentifier] = useState(`${rootIdentifier}-translation`);
+  const [translationName, setTranslationName] = useState(
+    `${rootIdentifier}-translation`
+  );
   const [language, setLanguage] = useState("");
   const [error, setError] = useState("");
   const [uploadMethod, setUploadMethod] = useState<"file" | "openpecha">(
@@ -51,6 +53,8 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
       }
 
       const formData = new FormData();
+      const identifier = `${rootIdentifier}-translation`;
+      formData.append("name", translationName);
       formData.append("identifier", identifier);
       formData.append("isRoot", "false");
       formData.append("rootId", rootId);
@@ -105,11 +109,11 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
         <form onSubmit={handleSubmit} className="p-4">
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="identifier">Identifier</Label>
+              <Label htmlFor="identifier">Name</Label>
               <Input
                 id="identifier"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
+                value={translationName}
+                onChange={(e) => setTranslationName(e.target.value)}
                 placeholder="Enter document identifier"
                 required
               />

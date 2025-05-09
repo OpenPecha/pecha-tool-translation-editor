@@ -36,7 +36,6 @@ export function NewPechaForm({
     onSuccess: (data) => {
       // Invalidate and refetch projects query
       queryClient.invalidateQueries({ queryKey: ["projects"] });
-
       // Close modal and reset form
       closeModal();
     },
@@ -131,7 +130,8 @@ function DocumentCreateModalFooter({
     <DialogFooter className="flex w-full sm:justify-between">
       <Button
         type="button"
-        className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+        variant="ghost"
+        className="px-4 py-2  text-gray-800 rounded cursor-pointer"
         onClick={closeModal}
       >
         Cancel

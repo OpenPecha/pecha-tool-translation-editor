@@ -45,7 +45,7 @@ function DocumentCreateModal() {
         <Tabs defaultValue="upload" className="w-full">
           <TabsList className="w-full">
             <TabsTrigger value="upload" className="cursor-pointer">
-              Upload File
+              File
             </TabsTrigger>
             <TabsTrigger value="OpenPecha" className="cursor-pointer">
               OpenPecha

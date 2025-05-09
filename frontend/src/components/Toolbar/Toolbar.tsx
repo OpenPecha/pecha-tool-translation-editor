@@ -11,6 +11,7 @@ import { Button } from "../ui/button";
 import { PublishButton } from "./Publish";
 import { createPortal } from "react-dom";
 import VersionDiff from "./VersionDiff";
+import Quill from "quill";
 const isEnabled = !EDITOR_READ_ONLY;
 interface ToolbarProps {
   addComment: () => void;
@@ -108,29 +109,45 @@ const Toolbar = ({ addComment, synced, documentId }: ToolbarProps) => {
       quill.format(`h${value}`, true);
     }
   };
+
   const handleSectionCreation = () => {
-    if (quill) {
-      const range = quill.getSelection();
-      if (range) {
-        const [startBlot] = quill.getLine(range.index);
-        const [endBlot] = quill.getLine(range.index + range.length);
+    if (!quill) return;
 
-        // Get all lines between start and end
-        let currentBlot = startBlot;
-        while (currentBlot) {
-          if (currentBlot.domNode.tagName === "P") {
-            if (currentBlot.domNode.hasAttribute("data-type")) {
-              currentBlot.domNode.removeAttribute("data-type");
-            } else {
-              currentBlot.domNode.setAttribute("data-type", "section");
-            }
-          }
+    const range = quill.getSelection();
+    if (!range) return;
 
-          if (currentBlot === endBlot) break;
-          currentBlot = currentBlot.next;
-        }
+    const [start, end] = [range.index, range.index + range.length];
+    const Block = Quill.import("blots/block");
+
+    const blocks = quill.scroll.descendants(Block, start, end - start);
+
+    blocks.forEach((block) => {
+      const index = quill.getIndex(block);
+      const length = block.length();
+      const currentType = block.domNode.getAttribute("data-type");
+
+      if (currentType === "section") {
+        // Convert to normal paragraph (remove data-type)
+        quill.formatLine(
+          index,
+          length,
+          {
+            paragraph: { "data-type": null },
+          },
+          Quill.sources.USER
+        );
+      } else {
+        // Convert to section
+        quill.formatLine(
+          index,
+          length,
+          {
+            paragraph: { "data-type": "section" },
+          },
+          Quill.sources.USER
+        );
       }
-    }
+    });
   };
 
   const showToolbar = activeEditor === documentId;

@@ -88,7 +88,7 @@
     width: fit-content;
   }
 
-  p[data-type="section"] {
+.ql-editor section {
     background-color: rgba(200, 200, 200, 0.1);
     border-left: 3px solid #4a90e2;
     padding-left: 1rem;
@@ -96,12 +96,12 @@
   }
   
   /* Optional: Add a hover effect */
-  p[data-type="section"]:hover {
+.ql-editor section:hover {
     background-color: rgba(200, 200, 200, 0.2);
   }
   
   /* Optional: Add a subtle indicator */
-  p[data-type="section"]::before {
+.ql-editor section::before {
     /* content: "§"; */
     position: absolute;
     left: -20px;
