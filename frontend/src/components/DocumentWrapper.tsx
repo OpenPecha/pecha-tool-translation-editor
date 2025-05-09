@@ -47,7 +47,7 @@ function DocumentsWrapper() {
 
               {/* Arrow (hidden by default, shows on hover) */}
               <button
-                className="absolute bg-white border rounded-full p-2 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 cursor-pointer text-gray-700 text-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                className="absolute bg-white border z-[99] cursor-pointer rounded-full p-2 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2  text-gray-700 text-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                 onClick={() => handleSelectTranslation(null)}
                 aria-label="Close translation view"
                 title="Close translation view"
