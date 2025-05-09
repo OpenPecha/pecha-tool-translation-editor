@@ -4,6 +4,7 @@ import { IoMdClose } from "react-icons/io";
 import { getVersionDiff } from "@/api/version";
 import DiffViewer from "../../pages/DiffViewer";
 import { Button } from "@/components/ui/button";
+import formatTimeAgo from "@/lib/formatTimeAgo";
 
 interface DeltaOperation {
   insert: string;
@@ -127,9 +128,10 @@ function VersionDiff({ onClose }: VersionDiffProps) {
             <h2 className=" font-semibold mb-4">Version History</h2>
             {versions && versions.length > 0 ? (
               versions.map((version: Version) => (
-                <div
+                <button
+                  type="button"
                   key={version.id}
-                  className={`p-4 border-b cursor-pointer ${
+                  className={`p-4 flex flex-col  border-b w-full cursor-pointer ${
                     version.id === selectedVersionId
                       ? "bg-blue-50"
                       : "hover:bg-gray-50"
@@ -137,14 +139,15 @@ function VersionDiff({ onClose }: VersionDiffProps) {
                   onClick={() => setSelectedVersionId(version.id)}
                 >
                   <div className="flex justify-between items-start">
-                    <div>
-                      <span>{version.label}</span>
-                      <p className="text-sm text-gray-500">
-                        {formatDate(version.timestamp)}
-                      </p>
-                    </div>
+                    <span>{version.label}</span>
+                    <p className="text-sm text-gray-500">
+                      {formatTimeAgo(version.timestamp)}
+                    </p>
                   </div>
-                </div>
+                  <div className="text-sm text-gray-500 self-start capitalize">
+                    {version.user ? version?.user?.username : "system"}
+                  </div>
+                </button>
               ))
             ) : (
               <div className="text-gray-500 text-center py-8">
