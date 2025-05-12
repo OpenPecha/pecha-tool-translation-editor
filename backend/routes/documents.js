@@ -210,8 +210,9 @@ const upload = multer({
               id:true,
               name:true,
               language:true,
-              identifier:true,
               updatedAt:true
+            },orderBy:{
+              updatedAt:"desc"
             }
           },
         },
@@ -319,21 +320,45 @@ const upload = multer({
     try {
       const document = await prisma.doc.findUnique({
         where: { id: req.params.id },
+        include: {
+          root: {
+            select: {
+              ownerId: true
+            }
+          }
+        }
       });
+      
       if (!document)
         return res.status(404).json({ error: "Document not found" });
 
-      if (document.ownerId !== req.user.id) {
+      // Check if user is the owner of the document or the root document
+      const isOwner = document.ownerId === req.user.id;
+      const isRootOwner = document.root && document.root.ownerId === req.user.id;
+      
+      // Check if user has write permission for this document
+      const hasPermission = await prisma.permission.findFirst({
+        where: {
+          docId: document.id,
+          userId: req.user.id,
+          canWrite: true
+        }
+      });
+      
+      // Allow deletion if user is owner, root owner, or has write permission
+      if (!isOwner && !isRootOwner && !hasPermission) {
         return res.status(403).json({
           error: "You do not have permission to delete this document",
         });
       }
 
+      // Delete the document and related permissions
       await prisma.doc.delete({ where: { id: document.id } });
       await prisma.permission.deleteMany({ where: { docId: document.id } });
 
       res.json({ message: "Document deleted successfully" });
     } catch (error) {
+      console.error("Error deleting document:", error);
       res.status(500).json({ error: "Error deleting document" });
     }
   });

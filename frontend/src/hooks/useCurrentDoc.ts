@@ -6,8 +6,9 @@ import { EDITOR_READ_ONLY } from "@/utils/editorConfig";
 
 export interface Translation {
   id: string;
-  identifier: string;
   language: string;
+  name: string;
+  updatedAt: string;
 }
 
 interface Document {

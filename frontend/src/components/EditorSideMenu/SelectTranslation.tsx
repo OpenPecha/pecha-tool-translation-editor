@@ -1,11 +1,14 @@
 import { useMemo, useState } from "react";
 import { GrDocument } from "react-icons/gr";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { Translation } from "../DocumentWrapper";
 import { Button } from "../ui/button";
 import CreateTranslationModal from "./CreateTranslationModal";
 import { useParams } from "react-router-dom";
 import { useCurrentDoc } from "@/hooks/useCurrentDoc";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { deleteDocument } from "@/api/document";
+import formatTimeAgo from "@/lib/formatTimeAgo";
 
 function SelectTranslation({
   setSelectedTranslationId,
@@ -16,25 +19,48 @@ function SelectTranslation({
   const { id } = useParams();
   const rootId = id as string;
   const { currentDoc } = useCurrentDoc(rootId);
+  const queryClient = useQueryClient();
   const translations = useMemo(
     () => currentDoc?.translations ?? [],
     [currentDoc?.translations]
   );
-  const handleCreateSuccess = (translationId: string) => {
+  const handleCreateSuccess = () => {
     setShowCreateModal(false);
-    // setSelectedTranslationId(translationId);
   };
-  const isRoot = currentDoc?.isRoot;
-  const getTranslationDate = (identifier: string) => {
-    const parts = identifier.split("-");
-    const timestamp = parts.length > 1 ? parts[parts.length - 1] : "";
-    const name =
-      parts.length > 1
-        ? parts.slice(0, parts.length - 1).join("-")
-        : identifier;
-    const time = new Date(parseInt(timestamp)).toLocaleDateString();
-    return { name, time };
+  // Check if the current document is a root document
+  const isRoot = Boolean(
+    currentDoc && "isRoot" in currentDoc ? currentDoc.isRoot : false
+  );
+
+  const deleteTranslationMutation = useMutation({
+    mutationFn: (translationId: string) => deleteDocument(translationId),
+    onSuccess: () => {
+      // Refresh document data to update the translations list
+      queryClient.invalidateQueries({ queryKey: [`document-${rootId}`] });
+      console.log("Translation deleted successfully");
+    },
+    onError: (error) => {
+      console.error("Error deleting translation:", error);
+      window.alert(
+        `Error: ${
+          error instanceof Error
+            ? error.message
+            : "Failed to delete translation"
+        }`
+      );
+    },
+  });
+
+  const handleDeleteTranslation = (
+    translationId: string,
+    event: React.MouseEvent
+  ) => {
+    event.stopPropagation();
+    if (window.confirm("Are you sure you want to delete this translation?")) {
+      deleteTranslationMutation.mutate(translationId);
+    }
   };
+
   return (
     <div className="rounded-lg overflow-hidden ">
       <div className="flex justify-between items-center mb-4">
@@ -59,28 +85,45 @@ function SelectTranslation({
           </p>
         ) : (
           translations.map((translation: Translation) => (
-            <button
-              key={translation.id}
-              onClick={() => setSelectedTranslationId(translation.id)}
-              onKeyDown={(e) =>
-                e.key === "Enter" && setSelectedTranslationId(translation.id)
-              }
-              className="cursor-pointer flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md w-full text-left"
-              aria-label={`Open translation: ${translation.name}`}
-            >
-              <GrDocument className="flex-shrink-0" />
-              <div className="flex-1 overflow-hidden ">
-                <div className="flex justify-between justify-between gap-2">
-                  <div className="truncate">
-                    {getTranslationDate(translation.identifier).name}
+            <div key={translation.id} className="flex items-center w-full">
+              <button
+                onClick={() => setSelectedTranslationId(translation.id)}
+                onKeyDown={(e) =>
+                  e.key === "Enter" && setSelectedTranslationId(translation.id)
+                }
+                className="cursor-pointer flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md w-full text-left flex-grow"
+                aria-label={`Open translation ${translation.id}`}
+              >
+                <div className="relative flex items-center">
+                  <GrDocument
+                    size={24}
+                    color="lightblue"
+                    className="flex-shrink-0"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-gray-600 capitalize">
+                    {translation.language}
                   </div>
-                  <div>{getTranslationDate(translation.identifier).time}</div>
                 </div>
-                <div className="text-xs text-gray-500 capitalize">
-                  {translation.language}
+                <div className="flex-1 overflow-hidden ">
+                  <div className="flex justify-between gap-2">
+                    <div className="truncate">{translation.name}</div>
+                  </div>
+                  <div className="text-xs text-gray-500 capitalize">
+                    {formatTimeAgo(translation.updatedAt)}
+                  </div>
                 </div>
-              </div>
-            </button>
+              </button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 p-0 ml-1 text-red-500 hover:text-red-700 hover:bg-red-100"
+                onClick={(e) => handleDeleteTranslation(translation.id, e)}
+                disabled={deleteTranslationMutation.isPending}
+                aria-label={`Delete translation ${translation.id}`}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
           ))
         )}
       </div>
@@ -90,7 +133,6 @@ function SelectTranslation({
           rootId={rootId}
           rootName={currentDoc?.name ?? "document"}
           onClose={() => setShowCreateModal(false)}
-          onSuccess={handleCreateSuccess}
         />
       )}
     </div>
