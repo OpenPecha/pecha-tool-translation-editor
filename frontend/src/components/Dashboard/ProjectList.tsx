@@ -9,16 +9,19 @@ import EachProject from "./EachProject";
 import { useSearch } from "@/contexts/SearchContext";
 
 const ProjectList = () => {
-  // We can add search functionality later if needed
   const { searchQuery } = useSearch();
-  const {
-    data: projects,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["projects", searchQuery],
-    queryFn: () => fetchProjects({ searchQuery }),
+  const [page, setPage] = useState(1);
+  const limit = 10;
+
+  const { data, isLoading, isError, isFetching } = useQuery({
+    queryKey: ["projects", searchQuery, page],
+    queryFn: () => fetchProjects({ searchQuery, page, limit }),
   });
+
+  const projects = data?.data;
+  const total = data?.total || 0;
+  const totalPages = Math.ceil(total / limit);
+
   return (
     <div className="flex flex-1 flex-col h-[100vh] ">
       <div className="pt-10 px-6">
@@ -37,7 +40,17 @@ const ProjectList = () => {
         )}
         <div className="max-w-5xl mx-auto">
           {projects?.length > 0 && (
-            <ProjectsGrid projects={projects} isLoading={isLoading} />
+            <>
+              <ProjectsGrid
+                projects={projects}
+                isLoading={isLoading || isFetching}
+              />
+              <PaginationControls
+                page={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
+              />
+            </>
           )}
           {projects?.length === 0 && !isLoading && (
             <div className="text-center py-8">
@@ -63,16 +76,13 @@ const ProjectsGrid = ({
     <div className="mb-8">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-base font-medium text-gray-600">Your Projects</h2>
-
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="h-8 text-sm">
             All Projects
           </Button>
-
           <Button variant="outline" size="sm" className="h-8 text-sm">
             Shared Projects
           </Button>
-
           <div className="flex gap-1">
             {view === "list" ? (
               <Button
@@ -118,11 +128,46 @@ const ProjectsGrid = ({
         {isLoading ? (
           <div>Loading...</div>
         ) : (
-          projects?.map((project) => (
+          projects.map((project) => (
             <EachProject view={view} key={project.id} project={project} />
           ))
         )}
       </div>
+    </div>
+  );
+};
+
+const PaginationControls = ({
+  page,
+  totalPages,
+  onPageChange,
+}: {
+  page: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}) => {
+  if (totalPages < 1) return null;
+  return (
+    <div className="flex justify-center items-center gap-2 mt-6">
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={page <= 1}
+        onClick={() => onPageChange(page - 1)}
+      >
+        Previous
+      </Button>
+      <span className="text-sm text-gray-600">
+        Page {page} of {totalPages}
+      </span>
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={page >= totalPages}
+        onClick={() => onPageChange(page + 1)}
+      >
+        Next
+      </Button>
     </div>
   );
 };

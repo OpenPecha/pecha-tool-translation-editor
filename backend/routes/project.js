@@ -9,47 +9,68 @@ const prisma = new PrismaClient();
 router.get("/", authenticate, async (req, res) => {
   const searchQuery = req.query.search || "";
   const status = req.query.status || "active";
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
   
   try {
-    const projects = await prisma.project.findMany({
-      where: {
-        OR: [
-          { ownerId: req.user.id },
-          {
-            permissions: {
-              some: {
-                userId: req.user.id
-              }
-            }
-          }
-        ],
-        status: status !== "all" ? status : undefined,
-        name: searchQuery ? {
-          contains: searchQuery
-        } : undefined
-      },
-      include: {
-        owner: {
-          select: {
-            id: true,
-            username: true
-          }
-        },
-        roots: {
-          select: {
-            id: true,
-            name: true,
-            updatedAt: true,
-            translations: {
-              select: {
-                id: true
-              }
+    const whereClause = {
+      OR: [
+        { ownerId: req.user.id },
+        {
+          permissions: {
+            some: {
+              userId: req.user.id
             }
           }
         }
+      ],
+      status: status !== "all" ? status : undefined,
+      name: searchQuery ? {
+        contains: searchQuery
+      } : undefined
+    };
+
+    const [projects, totalCount] = await Promise.all([
+      prisma.project.findMany({
+        where: whereClause,
+        include: {
+          owner: {
+            select: {
+              id: true,
+              username: true
+            }
+          },
+          roots: {
+            select: {
+              id: true,
+              name: true,
+              updatedAt: true,
+              translations: {
+                select: {
+                  id: true
+                }
+              }
+            }
+          }
+        },
+        skip,
+        take: limit,
+        orderBy: { updatedAt: 'desc' }
+      }),
+      prisma.project.count({ where: whereClause })
+    ]);
+    const totalPages = Math.ceil(totalCount / limit);
+    
+    res.json({
+      data: projects,
+      pagination: {
+        page,
+        limit,
+        totalItems: totalCount,
+        totalPages
       }
     });
-    res.json(projects);
   } catch (error) {
     console.error("Error fetching projects:", error);
     res.status(500).json({ error: error.message });
@@ -429,12 +450,6 @@ router.put("/:id", authenticate, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
-
-
-
-
-
 
 // Delete project (soft delete)
 router.delete("/:id", authenticate, async (req, res) => {

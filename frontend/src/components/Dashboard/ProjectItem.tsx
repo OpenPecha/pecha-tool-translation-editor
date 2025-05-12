@@ -122,11 +122,6 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
       <div className="space-y-2">
         <div className="flex items-center">
           <h3 className="text-sm font-medium truncate capitalize">{title}</h3>
-          {status && (
-            <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-800">
-              {status}
-            </span>
-          )}
         </div>
         {subtitle && (
           <p className="text-xs text-gray-500 truncate">{subtitle}</p>
@@ -135,10 +130,10 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
         <div className="flex items-center mt-2 justify-between">
           <div className="flex item-center">
             {hasDocument && (
-              <div className="bg-blue-100 p-2 rounded-full flex items-center">
-                <FileText size={20} className="text-blue-500" />
+              <div className="bg-blue-100 p-2 rounded-full flex gap-1 items-center mx-1">
+                <FileText size={16} className="text-blue-500" />
                 {documentCount > 0 && (
-                  <span className="ml-1 text-xs font-medium text-blue-700">
+                  <span className=" text-xs font-medium text-blue-700">
                     {documentCount}
                   </span>
                 )}

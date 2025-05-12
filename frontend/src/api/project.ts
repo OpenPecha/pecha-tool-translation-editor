@@ -53,15 +53,34 @@ export interface UpdateProjectParams {
 }
 
 // Fetch all projects for the current user
-export const fetchProjects = async ({ status, searchQuery }: { status?: string; searchQuery?: string } = {}) => {
+export const fetchProjects = async ({ 
+  status = "active", 
+  searchQuery = "", 
+  page = 1, 
+  limit = 10 
+}: { 
+  status?: string; 
+  searchQuery?: string;
+  page?: number;
+  limit?: number;
+} = {}) => {
   try {
-    let url = `${server_url}/projects`;
+    const queryParams = new URLSearchParams();
+    
     if (status) {
-      url += `?status=${status}`;
+      queryParams.append("status", status);
     }
     if (searchQuery) {
-      url += `?search=${searchQuery}`;
+      queryParams.append("search", searchQuery);
     }
+    if (page) {
+      queryParams.append("page", page.toString());
+    }
+    if (limit) {
+      queryParams.append("limit", limit.toString());
+    }
+    
+    const url = `${server_url}/projects?${queryParams.toString()}`;
     
     const response = await fetch(url, {
       headers: getHeaders(),
