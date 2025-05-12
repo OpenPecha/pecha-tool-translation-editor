@@ -222,7 +222,7 @@ const Editor = ({
                 lineHeight: 1.5,
               }}
             />
-            <CommentBubble />
+            <CommentBubble documentId={documentId} />
             {showCommentModal && (
               <CommentModal
                 documentId={documentId}

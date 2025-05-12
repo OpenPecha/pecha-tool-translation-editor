@@ -48,7 +48,7 @@ interface StyleProps {
   overflowY: "auto";
 }
 
-const CommentBubble = () => {
+const CommentBubble = ({ documentId }: { documentId: string }) => {
   const bubbleRef = useRef<HTMLDivElement>(null);
   const { isModalOpen, position, commentThread, setIsModalOpen } = useComment();
   const [isSuggestion, setIsSuggestion] = useState(false);
@@ -179,7 +179,7 @@ const CommentBubble = () => {
     maxHeight: "250px",
     overflowY: "auto",
   };
-
+  if (commentThread[0].docId !== documentId) return null;
   return (
     <div
       ref={bubbleRef}
