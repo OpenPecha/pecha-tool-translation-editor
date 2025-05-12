@@ -60,6 +60,13 @@ const TextUploader = ({
     }
   };
 
+  const errorMessage = (uploadMutation.error as Error)?.message;
+
+  const handleReset = () => {
+    setFile(null);
+    setFileContent("");
+    uploadMutation.reset(); // Reset mutation state
+  };
   return (
     <div className="mb-2">
       {!file && (
@@ -72,15 +79,50 @@ const TextUploader = ({
             type="file"
             accept=".txt"
             onChange={handleFileChange}
-            disabled={disable || uploadMutation.isPending}
+            disabled={
+              disable || uploadMutation.isPending || uploadMutation.isSuccess
+            }
           />
         </div>
       )}
       {file && (
         <div className="text-sm py-2">
-          Selected file: <span className="font-medium">{file.name}</span>
+          <div className="flex justify-between items-center">
+            <span>
+              Selected file: <span className="font-medium">{file.name}</span>
+            </span>
+            <button
+              type="button"
+              onClick={handleReset}
+              className="text-red-600 text-xs underline ml-4"
+            >
+              Remove File
+            </button>
+          </div>
           {uploadMutation.isPending && (
-            <span className="ml-2 text-amber-600">Uploading...</span>
+            <span className="ml-2 text-amber-600 flex items-center">
+              <svg
+                className="animate-spin -ml-1 mr-2 h-4 w-4 text-amber-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              Uploading...
+            </span>
           )}
           {uploadMutation.isSuccess && (
             <div>
@@ -96,9 +138,9 @@ const TextUploader = ({
         </div>
       )}
 
-      {uploadMutation.isError && (
+      {errorMessage && (
         <div className="p-3 rounded-md bg-red-50 text-red-700 border border-red-200">
-          {uploadMutation.error?.message || "An error occurred while uploading"}
+          {errorMessage}
         </div>
       )}
     </div>

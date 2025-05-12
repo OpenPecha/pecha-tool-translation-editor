@@ -69,19 +69,21 @@ export function NewPechaForm({
           setSelectedLanguage={setSelectedLanguage}
           selectedLanguage={selectedLanguage}
         />
-        {/* {selectedLanguage && ( */}
-        <TextUploader
-          isRoot={true}
-          isPublic={false}
-          selectedLanguage={selectedLanguage}
-          setRootId={setRootId}
-          disable={!selectedLanguage || selectedLanguage === ""}
-        />
-        <MetaDataInput
-          setMetadata={setMetadata}
-          disable={!rootId || !selectedLanguage || selectedLanguage === ""}
-        />
-        {/* )} */}
+        {selectedLanguage && (
+          <>
+            <TextUploader
+              isRoot={true}
+              isPublic={false}
+              selectedLanguage={selectedLanguage}
+              setRootId={setRootId}
+              disable={!selectedLanguage || selectedLanguage === ""}
+            />
+            <MetaDataInput
+              setMetadata={setMetadata}
+              disable={!rootId || !selectedLanguage || selectedLanguage === ""}
+            />
+          </>
+        )}
       </ScrollArea>
       <DocumentCreateModalFooter
         createDoc={handleCreateProject}
