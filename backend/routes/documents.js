@@ -119,7 +119,7 @@ const upload = multer({
           name: true,
           identifier: true,
           ownerId: true,
-          permissions: true,
+         
           language: true,
           isRoot: true,
           isPublic: true,
@@ -195,11 +195,15 @@ const upload = multer({
           name: true,
           identifier: true,
           ownerId: true,
-          permissions: true,
           language: true,
           isRoot: true,
           isPublic: true,
           docs_prosemirror_delta:true,
+          rootsProject:{
+            select:{
+              permissions:true
+            }
+              },
           translations: {
             select:{
               id:true,

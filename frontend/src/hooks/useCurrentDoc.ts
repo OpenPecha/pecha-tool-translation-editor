@@ -36,10 +36,12 @@ export const useCurrentDoc = (docId: string | undefined): UseCurrentDocReturn =>
     queryFn: async () => {
       if (!docId) return null;
       const doc=await fetchDocument(docId)
-      if (doc?.permissions && !EDITOR_READ_ONLY) {
-        doc?.permissions.find((permission) => {
+      if (doc?.rootsProject?.permissions && !EDITOR_READ_ONLY) {
+        doc?.rootsProject.permissions.find((permission) => {
           if (permission?.userId === currentUser?.id && permission?.canWrite) {
             setIsEditable(true);
+          }else{
+            setIsEditable(false);
           }
         });
       } 

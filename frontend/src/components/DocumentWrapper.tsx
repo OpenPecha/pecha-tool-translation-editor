@@ -25,7 +25,6 @@ function DocumentsWrapper() {
   const handleSelectTranslation = (translationId: string | null) => {
     setSelectedTranslationId(translationId);
   };
-
   return (
     <EditorProvider>
       {createPortal(
