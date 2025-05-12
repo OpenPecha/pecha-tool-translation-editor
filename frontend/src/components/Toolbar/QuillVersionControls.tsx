@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { useQuillVersion } from "../../contexts/VersionContext";
-import { Switch } from "../ui/switch";
 import { Button } from "../ui/button";
 import VersionList from "./VersionList";
 
-const QuillVersionControls = ({
+const VersionControls = ({
   openHistory,
   setShowVersionDiff,
 }: {
@@ -57,4 +56,4 @@ const QuillVersionControls = ({
   );
 };
 
-export default QuillVersionControls;
+export default VersionControls;

@@ -27,10 +27,8 @@ interface Version {
 }
 
 function VersionList({ handleViewAll }: { handleViewAll: () => void }) {
-  const { versions, loadVersions } = useQuillVersion();
-  useEffect(() => {
-    loadVersions();
-  }, []);
+  const { versions } = useQuillVersion();
+
   return (
     <>
       <div className="versions-list">

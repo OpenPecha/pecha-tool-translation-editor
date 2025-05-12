@@ -16,6 +16,7 @@ import {
 } from "../api/version";
 import Quill from "quill";
 import { User } from "@/auth/types";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const AUTOSAVE_INTERVAL = 900000; // 15min
 
@@ -71,33 +72,66 @@ export const QuillVersionProvider = ({
   docId = "default-doc",
   maxVersions = 50,
 }: QuillVersionProviderProps) => {
+  const queryClient = useQueryClient();
   const [quillInstance, setQuillInstance] = useState<Quill | null>(null);
-  const [versions, setVersions] = useState<Version[]>([]);
   const [currentVersionId, setCurrentVersionId] = useState<string | null>(null);
   const [autoSaveEnabled, setAutoSaveEnabled] = useState<boolean>(false);
   const [autoSaveInterval, setAutoSaveInterval] =
     useState<number>(AUTOSAVE_INTERVAL);
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  // Load versions from API
-  const loadVersions = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const data = await fetchVersions(docId);
-      setVersions(data);
-
-      if (data.length > 0) {
+  // Fetch versions using react-query
+  const {
+    data: versions = [],
+    isLoading,
+    refetch: refetchVersions,
+  } = useQuery({
+    queryKey: ["versions", docId],
+    queryFn: () => fetchVersions(docId),
+    onSuccess: (data) => {
+      if (data.length > 0 && !currentVersionId) {
         setCurrentVersionId(data[data.length - 1].id);
       }
-    } catch (error) {
-      console.error("Error fetching versions:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [docId]);
+    },
+  });
 
-  // Initialize - Load versions from API on mount
+  // Create version mutation
+  const createVersionMutation = useMutation({
+    mutationFn: ({ label, content }: { label: string; content: any }) =>
+      createVersion(docId, label, content),
+    onSuccess: (newVersion) => {
+      queryClient.setQueryData(
+        ["versions", docId],
+        (oldData: Version[] = []) => {
+          const updatedVersions = [...oldData, newVersion];
+          return updatedVersions.length > maxVersions
+            ? updatedVersions.slice(-maxVersions)
+            : updatedVersions;
+        }
+      );
+      queryClient.invalidateQueries({ queryKey: [`versions`, docId] });
+
+      setCurrentVersionId(newVersion.id);
+    },
+  });
+
+  // Delete version mutation
+  const deleteVersionMutation = useMutation({
+    mutationFn: (versionId: string) => deleteVersionAPI(versionId),
+    onSuccess: (_, versionId) => {
+      queryClient.setQueryData(["versions", docId], (oldData: Version[] = []) =>
+        oldData.filter((v) => v.id !== versionId)
+      );
+
+      if (versionId === currentVersionId && versions.length > 1) {
+        setCurrentVersionId(versions[versions.length - 2].id);
+      }
+    },
+  });
+
+  // Load versions from API
+  const loadVersions = useCallback(() => {
+    refetchVersions();
+  }, [refetchVersions]);
 
   // Register Quill instance
   const registerQuill = useCallback(
@@ -140,27 +174,18 @@ export const QuillVersionProvider = ({
       if (!quillInstance) return null;
 
       try {
-        const newVersion = await createVersion(
-          docId,
+        const content = quillInstance.getContents();
+        const newVersion = await createVersionMutation.mutateAsync({
           label,
-          quillInstance.getContents()
-        );
-
-        setVersions((prevVersions) => {
-          const updatedVersions = [...prevVersions, newVersion];
-          return updatedVersions.length > maxVersions
-            ? updatedVersions.slice(-maxVersions)
-            : updatedVersions;
+          content,
         });
-
-        setCurrentVersionId(newVersion.id);
         return newVersion;
       } catch (error) {
         console.error("Error saving version:", error);
         return null;
       }
     },
-    [quillInstance, docId, maxVersions]
+    [quillInstance, createVersionMutation]
   );
 
   // Load a specific version (API)
@@ -185,19 +210,12 @@ export const QuillVersionProvider = ({
   const deleteVersion = useCallback(
     async (versionId: string): Promise<void> => {
       try {
-        await deleteVersionAPI(versionId);
-        setVersions((prevVersions) =>
-          prevVersions.filter((v) => v.id !== versionId)
-        );
-
-        if (versionId === currentVersionId && versions.length > 1) {
-          setCurrentVersionId(versions[versions.length - 2].id);
-        }
+        await deleteVersionMutation.mutateAsync(versionId);
       } catch (error) {
         console.error("Error deleting version:", error);
       }
     },
-    [currentVersionId, versions]
+    [deleteVersionMutation]
   );
 
   // Create a named snapshot
