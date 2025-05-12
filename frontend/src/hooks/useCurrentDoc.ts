@@ -37,11 +37,9 @@ export const useCurrentDoc = (docId: string | undefined): UseCurrentDocReturn =>
       if (!docId) return null;
       const doc=await fetchDocument(docId)
       if (doc?.rootsProject?.permissions && !EDITOR_READ_ONLY) {
-        doc?.rootsProject.permissions.find((permission) => {
+        doc?.rootsProject.permissions.map((permission) => {
           if (permission?.userId === currentUser?.id && permission?.canWrite) {
             setIsEditable(true);
-          }else{
-            setIsEditable(false);
           }
         });
       } 

@@ -199,6 +199,7 @@ const upload = multer({
           isRoot: true,
           isPublic: true,
           docs_prosemirror_delta:true,
+          rootProjectId:true,
           rootsProject:{
             select:{
               permissions:true
@@ -295,8 +296,9 @@ const upload = multer({
         return res.status(404).json({ error: "Document not found" });
 
       if (document.ownerId !== req.user.id) {
+
         const permission = await prisma.permission.findFirst({
-          where: { docId: document.id, userId: req.user.id, canWrite: true },
+          where: { projectId: document.rootProjectId, userId: req.user.id, canWrite: true },
         });
         if (!permission)
           return res.status(403).json({ error: "No edit access" });
@@ -433,7 +435,7 @@ const upload = multer({
       if (document.ownerId !== req.user.id) {
         const permission = await prisma.permission.findFirst({
           where: {
-            docId: documentId,
+            projectId: document.rootProjectId,
             userId: req.user.id,
             canWrite: true,
           },
@@ -586,7 +588,8 @@ const upload = multer({
         where: { id: req.params.id },
         select:{ownerId:true,
           id:true,
-          docs_prosemirror_delta:true
+          docs_prosemirror_delta:true,
+          rootProjectId:true
         }
       });
       if (!document)
@@ -594,7 +597,7 @@ const upload = multer({
   
       if (document.ownerId !== req.user.id) {
         const permission = await prisma.permission.findFirst({
-          where: { docId: document.id, userId: req.user.id, canWrite: true },
+          where: { projectId: document.rootProjectId, userId: req.user.id, canWrite: true },
         });
         if (!permission)
           return res.status(403).json({ error: "No edit access" });

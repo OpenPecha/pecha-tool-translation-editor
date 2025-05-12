@@ -34,7 +34,6 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
     [key: string]: boolean;
   }>({});
   const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null);
-  console.log(quillEditors);
   const quill = getQuill(documentId);
   const generateList = useCallback(() => {
     return Array.from(
