@@ -46,7 +46,6 @@ function AppContent() {
 
   return (
     <div className="flex flex-col  ">
-      <MatomoTracker />
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
           <Route
