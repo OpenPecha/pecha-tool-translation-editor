@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import { useEditor } from "@/contexts/EditorContext";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { FaBookmark, FaChevronUp, FaChevronDown } from "react-icons/fa";
+import { createPortal } from "react-dom";
 
 const offsetTop = 0;
 
@@ -66,7 +67,7 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
         // Use scrollTo with smooth behavior instead of directly setting scrollTop
         editorContainer.scrollTo({
           top: targetTop,
-          behavior: 'smooth'
+          behavior: "smooth",
         });
       }
     }
@@ -94,7 +95,7 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
     setShowBookmarkPopup(false);
   };
 
-  const { getQuill } = useEditor();
+  const { getQuill, activeEditor } = useEditor();
   const quill = getQuill(documentId);
   const updateLineNumbers = useCallback(() => {
     if (!lineNumbersRef.current) return;
@@ -209,6 +210,11 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
           );
         }
       });
+      editorContainer.addEventListener("", () => {
+        debouncedUpdateLineNumbers();
+
+        // Update bookmark popup visibility on scroll
+      });
     }
 
     quill.on("text-change", function (delta, oldDelta, source) {
@@ -283,40 +289,46 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
       }
     }
   };
+  const isactive = activeEditor === documentId;
+
   return (
     <>
-      {bookmarks.length > 0 && (
-        <div className="fixed bottom-4 left-2 p-2 z-10 flex items-center gap-2">
-          {bookmarks.length > 1 && (
-            <button
-              onClick={handleScrollToPrevBookmark}
-              title="Previous bookmark"
-              className="bg-blue-500 text-white px-3 py-1 rounded-l hover:bg-blue-600"
-            >
-              <FaChevronUp />
-            </button>
-          )}
-          <button
-            onClick={scrollToBookmark.bind(
-              null,
-              bookmarks[currentBookmarkIndex]
+      {bookmarks.length > 0 &&
+        isactive &&
+        createPortal(
+          <div className="z-10 flex items-center  gap-2">
+            bookmark
+            {bookmarks.length > 1 && (
+              <button
+                onClick={handleScrollToPrevBookmark}
+                title="Previous bookmark"
+                className=" text-white rounded-l "
+              >
+                <FaChevronUp />
+              </button>
             )}
-            title="Go to current bookmark"
-            className="bg-blue-500 text-white px-3 py-1 hover:bg-blue-600"
-          >
-            <FaBookmark />
-          </button>
-          {bookmarks.length > 0 && (
             <button
-              onClick={handleScrollToNextBookmark}
-              title="Next bookmark"
-              className="bg-blue-500 text-white px-3 py-1 rounded-r hover:bg-blue-600"
+              onClick={scrollToBookmark.bind(
+                null,
+                bookmarks[currentBookmarkIndex]
+              )}
+              title="Go to current bookmark"
+              className=" text-white  "
             >
-              <FaChevronDown />
+              <FaBookmark />
             </button>
-          )}
-        </div>
-      )}
+            {bookmarks.length > 0 && (
+              <button
+                onClick={handleScrollToNextBookmark}
+                title="Next bookmark"
+                className=" text-white rounded-r "
+              >
+                <FaChevronDown />
+              </button>
+            )}
+          </div>,
+          document.getElementById("bookmark-options")!
+        )}
 
       <div
         ref={lineNumbersRef}

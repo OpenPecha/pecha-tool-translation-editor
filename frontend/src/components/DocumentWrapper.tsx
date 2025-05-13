@@ -25,25 +25,30 @@ function DocumentsWrapper() {
   const handleSelectTranslation = (translationId: string | null) => {
     setSelectedTranslationId(translationId);
   };
+  const project = {
+    id: currentDoc?.rootProjectId,
+    name: currentDoc?.rootsProject?.name,
+  };
   return (
     <EditorProvider>
       {createPortal(
-        <Navbar title={currentDoc?.name} />,
+        <Navbar title={currentDoc?.name} project={project} />,
         document.getElementById("navbar")!
       )}
-      {selectedTranslationId && (
-        <MenuDrawer rootId={id!} translationId={selectedTranslationId} />
-      )}
-      <div className="relative flex px-2 w-full max-h-[calc(100vh-88px)] overflow-hidden bg-white">
+      {selectedTranslationId &&
+        createPortal(
+          <MenuDrawer rootId={id!} translationId={selectedTranslationId} />,
+          document.getElementById("sync-option")!
+        )}
+      <div className="relative flex px-2 w-full h-[calc(100vh-100px)] overflow-hidden bg-white">
         <DocumentEditor docId={id} isEditable={isEditable} />
         {!selectedTranslationId ? (
           <SideMenu setSelectedTranslationId={handleSelectTranslation} />
         ) : (
-          <div className="flex-1 relative gap-2 flex items-center group">
+          <div className="relative w-full flex flex-1 group">
             <div className="relative h-full">
               {/* Vertical Line (hidden by default, shows on hover) */}
               <div className="absolute left-1/2 top-0 h-full w-px bg-gray-300 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-
               {/* Arrow (hidden by default, shows on hover) */}
               <button
                 className="absolute bg-white border z-[99] cursor-pointer rounded-full p-2 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2  text-gray-700 text-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"

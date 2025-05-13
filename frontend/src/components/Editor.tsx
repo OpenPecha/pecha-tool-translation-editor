@@ -205,40 +205,36 @@ const Editor = ({
         />,
         document.getElementById("toolbar-container")!
       )}
-      <div className="w-full  flex-1 h-full ">
-        <div className="relative h-full w-full flex ">
-          <TableOfContent documentId={documentId} />
-          <div className="editor-container w-full  h-full flex relative max-w-6xl mx-auto overflow-hidden ">
-            <LineNumberVirtualized
-              editorRef={editorRef}
-              documentId={documentId}
-            />
-            <div
-              ref={editorRef}
-              className={`editor-content flex-1 pb-3`}
-              style={{
-                fontFamily: "Monlam",
-                fontSize: "1rem",
-                lineHeight: 1.5,
-              }}
-            />
-            <CommentBubble documentId={documentId} />
-            {showCommentModal && (
-              <CommentModal
-                documentId={documentId}
-                setShowCommentModal={setShowCommentModal}
-                currentRange={currentRange}
-              />
-            )}
-          </div>
-          {/* <OverlayLoading isLoading={!isSynced} /> */}
+      <div className="relative w-full flex flex-1 ">
+        <TableOfContent documentId={documentId} />
+        <div className="editor-container w-full  h-full flex relative max-w-6xl mx-auto overflow-hidden ">
+          <LineNumberVirtualized
+            editorRef={editorRef}
+            documentId={documentId}
+          />
           <div
-            className="absolute bottom-2 right-2 bg-white rounded-lg shadow-md px-4 py-2 text-gray-600 text-sm border border-gray-200"
-            id={`${counterId}`}
-          >
-            0 characters
-          </div>
+            ref={editorRef}
+            className={`editor-content flex-1 pb-3 w-full`}
+            style={{
+              fontFamily: "Monlam",
+              fontSize: "1rem",
+              lineHeight: 1.5,
+            }}
+          />
+          {createPortal(
+            <div id={`${counterId}`}>0 characters</div>,
+            document.getElementById("counter")!
+          )}
+          <CommentBubble documentId={documentId} />
+          {showCommentModal && (
+            <CommentModal
+              documentId={documentId}
+              setShowCommentModal={setShowCommentModal}
+              currentRange={currentRange}
+            />
+          )}
         </div>
+        {/* <OverlayLoading isLoading={!isSynced} /> */}
       </div>
     </>
   );

@@ -281,7 +281,7 @@ const Toolbar = ({
         </span>
       </div>
       <div className="flex items-center gap-2 h-full">
-        <PublishButton quill={quill!} />
+        {/* <PublishButton quill={quill!} /> */}
         <div>
           {synced ? (
             "🟢"

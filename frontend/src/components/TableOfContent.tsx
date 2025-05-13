@@ -164,10 +164,23 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
   }, [quill, isOpen, generateList, updateActiveHeading]);
 
   const showSyncButton = quillEditors.size > 1;
+
+  const handleToggleTOC = () => {
+    setIsOpen(!isOpen);
+    const editorContainer = quill?.root;
+
+    // Add a small scroll offset to improve visibility of the current position
+    // this should trigger line update due to scroll change
+    if (editorContainer) {
+      const currentScrollTop = editorContainer.scrollTop;
+      editorContainer.scrollTop = currentScrollTop + 1;
+    }
+  };
+
   return (
     <>
       <Button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggleTOC}
         className={`top-3  p-3 z-2 ${isOpen ? "hidden" : ""}`}
         aria-label="Toggle Table of Contents"
         size="sm"

@@ -6,7 +6,6 @@ import Quill from "quill";
 import CommentBlot from "../quillExtension/commentBlot";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ScrollArea } from "../ui/scroll-area";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Comment } from "../Comment/CommentBubble";
 import AvatarWrapper from "../ui/custom-avatar";
 
@@ -116,19 +115,33 @@ function EachComment({ comment, deleteComment, quill }: EachCommentProps) {
     const span = quill.container.querySelector(
       `span[data-id="${threadId}"]`
     ) as HTMLElement;
+
     if (span) {
-      // Scroll the span into view
-      // span.scrollIntoView({ behavior: "smooth", block: "center" });
+      // Find the editor container
+      const editorContainer = quill.root.closest(".ql-editor");
+      if (editorContainer) {
+        // Calculate position for smooth scrolling
+        const containerRect = editorContainer.getBoundingClientRect();
+        const spanRect = span.getBoundingClientRect();
+        const relativeTop =
+          spanRect.top - containerRect.top + editorContainer.scrollTop;
 
-      // Highlight with yellow background temporarily
-      const originalBg = span.style.backgroundColor;
-      span.style.backgroundColor = "yellow";
-      span.style.transition = "background-color 0.5s ease";
+        // Scroll to the element
+        editorContainer.scrollTo({
+          top: relativeTop, // Position slightly above for context
+          behavior: "smooth",
+        });
 
-      // Reset background after 1 second
-      setTimeout(() => {
-        span.style.backgroundColor = originalBg;
-      }, 1000);
+        // // Highlight with yellow background temporarily
+        // const originalBg = span.style.backgroundColor;
+        // span.style.backgroundColor = "yellow";
+        // span.style.transition = "background-color 0.5s ease";
+
+        // // Reset background after 1 second
+        // setTimeout(() => {
+        //   span.style.backgroundColor = originalBg;
+        // }, 1000);
+      }
     }
   };
 

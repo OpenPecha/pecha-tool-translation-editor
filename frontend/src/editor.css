@@ -35,13 +35,12 @@
   }
   .ql-editor {
     min-height: 100% !important;
-    max-width: 900px !important;
     padding:0 !important;
     padding-inline: 16px !important;
     background-color: white;
     border: 0 !important;
     line-height: normal;
-    height: calc(100vh - 88px) !important;
+    padding-bottom: 100px !important;
   }
   .ql-editor::selection{
     background-color: rgba(66, 133, 244, 0.4)
@@ -74,7 +73,6 @@
     border-top-right-radius: 75px;
     border-bottom-right-radius: 75px;
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
-    z-index: 200 !important;
     max-width: 100dvw !important;
     margin:10px auto !important;
   }

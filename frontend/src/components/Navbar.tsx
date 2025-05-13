@@ -5,37 +5,32 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useAuth } from "../auth/use-auth-hook";
 import { Button } from "./ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { updateDocument } from "@/api/document";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuPortal,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import DocIcon from "@/assets/doc_icon.png";
 import AvatarWrapper from "./ui/custom-avatar";
-const Navbar = ({ title }: { title?: string }) => {
+import PermissionsModal from "./Dashboard/PermissionsModal";
+import { BiShare } from "react-icons/bi";
+import { PublishButton } from "./Toolbar/Publish";
+const Navbar = ({ title, project }: { title?: string; project: Project }) => {
   const { currentUser, logout, login, isAuthenticated } = useAuth();
-
+  const [showPermissionsModal, setShowPermissionsModal] = useState(false);
   const handleLogout = () => {
     logout();
   };
-
   const handleAuth0Login = () => {
     login(false);
+  };
+
+  const permissionsOpen = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowPermissionsModal(true);
   };
   return (
     <nav className="  px-6 pt-2 flex justify-between items-center">
       {/* Logo and Brand */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 items-center">
         <Link
           to="/"
           className="flex items-center gap-3 font-semibold text-gray-700 hover:text-gray-900 transition capitalize"
@@ -47,14 +42,14 @@ const Navbar = ({ title }: { title?: string }) => {
             className=" object-contain"
           />
         </Link>
-        <div className="flex flex-col w-fit -space-y-1">
+        <div className="flex flex-col w-fit  items-center -space-y-1">
           <TitleWrapper title={title!} />
-          <NavMenuList />
         </div>
       </div>
 
       {/* Navigation Menu */}
       <div className="flex items-center gap-4">
+        <NavMenuList permissionsOpen={permissionsOpen} />
         {isAuthenticated ? (
           <ProfileArea handleLogout={handleLogout} currentUser={currentUser} />
         ) : (
@@ -66,6 +61,13 @@ const Navbar = ({ title }: { title?: string }) => {
           </Button>
         )}
       </div>
+      {showPermissionsModal && (
+        <PermissionsModal
+          projectId={project.id}
+          projectName={project.name}
+          onClose={() => setShowPermissionsModal(false)}
+        />
+      )}
     </nav>
   );
 };
@@ -191,22 +193,23 @@ function TitleInput({ initialTitle }: { readonly initialTitle: string }) {
   );
 }
 
-export function NavMenuList() {
+export function NavMenuList({
+  permissionsOpen,
+}: {
+  readonly permissionsOpen: (e: React.MouseEvent) => void;
+}) {
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <span className="cursor-pointer hover:bg-gray-200  w-fit px-2 -translate-x-2 rounded-sm">
-          File
-        </span>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56 z-[99999]">
-        {/* <DropdownMenuLabel>File</DropdownMenuLabel> */}
-        {/* <DropdownMenuSeparator /> */}
-        <DropdownMenuGroup>
-          <DropdownMenuItem>Export</DropdownMenuItem>
-        </DropdownMenuGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div className="flex gap-3 font-google-sans">
+      <Button
+        onClick={permissionsOpen}
+        variant="outline"
+        className="flex items-center gap-1.5 text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200 rounded-full px-3 py-1 h-auto"
+        aria-label="Share document"
+      >
+        <BiShare className="text-blue-600" />
+        <span>Share</span>
+      </Button>
+    </div>
   );
 }
 

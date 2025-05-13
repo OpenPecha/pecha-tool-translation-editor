@@ -202,7 +202,8 @@ const upload = multer({
           rootProjectId:true,
           rootsProject:{
             select:{
-              permissions:true
+              permissions:true,
+              name:true
             }
               },
           translations: {

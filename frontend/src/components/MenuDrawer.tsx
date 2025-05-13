@@ -4,6 +4,7 @@ import { FaCog } from "react-icons/fa";
 import SyncOptions from "./SyncOptions";
 import useScrollHook from "@/hooks/useScrollHook";
 import { useEditor } from "@/contexts/EditorContext";
+import { BiSync } from "react-icons/bi";
 
 function MenuDrawer({
   rootId,
@@ -25,10 +26,11 @@ function MenuDrawer({
       {/* sync setting */}
       <button
         onClick={() => setIsDrawerOpen(true)}
-        className="fixed bottom-4 right-4 p-3 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 z-10"
         aria-label="Settings"
+        className="cursor-pointer flex gap-1 bg-gray-700 text-white px-2 items-center"
       >
-        <FaCog className="w-6 h-6" />
+        <BiSync />
+        Sync options
       </button>
 
       {/* Drawer */}

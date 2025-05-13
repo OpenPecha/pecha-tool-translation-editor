@@ -86,12 +86,6 @@ export default function EachProject({ project, view }: EachProjectProps) {
     setShowEditModal(true);
   };
 
-  const permissionsOpen = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setShowPermissionsModal(true);
-  };
-
   const documentCount =
     (project.roots?.length || 0) +
     (project.roots?.reduce(
@@ -127,7 +121,6 @@ export default function EachProject({ project, view }: EachProjectProps) {
           hasPermission={hasPermission}
           updateDocument={editOpen}
           deleteDocument={handleDelete}
-          managePermissions={permissionsOpen}
           view={view}
           status={project.status}
         />
@@ -138,14 +131,6 @@ export default function EachProject({ project, view }: EachProjectProps) {
           project={project}
           onClose={() => setShowEditModal(false)}
           onUpdate={(name, identifier) => handleUpdate(name, identifier)}
-        />
-      )}
-
-      {showPermissionsModal && (
-        <PermissionsModal
-          projectId={project.id}
-          projectName={project.name}
-          onClose={() => setShowPermissionsModal(false)}
         />
       )}
     </>
