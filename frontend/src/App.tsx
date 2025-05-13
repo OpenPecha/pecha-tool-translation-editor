@@ -8,6 +8,7 @@ import Callback from "./pages/Callback";
 import Login from "./pages/Login";
 import DocumentsWrapper from "./components/DocumentWrapper";
 import Navbar from "./components/Dashboard/Navbar";
+import MatomoTracker from "./components/matomoTracker";
 // Lazy loaded components
 const ProjectList = lazy(() => import("./components/Dashboard/ProjectList"));
 const QuillVersionProvider = lazy(() =>
@@ -45,6 +46,7 @@ function AppContent() {
 
   return (
     <div className="flex flex-col  ">
+      <MatomoTracker />
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
           <Route
