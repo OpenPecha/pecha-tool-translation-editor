@@ -364,3 +364,23 @@ export const searchUserByEmail = async (email: string) => {
     throw error;
   }
 };
+
+// Download all documents in a project as a zip file
+export const downloadProjectDocuments = async (projectId: string) => {
+  try {
+    const response = await fetch(`${server_url}/projects/${projectId}/download-zip`, {
+      headers: getHeaders(),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to download project documents: ${response.statusText}`);
+    }
+    
+    // Return the blob for direct download
+    const blob = await response.blob();
+    return blob;
+  } catch (error) {
+    console.error(`Error downloading project documents ${projectId}:`, error);
+    throw error;
+  }
+};

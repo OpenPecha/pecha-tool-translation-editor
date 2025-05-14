@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import EditModal from "./EditModal";
 import { useAuth } from "@/auth/use-auth-hook";
-import PermissionsModal from "./PermissionsModal";
+import PermissionsModal from "../PermissionsModal";
 
 import ProjectItem from "./ProjectItem";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

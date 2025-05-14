@@ -284,7 +284,7 @@ const Toc = React.memo(function Toc({
       // Call updateActiveHeading after scrolling to ensure UI is updated
       setTimeout(() => {
         updateActiveHeading();
-      }, 100);
+      }, 1000);
 
       if (quillEditors.size > 1 && synced) {
         requestAnimationFrame(() => {
@@ -426,10 +426,10 @@ const Toc = React.memo(function Toc({
                   )}
                 </button>
               )}
-              {!hasChildren && <div className="mr-2 w-5 h-5" />}
+              {/* {!hasChildren && <div className="mr-2 w-5 h-5" />} */}
               <span
                 className={cn(
-                  "text-left truncate flex-1 font-monlam text-xs pt-1",
+                  " truncate flex-1 font-monlam text-xs pt-1",
                   isNested ? "text-slate-700" : "font-medium text-slate-900",
                   isActive && "font-semibold"
                 )}

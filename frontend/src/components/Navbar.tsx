@@ -9,9 +9,14 @@ import { updateDocument } from "@/api/document";
 
 import DocIcon from "@/assets/doc_icon.png";
 import AvatarWrapper from "./ui/custom-avatar";
-import PermissionsModal from "./Dashboard/PermissionsModal";
+import PermissionsModal from "./PermissionsModal";
 import { BiShare } from "react-icons/bi";
-import { PublishButton } from "./Toolbar/Publish";
+
+type Project = {
+  id: string;
+  name: string;
+};
+
 const Navbar = ({ title, project }: { title?: string; project: Project }) => {
   const { currentUser, logout, login, isAuthenticated } = useAuth();
   const [showPermissionsModal, setShowPermissionsModal] = useState(false);

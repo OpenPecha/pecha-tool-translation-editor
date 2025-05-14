@@ -11,6 +11,8 @@ import {
 } from "@/api/project";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/auth/use-auth-hook";
+import Export from "./Export";
+import ExportButton from "./Export";
 
 interface User {
   id: string;
@@ -143,15 +145,13 @@ const PermissionsModal: React.FC<PermissionsModalProps> = ({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
         <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold">Share</h2>
+          <div className="text-lg font-semibold">Share </div>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
         </div>
 
         <div className="p-4">
-          <h3 className="text-md font-medium mb-2">{projectName}</h3>
-
           {/* Add user form */}
           <form onSubmit={handleAddUser} className="mb-6">
             <div className="space-y-4">
@@ -207,32 +207,32 @@ const PermissionsModal: React.FC<PermissionsModalProps> = ({
 
           {/* Users list */}
           <div className="space-y-2">
-            <h4 className="text-sm font-medium text-gray-500">Project Owner</h4>
-            {owner && (
-              <div className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
-                    {owner.username?.charAt(0).toUpperCase() || "U"}
-                  </div>
-                  <div>
-                    <div className="font-medium">
-                      {owner.id === currentUser?.id ? "Me" : owner.username}
-                    </div>
-                    <div className="text-xs text-gray-500">{owner.email}</div>
-                  </div>
-                </div>
-                <div className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-                  Owner
-                </div>
-              </div>
-            )}
-
             {permissions.filter((p) => p.userId !== currentUser?.id).length >
               0 && (
               <>
-                <h4 className="text-sm font-medium text-gray-500 mt-4">
+                <div className="text-sm font-medium text-gray-500 mt-4">
                   Collaborators
-                </h4>
+                </div>
+                {owner && (
+                  <div className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                        {owner.username?.charAt(0).toUpperCase() || "U"}
+                      </div>
+                      <div>
+                        <div className="font-medium">
+                          {owner.id === currentUser?.id ? "Me" : owner.username}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {owner.email}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                      Owner
+                    </div>
+                  </div>
+                )}
                 {permissions
                   .filter((p) => p.userId !== currentUser?.id)
                   .map((permission: ProjectPermission) => (
@@ -306,8 +306,8 @@ const PermissionsModal: React.FC<PermissionsModalProps> = ({
           </div>
         </div>
 
-        <div className="p-4 border-t flex justify-end">
-          <Button onClick={onClose}>Close</Button>
+        <div className="p-4 border-t flex justify-between">
+          <ExportButton projectId={projectId} projectName={projectName} />
         </div>
       </div>
     </div>

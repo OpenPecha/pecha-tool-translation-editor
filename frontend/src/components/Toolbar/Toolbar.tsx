@@ -275,13 +275,9 @@ const Toolbar = ({
             </div>,
             document.getElementById("diff-portal")
           )}
-
-        <span className="ql-formats" title="Export">
-          <ExportButton doc_id={documentId} />
-        </span>
       </div>
       <div className="flex items-center gap-2 h-full">
-        {/* <PublishButton quill={quill!} /> */}
+        <PublishButton quill={quill!} />
         <div>
           {synced ? (
             "🟢"
