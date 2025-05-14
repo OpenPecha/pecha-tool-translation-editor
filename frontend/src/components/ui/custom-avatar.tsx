@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 
 const AvatarWrapper = ({ imageUrl, name, size = 32 }) => {

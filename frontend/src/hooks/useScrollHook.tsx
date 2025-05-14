@@ -5,7 +5,9 @@ function useScrollHook(quill1: Quill, quill2: Quill) {
   const ignoreScrollEvents = useRef(false);
   const lastClickY = useRef<number | null>(null);
   const [syncMode, setSyncMode] = useState<"scroll" | "click" | "none">("none");
-  const [syncType, setSyncType] = useState<"heading" | "lineNumber">("heading");
+  const [syncType, setSyncType] = useState<"heading" | "lineNumber">(
+    "lineNumber"
+  );
 
   useEffect(() => {
     if (!quill1 || !quill2) return;
@@ -163,12 +165,16 @@ function useScrollHook(quill1: Quill, quill2: Quill) {
         // Calculate the scroll position to center the element in the viewport
         const targetRect = targetBlock.getBoundingClientRect();
         const targetEditorRect = targetEditor.getBoundingClientRect();
-        const scrollTop = targetBlock.offsetTop - targetEditor.offsetTop - (targetEditorRect.height / 2) + (targetRect.height / 2);
+        const scrollTop =
+          targetBlock.offsetTop -
+          targetEditor.offsetTop -
+          targetEditorRect.height / 2 +
+          targetRect.height / 2;
 
         // Use scrollTo instead of scrollIntoView to prevent the entire page from scrolling
         targetEditor.scrollTo({
           top: scrollTop,
-          behavior: "auto"
+          behavior: "auto",
         });
 
         setTimeout(() => {
@@ -191,19 +197,22 @@ function useScrollHook(quill1: Quill, quill2: Quill) {
       overlay.style.zIndex = "9999";
 
       // Find the parent editor element to scroll within it instead of scrolling the whole page
-  const targetEditor = targetElement.closest('.ql-editor');
-  if (targetEditor) {
-    // Calculate the scroll position to center the element in the viewport
-    const targetRect = targetElement.getBoundingClientRect();
-    const editorRect = targetEditor.getBoundingClientRect();
-    const scrollTop = targetElement.offsetTop - (editorRect.height / 2) + (targetRect.height / 2);
-    
-    // Use scrollTo instead of scrollIntoView to prevent the entire page from scrolling
-    targetEditor.scrollTo({
-      top: scrollTop,
-      behavior: "smooth"
-    });
-  }
+      const targetEditor = targetElement.closest(".ql-editor");
+      if (targetEditor) {
+        // Calculate the scroll position to center the element in the viewport
+        const targetRect = targetElement.getBoundingClientRect();
+        const editorRect = targetEditor.getBoundingClientRect();
+        const scrollTop =
+          targetElement.offsetTop -
+          editorRect.height / 2 +
+          targetRect.height / 2;
+
+        // Use scrollTo instead of scrollIntoView to prevent the entire page from scrolling
+        targetEditor.scrollTo({
+          top: scrollTop,
+          behavior: "smooth",
+        });
+      }
 
       // Position the overlay
       requestAnimationFrame(() => {

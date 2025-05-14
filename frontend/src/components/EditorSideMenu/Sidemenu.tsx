@@ -43,12 +43,6 @@ function SideMenu({
             <Comments />
           </InMenuWrapper>
         );
-      case "commentary":
-        return (
-          <InMenuWrapper onBackClick={reset}>
-            <div>Commentary Content</div>
-          </InMenuWrapper>
-        );
 
       default:
         return (
@@ -59,12 +53,7 @@ function SideMenu({
             >
               <Languages size={16} />
             </MenuButton>
-            <MenuButton
-              onClick={() => setCurrentView("commentary")}
-              title={"commentary"}
-            >
-              <BookOpen size={16} />
-            </MenuButton>
+
             <MenuButton
               onClick={() => setCurrentView("comments")}
               title="comments"
