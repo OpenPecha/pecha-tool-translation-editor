@@ -10,7 +10,7 @@ import { BoldIcon, ItalicIcon, RedoIcon, underlineIcon, UndoIcon } from "../Tool
 
 const customHeaders: any[] = [];
 export default function quill_import() {
-  Quill.register("modules/cursors", QuillCursors);
+  // Quill.register("modules/cursors", QuillCursors);
   const fonts = Quill.import("attributors/style/font");
   const Block = Quill.import("blots/block");
   Block.tagName = "p";

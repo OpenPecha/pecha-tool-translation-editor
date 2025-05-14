@@ -79,7 +79,8 @@ function CommentModal({
           "comment",
           {
             id: createdComment.threadId,
-          }
+          },
+          "user"
         );
 
         setShowCommentModal(false);

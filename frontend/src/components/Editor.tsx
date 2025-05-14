@@ -77,14 +77,14 @@ const Editor = ({
       const range = quill.getSelection();
       if (range) {
         const format = quill.getFormat(range);
-        quill.format(type, !format[type]);
+        quill.format(type, !format[type], "user");
       } else {
         // If no selection, create one at cursor position
         quill.focus();
         const newRange = quill.getSelection(true);
         if (newRange) {
           const format = quill.getFormat(newRange);
-          quill.format(type, !format[type]);
+          quill.format(type, !format[type], "user");
         }
       }
     }
@@ -103,13 +103,14 @@ const Editor = ({
             background: function (value: string) {
               const range = quill.getSelection();
               if (range) {
-                quill.format("background", value);
+                quill.format("background", value, "user");
               }
             },
             headerN: function (value: string | number | null) {
-              const range = quill.getSelection();
-              if (range) {
-                quill.format("h", value || false);
+              if (value === null) {
+                quill.format("headerN", false, "user");
+              } else {
+                quill.format("headerN", value, "user");
               }
             },
           },
@@ -141,6 +142,7 @@ const Editor = ({
     );
     // Fetch comments when the editor loads
     quill.on("text-change", function (delta, oldDelta, source) {
+      console.log(source);
       // Handle all changes, not just those with source='user'
       // This ensures formatting changes are also captured
       if (quill.getLength() <= 1 && source === "user") {
@@ -150,8 +152,10 @@ const Editor = ({
       if (isInitializingRef.current) {
         return;
       }
-      const currentContent = quill.getContents();
-      debouncedSave(currentContent);
+      if (source !== "api") {
+        const currentContent = quill.getContents();
+        debouncedSave(currentContent);
+      }
     });
     quill.on("selection-change", (range) => {
       if (!range) return;

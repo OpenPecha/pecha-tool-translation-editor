@@ -1,17 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
-import { FaHistory, FaObjectGroup } from "react-icons/fa";
+import { FaHistory } from "react-icons/fa";
 import QuillVersionControls from "./QuillVersionControls";
 import { useEditor } from "@/contexts/EditorContext";
 import HeaderDropdown from "../quillExtension/HeaderDropdown";
 import { EDITOR_READ_ONLY, MAX_HEADING_LEVEL } from "@/utils/editorConfig";
-import ExportButton from "./ExportButton";
 import { BiCommentAdd } from "react-icons/bi";
 import { Button } from "../ui/button";
 
-import { PublishButton } from "./Publish";
 import { createPortal } from "react-dom";
 import VersionDiff from "./VersionDiff";
-import Quill from "quill";
 const isEnabled = !EDITOR_READ_ONLY;
 interface ToolbarProps {
   addComment: () => void;
@@ -103,57 +100,16 @@ const Toolbar = ({
 
   const handleHeadingChange = (value: string | number) => {
     if (!quill) return;
-
     if (value === "") {
       // Clear all header formats (h1-h6)
       for (let i = 1; i <= MAX_HEADING_LEVEL; i++) {
-        quill.format(`h${i}`, false);
+        quill?.format(`h${i}`, false, "user");
       }
       // Set to paragraph
-      quill.format("h", false);
+      quill?.format("h", false, "user");
     } else {
-      quill.format(`h${value}`, true);
+      quill?.format(`h${value}`, true, "user");
     }
-  };
-
-  const handleSectionCreation = () => {
-    if (!quill) return;
-
-    const range = quill.getSelection();
-    if (!range) return;
-
-    const [start, end] = [range.index, range.index + range.length];
-    const Block = Quill.import("blots/block");
-
-    const blocks = quill.scroll.descendants(Block, start, end - start);
-
-    blocks.forEach((block) => {
-      const index = quill.getIndex(block);
-      const length = block.length();
-      const currentType = block.domNode.getAttribute("data-type");
-
-      if (currentType === "section") {
-        // Convert to normal paragraph (remove data-type)
-        quill.formatLine(
-          index,
-          length,
-          {
-            paragraph: { "data-type": null },
-          },
-          Quill.sources.USER
-        );
-      } else {
-        // Convert to section
-        quill.formatLine(
-          index,
-          length,
-          {
-            paragraph: { "data-type": "section" },
-          },
-          Quill.sources.USER
-        );
-      }
-    });
   };
 
   const showToolbar = activeEditor === documentId;
