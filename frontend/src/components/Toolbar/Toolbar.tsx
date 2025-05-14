@@ -170,7 +170,7 @@ const Toolbar = ({
         margin: "0 auto",
       }}
     >
-      <div className="flex items-center gap-4 flex-1 h-full">
+      <div className="flex items-center flex-1 h-full">
         <span className="ql-formats" style={isEnabledStyle}>
           <button
             className="ql-undo"
@@ -227,13 +227,13 @@ const Toolbar = ({
           <option value="#add8e6">Light Blue</option>
         </select>
         <span className="ql-formats" title="Section" style={isEnabledStyle}>
-          <ToolbarButton
+          {/* <ToolbarButton
             onClick={handleSectionCreation}
             title="Section"
             className=""
           >
             <FaObjectGroup />
-          </ToolbarButton>
+          </ToolbarButton> */}
 
           <ToolbarButton
             onClick={() => addComment()}

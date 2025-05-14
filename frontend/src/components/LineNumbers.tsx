@@ -103,8 +103,9 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
     const editorElement = editorRef?.current?.querySelector(".ql-editor");
     if (!editorElement) return;
 
-    const paragraphs = editorElement.getElementsByTagName("p");
-    if (!paragraphs.length) return;
+    // const paragraphs = editorElement.getElementsByTagName("p");
+    const childs = editorElement.children;
+    if (!childs.length) return;
 
     const newLineNumbers: Array<{
       number: number;
@@ -138,13 +139,13 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
       isGrouping = false;
     };
 
-    Array.from(paragraphs).forEach((paragraph, index) => {
-      const trimmedText = paragraph.textContent?.trim();
+    Array.from(childs).forEach((child, index) => {
+      const trimmedText = child.textContent?.trim();
       if (!trimmedText) return;
-      const currentType = paragraph.getAttribute("data-type");
+      const currentType = child.getAttribute("data-type");
 
       const range = document.createRange();
-      range.selectNodeContents(paragraph);
+      range.selectNodeContents(child);
       const rects = Array.from(range.getClientRects());
       if (rects.length === 0) return;
 
