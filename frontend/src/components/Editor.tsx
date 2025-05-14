@@ -100,7 +100,7 @@ const Editor = ({
             bold: () => handleFormatChange("bold"),
             italic: () => handleFormatChange("italic"),
             underline: () => handleFormatChange("underline"),
-            background: function(value: string) {
+            background: function (value: string) {
               const range = quill.getSelection();
               if (range) {
                 quill.format("background", value);
