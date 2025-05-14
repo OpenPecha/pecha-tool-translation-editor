@@ -32,7 +32,7 @@ function SelectLanguage({
 
   return (
     <div className="flex gap-2 flex-col mb-2">
-      <Label>Root Text Language:</Label>
+      <Label>Language:</Label>
       <select
         className=" p-2 border rounded"
         onChange={handleChange}

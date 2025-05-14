@@ -156,9 +156,6 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
                 <DropdownMenuItem onClick={updateDocument}>
                   Update
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={managePermissions}>
-                  Manage Permissions
-                </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={deleteDocument}
                   className="text-red-500"

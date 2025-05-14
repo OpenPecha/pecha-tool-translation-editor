@@ -32,7 +32,6 @@ const Editor = ({
   const { registerQuill } = useQuillVersion();
   const { registerQuill: registerQuill2, unregisterQuill: unregisterQuill2 } =
     useEditor();
-  const isInitializingRef = useRef(true);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const quillRef = useRef<Quill | null>(null);
   const queryClient = useQueryClient();
@@ -142,18 +141,8 @@ const Editor = ({
     );
     // Fetch comments when the editor loads
     quill.on("text-change", function (delta, oldDelta, source) {
-      console.log(source);
-      // Handle all changes, not just those with source='user'
-      // This ensures formatting changes are also captured
-      if (quill.getLength() <= 1 && source === "user") {
-        quill.setContents(oldDelta);
-        return;
-      }
-      if (isInitializingRef.current) {
-        return;
-      }
-      if (source !== "api") {
-        const currentContent = quill.getContents();
+      if (source === "user") {
+        const currentContent = quill.getLength() > 1 ? quill.getContents() : "";
         debouncedSave(currentContent);
       }
     });
@@ -190,7 +179,6 @@ const Editor = ({
       currentDoc?.docs_prosemirror_delta
     ) {
       quillRef.current.setContents(currentDoc.docs_prosemirror_delta);
-      isInitializingRef.current = false; // ✅ Reset the flag here
     }
     return () => {
       if (saveTimeoutRef.current) {
