@@ -23,7 +23,7 @@ export default function quill_import() {
       if (options.unit === "word") {
         container.innerText = text.split(/\s+/).length + " words";
       } else {
-        container.innerText = text.length + " characters";
+        container.innerText = text.length + " Characters";
       }
     });
   });

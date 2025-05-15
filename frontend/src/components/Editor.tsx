@@ -220,7 +220,7 @@ const Editor = ({
             }}
           />
           {createPortal(
-            <div id={`${counterId}`}>0 characters</div>,
+            <div id={`${counterId}`}>0 Characters</div>,
             document.getElementById("counter")!
           )}
           <CommentBubble documentId={documentId} />

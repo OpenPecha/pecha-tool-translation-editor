@@ -298,7 +298,7 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
         isactive &&
         createPortal(
           <div className="z-10 flex items-center  gap-2">
-            bookmark
+            Bookmark
             {bookmarks.length > 1 && (
               <button
                 onClick={handleScrollToPrevBookmark}
