@@ -19,7 +19,22 @@ const upload = multer({
   },
 });
 
-  // Create a new document
+  /**
+   * POST /documents
+   * @summary Create a new document
+   * @tags Documents - Document management operations
+   * @security BearerAuth
+   * @param {object} request.body.required - Document information
+   * @param {string} request.body.identifier - Unique identifier for the document
+   * @param {string} request.body.name - Name of the document
+   * @param {string} request.body.language - Language of the document
+   * @param {boolean} request.body.isRoot - Whether this is a root document
+   * @param {string} request.body.rootId - ID of the root document (if not a root document)
+   * @param {file} request.file - Text file to upload (optional)
+   * @return {object} 201 - Created document
+   * @return {object} 400 - Bad request
+   * @return {object} 500 - Server error
+   */
   router.post("/", authenticate, upload.single("file"), async (req, res) => {
 
     try {
@@ -83,25 +98,50 @@ const upload = multer({
     }
   });
 
-  // Get all documents for the user
-  // Get all documents for the user
+  /**
+   * GET /documents
+   * @summary Get all documents for the authenticated user
+   * @tags Documents - Document management operations
+   * @security BearerAuth
+   * @param {string} search.query - Optional search term to filter documents
+   * @param {boolean} isRoot.query - Optional filter for root documents only
+   * @param {boolean} public.query - Optional filter for public documents
+   * @return {array<object>} 200 - List of documents
+   * @return {object} 500 - Server error
+   */
   router.get("/", authenticate, async (req, res) => {
     try {
-      const { search, isRoot } = req.query;
+      const { search, isRoot, public: isPublic } = req.query;
       
-      let whereCondition = {
-        OR: [
-          { ownerId: req.user.id },
-          { permissions: { some: { userId: req.user.id, canRead: true } } },
-        ],
-      };
+      let whereCondition = {};
+      
+      // Filter for public documents not owned by user
+      if (isPublic === 'true') {
+        whereCondition = {
+          AND: [{ ownerId: { not: req.user.id } }, { isPublic: true }]
+        };
+      } else {
+        // Default filter for user's documents
+        whereCondition = {
+          OR: [
+            { ownerId: req.user.id },
+            { permissions: { some: { userId: req.user.id, canRead: true } } },
+          ],
+        };
+      }
       
       // Add search filter if provided
       if (search) {
-        whereCondition.OR = whereCondition.OR.map(condition => ({
-          ...condition,
-          identifier: { contains: search, mode: 'insensitive' }
-        }));
+        if (whereCondition.AND) {
+          // For public documents
+          whereCondition.AND.push({ identifier: { contains: search, mode: 'insensitive' } });
+        } else {
+          // For user's documents
+          whereCondition.OR = whereCondition.OR.map(condition => ({
+            ...condition,
+            identifier: { contains: search, mode: 'insensitive' }
+          }));
+        }
       }
       
       // Filter by isRoot if provided
@@ -119,7 +159,6 @@ const upload = multer({
           name: true,
           identifier: true,
           ownerId: true,
-         
           language: true,
           isRoot: true,
           isPublic: true,
@@ -135,7 +174,7 @@ const upload = multer({
           updatedAt: true,
           root: {
             select: {
-              name:true,
+              name: true,
             },
           },
           rootId: true,
@@ -150,42 +189,17 @@ const upload = multer({
       res.status(500).json({ error: "Error fetching documents" });
     }
   });
-
-  router.get("/public", authenticate, async (req, res) => {
-    try {
-      const documents = await prisma.doc.findMany({
-        where: {
-          AND: [{ ownerId: { not: req.user.id } }, { isPublic: true }],
-        },
-        select: {
-          id: true,
-          name: true,
-          identifier: true,
-          ownerId: true,
-          permissions: true,
-          language: true,
-          isRoot: true,
-          isPublic: true,
-          translations: true,
-          updatedAt: true,
-          root: {
-            select: {
-              name: true,
-            },
-          },
-          rootId: true,
-        },
-        orderBy: {
-          isRoot: "desc",
-        },
-      });
-      res.json(documents);
-    } catch (error) {
-      res.status(500).json({ error: "Error fetching documents" });
-    }
-  });
-  // Get a specific document
-  // Get a specific document and return its content
+  /**
+   * GET /documents/{id}
+   * @summary Get a specific document by ID
+   * @tags Documents - Document management operations
+   * @security BearerAuth
+   * @param {string} id.path.required - Document ID
+   * @return {object} 200 - Document details
+   * @return {object} 403 - Forbidden - No access
+   * @return {object} 404 - Document not found
+   * @return {object} 500 - Server error
+   */
   router.get("/:id", authenticate, async (req, res) => {
     try {
       const document = await prisma.doc.findUnique({
@@ -245,6 +259,17 @@ const upload = multer({
     }
   });
 
+  /**
+   * GET /documents/{id}/content
+   * @summary Get a document's content by ID
+   * @tags Documents - Document management operations
+   * @security BearerAuth
+   * @param {string} id.path.required - Document ID
+   * @return {object} 200 - Document with content
+   * @return {object} 403 - Forbidden - No access
+   * @return {object} 404 - Document not found
+   * @return {object} 500 - Server error
+   */
   router.get("/:id/content", authenticate, async (req, res) => {
     try {
       const document = await prisma.doc.findUnique({
@@ -287,7 +312,20 @@ const upload = multer({
     }
   });
 
-  // Update a document
+  /**
+   * PUT /documents/{id}
+   * @summary Update a document
+   * @tags Documents - Document management operations
+   * @security BearerAuth
+   * @param {string} id.path.required - Document ID
+   * @param {object} request.body.required - Document update data
+   * @param {object} request.body.docs_prosemirror_delta - ProseMirror delta
+   * @param {object} request.body.docs_y_doc_state - Y.js document state
+   * @return {object} 200 - Updated document
+   * @return {object} 403 - Forbidden - No edit access
+   * @return {object} 404 - Document not found
+   * @return {object} 500 - Server error
+   */
   router.put("/:id", authenticate, async (req, res) => {
     const { docs_prosemirror_delta, docs_y_doc_state } = req.body;
     try {
@@ -316,7 +354,17 @@ const upload = multer({
       res.status(500).json({ error: "Error updating document" });
     }
   });
-  // delete a document
+  /**
+   * DELETE /documents/{id}
+   * @summary Delete a document
+   * @tags Documents - Document management operations
+   * @security BearerAuth
+   * @param {string} id.path.required - Document ID
+   * @return {object} 200 - Success message
+   * @return {object} 403 - Forbidden - No delete access
+   * @return {object} 404 - Document not found
+   * @return {object} 500 - Server error
+   */
   router.delete("/:id", authenticate, async (req, res) => {
     try {
       const document = await prisma.doc.findUnique({
@@ -364,6 +412,21 @@ const upload = multer({
     }
   });
 
+  /**
+   * POST /documents/{id}/permissions
+   * @summary Add or update permissions for a user on a document
+   * @tags Documents - Document management operations
+   * @security BearerAuth
+   * @param {string} id.path.required - Document ID
+   * @param {object} request.body.required - Permission data
+   * @param {string} request.body.email - User email
+   * @param {boolean} request.body.canRead - Whether user can read the document
+   * @param {boolean} request.body.canWrite - Whether user can write to the document
+   * @return {object} 200 - Updated permission
+   * @return {object} 403 - Forbidden - Not document owner
+   * @return {object} 404 - User or document not found
+   * @return {object} 500 - Server error
+   */
   router.post("/:id/permissions", authenticate, async (req, res) => {
     let { email, canRead, canWrite } = req.body;
     const documentId = req.params.id;
@@ -607,6 +670,19 @@ const upload = multer({
   });
 
   // Update document content
+  /**
+   * PATCH /documents/{id}/content
+   * @summary Update document content
+   * @tags Documents - Document management operations
+   * @security BearerAuth
+   * @param {string} id.path.required - Document ID
+   * @param {object} request.body.required - Content update data
+   * @param {object} request.body.docs_prosemirror_delta - ProseMirror delta
+   * @return {object} 200 - Success response with updated document
+   * @return {object} 403 - Forbidden - No edit access
+   * @return {object} 404 - Document not found
+   * @return {object} 500 - Server error
+   */
   router.patch("/:id/content", authenticate, async (req, res) => {
     const { docs_prosemirror_delta } = req.body;
     try {

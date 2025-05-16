@@ -489,7 +489,7 @@ router.delete("/:id", authenticate, async (req, res) => {
 
 
 // Download all documents in a project as a zip file
-router.get("/:id/download-zip", authenticate, async (req, res) => {
+router.get("/:id/export", authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     

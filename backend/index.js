@@ -16,6 +16,52 @@ const pechaRoutes = require("./routes/pecha");
 const textsRoutes = require("./routes/texts");
 const userRoutes = require("./routes/user");
 const projectRoutes= require("./routes/project");
+
+const options = {
+  info: {
+    version: '1.0.0',
+    title: 'Pecha Translation Editor API',
+    description: 'API for the Pecha Translation Editor application',
+    license: {
+      name: 'MIT',
+    },
+  },
+  security: {
+    BearerAuth: {
+      type: 'http',
+      scheme: 'bearer',
+      bearerFormat: 'JWT'
+    },
+  },
+  // Base directory which we use to locate your JSDOC files
+  baseDir: __dirname,
+  // Glob pattern to find your jsdoc files (multiple patterns can be added in an array)
+  filesPattern: './**/*.js',
+  // URL where SwaggerUI will be rendered
+  swaggerUIPath: '/docs',
+  // Expose OpenAPI UI
+  exposeSwaggerUI: true,
+  // Expose Open API JSON Docs documentation in `apiDocsPath` path.
+  exposeApiDocs: true,
+  // Open API JSON Docs endpoint.
+  apiDocsPath: '/api-docs.json',
+  // Set non-required fields as nullable by default
+  notRequiredAsNullable: false,
+  // You can customize your UI options.
+  swaggerUiOptions: {
+    explorer: true,
+    docExpansion: 'list',
+    filter: true
+  },
+  // multiple option in case you want more that one instance
+  multiple: false,
+  // Exclude routes that don't have explicit documentation
+  ignorePaths: ['/'],
+};
+
+
+const expressJSDocSwagger = require('express-jsdoc-swagger');
+
 // const { auth0VerifyToken } = require("./middleware/authenticate");
 // const prisma = new PrismaClient();
 const app = express();
@@ -29,6 +75,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 }));
 
+expressJSDocSwagger(app)(options);
 
 const server = http.createServer(app);
 // const pingTimeout = 30000

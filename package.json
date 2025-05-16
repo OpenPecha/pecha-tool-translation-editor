@@ -1,1 +1,1 @@
-{"scripts":{"predev":"npx cross-port-killer 3000 8000","dev":"concurrently \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\""},"devDependencies":{"concurrently":"^9.1.2","cross-port-killer":"^1.4.0","npm-run-all":"^4.1.5"}}
+{"scripts":{"predev":"npx cross-port-killer 3000 8000","dev":"concurrently \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\""},"devDependencies":{"concurrently":"^9.1.2","cross-port-killer":"^1.4.0","npm-run-all":"^4.1.5"},"dependencies":{"express-jsdoc-swagger":"^1.8.0"}}

@@ -8,9 +8,13 @@ const prisma = new PrismaClient();
 const SECRET_KEY = process.env.SECRET_KEY || "super-secret-key";
 
 /**
- * @route   GET /users/me
- * @desc    Get current user profile
- * @access  Private
+ * GET /users/me
+ * @summary Get current user profile
+ * @tags Users - User management operations
+ * @security BearerAuth
+ * @return {object} 200 - User profile information
+ * @return {object} 404 - User not found
+ * @return {object} 500 - Server error
  */
 router.get("/me", authenticate, async (req, res) => {
   try {
@@ -40,9 +44,16 @@ router.get("/me", authenticate, async (req, res) => {
 });
 
 /**
- * @route   POST /users
- * @desc    Create or update user from OAuth login
- * @access  Public
+ * POST /users
+ * @summary Create or update user from OAuth login
+ * @tags Users - User management operations
+ * @param {object} request.body.required - User information
+ * @param {string} request.body.username - Username
+ * @param {string} request.body.email.required - User email
+ * @param {string} request.body.picture - Profile picture URL
+ * @return {object} 200 - User created/updated with JWT token
+ * @return {object} 400 - Bad request - Email is required
+ * @return {object} 500 - Server error
  */
 router.post("/", async (req, res) => {
   try {
@@ -105,9 +116,15 @@ router.post("/", async (req, res) => {
 });
 
 /**
- * @route   GET /users/search
- * @desc    Search for users by email
- * @access  Private
+ * GET /users/search
+ * @summary Search for users by email
+ * @tags Users - User management operations
+ * @security BearerAuth
+ * @param {string} email.query.required - Email to search for
+ * @return {object} 200 - User found
+ * @return {object} 400 - Bad request - Email is required
+ * @return {object} 404 - User not found
+ * @return {object} 500 - Server error
  */
 router.get("/search", authenticate, async (req, res) => {
   try {
@@ -142,9 +159,13 @@ router.get("/search", authenticate, async (req, res) => {
 });
 
 /**
- * @route   GET /users/:id
- * @desc    Get user by ID
- * @access  Public
+ * GET /users/{id}
+ * @summary Get user by ID
+ * @tags Users - User management operations
+ * @param {string} id.path.required - User ID
+ * @return {object} 200 - User profile
+ * @return {object} 404 - User not found
+ * @return {object} 500 - Server error
  */
 router.get("/:id", async (req, res) => {
   try {
@@ -175,9 +196,15 @@ router.get("/:id", async (req, res) => {
 });
 
 /**
- * @route   PUT /users/me
- * @desc    Update current user profile
- * @access  Private
+ * PUT /users/me
+ * @summary Update current user profile
+ * @tags Users - User management operations
+ * @security BearerAuth
+ * @param {object} request.body.required - User profile update
+ * @param {string} request.body.username - New username
+ * @param {string} request.body.picture - New profile picture URL
+ * @return {object} 200 - Updated user profile
+ * @return {object} 500 - Server error
  */
 router.put("/me", authenticate, async (req, res) => {
   try {
@@ -208,7 +235,14 @@ router.put("/me", authenticate, async (req, res) => {
   }
 });
 
-// Get all translations for a root text
+/**
+ * GET /users/translations/{rootId}
+ * @summary Get all translations for a root text
+ * @tags Users - User management operations
+ * @param {string} rootId.path.required - Root document ID
+ * @return {object} 200 - List of translations
+ * @return {object} 500 - Server error
+ */
 router.get("/translations/:rootId", async (req, res) => {
   try {
     const { rootId } = req.params;
@@ -239,7 +273,15 @@ router.get("/translations/:rootId", async (req, res) => {
 
 
 
-// Get diff between current and previous version
+/**
+ * GET /users/version-diff/{versionId}
+ * @summary Get diff between current and previous version
+ * @tags Users - User management operations
+ * @param {string} versionId.path.required - Version ID
+ * @return {object} 200 - Diff between versions
+ * @return {object} 404 - Version not found
+ * @return {object} 500 - Server error
+ */
 router.get("/version-diff/:versionId", async (req, res) => {
   const { versionId } = req.params;
 
@@ -283,6 +325,7 @@ router.get("/version-diff/:versionId", async (req, res) => {
       diffs,
     });
   } catch (err) {
+    console.error("Error getting version diff:", err);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 });

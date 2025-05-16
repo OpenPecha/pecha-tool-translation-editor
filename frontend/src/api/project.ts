@@ -368,7 +368,7 @@ export const searchUserByEmail = async (email: string) => {
 // Download all documents in a project as a zip file
 export const downloadProjectDocuments = async (projectId: string) => {
   try {
-    const response = await fetch(`${server_url}/projects/${projectId}/download-zip`, {
+    const response = await fetch(`${server_url}/projects/${projectId}/export`, {
       headers: getHeaders(),
     });
     
