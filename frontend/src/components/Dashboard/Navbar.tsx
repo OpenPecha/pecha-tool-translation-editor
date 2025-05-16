@@ -1,33 +1,17 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import SearchInput from "./SearchInput";
 import { Menu } from "lucide-react";
-import { useEffect, useState } from "react";
+import { memo, useState } from "react";
 import NavSidebar from "./NavSidebar";
 import { User } from "@auth0/auth0-react";
 import { useAuth } from "@/auth/use-auth-hook";
 import AppLauncher from "../Applauncher";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import DocIcon from "@/assets/doc_icon.png";
-import { useMatomo } from "@datapunt/matomo-tracker-react";
-const Navbar = ({ title }: { title?: string }) => {
+const Navbar = () => {
   const { currentUser, logout, login, isAuthenticated } = useAuth();
-  const { trackPageView, trackEvent, pushInstruction } = useMatomo();
-
-  useEffect(() => {
-    trackPageView({
-      documentTitle: "Home page", // optional
-      href: "https://translations.pecha.tools", // optional
-      customDimensions: [
-        {
-          id: 1,
-          value: "loggedIn",
-        },
-      ], // optional
-    });
-    pushInstruction("setUserId", currentUser?.id);
-  }, []);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const handleLogout = () => {
@@ -68,8 +52,7 @@ const Navbar = ({ title }: { title?: string }) => {
           />
         </Link>
       </div>
-
-      {!title && <SearchInput trackEvent={trackEvent} />}
+      <SearchInput />
       {/* Navigation Menu */}
       <div className="flex items-center gap-4">
         <AppLauncher />
@@ -88,43 +71,47 @@ const Navbar = ({ title }: { title?: string }) => {
   );
 };
 
-function ProfileArea({
-  handleLogout,
-  currentUser,
-}: {
-  readonly handleLogout: () => void;
-  readonly currentUser: User | null;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
+const ProfileArea = memo(
+  ({
+    handleLogout,
+    currentUser,
+  }: {
+    readonly handleLogout: () => void;
+    readonly currentUser: User | null;
+  }) => {
+    const [isOpen, setIsOpen] = useState(false);
 
-  const onLogout = () => {
-    handleLogout();
-    setIsOpen(false);
-  };
+    const onLogout = () => {
+      handleLogout();
+      setIsOpen(false);
+    };
 
-  return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
-        <Avatar>
-          <AvatarImage src={currentUser?.picture} />
-          <AvatarFallback style={{ backgroundColor: "#f59e0b", color: "#fff" }}>
-            {currentUser?.name?.slice(0, 2)}
-          </AvatarFallback>
-        </Avatar>
-      </PopoverTrigger>
-      <PopoverContent align="end">
-        <span className="p-3 capitalize font-medium text-gray-900">
-          {currentUser?.name}
-        </span>
-        <button
-          onClick={onLogout}
-          className="block w-full text-left px-4 py-2 text-sm  hover:bg-gray-100"
-        >
-          Logout
-        </button>
-      </PopoverContent>
-    </Popover>
-  );
-}
+    return (
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <PopoverTrigger asChild>
+          <Avatar>
+            <AvatarImage src={currentUser?.picture} />
+            <AvatarFallback
+              style={{ backgroundColor: "#f59e0b", color: "#fff" }}
+            >
+              {currentUser?.name?.slice(0, 2)}
+            </AvatarFallback>
+          </Avatar>
+        </PopoverTrigger>
+        <PopoverContent align="end">
+          <span className="p-3 capitalize font-medium text-gray-900">
+            {currentUser?.name}
+          </span>
+          <button
+            onClick={onLogout}
+            className="block w-full text-left px-4 py-2 text-sm  hover:bg-gray-100"
+          >
+            Logout
+          </button>
+        </PopoverContent>
+      </Popover>
+    );
+  }
+);
 
 export default Navbar;

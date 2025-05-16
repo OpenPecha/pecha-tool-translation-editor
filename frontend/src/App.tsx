@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import DocumentsWrapper from "./components/DocumentWrapper";
 import Navbar from "./components/Dashboard/Navbar";
 import { MatomoProvider, createInstance } from "@datapunt/matomo-tracker-react";
+import RouteTracker from "./components/RouteTracker";
 
 // Lazy loaded components
 const ProjectList = lazy(() => import("./components/Dashboard/ProjectList"));
@@ -66,9 +67,9 @@ function LoadingFallback() {
 
 function AppContent() {
   const { isAuthenticated } = useAuth();
-
   return (
     <div className="flex flex-col  ">
+      <RouteTracker />
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
           <Route

@@ -51,13 +51,34 @@ To get started with the toolkit, we recommend following this documentation.
 
 Make sure you have **Node.js** installed (version 14.18+, 16+ recommended):
 
-### 2. Backend Setup
+### 2. Environment Setup
+
+Before running the application, set up environment variables:
+
+1. **Backend Environment**
+
+   ```bash
+   cd backend
+   cp .env.example .env
+   # Edit .env with your configuration values
+   ```
+
+2. **Frontend Environment**
+   ```bash
+   cd frontend
+   cp .env.example .env
+   # Edit .env with your configuration values
+   ```
+
+Make sure to configure all required variables in both `.env` files before proceeding.
+
+### 3. Backend Setup
 
 1. cd backend
 2. npm install
 3. npm run dev
 
-### 3. Frontend Setup
+### 4. Frontend Setup
 
 1. cd frontend
 2. npm install
