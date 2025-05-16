@@ -68,7 +68,7 @@ function LoadingFallback() {
 function AppContent() {
   const { isAuthenticated } = useAuth();
   return (
-    <div className="flex flex-col  ">
+    <div className="flex flex-col h-full ">
       <RouteTracker />
       <Suspense fallback={<LoadingFallback />}>
         <Routes>

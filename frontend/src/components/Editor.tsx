@@ -205,7 +205,7 @@ const Editor = ({
       )}
       <div className="relative w-full flex flex-1 ">
         <TableOfContent documentId={documentId} />
-        <div className="editor-container w-full  h-full flex relative max-w-6xl mx-auto overflow-hidden ">
+        <div className="editor-container w-full flex flex-1  relative max-w-6xl mx-auto  ">
           <LineNumberVirtualized
             editorRef={editorRef}
             documentId={documentId}

@@ -73,7 +73,6 @@ function SideMenu({
 
   return (
     <div
-      className=" h-[calc(100vh-88px)] "
       style={{
         width: currentView === "main" ? "" : "calc(var(--spacing) * 84)",
       }}

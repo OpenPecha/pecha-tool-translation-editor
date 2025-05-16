@@ -1,31 +1,30 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/icon/icon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
-    <title>Pecha Editor</title>
 
-   
-  </head>
-  <body>
-    <div id="navbar"></div>
-    <div id="toolbar-container"></div>
-    <div id="root"></div>
- 
-    <div class="fixed bottom-0 left-0 w-full pl-2 flex justify-between bg-[#e3e6ef] text-[#797c87] z-[50]">
-<div id="bookmark-options" class="flex gap-2"></div>
-<div class="flex gap-3">
-  <div id="counter" class="flex gap-3">
-  </div>
-  <div id="sync-option" class="z-[999]"></div>
-</div>
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/icon/icon.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Pecha Editor</title>
+
+
+</head>
+
+<body class="h-screen flex flex-col " >
+  <div id="navbar"></div>
+  <div id="toolbar-container"></div>
+  <div id="root" class="flex-1 flex flex-col overflow-hidden"></div>
+  <div class="w-full pl-2 flex justify-between bg-[#e3e6ef] text-[#797c87] z-[50]">
+    <div id="bookmark-options" class="flex gap-2"></div>
+    <div class="flex gap-3">
+      <div id="counter" class="flex gap-3">
+      </div>
+      <div id="sync-option" class="z-[999]"></div>
     </div>
-    <div id="diff-portal" style="position: relative; z-index: 999999"></div>
+  </div>
+  <div id="diff-portal" style="position: relative; z-index: 999999"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
 
-    <script type="module" src="/src/main.tsx"></script>
-    
-   
-  </body>
 </html>
