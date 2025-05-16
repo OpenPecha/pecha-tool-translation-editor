@@ -3,15 +3,32 @@ import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import SearchInput from "./SearchInput";
 import { Menu } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import NavSidebar from "./NavSidebar";
 import { User } from "@auth0/auth0-react";
 import { useAuth } from "@/auth/use-auth-hook";
 import AppLauncher from "../Applauncher";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import DocIcon from "@/assets/doc_icon.png";
+import { useMatomo } from "@datapunt/matomo-tracker-react";
 const Navbar = ({ title }: { title?: string }) => {
   const { currentUser, logout, login, isAuthenticated } = useAuth();
+  const { trackPageView, trackEvent, pushInstruction } = useMatomo();
+
+  useEffect(() => {
+    trackPageView({
+      documentTitle: "Home page", // optional
+      href: "https://translations.pecha.tools", // optional
+      customDimensions: [
+        {
+          id: 1,
+          value: "loggedIn",
+        },
+      ], // optional
+    });
+    pushInstruction("setUserId", currentUser?.id);
+  }, []);
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const handleLogout = () => {
     logout();
@@ -24,6 +41,7 @@ const Navbar = ({ title }: { title?: string }) => {
   return (
     <nav className="  px-6 py-2 flex justify-between items-center">
       {/* Logo and Brand */}
+
       <div className="flex gap-2">
         <NavSidebar
           isOpen={isSidebarOpen}
@@ -51,7 +69,7 @@ const Navbar = ({ title }: { title?: string }) => {
         </Link>
       </div>
 
-      {!title && <SearchInput />}
+      {!title && <SearchInput trackEvent={trackEvent} />}
       {/* Navigation Menu */}
       <div className="flex items-center gap-4">
         <AppLauncher />

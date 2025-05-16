@@ -7,52 +7,7 @@
     
     <title>Pecha Editor</title>
 
-    <!-- Matamo Analytics -->
-    <script>
-      var _paq = window._paq = window._paq || [];
-      
-      // User identification - if you have user authentication
-      if (window.currentUserId) {
-        _paq.push(['setUserId', window.currentUserId]);
-      }
-      
-      // Custom dimensions for better analytics segmentation
-      if (window.currentUserRole) {
-        _paq.push(['setCustomDimension', 1, window.currentUserRole]);
-      }
-      
-      // Track page load time
-      _paq.push(['enableHeartBeatTimer']);
-      
-      // Track content impressions
-      _paq.push(['trackVisibleContentImpressions']);
-      
-      // Enable link and download tracking
-      _paq.push(['enableLinkTracking']);
-      
-      // Track the initial page view (must come after custom dimensions)
-      _paq.push(['trackPageView']);
-      
-      // Matomo setup
-      (function() {
-        var u = "https://track.pecha.org/";
-        _paq.push(['setTrackerUrl', u + 'matomo.php']);
-        _paq.push(['setSiteId', '2']);
-        
-        // Create and append Matomo tracking script
-        var d = document, g = d.createElement('script'), s = d.getElementsByTagName('script')[0];
-        g.async = true; 
-        g.defer = true;
-        g.src = u + 'matomo.js'; 
-        s.parentNode.insertBefore(g,s);
-      })();
-      
-      // Helper function for event tracking
-      window.trackEvent = function(category, action, name, value) {
-        _paq.push(['trackEvent', category, action, name, value]);
-      };
-    </script>
-    <!-- End Matamo Analytics -->
+   
   </head>
   <body>
     <div id="navbar"></div>
@@ -71,26 +26,6 @@
 
     <script type="module" src="/src/main.tsx"></script>
     
-    <!-- Event tracking initialization -->
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        // Example: Track important button clicks
-        document.querySelectorAll('.important-button').forEach(btn => {
-          btn.addEventListener('click', function() {
-            var action = this.dataset.action || 'click';
-            var name = this.dataset.name || this.textContent.trim().toLowerCase().replace(/\s+/g, '_');
-            window.trackEvent('Button', action, name);
-          });
-        });
-        
-        // Example: Track form submissions
-        document.querySelectorAll('form').forEach(form => {
-          form.addEventListener('submit', function(e) {
-            var formId = this.id || 'unknown_form';
-            window.trackEvent('Form', 'submit', formId);
-          });
-        });
-      });
-    </script>
+   
   </body>
 </html>
