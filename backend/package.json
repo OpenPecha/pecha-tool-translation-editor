@@ -45,7 +45,8 @@
     "ws": "^8.18.1",
     "y-webrtc": "^10.3.0",
     "y-websocket": "^2.1.0",
-    "yjs": "^13.6.23"
+    "yjs": "^13.6.23",
+    "express-jsdoc-swagger": "^1.8.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"

@@ -1,9 +1,7 @@
 import { useQuillVersion } from "@/contexts/VersionContext";
-import { useEffect, useState } from "react";
 import { MdDelete } from "react-icons/md";
 import { SiTicktick } from "react-icons/si";
 import formatTimeAgo from "@/lib/formatTimeAgo";
-import { User } from "@/auth/types";
 
 interface DeltaOperation {
   insert: string;
