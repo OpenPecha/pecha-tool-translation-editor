@@ -29,6 +29,7 @@ const Toolbar = ({
   const [showVersionDiff, setShowVersionDiff] = useState(false);
   const [currentHeader, setCurrentHeader] = useState<string | number>("");
   const quill = getQuill(documentId);
+
   useEffect(() => {
     const signal = new AbortController();
     const handleClickOutside = (event: MouseEvent) => {

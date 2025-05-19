@@ -1,18 +1,13 @@
-import Quill from "quill";
 import { useRef, useState, useEffect } from "react";
-import CommentBlot from "../quillExtension/commentBlot";
-import { createComment, deleteComment } from "@/api/comment";
+import { createComment } from "@/api/comment";
 import { useComment } from "@/contexts/CommentContext";
-import { FaTrash } from "react-icons/fa";
 import { Button } from "../ui/button";
 import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
 import { useAuth } from "@/auth/use-auth-hook";
-import { Avatar, AvatarFallback } from "@radix-ui/react-avatar";
-import { AvatarImage } from "../ui/avatar";
-import { formatDate } from "@/lib/formatDate";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import AvatarWrapper from "../ui/custom-avatar";
+import CommentList from "./CommentList";
+import ContentEditableDiv from "../ui/contentEditable";
 
 interface User {
   id: string;
@@ -74,31 +69,6 @@ const CommentBubble = ({ documentId }: { documentId: string }) => {
     };
   }, [setIsModalOpen]);
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => deleteComment(id),
-    onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: ["comments"] });
-
-      const onlyComment = commentThread?.length === 1;
-      if (onlyComment) {
-        const suggestionSpan = document.querySelector<HTMLSpanElement>(
-          `span.comments[data-id="${commentThread[0].threadId}"]`
-        );
-
-        if (suggestionSpan) {
-          const blot = Quill.find(suggestionSpan);
-          if (blot && blot instanceof CommentBlot) {
-            blot.delete();
-          }
-        }
-      }
-      setIsModalOpen(false);
-    },
-    onError: (error) => {
-      console.error("Error deleting comment:", error);
-    },
-  });
-
   const commentMutation = useMutation({
     mutationFn: (commentData: {
       docId: string;
@@ -132,15 +102,17 @@ const CommentBubble = ({ documentId }: { documentId: string }) => {
         suggestionInputRef.current.textContent = "";
       }
       setIsDisabled(true);
+      if (bubbleRef.current) {
+        bubbleRef.current.scrollTo({
+          top: bubbleRef.current.scrollHeight,
+          behavior: "smooth",
+        });
+      }
     },
     onError: (error) => {
       console.error("Error submitting comment:", error);
     },
   });
-
-  const handleDelete = (id: string): void => {
-    deleteMutation.mutate(id);
-  };
 
   const addComment = (): void => {
     const comment = commentInputRef.current?.textContent ?? "";
@@ -187,86 +159,30 @@ const CommentBubble = ({ documentId }: { documentId: string }) => {
       className="absolute bg-[#fff]  border border-[#e5e7eb] flex-col  p-[2] rounded-lg "
     >
       <div style={{ padding: "0 4px" }}>
-        {commentThread.map((comment: Comment) => (
-          <div
-            key={comment.id}
-            className="p-2 flex gap-2 border-b border-gray-200 flex-col"
-          >
-            <div className="flex items-center gap-2">
-              <AvatarWrapper
-                imageUrl={currentUser?.picture}
-                name={currentUser?.name}
-                size={32}
-              />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div className="flex justify-between">
-                  <div className=" flex flex-col items-start mb-2">
-                    <span className="font-semibold text-sm text-[#1f1f1f]">
-                      {comment.user.username}
-                    </span>
-                    <span className="text-sm text-nowrap text-[#6b7280]">
-                      {formatDate(comment.createdAt)}
-                    </span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                    <button
-                      onClick={() => handleDelete(comment.id)}
-                      className="bg-transparent border-none text-gray-600 cursor-pointer p-2 rounded-full transition-all duration-200"
-                      onMouseOver={(e) => {
-                        e.currentTarget.style.backgroundColor = "#fee2e2";
-                      }}
-                      onMouseOut={(e) => {
-                        e.currentTarget.style.backgroundColor = "transparent";
-                      }}
-                      disabled={deleteMutation.isPending}
-                    >
-                      <FaTrash size={10} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="w-full">
-              <div className="text-sm text-[#374151] cursor-pointer hover:bg-gray-200 px-2 rounded-2xl  mb-2 ">
-                {comment.content}
-              </div>
-
-              {comment.suggested_text && (
-                <div className="font-semibold text-sm text-[#2563eb] bg-[#eff6ff] px-2 py-1 rounded-md mb-2 border border-[#bfdbfe]">
-                  <span style={{ fontWeight: 500 }}>Suggestion:</span> "
-                  {comment.suggested_text}"
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
+        <CommentList />
       </div>
 
       {/* Comment input */}
       <div className="border-t border-gray-200 p-2 sticky bottom-0 bg-white z-2">
-        <div
-          contentEditable
-          className="w-full min-h-[40px] rounded-[18px] border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 p-2 mb-4 empty:before:content-[attr(data-placeholder)] cursor-text empty:before:text-gray-400"
+        <ContentEditableDiv
           ref={commentInputRef}
-          onInput={(e) => {
-            setIsDisabled(e.target.textContent === "");
+          className="w-full  rounded-[18px] border border-gray-300 focus:outline-none focus:ring-2  px-2 py-1 empty:before:content-[attr(data-placeholder)] cursor-text empty:before:text-gray-400"
+          onChange={(e) => {
+            setIsDisabled(e.target?.textContent === "");
           }}
           autoFocus
-          data-placeholder="Reply..."
+          placeholder="Reply..."
         />
-
         {isSuggestion && (
-          <div
-            contentEditable
-            className="w-full min-h-[40px] border cursor-text rounded-[18px]  p-2 mb-4 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400    border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          <ContentEditableDiv
             ref={suggestionInputRef}
-            data-placeholder="Add a suggestion..."
+            className="w-full border cursor-text rounded-[18px] px-2 py-1 mt-2 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400    border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Add a suggestion..."
           />
         )}
 
         {!isDisabled && (
-          <div className="flex justify-between">
+          <div className="flex justify-between pt-2">
             <div className="flex items-center my-2 gap-2">
               <Switch
                 id="isSuggestionCheckbox"

@@ -1,51 +1,91 @@
-import { deleteComment, fetchComments } from "@/api/comment";
+import {
+  deleteComment,
+  fetchComments,
+  fetchCommentsByThreadId,
+} from "@/api/comment";
 import { useEditor } from "@/contexts/EditorContext";
 import { BiTrash } from "react-icons/bi";
 import { useParams } from "react-router-dom";
+import { useState } from "react";
 import Quill from "quill";
 import CommentBlot from "../quillExtension/commentBlot";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ScrollArea } from "../ui/scroll-area";
-import { Comment } from "../Comment/CommentBubble";
 import AvatarWrapper from "../ui/custom-avatar";
+import { groupBy } from "lodash";
+interface Comment {
+  id: string;
+  threadId: string;
+  docId: string;
+  userId: string;
+  content: string;
+  parentCommentId: string | null;
+  createdAt: string;
+  updatedAt: string;
+  comment_on: string;
+  initial_start_offset: number;
+  initial_end_offset: number;
+  is_suggestion: boolean;
+  suggested_text?: string;
+  user: {
+    id: string;
+    username: string;
+    email: string;
+    picture: string;
+    createdAt: string;
+  };
+  childComments: Comment[];
+}
 
 function Comments() {
   const { id } = useParams();
   const { getQuill } = useEditor();
   const queryClient = useQueryClient();
   const quill = getQuill(id!);
-  // Fetch comments using React Query
+
+  // Add a query for fetching thread comments when a thread is selected
+  const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
+
+  // Create a query for fetching specific thread comments if needed - must be before any conditional returns
+  const { data: selectedThreadComments = [] } = useQuery<Comment[]>({
+    queryKey: ["comments", selectedThreadId],
+    queryFn: async () => {
+      // Only fetch if we have a valid threadId
+      if (!selectedThreadId) return [];
+      try {
+        return await fetchCommentsByThreadId(selectedThreadId);
+      } catch (error) {
+        console.error("Error fetching thread comments:", error);
+        return [];
+      }
+    },
+    enabled: !!selectedThreadId,
+    staleTime: 30000,
+  });
+
   const {
-    data: comments = [],
+    data: commentsThread = [],
     isLoading,
     error,
-  } = useQuery({
+  } = useQuery<Comment[]>({
     queryKey: ["comments", id],
     queryFn: () => fetchComments(id!),
-    enabled: !!id, // Only run query if id exists
-    staleTime: 30000, // Consider data fresh for 30 seconds
+    enabled: !!id,
+    staleTime: 30000,
     refetchOnWindowFocus: true,
   });
-  // Delete comment mutation
-  const deleteCommentMutation = useMutation({
-    mutationFn: (commentId: string) => deleteComment(commentId),
-    onSuccess: (_, commentId) => {
-      // Invalidate and refetch comments after deletion
-      queryClient.invalidateQueries({ queryKey: ["comments", id] });
 
-      // Handle UI updates that need to happen immediately
-      const comment = comments.find((c: Comment) => c.id === commentId);
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteComment(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ["comments"] });
 
-      // Check if this was the last comment in its thread
-      const threadComments = comments.filter(
-        (c: Comment) => c.threadId === comment?.threadId && c.id !== commentId
-      );
-
-      if (threadComments.length === 0 && quill && comment?.threadId) {
-        // Find and remove the suggestion mark from the editor
+      const onlyComment = commentsThread?.length === 1;
+      if (onlyComment) {
         const suggestionSpan = document.querySelector<HTMLSpanElement>(
-          `span.comments[data-id="${comment.threadId}"]`
+          `span.comments[data-id="${commentsThread[0].threadId}"]`
         );
+
         if (suggestionSpan) {
           const blot = Quill.find(suggestionSpan);
           if (blot && blot instanceof CommentBlot) {
@@ -60,98 +100,151 @@ function Comments() {
   });
 
   const handleDeleteComment = (commentId: string) => {
-    deleteCommentMutation.mutate(commentId);
+    deleteMutation.mutate(commentId);
   };
-  if (isLoading) {
-    return (
-      <div className="px-4 py-8 text-center text-gray-500">
-        Loading comments...
-      </div>
-    );
-  }
 
-  if (error) {
+  if (isLoading) return <Message text="Loading comments..." />;
+  if (error)
     return (
-      <div className="px-4 py-8 text-center text-red-500">
-        Error loading comments:{" "}
-        {error instanceof Error ? error.message : "Unknown error"}
-      </div>
+      <Message
+        text={`Error loading comments: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`}
+        error
+      />
     );
-  }
+  if (!commentsThread.length) return <Message text="No comments yet" />;
 
-  if (!comments || comments.length === 0) {
-    return (
-      <div className="px-4 py-8 text-center text-gray-500">No comments yet</div>
-    );
-  }
+  // Group comments by threadId for better organization
+  const groupedThreads = groupBy(
+    commentsThread,
+    (comment) => comment.threadId || comment.id
+  );
+
+  // Handle thread selection
+  const handleThreadSelect = (threadId: string) => {
+    setSelectedThreadId(threadId === selectedThreadId ? null : threadId);
+
+    const span = quill?.container.querySelector(
+      `span[data-id="${threadId}"]`
+    ) as HTMLElement;
+
+    if (span) {
+      const editor = quill?.root.closest(".ql-editor");
+      if (editor) {
+        const containerRect = editor.getBoundingClientRect();
+        const spanRect = span.getBoundingClientRect();
+        const top = spanRect.top - containerRect.top + editor.scrollTop;
+
+        editor.scrollTo({ top, behavior: "smooth" });
+      }
+    }
+  };
 
   return (
     <ScrollArea className="px-4 h-[calc(100vh-100px)] overflow-y-auto">
-      <div className="flow-root">
-        <div className="-mb-8">
-          {comments.map((comment: Comment) => (
-            <EachComment
-              comment={comment}
-              key={comment.id}
-              deleteComment={handleDeleteComment}
-              quill={quill}
-            />
-          ))}
-        </div>
+      <div className="flow-root -mb-8">
+        {Object.entries(groupedThreads).map(([threadId, threadComments]) => {
+          // Make sure we have valid thread comments
+          if (!threadComments || threadComments.length === 0) {
+            return null; // Skip rendering this thread if no comments
+          }
+
+          // Get the first comment to use as the thread header
+          const firstComment = threadComments[0];
+          const isSelected = selectedThreadId === threadId;
+          const commentsToShow =
+            isSelected && selectedThreadComments.length > 0
+              ? selectedThreadComments
+              : threadComments;
+
+          // Ensure user data exists to prevent errors
+          const userName = firstComment?.user?.username || "Unknown User";
+          const userPicture = firstComment?.user?.picture || "";
+
+          return (
+            <div key={threadId} className=" border-b ">
+              {/* Thread header */}
+              <div
+                className={`cursor-pointer p-2 mb-2 rounded ${
+                  isSelected ? "bg-blue-50" : "hover:bg-gray-50"
+                }`}
+                onClick={() => handleThreadSelect(threadId)}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <AvatarWrapper
+                      imageUrl={userPicture}
+                      name={userName}
+                      size={24}
+                    />
+                    <p className="text-sm font-medium">{userName}</p>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {firstComment?.createdAt
+                      ? new Date(firstComment.createdAt).toLocaleDateString()
+                      : "Unknown date"}
+                  </p>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1 truncate">
+                  {firstComment?.is_suggestion ? "Suggestion" : "Comment"} on: "
+                  {firstComment?.comment_on || "Unknown text"}"
+                </p>
+              </div>
+
+              {/* Thread comments */}
+              {isSelected && commentsToShow && commentsToShow.length > 0 && (
+                <div className="pl-4">
+                  {commentsToShow.map((comment) =>
+                    comment && comment.id ? (
+                      <CommentCard
+                        key={comment.id}
+                        comment={comment}
+                        deleteComment={handleDeleteComment}
+                        quill={quill}
+                      />
+                    ) : null
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </ScrollArea>
   );
 }
 
-interface EachCommentProps {
-  readonly comment: Comment;
-  readonly deleteComment: (commentId: string) => void;
-  readonly quill: Quill;
+function Message({
+  text,
+  error = false,
+}: {
+  readonly text: string;
+  readonly error?: boolean;
+}) {
+  return (
+    <div
+      className={`px-4 py-8 text-center ${
+        error ? "text-red-500" : "text-gray-500"
+      }`}
+    >
+      {text}
+    </div>
+  );
 }
 
-function EachComment({ comment, deleteComment, quill }: EachCommentProps) {
-  const handleCommentClick = () => {
-    const threadId = comment.threadId;
-    const span = quill.container.querySelector(
-      `span[data-id="${threadId}"]`
-    ) as HTMLElement;
+interface CommentCardProps {
+  readonly comment: Comment;
+  readonly deleteComment: (id: string) => void;
+  readonly quill: Quill | undefined;
+}
 
-    if (span) {
-      // Find the editor container
-      const editorContainer = quill.root.closest(".ql-editor");
-      if (editorContainer) {
-        // Calculate position for smooth scrolling
-        const containerRect = editorContainer.getBoundingClientRect();
-        const spanRect = span.getBoundingClientRect();
-        const relativeTop =
-          spanRect.top - containerRect.top + editorContainer.scrollTop;
+function CommentCard({ comment, deleteComment, quill }: CommentCardProps) {
+  // Ensure quill is defined before using it
+  if (!quill) {
+    return null;
+  }
 
-        // Scroll to the element
-        editorContainer.scrollTo({
-          top: relativeTop, // Position slightly above for context
-          behavior: "smooth",
-        });
-
-        // // Highlight with yellow background temporarily
-        // const originalBg = span.style.backgroundColor;
-        // span.style.backgroundColor = "yellow";
-        // span.style.transition = "background-color 0.5s ease";
-
-        // // Reset background after 1 second
-        // setTimeout(() => {
-        //   span.style.backgroundColor = originalBg;
-        // }, 1000);
-      }
-    }
-  };
-
-  // Prevent event propagation when clicking delete button
-  const handleDeleteClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    deleteComment(comment.id);
-  };
-
-  // Format the date nicely
   const formattedDate = new Date(comment.createdAt).toLocaleDateString(
     undefined,
     {
@@ -161,12 +254,9 @@ function EachComment({ comment, deleteComment, quill }: EachCommentProps) {
     }
   );
   return (
-    <div
-      className="mb-4 w-full text-left bg-transparent border-0 p-0"
-      onClick={handleCommentClick}
-    >
-      <div className="border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer bg-white">
-        <div className="p-3 pb-0 flex flex-row items-center justify-between">
+    <div className="mb-4 w-full text-left bg-transparent border-0 p-0">
+      <div className="rounded-lg transition-shadow cursor-pointer bg-white">
+        <div className=" pb-0 flex flex-row items-center justify-between">
           <div className="flex items-center gap-2">
             <AvatarWrapper
               imageUrl={comment.user.picture}
@@ -180,7 +270,10 @@ function EachComment({ comment, deleteComment, quill }: EachCommentProps) {
           </div>
           <button
             className="h-6 w-6 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full flex items-center justify-center"
-            onClick={handleDeleteClick}
+            onClick={(e) => {
+              e.stopPropagation();
+              deleteComment(comment.id);
+            }}
             title="Delete comment"
           >
             <BiTrash className="h-4 w-4" />
@@ -196,15 +289,8 @@ function EachComment({ comment, deleteComment, quill }: EachCommentProps) {
               <span className="text-muted-foreground"> for </span>
               <span className="italic">"{comment.comment_on}"</span>
             </div>
-          ) : (
-            <div className="text-sm">
-              <span className="text-muted-foreground">Commented on </span>
-              <span className="italic">"{comment.comment_on}"</span>
-            </div>
-          )}
-          <p className="mt-2 text-sm border-l-2 border-blue-200 pl-2 py-1">
-            {comment.content}
-          </p>
+          ) : null}
+          <p className="text-sm  pl-2 ">{comment.content}</p>
         </div>
       </div>
     </div>

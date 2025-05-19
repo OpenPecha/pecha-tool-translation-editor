@@ -4,14 +4,13 @@ import { useAuth } from "@/auth/use-auth-hook";
 import { useEditor } from "@/contexts/EditorContext";
 import { useRef, useState, useEffect } from "react";
 import { Button } from "../ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Checkbox } from "../ui/checkbox";
 import { Label } from "../ui/label";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Switch } from "../ui/switch";
 import AvatarWrapper from "../ui/custom-avatar";
+import ContentEditableDiv from "../ui/contentEditable";
 
-function CommentModal({
+function CommentInitialize({
   documentId,
   setShowCommentModal,
   currentRange,
@@ -140,23 +139,21 @@ function CommentModal({
         />
         <div>{currentUser?.name}</div>
       </div>
-      <div
-        contentEditable
-        ref={commentInputRef}
-        onInput={(e) => {
-          setIsDisabled(e.target.textContent === "");
-        }}
-        className="w-full min-h-[40px]  border rounded-[18px] scroll-auto p-2 mb-4 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
-        autoFocus
-        data-placeholder="Add a comment..."
-      />
 
+      <ContentEditableDiv
+        ref={commentInputRef}
+        className="w-full  border rounded-[18px] scroll-auto px-2 py-1 mb-4 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
+        onChange={(e) => {
+          setIsDisabled(e.target?.textContent === "");
+        }}
+        autoFocus
+        placeholder="Add a comment..."
+      />
       {isSuggestion && (
-        <div
-          contentEditable
-          className="w-full min-h-[40px] border rounded-[18px] p-2 mb-4 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
+        <ContentEditableDiv
           ref={suggestionInputRef}
-          data-placeholder="Add a suggestion..."
+          className="w-full  border rounded-[18px] px-2 py-1 mt-2 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
+          placeholder="Add a suggestion..."
         />
       )}
       {!isDisabled && (
@@ -188,4 +185,4 @@ function CommentModal({
   );
 }
 
-export default CommentModal;
+export default CommentInitialize;

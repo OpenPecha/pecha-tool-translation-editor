@@ -5,7 +5,7 @@ import "quill/dist/quill.snow.css";
 import quill_import from "./quillExtension";
 import { useQuillVersion } from "../contexts/VersionContext";
 import LineNumberVirtualized from "./LineNumbers";
-import CommentModal from "./Comment/CommentModal";
+import CommentInitialize from "./Comment/CommentInitialize";
 import TableOfContent from "./TableOfContent";
 import { useEditor } from "@/contexts/EditorContext";
 import { editor_config, EDITOR_ENTER_ONLY } from "@/utils/editorConfig";
@@ -188,7 +188,8 @@ const Editor = ({
   }, [currentDoc?.docs_prosemirror_delta]);
 
   function addComment() {
-    if (!currentRange) return;
+    if (!currentRange || currentRange?.length === 0) return;
+
     setShowCommentModal(true);
   }
   if (!documentId) return null;
@@ -223,14 +224,14 @@ const Editor = ({
             <div id={`${counterId}`}>0 Characters</div>,
             document.getElementById("counter")!
           )}
-          <CommentBubble documentId={documentId} />
           {showCommentModal && (
-            <CommentModal
+            <CommentInitialize
               documentId={documentId}
               setShowCommentModal={setShowCommentModal}
               currentRange={currentRange}
             />
           )}
+          <CommentBubble documentId={documentId} />
         </div>
         {/* <OverlayLoading isLoading={!isSynced} /> */}
       </div>
