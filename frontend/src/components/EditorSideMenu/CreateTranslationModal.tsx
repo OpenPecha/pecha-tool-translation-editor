@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { X, Eye, EyeOff } from "lucide-react";
+import { X, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useQuery } from "@tanstack/react-query";
+import { fetchApiCredentials, ApiCredential } from "@/api/apiCredentials";
 
 import SelectLanguage from "../DocumentCreateModal/SelectLanguage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -107,67 +109,132 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
 const AITranslation = () => {
   // AI generation related states
   const { id } = useParams();
-  const [aiModel, setAiModel] = useState<string>("claude");
-  const [aiApiKey, setAiApiKey] = useState<string>("");
+  const [selectedCredential, setSelectedCredential] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const [showApiKey, setShowApiKey] = useState<boolean>(false);
   const { getQuill } = useEditor();
   const quill = getQuill(id!);
   const content = quill?.getText();
+
+  // Fetch API credentials from the settings
+  const { data: apiCredentials, isLoading, error } = useQuery({
+    queryKey: ["api-credentials"],
+    queryFn: fetchApiCredentials,
+  });
+
+  // Group credentials by provider
+  const credentialsByProvider = React.useMemo(() => {
+    if (!apiCredentials) return {};
+    return apiCredentials.reduce((acc: Record<string, ApiCredential[]>, credential) => {
+      if (!acc[credential.provider]) {
+        acc[credential.provider] = [];
+      }
+      acc[credential.provider].push(credential);
+      return acc;
+    }, {});
+  }, [apiCredentials]);
+
+  // Get the current selected credential
+  const currentCredential = React.useMemo(() => {
+    if (!selectedCredential || !apiCredentials) return null;
+    return apiCredentials.find(cred => cred.id === selectedCredential) || null;
+  }, [selectedCredential, apiCredentials]);
+
+  // Handle the translation generation
   const handleSendAItranslation = () => {
-    console.log(aiModel, aiApiKey, content);
+    if (!currentCredential) {
+      alert("Please select an API credential");
+      return;
+    }
+    
+    if (!content) {
+      alert("No text to translate. Please make sure the document has content.");
+      return;
+    }
+    
+    // Get the first line of text
+    const firstLine = content.split('\n')[0].trim();
+    
+    if (!firstLine) {
+      alert("No text to translate. The document appears to be empty.");
+      return;
+    }
+    
+    console.log("Generating translation with:", {
+      provider: currentCredential.provider,
+      model: currentCredential.provider.toLowerCase().includes("openai") ? "gpt-3.5-turbo" : "claude-2",
+      text: firstLine
+    });
+    
+    setIsGenerating(true);
+    
+    // Simulate translation process (replace with actual API call)
+    setTimeout(() => {
+      setIsGenerating(false);
+      alert(`Translation generated successfully: "${firstLine} (translated to English)"`); 
+    }, 2000);
   };
+
+  if (isLoading) {
+    return <div>Loading API credentials...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 border border-red-300 bg-red-50 rounded-md">
+        <div className="flex items-center">
+          <AlertCircle className="h-4 w-4 text-red-500 mr-2" />
+          <p className="text-sm text-red-700">
+            Error loading API credentials. Please check your connection and try again.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
+      {/* No credentials warning */}
+      {(!apiCredentials || apiCredentials.length === 0) && (
+        <div className="p-4 border border-yellow-300 bg-yellow-50 rounded-md">
+          <div className="flex items-center">
+            <AlertCircle className="h-4 w-4 text-yellow-500 mr-2" />
+            <p className="text-sm text-yellow-700">
+              No API credentials found. Please add credentials in Settings &gt; API Keys.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Provider and model selection */}
       <div>
-        <Label htmlFor="ai-model">Select AI Model</Label>
-        <Select value={aiModel} onValueChange={setAiModel}>
-          <SelectTrigger id="ai-model">
-            <SelectValue placeholder="Select model" />
+        <Label htmlFor="credential-select">Select API Credential</Label>
+        <Select 
+          value={selectedCredential} 
+          onValueChange={setSelectedCredential}
+          disabled={!apiCredentials || apiCredentials.length === 0}
+        >
+          <SelectTrigger id="credential-select">
+            <SelectValue placeholder="Select API credential" />
           </SelectTrigger>
           <SelectContent className="z-[10000]">
-            <SelectItem value="claude">Claude</SelectItem>
-            {/* <SelectItem value="gpt-4">GPT-4</SelectItem> */}
-            {/* <SelectItem value="gemini">Gemini</SelectItem> */}
+            {Object.entries(credentialsByProvider).map(([provider, credentials]) => (
+              <React.Fragment key={provider}>
+                <div className="px-2 py-1.5 text-sm font-semibold">{provider}</div>
+                {credentials.map((credential) => (
+                  <SelectItem key={credential.id} value={credential.id}>
+                    {credential.provider} - {credential.id.substring(0, 8)}
+                  </SelectItem>
+                ))}
+              </React.Fragment>
+            ))}
           </SelectContent>
         </Select>
       </div>
 
-      <div>
-        <Label htmlFor="api-key">API Key</Label>
-        <div className="relative">
-          <Input
-            id="api-key"
-            type={showApiKey ? "text" : "password"}
-            value={aiApiKey}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setAiApiKey(e.target.value)
-            }
-            placeholder="Enter your API key"
-            className="pr-10"
-          />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="absolute right-0 top-0 h-full px-3"
-            onClick={() => setShowApiKey(!showApiKey)}
-            tabIndex={-1}
-          >
-            {showApiKey ? (
-              <EyeOff className="h-4 w-4" />
-            ) : (
-              <Eye className="h-4 w-4" />
-            )}
-            <span className="sr-only">
-              {showApiKey ? "Hide" : "Show"} API key
-            </span>
-          </Button>
-        </div>
-      </div>
+      {/* Generate button */}
       <Button
         className="float-right"
-        disabled={!aiApiKey || isGenerating}
+        disabled={isGenerating || !selectedCredential}
         onClick={handleSendAItranslation}
       >
         {isGenerating ? "Generating..." : "Generate Translation"}
