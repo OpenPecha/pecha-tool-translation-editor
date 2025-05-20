@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { Settings, BookOpen, Languages, MessageSquare } from "lucide-react";
+import { Settings, Languages, MessageSquare } from "lucide-react";
 import SelectTranslation from "./SelectTranslation";
 import { Button } from "@/components/ui/button";
 import { IoIosArrowForward } from "react-icons/io";
 import Comments from "./Comments";
+import SettingsPanel from "./Settings";
 type MenuOption =
   | "translations"
   | "settings"
@@ -34,7 +35,7 @@ function SideMenu({
       case "settings":
         return (
           <InMenuWrapper onBackClick={reset}>
-            <div>Settings Content</div>
+            <SettingsPanel />
           </InMenuWrapper>
         );
       case "comments":
@@ -60,6 +61,7 @@ function SideMenu({
             >
               <MessageSquare size={16} />
             </MenuButton>
+
             <MenuButton
               onClick={() => setCurrentView("settings")}
               title={"settings"}

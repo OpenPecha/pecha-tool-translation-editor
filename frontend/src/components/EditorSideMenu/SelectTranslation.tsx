@@ -24,9 +24,7 @@ function SelectTranslation({
     () => currentDoc?.translations ?? [],
     [currentDoc?.translations]
   );
-  const handleCreateSuccess = () => {
-    setShowCreateModal(false);
-  };
+
   // Check if the current document is a root document
   const isRoot = Boolean(
     currentDoc && "isRoot" in currentDoc ? currentDoc.isRoot : false

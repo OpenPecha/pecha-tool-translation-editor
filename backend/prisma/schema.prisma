@@ -8,16 +8,17 @@ datasource db {
 }
 
 model User {
-  id          String       @id @default(uuid())
-  username    String       @unique
-  email       String       @unique
+  id          String          @id @default(uuid())
+  username    String          @unique
+  email       String          @unique
   picture     String?
-  documents   Doc[]        @relation("UserDocs") // A user can have multiple documents
+  documents   Doc[]           @relation("UserDocs") // A user can have multiple documents
   permissions Permission[] // A user can have multiple permissions
   comments    Comment[] // A user can have multiple comments
-  createdAt   DateTime     @default(now())
-  Project     Project[]
-  Version     Version[]
+  createdAt   DateTime        @default(now())
+  project     Project[]
+  version     Version[]
+  apikeys     ApiCredential[]
 }
 
 model Project {
@@ -113,4 +114,17 @@ model Version {
   userId    String?
   user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   content   Json // Quill delta contents stored as JSON
+}
+
+model ApiCredential {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  provider  String // e.g., "openai", "google", "deepl"
+  apiKeyEnc String // encrypted API key (AES-encrypted or similar)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }

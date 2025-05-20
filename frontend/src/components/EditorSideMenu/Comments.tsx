@@ -40,8 +40,8 @@ interface Comment {
 function Comments() {
   const { id } = useParams();
   const { getQuill } = useEditor();
-  const queryClient = useQueryClient();
   const quill = getQuill(id!);
+  const queryClient = useQueryClient();
 
   // Add a query for fetching thread comments when a thread is selected
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
