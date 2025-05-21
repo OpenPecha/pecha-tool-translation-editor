@@ -18,12 +18,12 @@ export default function quill_import() {
 
   Quill.register("modules/counter", function (quill: any, options: any) {
     const container = document.querySelector(options.container);
-    quill.on("text-change", function () {
+    if(container) quill.on("text-change", function () {
       const text = quill.getText();
       if (options.unit === "word") {
         container.innerText = text.split(/\s+/).length + " words";
       } else {
-        container.innerText = text.length + " Characters";
+        container.innerText = text?.length + " Characters";
       }
     });
   });
