@@ -15,28 +15,24 @@ const ProjectList = () => {
   const { trackSiteSearch } = useMatomo();
   const limit = 10;
 
-  const {
-    data = [],
-    isLoading,
-    isError,
-    isFetching,
-  } = useQuery({
+  const { data, isLoading, isError, isFetching } = useQuery({
     queryKey: ["projects", searchQuery, page],
+    initialData: { data: [] },
     queryFn: () => fetchProjects({ searchQuery, page, limit }),
   });
-
-  const projects = data?.data;
-  const total = data?.total || 0;
+  const { data: projects, total } = data;
   const totalPages = Math.ceil(total / limit);
 
   useEffect(() => {
-    if (searchQuery && searchQuery !== "")
+    const result_count = projects?.length;
+    if (searchQuery && data?.pagination) {
       trackSiteSearch({
         keyword: searchQuery,
         category: "search project",
-        count: data.length,
+        count: result_count,
       });
-  }, [data.length]);
+    }
+  }, [data]);
 
   return (
     <div className="flex flex-1 flex-col h-[100vh] ">
