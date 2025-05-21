@@ -23,13 +23,6 @@ const SearchInput = () => {
 
   useEffect(() => {
     setSearchQuery(debouncedValue);
-    if (debouncedValue && debouncedValue !== "")
-      trackEvent({
-        category: "navbar",
-        action: "search",
-        name: debouncedValue,
-        value: debouncedValue?.length,
-      });
   }, [debouncedValue, setSearchQuery, trackEvent]);
 
   return (

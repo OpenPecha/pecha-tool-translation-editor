@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import DocumentCreateModal from "../DocumentCreateModal/DocumentCreateModal";
 import "./style.css";
 
@@ -7,13 +7,20 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchProjects, Project } from "@/api/project";
 import EachProject from "./EachProject";
 import { useSearch } from "@/contexts/SearchContext";
+import { useMatomo } from "@datapunt/matomo-tracker-react";
 
 const ProjectList = () => {
   const { searchQuery } = useSearch();
   const [page, setPage] = useState(1);
+  const { trackSiteSearch } = useMatomo();
   const limit = 10;
 
-  const { data, isLoading, isError, isFetching } = useQuery({
+  const {
+    data = [],
+    isLoading,
+    isError,
+    isFetching,
+  } = useQuery({
     queryKey: ["projects", searchQuery, page],
     queryFn: () => fetchProjects({ searchQuery, page, limit }),
   });
@@ -21,6 +28,15 @@ const ProjectList = () => {
   const projects = data?.data;
   const total = data?.total || 0;
   const totalPages = Math.ceil(total / limit);
+
+  useEffect(() => {
+    if (searchQuery && searchQuery !== "")
+      trackSiteSearch({
+        keyword: searchQuery,
+        category: "search project",
+        count: data.length,
+      });
+  }, [data.length]);
 
   return (
     <div className="flex flex-1 flex-col h-[100vh] ">

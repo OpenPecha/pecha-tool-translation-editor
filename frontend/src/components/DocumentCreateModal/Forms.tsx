@@ -8,6 +8,7 @@ import TextUploader from "./TextUploader";
 import MetaDataInput from "./MetaDataInput";
 import { createProject } from "@/api/project";
 import { Button } from "../ui/button";
+import { useMatomo } from "@datapunt/matomo-tracker-react";
 
 export function NewPechaForm({
   projectName,
@@ -21,6 +22,7 @@ export function NewPechaForm({
   const [rootId, setRootId] = useState<string | null>(null);
   const [metadata, setMetadata] = useState<Json | null>(null);
   const queryClient = useQueryClient();
+  const { trackEvent } = useMatomo();
   const createProjectMutation = useMutation({
     mutationFn: () => {
       if (!projectName) {
@@ -45,6 +47,15 @@ export function NewPechaForm({
   });
 
   const handleCreateProject = () => {
+    //send event
+    trackEvent({
+      category: "submission",
+      action: "create",
+      name: "create-project", // optional
+      documentTitle: document.title, // optional
+      href: window.location.href, // optional
+    });
+
     if (!rootId) {
       setError("Root document is required");
       return;
