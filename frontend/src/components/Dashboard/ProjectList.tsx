@@ -51,6 +51,12 @@ const ProjectList = () => {
           </div>
         )}
         <div className="max-w-5xl mx-auto">
+          {(isFetching || isLoading) && <div>loading</div>}
+          {projects?.length === 0 && !isLoading && (
+            <div className="text-center py-8">
+              <p>You don't have any projects yet. Create one to get started!</p>
+            </div>
+          )}
           {projects?.length > 0 && (
             <>
               <ProjectsGrid
@@ -63,11 +69,6 @@ const ProjectList = () => {
                 onPageChange={setPage}
               />
             </>
-          )}
-          {projects?.length === 0 && !isLoading && (
-            <div className="text-center py-8">
-              <p>You don't have any projects yet. Create one to get started!</p>
-            </div>
           )}
         </div>
       </div>
