@@ -1,5 +1,12 @@
 const translation_endpoint=process.env.TRANSLATION_WORKER_ENDPOINT;
 
+console.log(`Translation worker endpoint: ${translation_endpoint}`);
+
+// Check if the endpoint is properly configured
+if (!translation_endpoint || translation_endpoint.trim() === '') {
+  console.error('Translation worker endpoint is not configured in .env file');
+}
+
 
 /**
  * Checks if the translation worker is healthy
@@ -42,6 +49,11 @@ async function sendTranslationRequest(data) {
     if (!data.metadata?.target_language) throw new Error('Target language is required');
     if (!data.model_name) throw new Error('Model name is required');
     if (!data.priority || data.priority < 1 || data.priority > 10) throw new Error('Valid priority (1-10) is required');
+    if (!data.webhook) throw new Error('Webhook URL is required');
+
+
+    console.log(`Sending request to translation worker at: ${translation_endpoint}/messages`);
+    console.log('Request data:', { ...data, api_key: '***REDACTED***' });
     
     const response = await fetch(`${translation_endpoint}/messages`, {
       method: 'POST',
@@ -52,12 +64,24 @@ async function sendTranslationRequest(data) {
       timeout: 10000,
     });
     
+    console.log(`Response status: ${response.status} ${response.statusText}`);
+    
+    // Check if the response is JSON
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const text = await response.text();
+      console.error('Received non-JSON response:', text.substring(0, 500));
+      throw new Error(`Translation API returned non-JSON response: ${response.status} ${response.statusText}`);
+    }
+    
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(`Translation request failed: ${errorData.message || response.statusText}`);
     }
     
-    return await response.json();
+    const jsonResponse = await response.json();
+    console.log('Translation job created successfully:', jsonResponse);
+    return jsonResponse;
   } catch (error) {
     console.error('Translation request failed:', error);
     throw error;
@@ -89,4 +113,10 @@ async function getTranslationStatus(messageId) {
     console.error('Translation status check failed:', error);
     throw error;
   }
+}
+
+module.exports={
+  isTranslationWorkerHealthy,
+  sendTranslationRequest,
+  getTranslationStatus
 }

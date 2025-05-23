@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { X, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { X, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -10,19 +9,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useQuery } from "@tanstack/react-query";
-import { fetchApiCredentials, ApiCredential } from "@/api/apiCredentials";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { fetchApiCredentials } from "@/api/apiCredentials";
+import { generateTranslation } from "@/api/document";
 
 import SelectLanguage from "../DocumentCreateModal/SelectLanguage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TextUploader from "../DocumentCreateModal/TextUploader";
 import SelectPechas, { PechaType } from "../DocumentCreateModal/SelectPechas";
 import { useParams } from "react-router-dom";
-import { useEditor } from "@/contexts/EditorContext";
 
 interface CreateTranslationModalProps {
   rootId: string;
-  rootName: string;
   onClose: () => void;
 }
 
@@ -43,7 +41,7 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
     if (translationId) {
       onClose();
     }
-  }, [translationId]);
+  }, [translationId, onClose]);
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
       <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
@@ -96,7 +94,7 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
               </TabsContent>
 
               <TabsContent value="ai" className="pt-2">
-                <AITranslation />
+                <AITranslation language={language} />
               </TabsContent>
             </Tabs>
           )}
@@ -106,74 +104,59 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
   );
 };
 
-const AITranslation = () => {
+const AITranslation = ({ language }: { language: string }) => {
   // AI generation related states
   const { id } = useParams();
   const [selectedCredential, setSelectedCredential] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const { getQuill } = useEditor();
-  const quill = getQuill(id!);
-  const content = quill?.getText();
+
+  // Get the query client for invalidating queries
+  const queryClient = useQueryClient();
 
   // Fetch API credentials from the settings
-  const { data: apiCredentials, isLoading, error } = useQuery({
+  const {
+    data: apiCredentials,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["api-credentials"],
     queryFn: fetchApiCredentials,
   });
 
-  // Group credentials by provider
-  const credentialsByProvider = React.useMemo(() => {
-    if (!apiCredentials) return {};
-    return apiCredentials.reduce((acc: Record<string, ApiCredential[]>, credential) => {
-      if (!acc[credential.provider]) {
-        acc[credential.provider] = [];
-      }
-      acc[credential.provider].push(credential);
-      return acc;
-    }, {});
-  }, [apiCredentials]);
-
-  // Get the current selected credential
-  const currentCredential = React.useMemo(() => {
-    if (!selectedCredential || !apiCredentials) return null;
-    return apiCredentials.find(cred => cred.id === selectedCredential) || null;
-  }, [selectedCredential, apiCredentials]);
+  // Use React Query mutation for generating translations
+  const generateTranslationMutation = useMutation({
+    mutationFn: generateTranslation,
+    onSuccess: (data) => {
+      console.log("Translation generation started:", data);
+      // Refresh the document list to show the new translation with progress bar
+      queryClient.invalidateQueries({ queryKey: [`document-${id}`] });
+      setIsGenerating(false);
+    },
+    onError: (error) => {
+      console.error("Error generating translation:", error);
+      alert(
+        `Error: ${
+          error instanceof Error
+            ? error.message
+            : "Failed to generate translation"
+        }`
+      );
+      setIsGenerating(false);
+    }
+  });
 
   // Handle the translation generation
   const handleSendAItranslation = () => {
-    if (!currentCredential) {
-      alert("Please select an API credential");
-      return;
-    }
-    
-    if (!content) {
-      alert("No text to translate. Please make sure the document has content.");
-      return;
-    }
-    
-    // Get the first line of text
-    const firstLine = content.split('\n')[0].trim();
-    
-    if (!firstLine) {
-      alert("No text to translate. The document appears to be empty.");
-      return;
-    }
-    
-    console.log("Generating translation with:", {
-      provider: currentCredential.provider,
-      model: currentCredential.provider.toLowerCase().includes("openai") ? "gpt-3.5-turbo" : "claude-2",
-      text: firstLine
-    });
-    
     setIsGenerating(true);
     
-    // Simulate translation process (replace with actual API call)
-    setTimeout(() => {
-      setIsGenerating(false);
-      alert(`Translation generated successfully: "${firstLine} (translated to English)"`); 
-    }, 2000);
+    // Call the mutation with the required parameters
+    generateTranslationMutation.mutate({
+      rootId: id!,
+      language,
+      model: selectedCredential,
+    });
   };
-
+  
   if (isLoading) {
     return <div>Loading API credentials...</div>;
   }
@@ -184,7 +167,8 @@ const AITranslation = () => {
         <div className="flex items-center">
           <AlertCircle className="h-4 w-4 text-red-500 mr-2" />
           <p className="text-sm text-red-700">
-            Error loading API credentials. Please check your connection and try again.
+            Error loading API credentials. Please check your connection and try
+            again.
           </p>
         </div>
       </div>
@@ -199,7 +183,8 @@ const AITranslation = () => {
           <div className="flex items-center">
             <AlertCircle className="h-4 w-4 text-yellow-500 mr-2" />
             <p className="text-sm text-yellow-700">
-              No API credentials found. Please add credentials in Settings &gt; API Keys.
+              No API credentials found. Please add credentials in Settings &gt;
+              API Keys.
             </p>
           </div>
         </div>
@@ -208,8 +193,8 @@ const AITranslation = () => {
       {/* Provider and model selection */}
       <div>
         <Label htmlFor="credential-select">Select API Credential</Label>
-        <Select 
-          value={selectedCredential} 
+        <Select
+          value={selectedCredential}
           onValueChange={setSelectedCredential}
           disabled={!apiCredentials || apiCredentials.length === 0}
         >
@@ -217,16 +202,12 @@ const AITranslation = () => {
             <SelectValue placeholder="Select API credential" />
           </SelectTrigger>
           <SelectContent className="z-[10000]">
-            {Object.entries(credentialsByProvider).map(([provider, credentials]) => (
-              <React.Fragment key={provider}>
-                <div className="px-2 py-1.5 text-sm font-semibold">{provider}</div>
-                {credentials.map((credential) => (
-                  <SelectItem key={credential.id} value={credential.id}>
-                    {credential.provider} - {credential.id.substring(0, 8)}
-                  </SelectItem>
-                ))}
-              </React.Fragment>
-            ))}
+            <SelectItem
+              key={"claude-3-haiku-20240307"}
+              value={"claude-3-haiku-20240307"}
+            >
+              claude-3-haiku-20240307
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>

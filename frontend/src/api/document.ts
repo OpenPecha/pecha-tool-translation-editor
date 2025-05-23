@@ -166,6 +166,34 @@ export const updateDocument = async (
 };
 
 
+export interface GenerateTranslationParams {
+  rootId: string;
+  language: string;
+  model: string;
+}
+
+export const generateTranslation = async (params: GenerateTranslationParams) => {
+  try {
+    const response = await fetch(`${server_url}/documents/generate-translation`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(params),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error ?? "Failed to generate translation");
+    }
+
+    return await response.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+    throw new Error("Failed to generate translation");
+  }
+};
+
 export const updateContentDocument=async(id:string, data:UpdateDocumentParams)=>{
   try {
     const response = await fetch(`${server_url}/documents/${id}/content`, {
