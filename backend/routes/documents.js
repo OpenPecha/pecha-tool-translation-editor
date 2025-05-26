@@ -227,8 +227,10 @@ const upload = multer({
               name:true,
               language:true,
               translationStatus:true,
+              translationProgress:true,
               updatedAt:true
-            },orderBy:{
+            },
+           orderBy:{
               updatedAt:"desc"
             }
           },
@@ -964,11 +966,8 @@ const upload = multer({
   router.post("/translation-webhook/:id", async (req, res) => {
     try {
       const document_id = req.params.id;
-      const { content,message_id,status,model_used } = req.body;
-      if (!content) {
-        return res.status(400).json({ error: "Content is required" });
-      }
-       console.log(content, document_id)
+      const { content,message_id,status,model_used,progress } = req.body;
+      
       // Find the document
       const document = await prisma.doc.findUnique({
         where: { id: document_id },
@@ -988,7 +987,9 @@ const upload = multer({
       const translatedText = translatedDoc.getText(document.identifier);
       
       // Insert the translated content
-      translatedText.insert(0, content);
+      if(content){
+        translatedText.insert(0, content);
+      }
       
       // Get the delta and state
       const translatedDelta = translatedText.toDelta();
@@ -1007,7 +1008,7 @@ const upload = multer({
               model_used,
               message_id
             },
-            translationProgress: 100,
+            translationProgress: progress,
           }
         });
 
