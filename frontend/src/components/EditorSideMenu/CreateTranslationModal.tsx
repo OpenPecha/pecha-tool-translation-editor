@@ -114,14 +114,14 @@ const AITranslation = ({ language }: { language: string }) => {
   const queryClient = useQueryClient();
 
   // Fetch API credentials from the settings
-  const {
-    data: apiCredentials,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["api-credentials"],
-    queryFn: fetchApiCredentials,
-  });
+  // const {
+  //   data: apiCredentials,
+  //   isLoading,
+  //   error,
+  // } = useQuery({
+  //   queryKey: ["api-credentials"],
+  //   queryFn: fetchApiCredentials,
+  // });
 
   // Use React Query mutation for generating translations
   const generateTranslationMutation = useMutation({
@@ -142,13 +142,13 @@ const AITranslation = ({ language }: { language: string }) => {
         }`
       );
       setIsGenerating(false);
-    }
+    },
   });
 
   // Handle the translation generation
   const handleSendAItranslation = () => {
     setIsGenerating(true);
-    
+
     // Call the mutation with the required parameters
     generateTranslationMutation.mutate({
       rootId: id!,
@@ -156,39 +156,10 @@ const AITranslation = ({ language }: { language: string }) => {
       model: selectedCredential,
     });
   };
-  
-  if (isLoading) {
-    return <div>Loading API credentials...</div>;
-  }
-
-  if (error) {
-    return (
-      <div className="p-4 border border-red-300 bg-red-50 rounded-md">
-        <div className="flex items-center">
-          <AlertCircle className="h-4 w-4 text-red-500 mr-2" />
-          <p className="text-sm text-red-700">
-            Error loading API credentials. Please check your connection and try
-            again.
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-4">
       {/* No credentials warning */}
-      {(!apiCredentials || apiCredentials.length === 0) && (
-        <div className="p-4 border border-yellow-300 bg-yellow-50 rounded-md">
-          <div className="flex items-center">
-            <AlertCircle className="h-4 w-4 text-yellow-500 mr-2" />
-            <p className="text-sm text-yellow-700">
-              No API credentials found. Please add credentials in Settings &gt;
-              API Keys.
-            </p>
-          </div>
-        </div>
-      )}
 
       {/* Provider and model selection */}
       <div>
@@ -196,7 +167,6 @@ const AITranslation = ({ language }: { language: string }) => {
         <Select
           value={selectedCredential}
           onValueChange={setSelectedCredential}
-          disabled={!apiCredentials || apiCredentials.length === 0}
         >
           <SelectTrigger id="credential-select">
             <SelectValue placeholder="Select API credential" />
