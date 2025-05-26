@@ -66,29 +66,30 @@ function SelectTranslation({
 
     if (!hasInProgressTranslations) return;
 
-    // Poll for updates every 3 seconds
     const intervalId = setInterval(() => {
       // Instead of invalidating the whole document query, just fetch translation status
       refetchTranslationStatus();
-      // Check if all translations have completed
-      const allTranslationsCompleted =
-        translationStatusData?.length > 0 &&
-        translationStatusData.every(
-          (status) =>
-            status.translationStatus !== "progress" &&
-            status.translationStatus !== "started"
-        );
-
-      // If all translations are completed, stop polling
-      if (allTranslationsCompleted) {
-        console.log("All translations completed, stopping status polling");
-        queryClient.invalidateQueries({ queryKey: [`document-${rootId}`] });
-      }
     }, 10000);
     // Immediately fetch status when we detect in-progress translations
     refetchTranslationStatus();
     return () => clearInterval(intervalId);
   }, [translations, refetchTranslationStatus, rootId]);
+
+  useEffect(() => {
+    // Check if all translations have completed
+    const allTranslationsCompleted =
+      translationStatusData?.length > 0 &&
+      translationStatusData.every(
+        (status) =>
+          status.translationStatus !== "progress" &&
+          status.translationStatus !== "started"
+      );
+    // If all translations are completed, stop polling
+    if (allTranslationsCompleted) {
+      console.log("All translations completed, stopping status polling");
+      queryClient.invalidateQueries({ queryKey: [`document-${rootId}`] });
+    }
+  }, [translationStatusData]);
 
   const deleteTranslationMutation = useMutation({
     mutationFn: (translationId: string) => deleteDocument(translationId),
