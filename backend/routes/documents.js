@@ -883,14 +883,7 @@ const upload = multer({
           },
         });
 
-        // Create initial version
-        await tx.version.create({
-          data: {
-            content: { ops: delta },
-            docId: doc.id,
-            label: "Initial empty document",
-          }
-        });
+       
 
         return doc;
       });
@@ -907,7 +900,7 @@ const upload = multer({
       }
 
       // Create the webhook URL for receiving translation results
-      const serverUrl = process.env.SERVER_URL || `http://localhost:${process.env.PORT || 3000}`;
+      const serverUrl = process.env.SERVER_URL || `http://localhost:${process.env.PORT || 8000}`;
       const webhookUrl = `${serverUrl}/documents/translation-webhook/${translationId}`;
       
       console.log(`Setting up webhook URL: ${webhookUrl}`);
@@ -931,200 +924,26 @@ const upload = multer({
         const response = await sendTranslationRequest(translationData);
         
         // Update the document with the translation job ID
-        await prisma.doc.update({
+        let updated=await prisma.doc.update({
           where: { id: translationId },
           data: {
             translationJobId: response.id,
-            translationStatus: "in_progress",
+            translationStatus: "progress",
             translationProgress: 10,
           }
         });
         
         console.log("Translation job created:", response.id);
         
-        // Set up a polling mechanism to check translation status
-        const checkInterval = setInterval(async () => {
-          try {
-            const status = await getTranslationStatus(response.id);
-            
-            // Update progress in the database
-            if (status) {
-              // Log the raw status object to understand its structure
-              console.log('Raw status object:', JSON.stringify(status, null, 2));
-              
-              // Extract status information
-              let progress = 0;
-              let statusText = "pending";
-              
-              // Handle different status response formats
-              if (typeof status === 'object') {
-                // Handle progress
-                if (typeof status.progress === 'number') {
-                  progress = status.progress;
-                }
-                
-                // Handle status text - ensure it's a string, not an object
-                if (typeof status.status === 'string') {
-                  statusText = status.status;
-                } else if (typeof status.status_type === 'string') {
-                  statusText = status.status_type;
-                } else if (status.status && typeof status.status === 'object') {
-                  // If status is an object, extract status_type from it
-                  if (status.status.status_type) {
-                    statusText = status.status.status_type;
-                  }
-                }
-              }
-              
-              const completed = statusText === "completed";
-              
-              console.log(`Updating translation status: ${statusText}, progress: ${progress}`);
-              
-              // Update the document with the correct status format - ensure we're only passing strings/numbers
-              await prisma.doc.update({
-                where: { id: translationId },
-                data: {
-                  translationStatus: String(statusText), // Ensure it's a string
-                  translationProgress: Number(progress), // Ensure it's a number
-                }
-              });
-              
-              // If translation is complete, update the document content
-              if (completed && status.result) {
-                // Create a new Y.Doc to store the translated content
-                const translatedDoc = new WSSharedDoc(translationId, req.user.id);
-                const translatedText = translatedDoc.getText(translationId);
-                
-                // Insert the translated content
-                translatedText.insert(0, status.result);
-                
-                // Get the delta and state
-                const translatedDelta = translatedText.toDelta();
-                const translatedState = Y.encodeStateAsUpdateV2(translatedDoc);
-                
-                // Update the document with the translated content
-                await prisma.doc.update({
-                  where: { id: translationId },
-                  data: {
-                    docs_y_doc_state: translatedState,
-                    docs_prosemirror_delta: translatedDelta,
-                    translationStatus: "completed",
-                    translationProgress: 100,
-                  }
-                });
-                
-                // Clear the interval once translation is complete
-                clearInterval(checkInterval);
-              }
-            }
-          } catch (error) {
-            console.error("Error checking translation status:", error);
-          }
-        }, 5000); // Check every 5 seconds
+        // Return the created document
+        res.status(201).json(updated);
       } catch (error) {
-        console.error("Translation request failed, using mock implementation:", error);
+      
+        console.error("Translation request failed:", error);
         
-        // Mock implementation for testing when the API is down
-        // Update the document with initial progress
-        await prisma.doc.update({
-          where: { id: translationId },
-          data: {
-            translationJobId: `mock-${Date.now()}`,
-            translationStatus: "in_progress",
-            translationProgress: 10,
-          }
-        });
-        
-        // Simulate translation progress with a mock implementation
-        let progress = 10;
-        const mockInterval = setInterval(async () => {
-          progress += 15; // Increment progress by 15% each time
-          
-          if (progress >= 100) {
-            // Translation complete
-            progress = 100;
-            
-            // Create translated content
-            const translatedDoc = new WSSharedDoc(translationId, req.user.id);
-            const translatedText = translatedDoc.getText(translationId);
-            
-            // Create a simple translated version of the content
-            const translatedContent = `[${language.toUpperCase()} TRANSLATION] ${content.substring(0, 100)}...`;
-            
-            // Simulate a webhook call to our own endpoint
-            try {
-              console.log(`Simulating webhook call to: ${translationData.webhook}`);
-              const webhookResponse = await fetch(translationData.webhook, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  content: translatedContent,
-                }),
-              });
-              
-              if (webhookResponse.ok) {
-                console.log('Mock webhook call successful');
-              } else {
-                console.error('Mock webhook call failed:', await webhookResponse.text());
-                
-                // Fallback: update the document directly if webhook fails
-                translatedText.insert(0, translatedContent);
-                
-                // Get the delta and state
-                const translatedDelta = translatedText.toDelta();
-                const translatedState = Y.encodeStateAsUpdateV2(translatedDoc);
-                
-                // Update the document with the translated content
-                await prisma.doc.update({
-                  where: { id: translationId },
-                  data: {
-                    docs_y_doc_state: translatedState,
-                    docs_prosemirror_delta: translatedDelta,
-                    translationStatus: "completed",
-                    translationProgress: 100,
-                  }
-                });
-              }
-            } catch (webhookError) {
-              console.error('Error simulating webhook call:', webhookError);
-              
-              // Fallback: update the document directly if webhook fails
-              translatedText.insert(0, translatedContent);
-              
-              // Get the delta and state
-              const translatedDelta = translatedText.toDelta();
-              const translatedState = Y.encodeStateAsUpdateV2(translatedDoc);
-              
-              // Update the document with the translated content
-              await prisma.doc.update({
-                where: { id: translationId },
-                data: {
-                  docs_y_doc_state: translatedState,
-                  docs_prosemirror_delta: translatedDelta,
-                  translationStatus: "completed",
-                  translationProgress: 100,
-                }
-              });
-            }
-            
-            clearInterval(mockInterval);
-          } else {
-            // Update progress
-            await prisma.doc.update({
-              where: { id: translationId },
-              data: {
-                translationStatus: "in_progress",
-                translationProgress: progress,
-              }
-            });
-          }
-        }, 3000); // Update every 3 seconds
+        // Return the created document
+        res.status(201).json({"error": error.message});
       }
-
-      // Return the created document
-      res.status(201).json(translationDoc);
     } catch (error) {
       console.error("Error generating translation:", error);
       res.status(500).json({ error: "Error generating translation: " + error.message });
@@ -1177,18 +996,30 @@ const upload = multer({
       const translatedState = Y.encodeStateAsUpdateV2(translatedDoc);
       
       // Update the document with the translated content
-      await prisma.doc.update({
-        where: { id },
-        data: {
-          docs_y_doc_state: translatedState,
-          docs_prosemirror_delta: translatedDelta,
-          translationStatus: "completed",
-          translationProgress: 100,
-        }
-      });
+      const data=await prisma.$transaction(async (tx) => {
+        // Update the document with the translated content
+        let updated=await tx.doc.update({
+          where: { id },
+          data: {
+            docs_y_doc_state: translatedState,
+            docs_prosemirror_delta: translatedDelta,
+            translationStatus: "completed",
+            translationProgress: 100,
+          }
+        });
 
+        // Create initial version
+        await tx.version.create({
+          data: {
+            content: { ops: translatedDelta },
+            docId: id,
+            label: "Initial translation",
+          }
+        });
+        return updated
+      });
       console.log(`Translation webhook received and processed for document ${id}`);
-      res.status(200).json({ success: true });
+      res.status(200).json({ success: true,data });
     } catch (error) {
       console.error("Error processing translation webhook:", error);
       res.status(500).json({ error: "Error processing translation webhook" });
