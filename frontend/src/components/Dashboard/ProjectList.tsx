@@ -20,8 +20,8 @@ const ProjectList = () => {
     initialData: { data: [] },
     queryFn: () => fetchProjects({ searchQuery, page, limit }),
   });
-  const { data: projects, total } = data;
-  const totalPages = Math.ceil(total / limit);
+  const { data: projects, pagination } = data;
+  const totalPages = Math.ceil(pagination?.totalItems / limit);
 
   useEffect(() => {
     const result_count = projects?.length;
@@ -35,7 +35,7 @@ const ProjectList = () => {
   }, [data]);
 
   return (
-    <div className="flex flex-1 flex-col h-[100vh] ">
+    <div className="flex flex-1 flex-col h-[100vh] overflow-y-scroll ">
       <div className="pt-10 px-6">
         <div className="max-w-5xl mx-auto">
           <h1 className="text-lg font-medium mb-6 text-gray-600">
@@ -50,7 +50,7 @@ const ProjectList = () => {
             {"Failed to fetch projects"}
           </div>
         )}
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-5xl mx-auto mb-2">
           {(isFetching || isLoading) && <div>loading</div>}
           {projects?.length === 0 && !isLoading && (
             <div className="text-center py-8">
