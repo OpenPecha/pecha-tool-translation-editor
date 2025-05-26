@@ -9,7 +9,7 @@ export interface Translation {
   language: string;
   name: string;
   updatedAt: string;
-  translationStatus?: string; // pending, in_progress, completed, failed
+  translationStatus?: string; // pending, progress, completed, failed
   translationProgress?: number; // 0-100 percentage
   translationJobId?: string; // ID from the translation worker
 }

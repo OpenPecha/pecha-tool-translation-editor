@@ -951,7 +951,7 @@ const upload = multer({
   });
 
   /**
-   * POST /documents/translation-webhook/:id
+   * POST /documents/translation-webhook/{id}
    * @summary Webhook endpoint for receiving translation results
    * @tags Documents - Document management operations
    * @param {string} id.path.required - Document ID
@@ -963,23 +963,22 @@ const upload = multer({
    */
   router.post("/translation-webhook/:id", async (req, res) => {
     try {
-      const { id } = req.params;
+      const document_id = req.params.id;
       const { content } = req.body;
-      
       if (!content) {
         return res.status(400).json({ error: "Content is required" });
       }
-
+       console.log(content, document_id)
       // Find the document
       const document = await prisma.doc.findUnique({
-        where: { id },
+        where: { id: document_id },
         select: {
           id: true,
           identifier: true,
           ownerId: true,
         }
       });
-
+    
       if (!document) {
         return res.status(404).json({ error: "Document not found" });
       }
@@ -999,7 +998,7 @@ const upload = multer({
       const data=await prisma.$transaction(async (tx) => {
         // Update the document with the translated content
         let updated=await tx.doc.update({
-          where: { id },
+          where: { id: document_id },
           data: {
             docs_y_doc_state: translatedState,
             docs_prosemirror_delta: translatedDelta,
@@ -1012,13 +1011,13 @@ const upload = multer({
         await tx.version.create({
           data: {
             content: { ops: translatedDelta },
-            docId: id,
+            docId: document_id,
             label: "Initial translation",
           }
         });
         return updated
       });
-      console.log(`Translation webhook received and processed for document ${id}`);
+      console.log(`Translation webhook received and processed for document ${document_id}`);
       res.status(200).json({ success: true,data });
     } catch (error) {
       console.error("Error processing translation webhook:", error);

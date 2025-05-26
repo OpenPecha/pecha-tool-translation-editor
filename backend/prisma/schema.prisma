@@ -55,11 +55,11 @@ model Doc {
   comments               Comment[] // A document can have multiple comments
   versions               Version[] // A document can have multiple versions
   metadata               Json? // Additional metadata for the document
-  
+
   // Translation tracking fields
-  translationStatus      String?  // pending, in_progress, completed, failed
-  translationProgress    Int?     @default(0) // 0-100 percentage
-  translationJobId       String?  // ID from the translation worker
+  translationStatus   String? // pending, progress, completed, failed
+  translationProgress Int?    @default(0) // 0-100 percentage
+  translationJobId    String? // ID from the translation worker
 
   rootsProject  Project? @relation("Roots", fields: [rootProjectId], references: [id])
   rootProjectId String?

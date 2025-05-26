@@ -54,7 +54,7 @@ function SelectTranslation({
     const hasInProgressTranslations = translations.some(
       (translation) =>
         translation.translationStatus === "pending" ||
-        translation.translationStatus === "in_progress"
+        translation.translationStatus === "progress"
     );
 
     if (!hasInProgressTranslations) return;
@@ -128,7 +128,7 @@ function SelectTranslation({
             ) => {
               const disabled =
                 translation.translationStatus === "started" ||
-                translation.translationStatus === "processing";
+                translation.translationStatus === "progress";
               return (
                 <div key={translation.id} className="flex flex-col w-full">
                   <div className="flex items-center w-full">
