@@ -1046,35 +1046,7 @@ const upload = multer({
     try {
       const rootId = req.params.id;
       
-      // First check if the user has access to the root document
-      const rootDoc = await prisma.doc.findUnique({
-        where: { id: rootId },
-        select: {
-          id: true,
-          ownerId: true,
-          isPublic: true,
-        },
-      });
-      
-      if (!rootDoc) {
-        return res.status(404).json({ error: "Root document not found" });
-      }
-      
-      // Check if user has permission to access this document
-      if (rootDoc.ownerId !== req.user.id && !rootDoc.isPublic) {
-        const permission = await prisma.permission.findFirst({
-          where: {
-            docId: rootId,
-            userId: req.user.id,
-            canRead: true,
-          },
-        });
-        
-        if (!permission && !rootDoc.isPublic) {
-          return res.status(403).json({ error: "No access" });
-        }
-      }
-      
+    
       // Get all translations for this root document with minimal data - just IDs and job IDs
       const translations = await prisma.doc.findMany({
         where: { 
