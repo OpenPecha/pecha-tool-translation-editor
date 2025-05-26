@@ -126,7 +126,9 @@ function SelectTranslation({
                 translationProgress?: number;
               }
             ) => {
-              const disabled = translation.translationStatus === "progress";
+              const disabled =
+                translation.translationStatus === "progress" ||
+                translation.translationStatus === "started";
               return (
                 <div key={translation.id} className="flex flex-col w-full">
                   <div className="flex items-center w-full">
