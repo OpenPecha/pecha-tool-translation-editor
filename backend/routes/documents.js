@@ -964,7 +964,7 @@ const upload = multer({
   router.post("/translation-webhook/:id", async (req, res) => {
     try {
       const document_id = req.params.id;
-      const { content } = req.body;
+      const { content,message_id,status,model_used } = req.body;
       if (!content) {
         return res.status(400).json({ error: "Content is required" });
       }
@@ -1002,7 +1002,11 @@ const upload = multer({
           data: {
             docs_y_doc_state: translatedState,
             docs_prosemirror_delta: translatedDelta,
-            translationStatus: "completed",
+            translationStatus: status,
+            metadata:{
+              model_used,
+              message_id
+            },
             translationProgress: 100,
           }
         });

@@ -126,9 +126,7 @@ function SelectTranslation({
                 translationProgress?: number;
               }
             ) => {
-              const disabled =
-                translation.translationStatus === "started" ||
-                translation.translationStatus === "progress";
+              const disabled = translation.translationStatus === "progress";
               return (
                 <div key={translation.id} className="flex flex-col w-full">
                   <div className="flex items-center w-full">
@@ -137,7 +135,7 @@ function SelectTranslation({
                       tabIndex={0}
                       onClick={() => {
                         // Only allow selection if translation is completed
-                        if (disabled) {
+                        if (!disabled) {
                           setSelectedTranslationId(translation.id);
                         }
                       }}
