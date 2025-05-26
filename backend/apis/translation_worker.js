@@ -38,6 +38,7 @@ async function isTranslationWorkerHealthy() {
  * @param {string} data.metadata.target_language - Target language code
  * @param {string} data.model_name - Model to use for translation
  * @param {number} data.priority - Priority of the translation request (1-10)
+ * @param {boolean} data.use_segmentation - Whether to use segmentation for translation
  * @returns {Promise<Object>} Translation job response
  */
 async function sendTranslationRequest(data) {
@@ -50,7 +51,7 @@ async function sendTranslationRequest(data) {
     if (!data.model_name) throw new Error('Model name is required');
     if (!data.priority || data.priority < 1 || data.priority > 10) throw new Error('Valid priority (1-10) is required');
     if (!data.webhook) throw new Error('Webhook URL is required');
-
+    if (!data.use_segmentation) throw new Error('Use segmentation is required');
 
     console.log(`Sending request to translation worker at: ${translation_endpoint}/messages`);
     console.log('Request data:', { ...data, api_key: '***REDACTED***' });

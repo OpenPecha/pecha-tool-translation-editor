@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { X, AlertCircle } from "lucide-react";
+import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -9,9 +9,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { fetchApiCredentials } from "@/api/apiCredentials";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { generateTranslation } from "@/api/document";
+import { Switch } from "@/components/ui/switch";
 
 import SelectLanguage from "../DocumentCreateModal/SelectLanguage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -42,6 +42,10 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
       onClose();
     }
   }, [translationId, onClose]);
+  const selectedTabClass = (tab: "file" | "openpecha" | "ai") =>
+    uploadMethod === tab
+      ? " cursor-pointer"
+      : "cursor-pointer text-sm font-medium text-gray-700";
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
       <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
@@ -66,13 +70,16 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
               }
             >
               <TabsList className="w-full">
-                <TabsTrigger value="file" className="cursor-pointer">
+                <TabsTrigger value="file" className={selectedTabClass("file")}>
                   File
                 </TabsTrigger>
-                <TabsTrigger value="openpecha" className="cursor-pointer">
+                <TabsTrigger
+                  value="openpecha"
+                  className={selectedTabClass("openpecha")}
+                >
                   OpenPecha
                 </TabsTrigger>
-                <TabsTrigger value="ai" className="cursor-pointer">
+                <TabsTrigger value="ai" className={selectedTabClass("ai")}>
                   AI Generate
                 </TabsTrigger>
               </TabsList>
@@ -107,8 +114,11 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
 const AITranslation = ({ language }: { language: string }) => {
   // AI generation related states
   const { id } = useParams();
-  const [selectedCredential, setSelectedCredential] = useState<string>("");
+  const [selectedCredential, setSelectedCredential] = useState<string>(
+    "claude-3-haiku-20240307"
+  );
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [useSegmentation, setUseSegmentation] = useState<boolean>(true);
 
   // Get the query client for invalidating queries
   const queryClient = useQueryClient();
@@ -154,6 +164,7 @@ const AITranslation = ({ language }: { language: string }) => {
       rootId: id!,
       language,
       model: selectedCredential,
+      use_segmentation: useSegmentation,
     });
   };
 
@@ -162,13 +173,15 @@ const AITranslation = ({ language }: { language: string }) => {
       {/* No credentials warning */}
 
       {/* Provider and model selection */}
-      <div>
-        <Label htmlFor="credential-select">Select API Credential</Label>
+      <div className="space-y-2  gap-2 w-full">
+        <Label htmlFor="credential-select text-sm font-medium text-gray-700">
+          Select API Credential
+        </Label>
         <Select
           value={selectedCredential}
           onValueChange={setSelectedCredential}
         >
-          <SelectTrigger id="credential-select">
+          <SelectTrigger id="credential-select" className="w-full">
             <SelectValue placeholder="Select API credential" />
           </SelectTrigger>
           <SelectContent className="z-[10000]">
@@ -180,6 +193,27 @@ const AITranslation = ({ language }: { language: string }) => {
             </SelectItem>
           </SelectContent>
         </Select>
+      </div>
+
+      {/* Segmentation toggle */}
+
+      <div className="flex items-center justify-between p-4 bg-gray-50/50 rounded-lg border border-gray-200/50">
+        <div className="space-y-1">
+          <Label
+            htmlFor="segmentation"
+            className="text-sm font-medium text-gray-900"
+          >
+            Use segmentation for translation
+          </Label>
+          <p className="text-xs text-gray-500">
+            (Improves translation quality for structured text)
+          </p>
+        </div>
+        <Switch
+          id="segmentation"
+          checked={useSegmentation}
+          onCheckedChange={setUseSegmentation}
+        />
       </div>
 
       {/* Generate button */}

@@ -919,6 +919,7 @@ const upload = multer({
         model_name: model || "claude-3-haiku-20240307",
         priority: 5,
         webhook: webhookUrl, // Add the webhook URL
+        use_segmentation
       };
 
       // Try to send the translation request, but use a mock implementation if it fails
@@ -1027,6 +1028,105 @@ const upload = multer({
     } catch (error) {
       console.error("Error processing translation webhook:", error);
       res.status(500).json({ error: "Error processing translation webhook" });
+    }
+  });
+
+  /**
+   * GET /documents/{id}/translations/status
+   * @summary Get translation status and progress for all translations of a root document
+   * @tags Documents - Document management operations
+   * @security BearerAuth
+   * @param {string} id.path.required - Root document ID
+   * @return {object} 200 - Translation status information
+   * @return {object} 403 - Forbidden - No access
+   * @return {object} 404 - Document not found
+   * @return {object} 500 - Server error
+   */
+  router.get("/:id/translations/status", authenticate, async (req, res) => {
+    try {
+      const rootId = req.params.id;
+      
+      // First check if the user has access to the root document
+      const rootDoc = await prisma.doc.findUnique({
+        where: { id: rootId },
+        select: {
+          id: true,
+          ownerId: true,
+          isPublic: true,
+        },
+      });
+      
+      if (!rootDoc) {
+        return res.status(404).json({ error: "Root document not found" });
+      }
+      
+      // Check if user has permission to access this document
+      if (rootDoc.ownerId !== req.user.id && !rootDoc.isPublic) {
+        const permission = await prisma.permission.findFirst({
+          where: {
+            docId: rootId,
+            userId: req.user.id,
+            canRead: true,
+          },
+        });
+        
+        if (!permission && !rootDoc.isPublic) {
+          return res.status(403).json({ error: "No access" });
+        }
+      }
+      
+      // Get all translations for this root document with minimal data - just IDs and job IDs
+      const translations = await prisma.doc.findMany({
+        where: { 
+          rootId: rootId 
+        },
+        select: {
+          id: true,
+          name: true,
+          language: true,
+          translationStatus: true,
+          translationProgress: true,
+          translationJobId: true,
+          updatedAt: true,
+        },
+      });
+      
+      // For any translations that are in progress (started, pending, or progress), directly check with the translation worker
+      // for the latest status without updating the database first
+      const updatedTranslations = await Promise.all(
+        translations.map(async (translation) => {
+          // Only check status with translation worker if there's a job ID and translation is in progress
+          if (translation.translationJobId && 
+              (translation.translationStatus === "pending" || 
+               translation.translationStatus === "progress" || 
+               translation.translationStatus === "started")) {
+            try {
+              // Get the latest status directly from the translation worker (Redis-based, faster)
+              const status = await getTranslationStatus(translation.translationJobId);
+              
+              // If we got a valid status, use it directly without updating the database
+              if (status) {
+                // Return the translation with the updated status from the worker
+                return {
+                  ...translation,
+                  translationStatus: status.status || translation.translationStatus,
+                  translationProgress: status.progress || translation.translationProgress
+                };
+              }
+            } catch (error) {
+              console.error(`Error checking translation status for ${translation.id}:`, error);
+              // Continue with the current status if there's an error
+            }
+          }
+          // Return the original translation if no job ID or error occurred
+          return translation;
+        })
+      );
+      
+      res.json(updatedTranslations);
+    } catch (error) {
+      console.error("Error fetching translation status:", error);
+      res.status(500).json({ error: "Error fetching translation status" });
     }
   });
 

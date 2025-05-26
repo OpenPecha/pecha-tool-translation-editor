@@ -6,8 +6,8 @@ import { Button } from "../ui/button";
 import CreateTranslationModal from "./CreateTranslationModal";
 import { useParams } from "react-router-dom";
 import { useCurrentDoc } from "@/hooks/useCurrentDoc";
-import { useQueryClient, useMutation } from "@tanstack/react-query";
-import { deleteDocument } from "@/api/document";
+import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
+import { deleteDocument, fetchTranslationStatus } from "@/api/document";
 import formatTimeAgo from "@/lib/formatTimeAgo";
 
 // Simple progress component
@@ -48,6 +48,72 @@ function SelectTranslation({
     currentDoc && "isRoot" in currentDoc ? currentDoc.isRoot : false
   );
 
+  // Set up polling for translation status and progress updates
+  const { data: translationStatusData, refetch: refetchTranslationStatus } = useQuery({
+    queryKey: [`translation-status-${rootId}`],
+    queryFn: () => fetchTranslationStatus(rootId),
+    enabled: false, // Don't fetch on mount, we'll control this with the interval
+  });
+
+  // Define interface for translation status data
+  interface TranslationStatus {
+    id: string;
+    name: string;
+    language: string;
+    translationStatus: string;
+    translationProgress: number;
+    translationJobId?: string;
+    updatedAt: string;
+  }
+
+  // Define interface for document data with translations
+  interface DocumentWithTranslations {
+    translations: Translation[];
+    [key: string]: any;
+  }
+
+  // Update translations with the latest status data when it's available
+  useEffect(() => {
+    if (translationStatusData && translations.length > 0) {
+      // Update the translations in the queryClient cache
+      const currentDoc = queryClient.getQueryData<DocumentWithTranslations>([`document-${rootId}`]);
+      
+      // Use optional chaining for better readability
+      if (currentDoc?.translations) {
+        // Create a map of translation IDs to their updated status/progress
+        const statusMap = (translationStatusData as TranslationStatus[]).reduce<Record<string, { translationStatus: string; translationProgress: number }>>((map, item) => {
+          map[item.id] = {
+            translationStatus: item.translationStatus,
+            translationProgress: item.translationProgress
+          };
+          return map;
+        }, {});
+        
+        // Update the translations with the latest status
+        const updatedTranslations = currentDoc.translations.map((translation: Translation & {
+          translationStatus?: string;
+          translationProgress?: number;
+          id: string;
+          updatedAt: string;
+        }) => {
+          if (statusMap[translation.id]) {
+            return {
+              ...translation,
+              ...statusMap[translation.id]
+            };
+          }
+          return translation;
+        });
+        
+        // Update the cache with the new translations data
+        queryClient.setQueryData<DocumentWithTranslations>([`document-${rootId}`], {
+          ...currentDoc,
+          translations: updatedTranslations
+        });
+      }
+    }
+  }, [translationStatusData, translations, queryClient, rootId]);
+
   // Set up polling for translation progress updates
   useEffect(() => {
     // Only poll if there are translations in progress
@@ -62,11 +128,12 @@ function SelectTranslation({
 
     // Poll for updates every 3 seconds
     const intervalId = setInterval(() => {
-      queryClient.invalidateQueries({ queryKey: [`document-${rootId}`] });
+      // Instead of invalidating the whole document query, just fetch translation status
+      refetchTranslationStatus();
     }, 3000);
 
     return () => clearInterval(intervalId);
-  }, [translations, queryClient, rootId]);
+  }, [translations, refetchTranslationStatus]);
 
   const deleteTranslationMutation = useMutation({
     mutationFn: (translationId: string) => deleteDocument(translationId),

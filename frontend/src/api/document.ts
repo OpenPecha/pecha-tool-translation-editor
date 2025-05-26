@@ -88,7 +88,7 @@ export const createDocument = async (formData: FormData) => {
   });
   if (!response.ok) {
     const error = await response.text();
-    throw new Error(error || "Failed to create document");
+    throw new Error(error ?? "Failed to create document");
   }
 
   return response.json();
@@ -152,7 +152,7 @@ export const updateDocument = async (
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || "Failed to update document");
+      throw new Error(errorData.error ?? "Failed to update document");
     }
 
     const updatedData = await response.json();
@@ -170,6 +170,7 @@ export interface GenerateTranslationParams {
   rootId: string;
   language: string;
   model: string;
+  use_segmentation: boolean;
 }
 
 export const generateTranslation = async (params: GenerateTranslationParams) => {
@@ -203,7 +204,7 @@ export const updateContentDocument=async(id:string, data:UpdateDocumentParams)=>
     });
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || "Failed to update document");
+      throw new Error(errorData.error ?? "Failed to update document");
     }
     const updatedData = await response.json();
     return updatedData.data;
@@ -212,5 +213,29 @@ export const updateContentDocument=async(id:string, data:UpdateDocumentParams)=>
       throw new Error(error.message);
     }
     throw new Error("Failed to update document");
+  }
+};
+
+/**
+ * Fetches only the translation status and progress for translations of a root document
+ * More efficient than fetching the entire document when polling for status updates
+ */
+export const fetchTranslationStatus = async (rootId: string) => {
+  try {
+    const response = await fetch(`${server_url}/documents/${rootId}/translations/status`, {
+      headers: getHeaders(),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error ?? "Failed to fetch translation status");
+    }
+    
+    return await response.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+    throw new Error("Failed to fetch translation status");
   }
 };
