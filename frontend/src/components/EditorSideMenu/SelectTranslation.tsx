@@ -151,7 +151,7 @@ function SelectTranslation({
                           setSelectedTranslationId(translation.id);
                         }
                       }}
-                      className={`flex items-center gap-2 p-2 rounded-md w-full text-left flex-grow ${
+                      className={`flex flex-1 items-center gap-2 p-2 rounded-md w-full text-left flex-grow ${
                         disabled
                           ? "opacity-70 cursor-not-allowed bg-gray-50"
                           : "cursor-pointer hover:bg-gray-100"
@@ -191,19 +191,19 @@ function SelectTranslation({
                           )}
                         </div>
                       </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 p-0 ml-1 text-red-500 hover:text-red-700 hover:bg-red-100"
+                        onClick={(e) =>
+                          handleDeleteTranslation(translation.id, e)
+                        }
+                        disabled={deleteTranslationMutation.isPending}
+                        aria-label={`Delete translation ${translation.id}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 p-0 ml-1 text-red-500 hover:text-red-700 hover:bg-red-100"
-                      onClick={(e) =>
-                        handleDeleteTranslation(translation.id, e)
-                      }
-                      disabled={deleteTranslationMutation.isPending || disabled}
-                      aria-label={`Delete translation ${translation.id}`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
                   </div>
 
                   {/* Progress bar for translations in progress */}
