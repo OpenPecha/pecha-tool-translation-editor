@@ -819,7 +819,7 @@ const upload = multer({
    */
   router.post("/generate-translation", authenticate, async (req, res) => {
     try {
-      const { rootId, language, model,use_segmentation} = req.body;
+      const { rootId, language, model, use_segmentation} = req.body;
 
       const apiKey=model==='claude-3-haiku-20240307'?process.env.CLAUDE_API_KEY:"";
       if(apiKey===''){
@@ -906,7 +906,7 @@ const upload = multer({
       const webhookUrl = `${serverUrl}/documents/translation-webhook/${translationId}`;
       
       console.log(`Setting up webhook URL: ${webhookUrl}`);
-
+ 
       // Prepare translation request data
       const translationData = {
         api_key: apiKey,

@@ -51,7 +51,6 @@ async function sendTranslationRequest(data) {
     if (!data.model_name) throw new Error('Model name is required');
     if (!data.priority || data.priority < 1 || data.priority > 10) throw new Error('Valid priority (1-10) is required');
     if (!data.webhook) throw new Error('Webhook URL is required');
-    if (!data.use_segmentation) throw new Error('Use segmentation is required');
 
     console.log(`Sending request to translation worker at: ${translation_endpoint}/messages`);
     console.log('Request data:', { ...data, api_key: '***REDACTED***' });
