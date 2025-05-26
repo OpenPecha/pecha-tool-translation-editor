@@ -71,8 +71,8 @@ function SelectTranslation({
     const intervalId = setInterval(() => {
       // Instead of invalidating the whole document query, just fetch translation status
       refetchTranslationStatus();
-    }, 3000);
-    
+    }, 10000);
+
     // Immediately fetch status when we detect in-progress translations
     refetchTranslationStatus();
 
@@ -244,22 +244,22 @@ const ProgressBar = ({ translationStatusData, translation }) => {
   const statusFromEndpoint = translationStatusData?.length
     ? translationStatusData?.find((d) => d.id === translation.id)
     : null;
-    
+
   // Determine if the translation is in progress based on status
   const inProgress = statusFromEndpoint
-    ? statusFromEndpoint.translationStatus === "progress" || 
+    ? statusFromEndpoint.translationStatus === "progress" ||
       statusFromEndpoint.translationStatus === "started"
-    : translation.translationStatus === "progress" || 
+    : translation.translationStatus === "progress" ||
       translation.translationStatus === "started";
-      
+
   // Only show progress bar for in-progress translations
   if (!inProgress) return null;
-  
+
   // Use status from endpoint if available, otherwise fall back to translation data
   const progressValue = statusFromEndpoint
     ? statusFromEndpoint.translationProgress ?? 0
     : translation.translationProgress ?? 0;
-    
+
   return (
     <div className="px-2 pb-2">
       <Progress value={progressValue} className="h-1" />
