@@ -49,79 +49,20 @@ function SelectTranslation({
   );
 
   // Set up polling for translation status and progress updates
-  const { data: translationStatusData, refetch: refetchTranslationStatus } = useQuery({
-    queryKey: [`translation-status-${rootId}`],
-    queryFn: () => fetchTranslationStatus(rootId),
-    enabled: false, // Don't fetch on mount, we'll control this with the interval
-  });
-
-  // Define interface for translation status data
-  interface TranslationStatus {
-    id: string;
-    name: string;
-    language: string;
-    translationStatus: string;
-    translationProgress: number;
-    translationJobId?: string;
-    updatedAt: string;
-  }
-
-  // Define interface for document data with translations
-  interface DocumentWithTranslations {
-    translations: Translation[];
-    [key: string]: any;
-  }
-
-  // Update translations with the latest status data when it's available
-  useEffect(() => {
-    if (translationStatusData && translations.length > 0) {
-      // Update the translations in the queryClient cache
-      const currentDoc = queryClient.getQueryData<DocumentWithTranslations>([`document-${rootId}`]);
-      
-      // Use optional chaining for better readability
-      if (currentDoc?.translations) {
-        // Create a map of translation IDs to their updated status/progress
-        const statusMap = (translationStatusData as TranslationStatus[]).reduce<Record<string, { translationStatus: string; translationProgress: number }>>((map, item) => {
-          map[item.id] = {
-            translationStatus: item.translationStatus,
-            translationProgress: item.translationProgress
-          };
-          return map;
-        }, {});
-        
-        // Update the translations with the latest status
-        const updatedTranslations = currentDoc.translations.map((translation: Translation & {
-          translationStatus?: string;
-          translationProgress?: number;
-          id: string;
-          updatedAt: string;
-        }) => {
-          if (statusMap[translation.id]) {
-            return {
-              ...translation,
-              ...statusMap[translation.id]
-            };
-          }
-          return translation;
-        });
-        
-        // Update the cache with the new translations data
-        queryClient.setQueryData<DocumentWithTranslations>([`document-${rootId}`], {
-          ...currentDoc,
-          translations: updatedTranslations
-        });
-      }
-    }
-  }, [translationStatusData, translations, queryClient, rootId]);
-
+  const { data: translationStatusData, refetch: refetchTranslationStatus } =
+    useQuery({
+      queryKey: [`translation-status-${rootId}`],
+      queryFn: () => fetchTranslationStatus(rootId),
+      enabled: false, // Don't fetch on mount, we'll control this with the interval
+    });
   // Set up polling for translation progress updates
   useEffect(() => {
     // Only poll if there are translations in progress
     const hasInProgressTranslations = translations.some(
       (translation) =>
-        translation.translationStatus === "pending" ||
         translation.translationStatus === "progress" ||
-        translation.translationStatus === "started"
+        translation.translationStatus === "started" ||
+        translation.translationStatus === "pending"
     );
 
     if (!hasInProgressTranslations) return;
@@ -131,9 +72,12 @@ function SelectTranslation({
       // Instead of invalidating the whole document query, just fetch translation status
       refetchTranslationStatus();
     }, 3000);
+    
+    // Immediately fetch status when we detect in-progress translations
+    refetchTranslationStatus();
 
     return () => clearInterval(intervalId);
-  }, [translations, refetchTranslationStatus]);
+  }, [translations, refetchTranslationStatus, rootId]);
 
   const deleteTranslationMutation = useMutation({
     mutationFn: (translationId: string) => deleteDocument(translationId),
@@ -273,19 +217,11 @@ function SelectTranslation({
                       </Button>
                     </div>
                   </div>
-
                   {/* Progress bar for translations in progress */}
-                  {disabled && (
-                    <div className="px-2 pb-2">
-                      <Progress
-                        value={translation.translationProgress ?? 0}
-                        className="h-1"
-                      />
-                      <div className="text-xs text-gray-500 text-right mt-1">
-                        {translation.translationProgress ?? 0}%
-                      </div>
-                    </div>
-                  )}
+                  <ProgressBar
+                    translationStatusData={translationStatusData}
+                    translation={translation}
+                  />
                 </div>
               );
             }
@@ -302,5 +238,36 @@ function SelectTranslation({
     </div>
   );
 }
+
+const ProgressBar = ({ translationStatusData, translation }) => {
+  // Get status from status endpoint if available, otherwise use translation data
+  const statusFromEndpoint = translationStatusData?.length
+    ? translationStatusData?.find((d) => d.id === translation.id)
+    : null;
+    
+  // Determine if the translation is in progress based on status
+  const inProgress = statusFromEndpoint
+    ? statusFromEndpoint.translationStatus === "progress" || 
+      statusFromEndpoint.translationStatus === "started"
+    : translation.translationStatus === "progress" || 
+      translation.translationStatus === "started";
+      
+  // Only show progress bar for in-progress translations
+  if (!inProgress) return null;
+  
+  // Use status from endpoint if available, otherwise fall back to translation data
+  const progressValue = statusFromEndpoint
+    ? statusFromEndpoint.translationProgress ?? 0
+    : translation.translationProgress ?? 0;
+    
+  return (
+    <div className="px-2 pb-2">
+      <Progress value={progressValue} className="h-1" />
+      <div className="text-xs text-gray-500 text-right mt-1">
+        {progressValue}%
+      </div>
+    </div>
+  );
+};
 
 export default SelectTranslation;
