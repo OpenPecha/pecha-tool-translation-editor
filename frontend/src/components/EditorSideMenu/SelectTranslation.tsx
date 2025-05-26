@@ -54,7 +54,8 @@ function SelectTranslation({
     const hasInProgressTranslations = translations.some(
       (translation) =>
         translation.translationStatus === "pending" ||
-        translation.translationStatus === "progress"
+        translation.translationStatus === "progress" ||
+        translation.translationStatus === "started"
     );
 
     if (!hasInProgressTranslations) return;
