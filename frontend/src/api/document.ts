@@ -170,7 +170,7 @@ export interface GenerateTranslationParams {
   rootId: string;
   language: string;
   model: string;
-  use_segmentation: boolean;
+  use_segmentation: string |null;
 }
 
 export const generateTranslation = async (params: GenerateTranslationParams) => {

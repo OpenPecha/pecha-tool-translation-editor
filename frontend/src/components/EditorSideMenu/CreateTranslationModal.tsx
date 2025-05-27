@@ -119,7 +119,7 @@ const AITranslation = ({ language }: { language: string }) => {
   );
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [useSegmentation, setUseSegmentation] = useState<boolean>(true);
-
+  const [error, setError] = useState<string | null>(null);
   // Get the query client for invalidating queries
   const queryClient = useQueryClient();
 
@@ -144,13 +144,7 @@ const AITranslation = ({ language }: { language: string }) => {
     },
     onError: (error) => {
       console.error("Error generating translation:", error);
-      alert(
-        `Error: ${
-          error instanceof Error
-            ? error.message
-            : "Failed to generate translation"
-        }`
-      );
+      setError(error.message);
       setIsGenerating(false);
     },
   });
@@ -164,7 +158,7 @@ const AITranslation = ({ language }: { language: string }) => {
       rootId: id!,
       language,
       model: selectedCredential,
-      use_segmentation: useSegmentation,
+      use_segmentation: useSegmentation ? "botok" : null,
     });
   };
 
@@ -206,7 +200,7 @@ const AITranslation = ({ language }: { language: string }) => {
             Use segmentation for translation
           </Label>
           <p className="text-xs text-gray-500">
-            (Improves translation quality for structured text)
+            ( use only if root is not segmented )
           </p>
         </div>
         <Switch
@@ -215,7 +209,7 @@ const AITranslation = ({ language }: { language: string }) => {
           onCheckedChange={setUseSegmentation}
         />
       </div>
-
+      {error && <p className="text-red-500">{error}</p>}
       {/* Generate button */}
       <Button
         className="float-right"

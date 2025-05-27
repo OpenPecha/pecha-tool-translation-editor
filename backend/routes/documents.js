@@ -8,6 +8,7 @@ const Delta = require("quill-delta");
 const {
   sendTranslationRequest,
   getTranslationStatus,
+  getHealthWorker,
 } = require("../apis/translation_worker");
 
 const prisma = new PrismaClient();
@@ -835,6 +836,8 @@ function convertProseMirrorDeltaToYDelta(prosemirrorDelta) {
  * @param {string} request.body.model - AI model to use for translation
  * @param {string} request.body.provider - AI provider (OpenAI, Claude, etc.)
  * @param {string} request.body.instructions - Additional instructions for translation
+ * @param {string} request.body.use_segmentation - Additional instructions for translation
+ *
  * @return {object} 201 - Created document with job ID
  * @return {object} 400 - Bad request
  * @return {object} 500 - Server error
@@ -842,6 +845,13 @@ function convertProseMirrorDeltaToYDelta(prosemirrorDelta) {
 router.post("/generate-translation", authenticate, async (req, res) => {
   try {
     const { rootId, language, model, use_segmentation } = req.body;
+
+    const isTranslationWorkerHealthy = await getHealthWorker();
+    if (!isTranslationWorkerHealthy) {
+      return res
+        .status(500)
+        .json({ error: "Translation worker is not healthy" });
+    }
 
     const apiKey =
       model === "claude-3-haiku-20240307" ? process.env.CLAUDE_API_KEY : "";
@@ -946,9 +956,10 @@ router.post("/generate-translation", authenticate, async (req, res) => {
       model_name: model || "claude-3-haiku-20240307",
       priority: 5,
       webhook: webhookUrl, // Add the webhook URL
-      use_segmentation,
     };
-
+    if (typeof use_segmentation === "string") {
+      translationData["use_segmentation"] = use_segmentation;
+    }
     // Try to send the translation request, but use a mock implementation if it fails
     try {
       const response = await sendTranslationRequest(translationData);
