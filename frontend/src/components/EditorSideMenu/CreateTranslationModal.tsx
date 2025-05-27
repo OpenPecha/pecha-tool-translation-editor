@@ -101,7 +101,7 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
               </TabsContent>
 
               <TabsContent value="ai" className="pt-2">
-                <AITranslation language={language} />
+                <AITranslation language={language} onClose={onClose} />
               </TabsContent>
             </Tabs>
           )}
@@ -111,7 +111,13 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
   );
 };
 
-const AITranslation = ({ language }: { language: string }) => {
+const AITranslation = ({
+  language,
+  onClose,
+}: {
+  language: string;
+  onClose: () => void;
+}) => {
   // AI generation related states
   const { id } = useParams();
   const [selectedCredential, setSelectedCredential] = useState<string>(
@@ -138,9 +144,11 @@ const AITranslation = ({ language }: { language: string }) => {
     mutationFn: generateTranslation,
     onSuccess: (data) => {
       console.log("Translation generation started:", data);
+
       // Refresh the document list to show the new translation with progress bar
       queryClient.invalidateQueries({ queryKey: [`document-${id}`] });
       setIsGenerating(false);
+      onClose();
     },
     onError: (error) => {
       console.error("Error generating translation:", error);
