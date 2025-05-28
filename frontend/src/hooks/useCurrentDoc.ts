@@ -1,5 +1,5 @@
  import { useState } from 'react';
-import { fetchDocument } from '../api/document';
+import { fetchDocument, fetchDocumentTranslations } from '../api/document';
 import { useAuth } from '@/auth/use-auth-hook';
 import { useQuery } from '@tanstack/react-query';
 import { EDITOR_READ_ONLY } from "@/utils/editorConfig";
@@ -59,4 +59,27 @@ export const useCurrentDoc = (docId: string | undefined): UseCurrentDocReturn =>
     isEditable
   };
 };
- 
+
+/**
+ * Hook to fetch and manage translations for a document
+ * @param docId The ID of the document to fetch translations for
+ * @returns Object containing translations data, loading state, and error
+ */
+export const useCurrentDocTranslations = (docId: string | undefined) => {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: [`translations-${docId}`],
+    queryFn: async () => {
+      if (!docId) return [];
+      return await fetchDocumentTranslations(docId);
+    },
+    enabled: !!docId,
+    staleTime: 0, // Always fetch fresh data
+  });
+
+  return {
+    translations: data ?? [],
+    loading: isLoading,
+    error: error ? (error instanceof Error ? error.message : 'Failed to load translations') : null,
+    refetchTranslations: refetch
+  };
+};

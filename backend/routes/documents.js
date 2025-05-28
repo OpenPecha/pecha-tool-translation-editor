@@ -13,6 +13,37 @@ const {
 
 const prisma = new PrismaClient();
 const router = express.Router();
+
+/**
+ * Check if a user has permission to access a document
+ * @param {Object} document - The document object with rootsProject information
+ * @param {string} userId - The ID of the user to check permissions for
+ * @returns {boolean} - Whether the user has permission to access the document
+ */
+async function checkDocumentPermission(document, userId) {
+  // If the document doesn't exist, no permission
+  if (!document) return false;
+
+  // Check if user is the owner of the project
+  if (document.rootsProject && document.rootsProject.ownerId === userId) {
+    return true;
+  }
+
+  // Check if user has explicit permission in the project
+  if (document.rootsProject && document.rootsProject.permissions) {
+    const userPermission = document.rootsProject.permissions.find(
+      (permission) => permission.userId === userId
+    );
+
+    if (userPermission) {
+      return true;
+    }
+  }
+
+  // No permission found
+  return false;
+}
+
 const upload = multer({
   storage: multer.memoryStorage(), // Keeps file in memory, not saved on disk
   limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
@@ -215,42 +246,32 @@ router.get("/:id", authenticate, async (req, res) => {
         ownerId: true,
         language: true,
         isRoot: true,
+        rootId: true,
         isPublic: true,
         docs_prosemirror_delta: true,
-        rootProjectId: true,
+        docs_y_doc_state: true,
+        createdAt: true,
+        updatedAt: true,
+
         rootsProject: {
-          select: {
+          include: {
             permissions: true,
-            name: true,
-          },
-        },
-        translations: {
-          select: {
-            id: true,
-            name: true,
-            language: true,
-            translationStatus: true,
-            translationProgress: true,
-            updatedAt: true,
-          },
-          orderBy: {
-            updatedAt: "desc",
           },
         },
       },
     });
+
     if (!document) return res.status(404).json({ error: "Document not found" });
 
-    if (document.ownerId !== req.user.id) {
-      const permission = await prisma.permission.findFirst({
-        where: {
-          projectId: document.rootProjectId,
-          userId: req.user.id,
-          canRead: true,
-        },
+    // Check if user has permission to access this document
+    const hasPermission = checkDocumentPermission(document, req.user.id);
+
+    // If document is not public and user doesn't have permission, deny access
+    if (!hasPermission) {
+      return res.status(403).json({
+        success: false,
+        message: "You do not have permission to access this document",
       });
-      if (!permission && !document.isPublic)
-        return res.status(403).json({ error: "No access" });
     }
 
     // Decode Y.js state (if stored as Uint8Array) and convert to Delta
@@ -292,21 +313,26 @@ router.get("/:id/content", authenticate, async (req, res) => {
         permissions: true,
         language: true,
         isRoot: true,
+        isPublic: true,
         docs_prosemirror_delta: true,
+        rootsProject: {
+          include: {
+            permissions: true,
+          },
+        },
       },
     });
     if (!document) return res.status(404).json({ error: "Document not found" });
 
-    if (document.ownerId !== req.user.id) {
-      const permission = await prisma.permission.findFirst({
-        where: {
-          projectId: document.rootProjectId,
-          userId: req.user.id,
-          canRead: true,
-        },
+    // Check if user has permission to access this document
+    const hasPermission = checkDocumentPermission(document, req.user.id);
+
+    // If document is not public and user doesn't have permission, deny access
+    if (!hasPermission) {
+      return res.status(403).json({
+        success: false,
+        message: "You do not have permission to access this document",
       });
-      if (!permission && !document.isPublic)
-        return res.status(403).json({ error: "No access" });
     }
 
     // Decode Y.js state (if stored as Uint8Array) and convert to Delta
@@ -326,6 +352,81 @@ router.get("/:id/content", authenticate, async (req, res) => {
 });
 
 /**
+ * GET /documents/{id}/translations
+ * @summary Get all translations for a document
+ * @tags Documents - Document management operations
+ * @security BearerAuth
+ * @param {string} id.path.required - Document ID
+ * @return {object} 200 - List of translations
+ * @return {object} 403 - Forbidden - No access
+ * @return {object} 404 - Document not found
+ * @return {object} 500 - Server error
+ */
+router.get("/:id/translations", authenticate, async (req, res) => {
+  try {
+    const documentId = req.params.id;
+
+    // First check if the document exists
+    const document = await prisma.doc.findUnique({
+      where: { id: documentId },
+      include: {
+        rootsProject: {
+          include: {
+            permissions: true,
+          },
+        },
+      },
+    });
+
+    if (!document) {
+      return res.status(404).json({
+        success: false,
+        message: "Document not found",
+      });
+    }
+
+    // Check if user has permission to access this document
+    const hasPermission = checkDocumentPermission(document, req.user.id);
+    if (!hasPermission) {
+      return res.status(403).json({
+        success: false,
+        message: "You do not have permission to access this document",
+      });
+    }
+
+    // Get all translations for this document
+    const translations = await prisma.doc.findMany({
+      where: {
+        rootId: documentId,
+      },
+      select: {
+        id: true,
+        name: true,
+        language: true,
+        ownerId: true,
+        isPublic: true,
+        updatedAt: true,
+      },
+      orderBy: {
+        updatedAt: "desc",
+      },
+    });
+
+    return res.json({
+      success: true,
+      data: translations,
+    });
+  } catch (error) {
+    console.error("Error fetching translations:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch translations",
+      error: error.message,
+    });
+  }
+});
+
+/**
  * PUT /documents/{id}
  * @summary Update a document
  * @tags Documents - Document management operations
@@ -340,22 +441,29 @@ router.get("/:id/content", authenticate, async (req, res) => {
  * @return {object} 500 - Server error
  */
 router.put("/:id", authenticate, async (req, res) => {
-  const { docs_prosemirror_delta, docs_y_doc_state } = req.body;
+  const { docs_prosemirror_delta, docs_y_doc_state, name } = req.body;
   try {
     const document = await prisma.doc.findUnique({
       where: { id: req.params.id },
+      include: {
+        rootsProject: {
+          include: {
+            permissions: true,
+          },
+        },
+      },
     });
     if (!document) return res.status(404).json({ error: "Document not found" });
 
-    if (document.ownerId !== req.user.id) {
-      const permission = await prisma.permission.findFirst({
-        where: {
-          projectId: document.rootProjectId,
-          userId: req.user.id,
-          canWrite: true,
-        },
+    // Check if user has permission to access this document
+    const hasPermission = checkDocumentPermission(document, req.user.id);
+
+    // If user doesn't have permission, deny access
+    if (!hasPermission) {
+      return res.status(403).json({
+        success: false,
+        message: "You do not have permission to edit this document",
       });
-      if (!permission) return res.status(403).json({ error: "No edit access" });
     }
 
     const updatedDocument = await prisma.doc.update({
@@ -389,28 +497,27 @@ router.delete("/:id", authenticate, async (req, res) => {
             ownerId: true,
           },
         },
+        rootsProject: {
+          include: {
+            permissions: true,
+          },
+        },
       },
     });
-
     if (!document) return res.status(404).json({ error: "Document not found" });
+
+    // Check if user has permission to access this document
+    const hasPermission = checkDocumentPermission(document, req.user.id);
 
     // Check if user is the owner of the document or the root document
     const isOwner = document.ownerId === req.user.id;
     const isRootOwner = document.root && document.root.ownerId === req.user.id;
 
-    // Check if user has write permission for this document
-    const hasPermission = await prisma.permission.findFirst({
-      where: {
-        docId: document.id,
-        userId: req.user.id,
-        canWrite: true,
-      },
-    });
-
-    // Allow deletion if user is owner, root owner, or has write permission
+    // Only allow deletion by document owner, root document owner, or if user has permission
     if (!isOwner && !isRootOwner && !hasPermission) {
       return res.status(403).json({
-        error: "You do not have permission to delete this document",
+        success: false,
+        message: "You do not have permission to delete this document",
       });
     }
 
@@ -454,13 +561,23 @@ router.post("/:id/permissions", authenticate, async (req, res) => {
       where: { id: documentId },
       include: {
         translations: true,
+        rootsProject: {
+          include: {
+            permissions: true,
+          },
+        },
       },
     });
     if (!document) return res.status(404).json({ error: "Document not found" });
-    // Ensure the requesting user is the owner of the document
-    if (document.ownerId !== req.user.id) {
+
+    // Check if user has permission to access this document
+    const hasPermission = checkDocumentPermission(document, req.user.id);
+
+    // Only allow permission changes by document owner
+    if (!hasPermission) {
       return res.status(403).json({
-        error: "You do not have permission to modify this document",
+        success: false,
+        message: "You do not have permission to modify this document",
       });
     }
 
@@ -538,6 +655,11 @@ router.patch("/:id", authenticate, async (req, res) => {
       where: { id: documentId },
       include: {
         root: true,
+        rootsProject: {
+          include: {
+            permissions: true,
+          },
+        },
       },
     });
 
@@ -545,20 +667,28 @@ router.patch("/:id", authenticate, async (req, res) => {
       return res.status(404).json({ error: "Document not found" });
     }
 
-    // Check permissions
-    if (document.ownerId !== req.user.id) {
-      const permission = await prisma.permission.findFirst({
-        where: {
-          projectId: document.rootProjectId,
-          userId: req.user.id,
-          canWrite: true,
-        },
+    // Check if user has permission to access this document
+    const hasPermission = checkDocumentPermission(document, req.user.id);
+
+    // If user doesn't have permission, deny access
+    if (!hasPermission) {
+      return res.status(403).json({
+        success: false,
+        message: "You do not have permission to edit this document",
       });
-      if (!permission) {
-        return res.status(403).json({
-          error: "You do not have permission to edit this document",
-        });
-      }
+    }
+
+    // If only name is provided, just update the name
+    if (name && Object.keys(req.body).length === 1) {
+      const updatedDocument = await prisma.doc.update({
+        where: { id: documentId },
+        data: { name },
+      });
+
+      return res.json({
+        success: true,
+        data: updatedDocument,
+      });
     }
 
     // Validate the request

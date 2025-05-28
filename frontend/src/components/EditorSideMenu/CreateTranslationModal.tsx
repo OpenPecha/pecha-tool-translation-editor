@@ -22,11 +22,13 @@ import { useParams } from "react-router-dom";
 interface CreateTranslationModalProps {
   rootId: string;
   onClose: () => void;
+  refetchTranslations: () => Promise<QueryObserverResult<any, Error>>;
 }
 
 const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
   rootId,
   onClose,
+  refetchTranslations,
 }) => {
   const [language, setLanguage] = useState("");
   const [uploadMethod, setUploadMethod] = useState<"file" | "openpecha" | "ai">(
@@ -40,8 +42,9 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
   useEffect(() => {
     if (translationId) {
       onClose();
+      refetchTranslations();
     }
-  }, [translationId, onClose]);
+  }, [translationId, onClose, refetchTranslations]);
   const selectedTabClass = (tab: "file" | "openpecha" | "ai") =>
     uploadMethod === tab
       ? " cursor-pointer"
@@ -126,20 +129,8 @@ const AITranslation = ({
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [useSegmentation, setUseSegmentation] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  // Get the query client for invalidating queries
   const queryClient = useQueryClient();
 
-  // Fetch API credentials from the settings
-  // const {
-  //   data: apiCredentials,
-  //   isLoading,
-  //   error,
-  // } = useQuery({
-  //   queryKey: ["api-credentials"],
-  //   queryFn: fetchApiCredentials,
-  // });
-
-  // Use React Query mutation for generating translations
   const generateTranslationMutation = useMutation({
     mutationFn: generateTranslation,
     onSuccess: (data) => {

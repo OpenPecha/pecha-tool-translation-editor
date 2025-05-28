@@ -136,8 +136,34 @@ export const deleteDocument = async (id: string) => {
 };
 
 interface UpdateDocumentParams {
-  docs_prosemirror_delta: Op[];
+  name: string| undefined;
+  docs_prosemirror_delta: Op[] | undefined;
 }
+
+/**
+ * Fetch all translations for a document
+ * @param documentId The ID of the document to fetch translations for
+ * @returns A promise that resolves to an array of translations
+ */
+export const fetchDocumentTranslations = async (documentId: string) => {
+  try {
+    const response = await fetch(`${server_url}/documents/${documentId}/translations`, {
+      method: 'GET',
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message ?? 'Failed to fetch translations');
+    }
+
+    const data = await response.json();
+    return data.data;
+  } catch (error) {
+    console.error('Error fetching translations:', error);
+    throw error;
+  }
+};
 
 export const updateDocument = async (
   id: string,

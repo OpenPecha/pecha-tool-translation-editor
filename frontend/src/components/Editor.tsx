@@ -25,8 +25,10 @@ const Editor = ({
 }) => {
   const { currentDoc } = useCurrentDoc(documentId);
   const editorRef = useRef<HTMLDivElement>(null);
-  const toolbarId = "toolbar-container" + "-" + documentId?.substring(0, 4);
-  const counterId = "counter-container" + "-" + documentId;
+  const toolbarId =
+    "toolbar-container" + "-" + Math.random().toString(36).slice(2, 6);
+  const counterId =
+    "counter-container" + "-" + Math.random().toString(36).slice(2, 6);
   const [currentRange, setCurrentRange] = useState<Range | null>(null);
   const [showCommentModal, setShowCommentModal] = useState(false);
   const { registerQuill } = useQuillVersion();

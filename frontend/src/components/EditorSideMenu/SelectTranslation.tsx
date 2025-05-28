@@ -1,32 +1,22 @@
-import { useMemo, useState, useEffect } from "react";
-import { GrDocument } from "react-icons/gr";
-import { Plus, Trash2, RefreshCw } from "lucide-react";
-import { Translation } from "../DocumentWrapper";
+import { useState, useEffect } from "react";
+import { Plus } from "lucide-react";
 import { Button } from "../ui/button";
 import CreateTranslationModal from "./CreateTranslationModal";
 import { useParams } from "react-router-dom";
-import { useCurrentDoc } from "@/hooks/useCurrentDoc";
+import {
+  useCurrentDoc,
+  useCurrentDocTranslations,
+  Translation,
+} from "@/hooks/useCurrentDoc";
 import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
-import { deleteDocument, fetchTranslationStatus } from "@/api/document";
-import formatTimeAgo from "@/lib/formatTimeAgo";
+import {
+  deleteDocument,
+  fetchTranslationStatus,
+  updateDocument,
+} from "@/api/document";
 
-// Simple progress component
-const Progress = ({
-  value = 0,
-  className = "",
-}: {
-  value?: number;
-  className?: string;
-}) => (
-  <div
-    className={`relative h-2 w-full overflow-hidden rounded-full bg-gray-100 ${className}`}
-  >
-    <div
-      className="h-full bg-blue-500 transition-all"
-      style={{ width: `${value ?? 0}%` }}
-    />
-  </div>
-);
+// Import components
+import TranslationList from "./components/TranslationList";
 
 function SelectTranslation({
   setSelectedTranslationId,
@@ -37,11 +27,9 @@ function SelectTranslation({
   const { id } = useParams();
   const rootId = id as string;
   const { currentDoc } = useCurrentDoc(rootId);
+  const { translations, refetchTranslations } =
+    useCurrentDocTranslations(rootId);
   const queryClient = useQueryClient();
-  const translations = useMemo(
-    () => currentDoc?.translations ?? [],
-    [currentDoc?.translations]
-  );
 
   // Check if the current document is a root document
   const isRoot = Boolean(
@@ -55,11 +43,12 @@ function SelectTranslation({
       queryFn: () => fetchTranslationStatus(rootId),
       enabled: false, // Don't fetch on mount, we'll control this with the interval
     });
+
   // Set up polling for translation progress updates
   useEffect(() => {
     // Only poll if there are translations in progress
     const hasInProgressTranslations = translations.some(
-      (translation) =>
+      (translation: Translation) =>
         translation.translationStatus === "progress" ||
         translation.translationStatus === "started"
     );
@@ -84,18 +73,19 @@ function SelectTranslation({
           status.translationStatus !== "progress" &&
           status.translationStatus !== "started"
       );
-    // If all translations are completed, stop polling
+    // If all translations are completed, stop polling and refresh translations
     if (allTranslationsCompleted) {
       console.log("All translations completed, stopping status polling");
-      queryClient.invalidateQueries({ queryKey: [`document-${rootId}`] });
+      // Refresh both document data and translations
+      refetchTranslations();
     }
-  }, [translationStatusData]);
+  }, [translationStatusData, queryClient, rootId, refetchTranslations]);
 
   const deleteTranslationMutation = useMutation({
     mutationFn: (translationId: string) => deleteDocument(translationId),
     onSuccess: () => {
-      // Refresh document data to update the translations list
-      queryClient.invalidateQueries({ queryKey: [`document-${rootId}`] });
+      // Refresh document data and translations list
+      refetchTranslations();
       console.log("Translation deleted successfully");
     },
     onError: (error) => {
@@ -110,6 +100,23 @@ function SelectTranslation({
     },
   });
 
+  // Set up mutation for updating document title
+  const updateTitleMutation = useMutation({
+    mutationFn: async (data: { id: string; name: string }) => {
+      if (!id) throw new Error("Document ID not found");
+      // Update the document name instead of the identifier
+      return await updateDocument(data.id, { name: data.name });
+    },
+    onSuccess: () => {
+      // Invalidate and refetch document data and translations
+      refetchTranslations();
+    },
+    onError: (error) => {
+      console.error("Failed to update document title:", error);
+      // Revert to original title on error
+    },
+  });
+
   const handleDeleteTranslation = (
     translationId: string,
     event: React.MouseEvent
@@ -120,8 +127,14 @@ function SelectTranslation({
     }
   };
 
+  const handleEditTranslation = (translationId: string, name: string) => {
+    // Implement edit functionality here
+    console.log(`Edit translation ${translationId} to ${name}`);
+    updateTitleMutation.mutate({ id: translationId, name });
+  };
+
   return (
-    <div className="rounded-lg overflow-hidden ">
+    <div className="rounded-lg overflow-hidden">
       <div className="flex justify-between items-center mb-4">
         <h3 className="font-medium font-google-sans text-gray-600">
           Translations
@@ -138,148 +151,24 @@ function SelectTranslation({
       </div>
 
       <div className="flex flex-col gap-2 p-2">
-        {translations.length === 0 ? (
-          <p className="text-sm text-gray-500 italic">
-            No translations available
-          </p>
-        ) : (
-          translations.map(
-            (
-              translation: Translation & {
-                translationStatus?: string;
-                translationProgress?: number;
-              }
-            ) => {
-              const disabled =
-                translation.translationStatus === "progress" ||
-                translation.translationStatus === "started";
-              return (
-                <div key={translation.id} className="flex flex-col w-full">
-                  <div className="flex items-center w-full">
-                    <div
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => {
-                        // Only allow selection if translation is completed
-                        if (!disabled) {
-                          setSelectedTranslationId(translation.id);
-                        }
-                      }}
-                      onKeyDown={(e) => {
-                        if (
-                          (e.key === "Enter" &&
-                            !translation.translationStatus) ||
-                          (e.key === "Enter" &&
-                            translation.translationStatus === "completed")
-                        ) {
-                          setSelectedTranslationId(translation.id);
-                        }
-                      }}
-                      className={`flex flex-1 items-center gap-2 p-2 rounded-md w-full text-left flex-grow ${
-                        disabled
-                          ? "opacity-70 cursor-not-allowed bg-gray-50"
-                          : "cursor-pointer hover:bg-gray-100"
-                      }`}
-                      aria-label={`Open translation ${translation.id}`}
-                      aria-disabled={disabled}
-                    >
-                      <div className="relative flex items-center">
-                        <GrDocument
-                          size={24}
-                          color={
-                            !translation.translationStatus ||
-                            translation.translationStatus === "completed"
-                              ? "#d1d5db"
-                              : "lightblue"
-                          }
-                          className="flex-shrink-0"
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-gray-600 capitalize">
-                          {translation.language}
-                        </div>
-                      </div>
-                      <div className="flex-1 overflow-hidden">
-                        <div className="flex justify-between gap-2">
-                          <div className="truncate">{translation.name}</div>
-                        </div>
-                        <div className="text-xs text-gray-500 capitalize flex items-center">
-                          {disabled ? (
-                            <>
-                              <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
-                              {translation.translationStatus === "pending"
-                                ? "Waiting..."
-                                : "Translating..."}
-                            </>
-                          ) : (
-                            formatTimeAgo(translation.updatedAt)
-                          )}
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 p-0 ml-1 text-red-500 hover:text-red-700 hover:bg-red-100"
-                        onClick={(e) =>
-                          handleDeleteTranslation(translation.id, e)
-                        }
-                        disabled={deleteTranslationMutation.isPending}
-                        aria-label={`Delete translation ${translation.id}`}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  {/* Progress bar for translations in progress */}
-                  <ProgressBar
-                    translationStatusData={translationStatusData}
-                    translation={translation}
-                  />
-                </div>
-              );
-            }
-          )
-        )}
+        <TranslationList
+          translations={translations}
+          translationStatusData={translationStatusData}
+          setSelectedTranslationId={setSelectedTranslationId}
+          onDeleteTranslation={handleDeleteTranslation}
+          onEditTranslation={handleEditTranslation}
+        />
       </div>
 
       {showCreateModal && (
         <CreateTranslationModal
           rootId={rootId}
           onClose={() => setShowCreateModal(false)}
+          refetchTranslations={refetchTranslations}
         />
       )}
     </div>
   );
 }
-
-const ProgressBar = ({ translationStatusData, translation }) => {
-  // Get status from status endpoint if available, otherwise use translation data
-  const statusFromEndpoint = translationStatusData?.length
-    ? translationStatusData?.find((d) => d.id === translation.id)
-    : null;
-
-  // Determine if the translation is in progress based on status
-  const inProgress = statusFromEndpoint
-    ? statusFromEndpoint.translationStatus === "progress" ||
-      statusFromEndpoint.translationStatus === "started"
-    : translation.translationStatus === "progress" ||
-      translation.translationStatus === "started";
-
-  // Only show progress bar for in-progress translations
-  if (!inProgress) return null;
-
-  // Use status from endpoint if available, otherwise fall back to translation data
-  const progressValue = statusFromEndpoint
-    ? statusFromEndpoint.translationProgress ?? 0
-    : translation.translationProgress ?? 0;
-
-  return (
-    <div className="px-2 pb-2">
-      <Progress value={progressValue} className="h-1" />
-      <div className="text-xs text-gray-500 text-right mt-1">
-        {progressValue}%
-      </div>
-    </div>
-  );
-};
 
 export default SelectTranslation;
