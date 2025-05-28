@@ -49,7 +49,11 @@ function DocumentsWrapper() {
             <Loader show={isEditable === undefined} />
           ) : (
             <>
-              <DocumentEditor docId={id} isEditable={isEditable} />
+              <DocumentEditor
+                docId={id}
+                isEditable={isEditable}
+                currentDoc={currentDoc}
+              />
               {!selectedTranslationId ? (
                 <SideMenu setSelectedTranslationId={handleSelectTranslation} />
               ) : (
@@ -100,7 +104,7 @@ function Loader({ show }: { show: boolean }) {
       </div>
 
       {/* Sidebar skeleton */}
-      <div className="w-20  h-full border-r border-gray-200 p-4 space-y-4">
+      <div className="w-20 h-full border-r border-gray-200 p-4 space-y-4">
         <div className="h-8 bg-gray-200 rounded-md animate-pulse w-3/4"></div>
         <div className="h-4 bg-gray-200 rounded-md animate-pulse w-5/6 mt-6"></div>
         <div className="h-4 bg-gray-200 rounded-md animate-pulse w-4/6 mt-2"></div>

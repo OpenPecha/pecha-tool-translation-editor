@@ -7,6 +7,9 @@ const server_url = import.meta.env.VITE_SERVER_URL;
  * @param docId - ID of the document
  */
 export const fetchVersions = async (docId: string) => {
+  if (!docId) return ;
+  
+
   try {
     const response = await fetch(`${server_url}/versions/${docId}`, {
       headers: getHeaders(),

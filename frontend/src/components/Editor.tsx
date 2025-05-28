@@ -19,11 +19,12 @@ quill_import();
 const Editor = ({
   documentId,
   isEditable,
+  currentDoc,
 }: {
   documentId?: string;
   isEditable: boolean;
+  currentDoc: Document;
 }) => {
-  const { currentDoc } = useCurrentDoc(documentId);
   const editorRef = useRef<HTMLDivElement>(null);
   const toolbarId =
     "toolbar-container" + "-" + Math.random().toString(36).slice(2, 6);

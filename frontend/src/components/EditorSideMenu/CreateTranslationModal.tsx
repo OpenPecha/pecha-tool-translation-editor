@@ -129,7 +129,6 @@ const AITranslation = ({
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [useSegmentation, setUseSegmentation] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const queryClient = useQueryClient();
 
   const generateTranslationMutation = useMutation({
     mutationFn: generateTranslation,
@@ -137,7 +136,6 @@ const AITranslation = ({
       console.log("Translation generation started:", data);
 
       // Refresh the document list to show the new translation with progress bar
-      queryClient.invalidateQueries({ queryKey: [`document-${id}`] });
       setIsGenerating(false);
       onClose();
     },

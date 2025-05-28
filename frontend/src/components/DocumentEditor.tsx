@@ -7,14 +7,20 @@ import { QuillVersionProvider } from "@/contexts/VersionContext";
 const RealTimeEditor = ({
   docId,
   isEditable,
+  currentDoc,
 }: {
   docId: string | undefined;
   isEditable: boolean;
+  currentDoc: any;
 }) => {
   return (
     <QuillVersionProvider docId={docId} maxVersions={50}>
       <CommentProvider>
-        <Editor documentId={docId} isEditable={isEditable} />
+        <Editor
+          documentId={docId}
+          isEditable={isEditable}
+          currentDoc={currentDoc}
+        />
       </CommentProvider>
     </QuillVersionProvider>
   );

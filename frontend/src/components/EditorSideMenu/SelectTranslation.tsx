@@ -26,15 +26,9 @@ function SelectTranslation({
   const [showCreateModal, setShowCreateModal] = useState(false);
   const { id } = useParams();
   const rootId = id as string;
-  const { currentDoc } = useCurrentDoc(rootId);
   const { translations, refetchTranslations } =
     useCurrentDocTranslations(rootId);
   const queryClient = useQueryClient();
-
-  // Check if the current document is a root document
-  const isRoot = Boolean(
-    currentDoc && "isRoot" in currentDoc ? currentDoc.isRoot : false
-  );
 
   // Set up polling for translation status and progress updates
   const { data: translationStatusData, refetch: refetchTranslationStatus } =
@@ -139,15 +133,13 @@ function SelectTranslation({
         <h3 className="font-medium font-google-sans text-gray-600">
           Translations
         </h3>
-        {isRoot && (
-          <Button
-            onClick={() => setShowCreateModal(true)}
-            size="sm"
-            className="flex items-center gap-1 h-8 cursor-pointer"
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
-        )}
+        <Button
+          onClick={() => setShowCreateModal(true)}
+          size="sm"
+          className="flex items-center gap-1 h-8 cursor-pointer"
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
       </div>
 
       <div className="flex flex-col gap-2 p-2">

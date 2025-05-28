@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Input } from "../ui/input";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { createDocument } from "@/api/document";
 
 const TextUploader = ({
@@ -20,7 +20,6 @@ const TextUploader = ({
 }) => {
   const [file, setFile] = useState<File | null>(null);
   const [fileContent, setFileContent] = useState<string>("");
-  const queryClient = useQueryClient();
 
   const uploadMutation = useMutation({
     mutationFn: async (file: File) => {
@@ -45,9 +44,7 @@ const TextUploader = ({
     onError: (error) => {
       console.error("Upload error:", error);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`document-${rootId}`] });
-    },
+    onSuccess: () => {},
   });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

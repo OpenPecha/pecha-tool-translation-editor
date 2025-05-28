@@ -69,7 +69,7 @@ export const useQuillVersion = (): QuillVersionContextType => {
 // Provider component
 export const QuillVersionProvider = ({
   children,
-  docId = "default-doc",
+  docId,
   maxVersions = 50,
 }: QuillVersionProviderProps) => {
   const queryClient = useQueryClient();
@@ -86,6 +86,7 @@ export const QuillVersionProvider = ({
     refetch: refetchVersions,
   } = useQuery({
     queryKey: ["versions", docId],
+    enabled: !!docId,
     queryFn: () => fetchVersions(docId),
     onSuccess: (data) => {
       if (data.length > 0 && !currentVersionId) {
@@ -131,7 +132,7 @@ export const QuillVersionProvider = ({
   // Load versions from API
   const loadVersions = useCallback(() => {
     refetchVersions();
-  }, [refetchVersions]);
+  }, []);
 
   // Register Quill instance
   const registerQuill = useCallback(
