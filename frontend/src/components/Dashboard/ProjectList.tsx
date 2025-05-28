@@ -51,7 +51,6 @@ const ProjectList = () => {
           </div>
         )}
         <div className="max-w-5xl mx-auto mb-2">
-          {(isFetching || isLoading) && <div>loading</div>}
           {projects?.length === 0 && !isLoading && (
             <div className="text-center py-8">
               <p>You don't have any projects yet. Create one to get started!</p>
@@ -86,7 +85,7 @@ const ProjectsGrid = ({
   const [view, setView] = useState<"grid" | "list">("list");
 
   return (
-    <div className="mb-8">
+    <div className="mb-8 ">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-base font-medium text-gray-600">Your Projects</h2>
         <div className="flex items-center gap-2">
@@ -131,24 +130,37 @@ const ProjectsGrid = ({
           </div>
         </div>
       </div>
-      <div
-        className={`flex flex-wrap gap-4 ${
-          view === "grid"
-            ? "grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-4"
-            : "flex-col"
-        }`}
-      >
-        {isLoading ? (
-          <div>Loading...</div>
-        ) : (
-          projects.map((project) => (
+      {isLoading ? (
+        <Loader show={isLoading} />
+      ) : (
+        <div
+          className={`flex flex-wrap gap-4 ${
+            view === "grid"
+              ? "grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-4"
+              : "flex-col"
+          }`}
+        >
+          {projects.map((project) => (
             <EachProject view={view} key={project.id} project={project} />
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
+function Loader({ show }: { show: boolean }) {
+  if (!show) return null;
+
+  return (
+    <div className="relative  w-full flex items-center justify-center ">
+      <div className="flex flex-col w-full space-y-2 p-4">
+        <div className="h-14 bg-gray-200 rounded-md animate-pulse "></div>
+        <div className="h-14 bg-gray-200 rounded-md animate-pulse "></div>
+        <div className="h-14 bg-gray-200 rounded-md animate-pulse "></div>
+      </div>
+    </div>
+  );
+}
 
 const PaginationControls = ({
   page,

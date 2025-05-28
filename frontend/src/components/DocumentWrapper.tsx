@@ -45,34 +45,74 @@ function DocumentsWrapper() {
       {/* Main editor container - uses CSS Grid for better layout control */}
       <div className="grid grid-rows-[1fr] h-full">
         <div className="relative flex px-2 w-full overflow-hidden ">
-          <DocumentEditor docId={id} isEditable={isEditable} />
-          {!selectedTranslationId ? (
-            <SideMenu setSelectedTranslationId={handleSelectTranslation} />
+          {isEditable === undefined ? (
+            <Loader show={isEditable === undefined} />
           ) : (
-            <div className="relative w-full flex flex-1 group">
-              <div className="relative h-full">
-                {/* Vertical Line (hidden by default, shows on hover) */}
-                <div className="absolute left-1/2 top-0 h-full w-px bg-gray-300 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-                {/* Arrow (hidden by default, shows on hover) */}
-                <button
-                  className="absolute bg-white border z-[99] cursor-pointer rounded-full p-2 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-700 text-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                  onClick={() => handleSelectTranslation(null)}
-                  aria-label="Close translation view"
-                  title="Close translation view"
-                  type="button"
-                >
-                  <IoIosArrowForward />
-                </button>
-              </div>
-              <DocumentEditor
-                docId={selectedTranslationId}
-                isEditable={isEditable}
-              />
-            </div>
+            <>
+              <DocumentEditor docId={id} isEditable={isEditable} />
+              {!selectedTranslationId ? (
+                <SideMenu setSelectedTranslationId={handleSelectTranslation} />
+              ) : (
+                <div className="relative w-full flex flex-1 group">
+                  <div className="relative h-full">
+                    {/* Vertical Line (hidden by default, shows on hover) */}
+                    <div className="absolute left-1/2 top-0 h-full w-px bg-gray-300 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                    {/* Arrow (hidden by default, shows on hover) */}
+                    <button
+                      className="absolute bg-white border z-[99] cursor-pointer rounded-full p-2 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-700 text-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                      onClick={() => handleSelectTranslation(null)}
+                      aria-label="Close translation view"
+                      title="Close translation view"
+                      type="button"
+                    >
+                      <IoIosArrowForward />
+                    </button>
+                  </div>
+                  <DocumentEditor
+                    docId={selectedTranslationId}
+                    isEditable={isEditable}
+                  />
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
     </EditorProvider>
+  );
+}
+
+function Loader({ show }: { show: boolean }) {
+  if (!show) return null;
+
+  return (
+    <div className="absolute inset-0 flex bg-white/80 z-50">
+      {/* Main content skeleton */}
+      <div className="flex-1 p-6 space-y-4">
+        <div className="h-10 bg-gray-200 rounded-md animate-pulse w-3/4 mb-8"></div>
+        <div className="h-6 bg-gray-200 rounded-md animate-pulse w-full"></div>
+        <div className="h-6 bg-gray-200 rounded-md animate-pulse w-5/6"></div>
+        <div className="h-6 bg-gray-200 rounded-md animate-pulse w-4/6"></div>
+        <div className="h-6 bg-gray-200 rounded-md animate-pulse w-5/6"></div>
+        <div className="h-6 bg-gray-200 rounded-md animate-pulse w-3/6"></div>
+        <div className="h-64 bg-gray-200 rounded-md animate-pulse w-full mt-6"></div>
+        <div className="h-24 bg-gray-200 rounded-md animate-pulse w-full mt-4"></div>
+      </div>
+
+      {/* Sidebar skeleton */}
+      <div className="w-20  h-full border-r border-gray-200 p-4 space-y-4">
+        <div className="h-8 bg-gray-200 rounded-md animate-pulse w-3/4"></div>
+        <div className="h-4 bg-gray-200 rounded-md animate-pulse w-5/6 mt-6"></div>
+        <div className="h-4 bg-gray-200 rounded-md animate-pulse w-4/6 mt-2"></div>
+        <div className="h-4 bg-gray-200 rounded-md animate-pulse w-5/6 mt-2"></div>
+        <div className="h-4 bg-gray-200 rounded-md animate-pulse w-3/6 mt-2"></div>
+        <div className="mt-8 space-y-3">
+          <div className="h-10 bg-gray-200 rounded-md animate-pulse w-full"></div>
+          <div className="h-10 bg-gray-200 rounded-md animate-pulse w-full"></div>
+          <div className="h-10 bg-gray-200 rounded-md animate-pulse w-full"></div>
+        </div>
+      </div>
+    </div>
   );
 }
 
