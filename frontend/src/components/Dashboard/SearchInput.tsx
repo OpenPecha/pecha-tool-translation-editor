@@ -15,7 +15,7 @@ const SearchInput = () => {
 
   const [inputValue, setInputValue] = useState<string>(searchQuery || "");
 
-  const debouncedValue = useDebounce(inputValue, 1000);
+  const debouncedValue = useDebounce(inputValue?.toLowerCase(), 1000);
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>): void => {
     setInputValue(event.target.value);

@@ -15,6 +15,7 @@ const ProjectList = () => {
   const [page, setPage] = useState(1);
   const { trackSiteSearch } = useMatomo();
   const limit = 10;
+  const [view, setView] = useState<"grid" | "list">("list");
 
   const { data, isLoading, isError, isFetching } = useQuery({
     queryKey: ["projects", searchQuery, page],
@@ -62,6 +63,8 @@ const ProjectList = () => {
               <ProjectsGrid
                 projects={projects}
                 isLoading={isLoading || isFetching}
+                view={view}
+                setView={setView}
               />
               <PaginationControls
                 page={page}
@@ -79,11 +82,14 @@ const ProjectList = () => {
 const ProjectsGrid = ({
   projects,
   isLoading,
+  view,
+  setView,
 }: {
   projects: Project[];
   isLoading: boolean;
+  view: "grid" | "list";
+  setView: (view: "grid" | "list") => void;
 }) => {
-  const [view, setView] = useState<"grid" | "list">("list");
   const [showAll, setShowAll] = useState<boolean>(true);
   const { currentUser } = useAuth();
   return (

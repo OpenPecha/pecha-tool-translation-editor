@@ -168,13 +168,13 @@ router.get("/", authenticate, async (req, res) => {
       if (whereCondition.AND) {
         // For public documents
         whereCondition.AND.push({
-          identifier: { contains: search, mode: "insensitive" },
+          name: { contains: search, mode: "insensitive" },
         });
       } else {
         // For user's documents
         whereCondition.OR = whereCondition.OR.map((condition) => ({
           ...condition,
-          identifier: { contains: search, mode: "insensitive" },
+          name: { contains: search, mode: "insensitive" },
         }));
       }
     }
