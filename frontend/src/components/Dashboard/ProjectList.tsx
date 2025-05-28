@@ -8,6 +8,7 @@ import { fetchProjects, Project } from "@/api/project";
 import EachProject from "./EachProject";
 import { useSearch } from "@/contexts/SearchContext";
 import { useMatomo } from "@datapunt/matomo-tracker-react";
+import { useAuth } from "@/auth/use-auth-hook";
 
 const ProjectList = () => {
   const { searchQuery } = useSearch();
@@ -83,16 +84,27 @@ const ProjectsGrid = ({
   isLoading: boolean;
 }) => {
   const [view, setView] = useState<"grid" | "list">("list");
-
+  const [showAll, setShowAll] = useState<boolean>(true);
+  const { currentUser } = useAuth();
   return (
     <div className="mb-8 ">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-base font-medium text-gray-600">Your Projects</h2>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="h-8 text-sm">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 text-sm"
+            onClick={() => setShowAll(true)}
+          >
             All Projects
           </Button>
-          <Button variant="outline" size="sm" className="h-8 text-sm">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 text-sm"
+            onClick={() => setShowAll(false)}
+          >
             Shared Projects
           </Button>
           <div className="flex gap-1">
@@ -140,9 +152,11 @@ const ProjectsGrid = ({
               : "flex-col"
           }`}
         >
-          {projects.map((project) => (
-            <EachProject view={view} key={project.id} project={project} />
-          ))}
+          {projects
+            .filter((project) => showAll || project.ownerId !== currentUser?.id)
+            .map((project) => (
+              <EachProject view={view} key={project.id} project={project} />
+            ))}
         </div>
       )}
     </div>
