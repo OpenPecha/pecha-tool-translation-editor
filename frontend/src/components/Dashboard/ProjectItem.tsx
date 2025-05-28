@@ -117,7 +117,9 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
     <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
       <div className="space-y-2">
         <div className="flex items-center">
-          <h3 className="text-sm font-medium truncate capitalize">{title}</h3>
+          <div className="text-large font-medium truncate capitalize">
+            {title}
+          </div>
         </div>
         {subtitle && (
           <p className="text-xs text-gray-500 truncate">{subtitle}</p>

@@ -94,18 +94,10 @@ const ProjectsGrid = ({
           <Button
             variant="outline"
             size="sm"
-            className="h-8 text-sm"
-            onClick={() => setShowAll(true)}
+            className={`h-8 text-sm cursor-pointer`}
+            onClick={() => setShowAll((p) => !p)}
           >
-            All Projects
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 text-sm"
-            onClick={() => setShowAll(false)}
-          >
-            Shared Projects
+            {!showAll ? "All Projects" : "Shared Projects"}
           </Button>
           <div className="flex gap-1">
             {view === "list" ? (

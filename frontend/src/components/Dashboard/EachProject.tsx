@@ -2,12 +2,11 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import EditModal from "./EditModal";
 import { useAuth } from "@/auth/use-auth-hook";
-import PermissionsModal from "../PermissionsModal";
 
 import ProjectItem from "./ProjectItem";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Project, deleteProject, updateProject } from "@/api/project";
-import { formatDate } from "@/lib/formatDate";
+import formatTimeAgo from "@/lib/formatTimeAgo";
 
 interface EachProjectProps {
   readonly project: Project;
@@ -16,7 +15,6 @@ interface EachProjectProps {
 
 export default function EachProject({ project, view }: EachProjectProps) {
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showPermissionsModal, setShowPermissionsModal] = useState(false);
   const { currentUser } = useAuth();
   const queryClient = useQueryClient();
 
@@ -109,7 +107,7 @@ export default function EachProject({ project, view }: EachProjectProps) {
               ? project.roots[0].name
               : "No root document"
           }
-          date={formatDate(project.updatedAt)}
+          date={formatTimeAgo(project.updatedAt)}
           hasDocument={project.roots ? project.roots.length > 0 : false}
           documentCount={documentCount}
           hasSharedUsers={false}
