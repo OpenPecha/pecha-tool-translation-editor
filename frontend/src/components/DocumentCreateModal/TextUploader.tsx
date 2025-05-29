@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Input } from "../ui/input";
-import { useMutation } from "@tanstack/react-query";
+import { QueryObserverResult, useMutation } from "@tanstack/react-query";
 import { createDocument } from "@/api/document";
 
 const TextUploader = ({
@@ -10,6 +10,7 @@ const TextUploader = ({
   setRootId,
   disable,
   rootId,
+  refetchTranslations,
 }: {
   isRoot: boolean;
   isPublic: boolean;
@@ -17,6 +18,7 @@ const TextUploader = ({
   setRootId: (id: string) => void;
   disable?: boolean;
   rootId?: string;
+  refetchTranslations: () => Promise<QueryObserverResult<any, Error>>;
 }) => {
   const [file, setFile] = useState<File | null>(null);
   const [fileContent, setFileContent] = useState<string>("");
@@ -44,7 +46,9 @@ const TextUploader = ({
     onError: (error) => {
       console.error("Upload error:", error);
     },
-    onSuccess: () => {},
+    onSuccess: () => {
+      refetchTranslations();
+    },
   });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

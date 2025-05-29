@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { useMutation, QueryObserverResult } from "@tanstack/react-query";
 import { generateTranslation } from "@/api/document";
 import { Switch } from "@/components/ui/switch";
 
@@ -42,9 +42,8 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
   useEffect(() => {
     if (translationId) {
       onClose();
-      refetchTranslations();
     }
-  }, [translationId, onClose, refetchTranslations]);
+  }, [translationId, onClose]);
   const selectedTabClass = (tab: "file" | "openpecha" | "ai") =>
     uploadMethod === tab
       ? " cursor-pointer"
@@ -93,6 +92,7 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
                   selectedLanguage={language}
                   setRootId={setTranslationId}
                   rootId={rootId}
+                  refetchTranslations={refetchTranslations}
                 />
               </TabsContent>
 
@@ -104,7 +104,11 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
               </TabsContent>
 
               <TabsContent value="ai" className="pt-2">
-                <AITranslation language={language} onClose={onClose} />
+                <AITranslation
+                  language={language}
+                  onClose={onClose}
+                  refetchTranslations={refetchTranslations}
+                />
               </TabsContent>
             </Tabs>
           )}
@@ -117,9 +121,11 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
 const AITranslation = ({
   language,
   onClose,
+  refetchTranslations,
 }: {
   language: string;
   onClose: () => void;
+  refetchTranslations: () => Promise<QueryObserverResult<any, Error>>;
 }) => {
   // AI generation related states
   const { id } = useParams();
@@ -137,6 +143,7 @@ const AITranslation = ({
 
       // Refresh the document list to show the new translation with progress bar
       setIsGenerating(false);
+      refetchTranslations();
       onClose();
     },
     onError: (error) => {
