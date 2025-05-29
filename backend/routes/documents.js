@@ -406,6 +406,14 @@ router.get("/:id/translations", authenticate, async (req, res) => {
         ownerId: true,
         isPublic: true,
         updatedAt: true,
+        translationProgress: true,
+        translationStatus: true,
+        translationJobId: true,
+        owner: {
+          select: {
+            username: true,
+          },
+        },
       },
       orderBy: {
         updatedAt: "desc",
@@ -1281,6 +1289,15 @@ router.get("/:id/translations/status", authenticate, async (req, res) => {
                   translationProgress: 100,
                   docs_prosemirror_delta: translatedDelta,
                   docs_y_doc_state: translatedState,
+                },
+              });
+
+              const newVersion = await prisma.version.create({
+                data: {
+                  docId: translation.id,
+                  label: "auto generated",
+                  content: translatedDelta,
+                  userId: req.user.id,
                 },
               });
 

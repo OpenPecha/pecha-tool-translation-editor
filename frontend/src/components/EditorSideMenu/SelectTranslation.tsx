@@ -20,13 +20,14 @@ function SelectTranslation({
   readonly setSelectedTranslationId: (id: string) => void;
 }) {
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [deletingTranslationId, setDeletingTranslationId] = useState<string | null>(null);
+  const [deletingTranslationId, setDeletingTranslationId] = useState<
+    string | null
+  >(null);
   const { id } = useParams();
   const rootId = id as string;
   const { translations, refetchTranslations } =
     useCurrentDocTranslations(rootId);
   const queryClient = useQueryClient();
-
   // Set up polling for translation status and progress updates
   const { data: translationStatusData, refetch: refetchTranslationStatus } =
     useQuery({
