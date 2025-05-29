@@ -1,6 +1,6 @@
 import React from "react";
 import { GrDocument } from "react-icons/gr";
-import { RefreshCw, Trash2 } from "lucide-react";
+import { RefreshCw, Trash2, AlertCircle } from "lucide-react";
 import { Translation } from "../../DocumentWrapper";
 import TranslationMenu from "./TranslationMenu";
 import TranslationProgressBar from "./TranslationProgressBar";
@@ -32,16 +32,54 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
   onEdit,
   isDeleting = false,
 }) => {
+  // Helper function to render the status indicator
+  const renderStatusIndicator = () => {
+    if (isDeleting) {
+      return (
+        <>
+          <Trash2 className="h-3 w-3 mr-1 animate-pulse text-red-500" />
+          <span className="text-red-500">Deleting...</span>
+        </>
+      );
+    }
+    if (translation.translationStatus === "failed") {
+      return (
+        <>
+          <AlertCircle className="h-3 w-3 mr-1 text-red-500" />
+          <span className="text-red-500">Translation failed</span>
+        </>
+      );
+    }
+
+    if (
+      translation.translationStatus === "progress" ||
+      translation.translationStatus === "started" ||
+      translation.translationStatus === "pending"
+    ) {
+      return (
+        <>
+          <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+          {translation.translationStatus === "pending"
+            ? "Waiting..."
+            : "Translating..."}
+        </>
+      );
+    }
+
+    return formatTimeAgo(translation.updatedAt);
+  };
   const disabled =
     translation.translationStatus === "progress" ||
     translation.translationStatus === "started" ||
+    translation.translationStatus === "failed" ||
     isDeleting;
 
   return (
     <div key={translation.id} className="flex flex-col w-full">
       <div className="flex items-center w-full">
-        <button
-          type="button"
+        <div
+          role="button"
+          tabIndex={0}
           onClick={() => {
             // Only allow selection if translation is completed
             if (!disabled) {
@@ -54,7 +92,9 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
               (e.key === "Enter" &&
                 translation.translationStatus === "completed")
             ) {
-              setSelectedTranslationId(translation.id);
+              if (!disabled) {
+                setSelectedTranslationId(translation.id);
+              }
             }
           }}
           className={`flex flex-1 items-center gap-2 p-2 rounded-md w-full text-left flex-grow ${
@@ -64,7 +104,6 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
           }`}
           aria-label={`Open translation ${translation.id}`}
           aria-disabled={disabled}
-          disabled={disabled}
         >
           <div className="relative flex items-center">
             <GrDocument
@@ -86,21 +125,7 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
               <div className="truncate">{translation.name}</div>
             </div>
             <div className="text-xs text-gray-500 capitalize flex items-center">
-              {isDeleting ? (
-                <>
-                  <Trash2 className="h-3 w-3 mr-1 animate-pulse text-red-500" />
-                  <span className="text-red-500">Deleting...</span>
-                </>
-              ) : disabled ? (
-                <>
-                  <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
-                  {translation.translationStatus === "pending"
-                    ? "Waiting..."
-                    : "Translating..."}
-                </>
-              ) : (
-                formatTimeAgo(translation.updatedAt)
-              )}
+              {renderStatusIndicator()}
             </div>
           </div>
           {!isDeleting && (
@@ -109,7 +134,7 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
               onDelete={(e) => onDelete(translation.id, e)}
             />
           )}
-        </button>
+        </div>
       </div>
       {/* Progress bar for translations in progress */}
       <TranslationProgressBar

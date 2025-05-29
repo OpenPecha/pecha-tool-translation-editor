@@ -38,14 +38,21 @@ function SelectTranslation({
 
   // Set up polling for translation progress updates
   useEffect(() => {
-    // Only poll if there are translations in progress
+    // Only poll if there are translations in progress and none have failed
     const hasInProgressTranslations = translations.some(
       (translation: Translation) =>
         translation.translationStatus === "progress" ||
-        translation.translationStatus === "started"
+        translation.translationStatus === "started" ||
+        translation.translationStatus === "pending"
     );
 
-    if (!hasInProgressTranslations) return;
+    // Check if any translation has failed
+    const hasFailedTranslation = translations.some(
+      (translation: Translation) => translation.translationStatus === "failed"
+    );
+
+    // Don't poll if there are no in-progress translations or if any translation has failed
+    if (!hasInProgressTranslations || hasFailedTranslation) return;
 
     const intervalId = setInterval(() => {
       // Instead of invalidating the whole document query, just fetch translation status

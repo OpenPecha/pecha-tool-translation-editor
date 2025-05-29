@@ -1107,8 +1107,8 @@ router.post("/generate-translation", authenticate, async (req, res) => {
         where: { id: translationId },
         data: {
           translationJobId: response.id,
-          translationStatus: "progress",
-          translationProgress: 10,
+          translationStatus: "pending",
+          translationProgress: 1,
         },
       });
 
@@ -1252,7 +1252,9 @@ router.get("/:id/translations/status", authenticate, async (req, res) => {
         if (
           translation.translationJobId &&
           (translation.translationStatus === "progress" ||
-            translation.translationStatus === "started")
+            translation.translationStatus === "started" ||
+            translation.translationStatus === "pending" ||
+            translation.translationStatus === "failed")
         ) {
           try {
             // Get the latest status directly from the translation worker (Redis-based, faster)
@@ -1304,6 +1306,16 @@ router.get("/:id/translations/status", authenticate, async (req, res) => {
               console.log(
                 `Translation ${translation.id} marked as completed in database`
               );
+            }
+
+            if (status.status.status_type === "failed") {
+              await prisma.doc.update({
+                where: { id: translation.id },
+                data: {
+                  translationStatus: "failed",
+                  translationProgress: status.status.progress,
+                },
+              });
             }
             // If we got a valid status, use it directly without updating the database
             if (status) {
