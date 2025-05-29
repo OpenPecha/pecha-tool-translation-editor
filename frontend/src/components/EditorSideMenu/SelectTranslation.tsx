@@ -3,11 +3,7 @@ import { Plus } from "lucide-react";
 import { Button } from "../ui/button";
 import CreateTranslationModal from "./CreateTranslationModal";
 import { useParams } from "react-router-dom";
-import {
-  useCurrentDoc,
-  useCurrentDocTranslations,
-  Translation,
-} from "@/hooks/useCurrentDoc";
+import { useCurrentDocTranslations, Translation } from "@/hooks/useCurrentDoc";
 import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
 import {
   deleteDocument,
@@ -24,6 +20,7 @@ function SelectTranslation({
   readonly setSelectedTranslationId: (id: string) => void;
 }) {
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [deletingTranslationId, setDeletingTranslationId] = useState<string | null>(null);
   const { id } = useParams();
   const rootId = id as string;
   const { translations, refetchTranslations } =
@@ -81,9 +78,13 @@ function SelectTranslation({
       // Refresh document data and translations list
       refetchTranslations();
       console.log("Translation deleted successfully");
+      // Clear the deleting state
+      setDeletingTranslationId(null);
     },
     onError: (error) => {
       console.error("Error deleting translation:", error);
+      // Clear the deleting state on error too
+      setDeletingTranslationId(null);
       window.alert(
         `Error: ${
           error instanceof Error
@@ -117,13 +118,14 @@ function SelectTranslation({
   ) => {
     event.stopPropagation();
     if (window.confirm("Are you sure you want to delete this translation?")) {
+      // Set the deleting state before starting the mutation
+      setDeletingTranslationId(translationId);
       deleteTranslationMutation.mutate(translationId);
     }
   };
 
   const handleEditTranslation = (translationId: string, name: string) => {
     // Implement edit functionality here
-    console.log(`Edit translation ${translationId} to ${name}`);
     updateTitleMutation.mutate({ id: translationId, name });
   };
 
@@ -149,6 +151,7 @@ function SelectTranslation({
           setSelectedTranslationId={setSelectedTranslationId}
           onDeleteTranslation={handleDeleteTranslation}
           onEditTranslation={handleEditTranslation}
+          deletingTranslationId={deletingTranslationId}
         />
       </div>
 

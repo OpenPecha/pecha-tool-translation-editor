@@ -1,6 +1,6 @@
 import React from "react";
 import { GrDocument } from "react-icons/gr";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Trash2 } from "lucide-react";
 import { Translation } from "../../DocumentWrapper";
 import TranslationMenu from "./TranslationMenu";
 import TranslationProgressBar from "./TranslationProgressBar";
@@ -21,6 +21,7 @@ interface TranslationItemProps {
   setSelectedTranslationId: (id: string) => void;
   onDelete: (id: string, event: React.MouseEvent<HTMLButtonElement>) => void;
   onEdit: (id: string, name: string) => void;
+  isDeleting?: boolean;
 }
 
 const TranslationItem: React.FC<TranslationItemProps> = ({
@@ -29,10 +30,12 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
   setSelectedTranslationId,
   onDelete,
   onEdit,
+  isDeleting = false,
 }) => {
   const disabled =
     translation.translationStatus === "progress" ||
-    translation.translationStatus === "started";
+    translation.translationStatus === "started" ||
+    isDeleting;
 
   return (
     <div key={translation.id} className="flex flex-col w-full">
@@ -83,7 +86,12 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
               <div className="truncate">{translation.name}</div>
             </div>
             <div className="text-xs text-gray-500 capitalize flex items-center">
-              {disabled ? (
+              {isDeleting ? (
+                <>
+                  <Trash2 className="h-3 w-3 mr-1 animate-pulse text-red-500" />
+                  <span className="text-red-500">Deleting...</span>
+                </>
+              ) : disabled ? (
                 <>
                   <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
                   {translation.translationStatus === "pending"
@@ -95,10 +103,12 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
               )}
             </div>
           </div>
-          <TranslationMenu
-            onEdit={(name) => onEdit(translation.id, name)}
-            onDelete={(e) => onDelete(translation.id, e)}
-          />
+          {!isDeleting && (
+            <TranslationMenu
+              onEdit={(name) => onEdit(translation.id, name)}
+              onDelete={(e) => onDelete(translation.id, e)}
+            />
+          )}
         </button>
       </div>
       {/* Progress bar for translations in progress */}
