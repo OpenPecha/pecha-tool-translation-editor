@@ -49,6 +49,8 @@ export const useCurrentDoc = (docId: string | undefined): UseCurrentDocReturn =>
       } 
       return doc;
     },
+    refetchOnReconnect:false,
+    refetchOnWindowFocus:false,
     enabled: !!docId,
     staleTime:0,
   });

@@ -60,7 +60,10 @@ function SelectTranslation({
     }, 10000);
     // Immediately fetch status when we detect in-progress translations
     refetchTranslationStatus();
-    return () => clearInterval(intervalId);
+    return () => {
+      clearInterval(intervalId);
+      console.log("cleaned up");
+    };
   }, [translations, refetchTranslationStatus, rootId]);
 
   useEffect(() => {

@@ -87,12 +87,14 @@ export const QuillVersionProvider = ({
   } = useQuery({
     queryKey: ["versions", docId],
     enabled: !!docId,
-    queryFn: () => fetchVersions(docId),
-    onSuccess: (data) => {
-      if (data.length > 0 && !currentVersionId) {
-        setCurrentVersionId(data[data.length - 1].id);
-      }
-    },
+    queryFn: () => fetchVersions(docId!),
+    // onSuccess: (data) => {
+    //   if (data.length > 0 && !currentVersionId) {
+    //     setCurrentVersionId(data[data.length - 1].id);
+    //   }
+    // },
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
   });
 
   // Create version mutation
