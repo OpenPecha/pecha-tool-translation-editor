@@ -1333,6 +1333,13 @@ router.get("/:id/translations/status", authenticate, async (req, res) => {
               `Error checking translation status for ${translation.id}:`,
               error
             );
+            await prisma.doc.update({
+              where: { id: translation.id },
+              data: {
+                translationStatus: "failed",
+                translationProgress: 100,
+              },
+            });
             // Continue with the current status if there's an error
           }
         }
