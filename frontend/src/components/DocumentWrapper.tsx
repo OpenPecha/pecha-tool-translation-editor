@@ -1,5 +1,4 @@
 import { useState } from "react";
-
 import { useCurrentDoc } from "@/hooks/useCurrentDoc";
 import { EditorProvider } from "@/contexts/EditorContext";
 import { useParams } from "react-router-dom";

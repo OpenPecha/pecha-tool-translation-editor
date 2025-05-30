@@ -85,7 +85,7 @@ export const QuillVersionProvider = ({
     isLoading,
     refetch: refetchVersions,
   } = useQuery({
-    queryKey: ["versions", docId],
+    queryKey: [`versions-${docId}`],
     enabled: !!docId,
     queryFn: () => fetchVersions(docId!),
     // onSuccess: (data) => {
@@ -103,7 +103,7 @@ export const QuillVersionProvider = ({
       createVersion(docId, label, content),
     onSuccess: (newVersion) => {
       queryClient.setQueryData(
-        ["versions", docId],
+        [`versions-${docId}`],
         (oldData: Version[] = []) => {
           const updatedVersions = [...oldData, newVersion];
           return updatedVersions.length > maxVersions
@@ -111,8 +111,7 @@ export const QuillVersionProvider = ({
             : updatedVersions;
         }
       );
-      queryClient.invalidateQueries({ queryKey: [`versions`, docId] });
-
+      queryClient.invalidateQueries({ queryKey: [`versions-${docId}`] });
       setCurrentVersionId(newVersion.id);
     },
   });
