@@ -256,7 +256,7 @@ router.get("/:id", authenticate, async (req, res) => {
         docs_y_doc_state: true,
         createdAt: true,
         updatedAt: true,
-
+        rootProjectId: true,
         rootsProject: {
           include: {
             permissions: true,
