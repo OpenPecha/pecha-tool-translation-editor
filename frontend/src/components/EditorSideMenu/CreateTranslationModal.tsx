@@ -162,7 +162,7 @@ const AITranslation = ({
       rootId: id!,
       language,
       model: selectedCredential,
-      use_segmentation: useSegmentation ? "botok" : null,
+      use_segmentation: useSegmentation ? "botok" : "newline",
     });
   };
 
