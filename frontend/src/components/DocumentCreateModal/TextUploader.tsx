@@ -18,7 +18,7 @@ const TextUploader = ({
   setRootId: (id: string) => void;
   disable?: boolean;
   rootId?: string;
-  refetchTranslations: () => Promise<QueryObserverResult<any, Error>>;
+  refetchTranslations?: () => Promise<QueryObserverResult<any, Error>>;
 }) => {
   const [file, setFile] = useState<File | null>(null);
   const [fileContent, setFileContent] = useState<string>("");
@@ -47,7 +47,9 @@ const TextUploader = ({
       console.error("Upload error:", error);
     },
     onSuccess: () => {
-      refetchTranslations();
+      if (refetchTranslations) {
+        refetchTranslations();
+      }
     },
   });
 
