@@ -37,18 +37,11 @@ const Editor = ({
     useEditor();
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const quillRef = useRef<Quill | null>(null);
-  const queryClient = useQueryClient();
   const updateDocumentMutation = useMutation({
     mutationFn: (content: any) =>
       updateContentDocument(documentId as string, {
         docs_prosemirror_delta: content.ops,
       }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [`document-${documentId}`],
-        refetchType: "active",
-      });
-    },
     onError: (error) => {
       console.error("Error updating document content:", error);
     },

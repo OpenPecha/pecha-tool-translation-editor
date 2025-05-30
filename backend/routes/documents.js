@@ -913,7 +913,6 @@ router.patch("/:id/content", authenticate, async (req, res) => {
     });
     res.json({
       success: true,
-      data: updatedDocument,
     });
   } catch (error) {
     console.error("Error updating document content:", error);
