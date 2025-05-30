@@ -57,32 +57,53 @@ function DocumentsWrapper() {
               {!selectedTranslationId ? (
                 <SideMenu setSelectedTranslationId={handleSelectTranslation} />
               ) : (
-                <div className="relative w-full flex flex-1 group">
-                  <div className="relative h-full">
-                    {/* Vertical Line (hidden by default, shows on hover) */}
-                    <div className="absolute left-1/2 top-0 h-full w-px bg-gray-300 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-                    {/* Arrow (hidden by default, shows on hover) */}
-                    <button
-                      className="absolute bg-white border z-[99] cursor-pointer rounded-full p-2 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-700 text-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                      onClick={() => handleSelectTranslation(null)}
-                      aria-label="Close translation view"
-                      title="Close translation view"
-                      type="button"
-                    >
-                      <IoIosArrowForward />
-                    </button>
-                  </div>
-                  <DocumentEditor
-                    docId={selectedTranslationId}
-                    isEditable={isEditable}
-                  />
-                </div>
+                <TranslationEditor
+                  selectedTranslationId={selectedTranslationId}
+                  isEditable={isEditable}
+                  handleSelectTranslation={handleSelectTranslation}
+                />
               )}
             </>
           )}
         </div>
       </div>
     </EditorProvider>
+  );
+}
+
+function TranslationEditor({
+  selectedTranslationId,
+  isEditable,
+  handleSelectTranslation,
+}: {
+  readonly selectedTranslationId: string;
+  readonly isEditable: boolean;
+  readonly handleSelectTranslation: (translationId: string | null) => void;
+}) {
+  const { currentDoc } = useCurrentDoc(selectedTranslationId);
+
+  return (
+    <div className="relative w-full flex flex-1 group">
+      <div className="relative h-full">
+        {/* Vertical Line (hidden by default, shows on hover) */}
+        <div className="absolute left-1/2 top-0 h-full w-px bg-gray-300 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+        {/* Arrow (hidden by default, shows on hover) */}
+        <button
+          className="absolute bg-white border z-[99] cursor-pointer rounded-full p-2 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-700 text-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          onClick={() => handleSelectTranslation(null)}
+          aria-label="Close translation view"
+          title="Close translation view"
+          type="button"
+        >
+          <IoIosArrowForward />
+        </button>
+      </div>
+      <DocumentEditor
+        docId={selectedTranslationId}
+        isEditable={isEditable}
+        currentDoc={currentDoc}
+      />
+    </div>
   );
 }
 

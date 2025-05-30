@@ -105,6 +105,10 @@ router.post("/", authenticate, upload.single("file"), async (req, res) => {
           rootId: rootId ?? null,
           language,
         },
+        select: {
+          id: true,
+          name: true,
+        },
       });
       await tx.permission.create({
         data: {

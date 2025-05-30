@@ -47,6 +47,7 @@ const Editor = ({
     },
   });
   const isSynced = !updateDocumentMutation.isPending;
+  const queryClient = useQueryClient();
   const debouncedSave = useCallback(
     (content: any) => {
       if (saveTimeoutRef.current) {
@@ -139,7 +140,9 @@ const Editor = ({
     quill.on("text-change", function (delta, oldDelta, source) {
       if (source === "user") {
         const currentContent = quill.getLength() > 1 ? quill.getContents() : "";
-        debouncedSave(currentContent);
+        setTimeout(() => {
+          debouncedSave(currentContent);
+        }, 0);
       }
     });
     quill.on("selection-change", (range) => {
@@ -163,6 +166,9 @@ const Editor = ({
       const currentContent = quill.getContents();
       updateDocumentMutation.mutate(currentContent);
       unregisterQuill2(editorId);
+      queryClient.removeQueries({
+        queryKey: [`document-${documentId}`],
+      });
       signal.abort();
       quill.disable();
     };
@@ -174,7 +180,9 @@ const Editor = ({
       quillRef.current.getText().trim() === "" &&
       currentDoc?.docs_prosemirror_delta
     ) {
-      quillRef.current.setContents(currentDoc.docs_prosemirror_delta);
+      setTimeout(() => {
+        quillRef.current?.setContents(currentDoc.docs_prosemirror_delta);
+      }, 0);
     }
     return () => {
       if (saveTimeoutRef.current) {
