@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import TagOptions from "./TagOptions";
+import { useTableOfContentStore } from "@/stores/tableOfContentStore";
 
 function SyncOptions({
   syncMode,
@@ -8,12 +9,13 @@ function SyncOptions({
   syncType,
   setSyncType,
 }: {
-  syncMode: "scroll" | "click" | "none";
-  setSyncMode: (mode: "scroll" | "click" | "none") => void;
+  syncMode: "scroll" | "click" | "none" | "table";
+  setSyncMode: (mode: "scroll" | "click" | "none" | "table") => void;
   syncType: "heading" | "lineNumber";
   setSyncType: (type: "heading" | "lineNumber") => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const { setSynced } = useTableOfContentStore();
 
   const options = [
     {
@@ -25,6 +27,11 @@ function SyncOptions({
       value: "click",
       label: "Click Sync",
       description: "Synchronize based on clicking",
+    },
+    {
+      value: "table",
+      label: "Table Sync",
+      description: "Synchronize based on table of contents",
     },
     { value: "none", label: "No Sync", description: "No synchronization" },
   ];
@@ -48,6 +55,14 @@ function SyncOptions({
         </div>
       );
     }
+  };
+
+  const handleSyncModeChange = (
+    mode: "scroll" | "click" | "none" | "table"
+  ) => {
+    setSyncMode(mode);
+    setSynced(mode === "table");
+    setIsOpen(false);
   };
 
   return (
@@ -79,10 +94,11 @@ function SyncOptions({
                       ? "bg-blue-50 text-blue-700"
                       : "text-gray-900"
                   }`}
-                  onClick={() => {
-                    setSyncMode(option.value as "scroll" | "click" | "none");
-                    setIsOpen(false);
-                  }}
+                  onClick={() =>
+                    handleSyncModeChange(
+                      option.value as "scroll" | "click" | "none" | "table"
+                    )
+                  }
                 >
                   <div className="flex items-center justify-between">
                     <div>
@@ -99,7 +115,7 @@ function SyncOptions({
         )}
       </div>
 
-      {syncMode !== "none" && !isOpen && (
+      {syncMode !== "none" && syncMode !== "table" && !isOpen && (
         <TagOptions syncType={syncType} setSyncType={setSyncType} />
       )}
     </div>

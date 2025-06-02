@@ -11,8 +11,8 @@ import { useEditor } from "@/contexts/EditorContext";
 import { MAX_HEADING_LEVEL } from "@/utils/editorConfig";
 import { cn } from "@/lib/utils";
 import { debounce } from "lodash";
-import { Switch } from "./ui/switch";
 import { HiArrowLeft } from "react-icons/hi2";
+import { useTableOfContentStore } from "@/stores/tableOfContentStore";
 
 interface Heading {
   text: string;
@@ -25,14 +25,16 @@ interface TableOfContentProps {
   documentId: string;
 }
 
+type ExpandedSections = { [key: string]: boolean };
+
 const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [headings, setHeadings] = useState<Heading[]>([]);
-  const [synced, setSynced] = useState(false);
-  const { getQuill, quillEditors } = useEditor();
-  const [expandedSections, setExpandedSections] = useState<{
-    [key: string]: boolean;
-  }>({});
+  const { synced } = useTableOfContentStore();
+  const { getQuill } = useEditor();
+  const [expandedSections, setExpandedSections] = useState<ExpandedSections>(
+    {}
+  );
   const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null);
   const quill = getQuill(documentId);
   const generateList = useCallback(() => {
@@ -119,7 +121,7 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
           const number = counters.slice(0, level).join(".");
 
           return {
-            text: heading.textContent,
+            text: heading.textContent || "",
             level,
             id,
             number,
@@ -127,7 +129,7 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
         });
 
       setHeadings(headingsData);
-      const initialExpanded: { [key: string]: boolean } = {};
+      const initialExpanded: ExpandedSections = {};
       headingsData.forEach((h) => {
         if (h.level === 1 || h.level === 2) initialExpanded[h.id] = true;
       });
@@ -162,8 +164,6 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
       };
     }
   }, [quill, isOpen, generateList, updateActiveHeading]);
-
-  const showSyncButton = quillEditors.size > 1;
 
   const handleToggleTOC = () => {
     setIsOpen(!isOpen);
@@ -206,18 +206,6 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
             <h3 className="text-md text-gray-600 font-semibold">
               Table of Contents
             </h3>
-            <div className="flex items-center">
-              {showSyncButton && (
-                <>
-                  Sync :
-                  <Switch
-                    checked={synced}
-                    onCheckedChange={() => setSynced(!synced)}
-                    className="ml-2"
-                  />
-                </>
-              )}
-            </div>
           </div>
 
           <div className="overflow-y-auto flex-grow">
@@ -242,9 +230,9 @@ interface TocProps {
   headings: Heading[];
   synced: boolean;
   documentId: string;
-  expandedSections: { [key: string]: boolean };
+  expandedSections: ExpandedSections;
   activeHeadingId: string | null;
-  setExpandedSections: (sections: { [key: string]: boolean }) => void;
+  setExpandedSections: (sections: ExpandedSections) => void;
   setActiveHeadingId: (id: string | null) => void;
   updateActiveHeading: () => void;
 }
@@ -331,12 +319,13 @@ const Toc = React.memo(function Toc({
   const toggleExpand = useCallback(
     (id: string, e: React.MouseEvent) => {
       e.stopPropagation();
-      setExpandedSections((prev) => {
-        // Create a new state object to avoid mutating the previous state
-        return { ...prev, [id]: !prev[id] };
-      });
+      const newExpandedSections = {
+        ...expandedSections,
+        [id]: !expandedSections[id],
+      };
+      setExpandedSections(newExpandedSections);
     },
-    [setExpandedSections]
+    [expandedSections, setExpandedSections]
   );
 
   // Memoize the visibility calculation for headings
