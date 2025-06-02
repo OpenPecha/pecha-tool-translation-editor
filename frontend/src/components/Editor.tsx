@@ -205,6 +205,7 @@ const Editor = ({
           synced={isSynced}
           documentId={documentId}
           toolbarId={toolbarId}
+          range={currentRange}
         />,
         document.getElementById("toolbar-container")!
       )}

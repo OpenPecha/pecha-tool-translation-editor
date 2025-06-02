@@ -15,6 +15,7 @@ interface ToolbarProps {
   synced: boolean;
   documentId: string;
   toolbarId: string;
+  range: any;
 }
 
 const Toolbar = ({
@@ -22,10 +23,14 @@ const Toolbar = ({
   synced,
   documentId,
   toolbarId,
+  range,
 }: ToolbarProps) => {
   const versionRef = useRef<HTMLDivElement>(null);
   const [openHistory, setOpenHistory] = useState(false);
-  const { getQuill, activeEditor } = useEditor();
+  const { getQuill, activeEditor, quillEditors } = useEditor();
+  const other_quill = Array.from(quillEditors.values()).find(
+    (quill) => quill?.id !== activeEditor
+  );
   const [showVersionDiff, setShowVersionDiff] = useState(false);
   const [currentHeader, setCurrentHeader] = useState<string | number>("");
   const quill = getQuill(documentId);
@@ -101,6 +106,16 @@ const Toolbar = ({
 
   const handleHeadingChange = (value: string | number) => {
     if (!quill) return;
+
+    // Get the current block's content
+    const currentContent = quill.getContents(range.index, 1);
+
+    // Find the other quill editor
+    const otherQuill = Array.from(quillEditors.values()).find(
+      (q) => q !== quill
+    );
+
+    // Apply formatting to current quill first
     if (value === "") {
       // Clear all header formats (h1-h6)
       for (let i = 1; i <= MAX_HEADING_LEVEL; i++) {
@@ -110,6 +125,30 @@ const Toolbar = ({
       quill?.format("h", false, "user");
     } else {
       quill?.format(`h${value}`, true, "user");
+    }
+
+    // Then handle other quill in the next tick to avoid async issues
+    if (otherQuill) {
+      setTimeout(() => {
+        try {
+          // Select the corresponding block in other quill
+          otherQuill.setSelection(range.index, 1);
+
+          // Apply the same header formatting
+          if (value === "") {
+            // Clear all header formats (h1-h6)
+            for (let i = 1; i <= MAX_HEADING_LEVEL; i++) {
+              otherQuill.format(`h${i}`, false, "user");
+            }
+            // Set to paragraph
+            otherQuill.format("h", false, "user");
+          } else {
+            otherQuill.format(`h${value}`, true, "user");
+          }
+        } catch (error) {
+          console.warn("Failed to update other quill:", error);
+        }
+      }, 0);
     }
   };
 
