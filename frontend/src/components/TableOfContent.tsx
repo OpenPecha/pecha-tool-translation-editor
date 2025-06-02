@@ -209,10 +209,10 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
             <div className="flex items-center">
               {showSyncButton && (
                 <>
-                  lock:
+                  Sync :
                   <Switch
-                    checked={!synced}
-                    onCheckedChange={() => setSynced((p) => !p)}
+                    checked={synced}
+                    onCheckedChange={() => setSynced(!synced)}
                     className="ml-2"
                   />
                 </>
