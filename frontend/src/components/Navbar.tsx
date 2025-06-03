@@ -9,7 +9,7 @@ import { updateDocument } from "@/api/document";
 
 import DocIcon from "@/assets/doc_icon.png";
 import AvatarWrapper from "./ui/custom-avatar";
-import PermissionsModal from "./PermissionsModal";
+import ShareModal from "./ShareModal";
 import { BiShare } from "react-icons/bi";
 
 type Project = {
@@ -67,7 +67,7 @@ const Navbar = ({ title, project }: { title?: string; project: Project }) => {
         )}
       </div>
       {showPermissionsModal && (
-        <PermissionsModal
+        <ShareModal
           projectId={project.id}
           projectName={project.name}
           onClose={() => setShowPermissionsModal(false)}

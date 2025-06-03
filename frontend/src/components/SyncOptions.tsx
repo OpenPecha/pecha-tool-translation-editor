@@ -9,10 +9,10 @@ function SyncOptions({
   syncType,
   setSyncType,
 }: {
-  syncMode: "scroll" | "click" | "none" | "table";
-  setSyncMode: (mode: "scroll" | "click" | "none" | "table") => void;
-  syncType: "heading" | "lineNumber";
-  setSyncType: (type: "heading" | "lineNumber") => void;
+  readonly syncMode: "scroll" | "click" | "none" | "table";
+  readonly setSyncMode: (mode: "scroll" | "click" | "none" | "table") => void;
+  readonly syncType: "heading" | "lineNumber";
+  readonly setSyncType: (type: "heading" | "lineNumber") => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const { setSynced } = useTableOfContentStore();
@@ -81,7 +81,6 @@ function SyncOptions({
             <FaChevronDown className="w-4 h-4 text-gray-400" />
           )}
         </button>
-
         {/* Dropdown Menu */}
         {isOpen && (
           <div className="mt-1 z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg">

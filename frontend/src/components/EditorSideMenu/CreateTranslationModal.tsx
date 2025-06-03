@@ -18,6 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TextUploader from "../DocumentCreateModal/TextUploader";
 import SelectPechas, { PechaType } from "../DocumentCreateModal/SelectPechas";
 import { useParams } from "react-router-dom";
+import SegmentationOptions from "./SegmentationOptions";
 
 interface CreateTranslationModalProps {
   rootId: string;
@@ -133,9 +134,9 @@ const AITranslation = ({
     "claude-3-haiku-20240307"
   );
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const [useSegmentation, setUseSegmentation] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
+  const [segmentationMethod, setSegmentationMethod] =
+    useState<string>("newline");
   const generateTranslationMutation = useMutation({
     mutationFn: generateTranslation,
     onSuccess: (data) => {
@@ -162,7 +163,7 @@ const AITranslation = ({
       rootId: id!,
       language,
       model: selectedCredential,
-      use_segmentation: useSegmentation ? "botok" : "newline",
+      use_segmentation: segmentationMethod,
     });
   };
 
@@ -194,25 +195,11 @@ const AITranslation = ({
       </div>
 
       {/* Segmentation toggle */}
+      <SegmentationOptions
+        selectedMethod={segmentationMethod}
+        onMethodChange={setSegmentationMethod}
+      />
 
-      <div className="flex items-center justify-between p-4 bg-gray-50/50 rounded-lg border border-gray-200/50">
-        <div className="space-y-1">
-          <Label
-            htmlFor="segmentation"
-            className="text-sm font-medium text-gray-900"
-          >
-            Use segmentation for translation
-          </Label>
-          <p className="text-xs text-gray-500">
-            ( use only if root is not segmented )
-          </p>
-        </div>
-        <Switch
-          id="segmentation"
-          checked={useSegmentation}
-          onCheckedChange={setUseSegmentation}
-        />
-      </div>
       {error && <p className="text-red-500">{error}</p>}
       {/* Generate button */}
       <Button

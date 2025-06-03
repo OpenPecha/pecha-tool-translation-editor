@@ -23,7 +23,7 @@ export interface Project {
   roots?: {
     id: string;
     identifier: string;
-    name:string;
+    name: string;
     updatedAt: string;
   }[];
   permissions?: Permission[];
@@ -53,20 +53,20 @@ export interface UpdateProjectParams {
 }
 
 // Fetch all projects for the current user
-export const fetchProjects = async ({ 
-  status = "active", 
-  searchQuery = "", 
-  page = 1, 
-  limit = 10 
-}: { 
-  status?: string; 
+export const fetchProjects = async ({
+  status = "active",
+  searchQuery = "",
+  page = 1,
+  limit = 10,
+}: {
+  status?: string;
   searchQuery?: string;
   page?: number;
   limit?: number;
 } = {}) => {
   try {
     const queryParams = new URLSearchParams();
-    
+
     if (status) {
       queryParams.append("status", status);
     }
@@ -79,17 +79,17 @@ export const fetchProjects = async ({
     if (limit) {
       queryParams.append("limit", limit.toString());
     }
-    
+
     const url = `${server_url}/projects?${queryParams.toString()}`;
-    
+
     const response = await fetch(url, {
       headers: getHeaders(),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Failed to fetch projects: ${response.statusText}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error("Error fetching projects:", error);
@@ -103,11 +103,11 @@ export const fetchProjectById = async (projectId: string) => {
     const response = await fetch(`${server_url}/projects/${projectId}`, {
       headers: getHeaders(),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Failed to fetch project: ${response.statusText}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error(`Error fetching project ${projectId}:`, error);
@@ -126,11 +126,11 @@ export const createProject = async (projectData: CreateProjectParams) => {
       },
       body: JSON.stringify(projectData),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Failed to create project: ${response.statusText}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error("Error creating project:", error);
@@ -139,7 +139,10 @@ export const createProject = async (projectData: CreateProjectParams) => {
 };
 
 // Update an existing project
-export const updateProject = async (projectId: string, updateData: UpdateProjectParams) => {
+export const updateProject = async (
+  projectId: string,
+  updateData: UpdateProjectParams
+) => {
   try {
     const response = await fetch(`${server_url}/projects/${projectId}`, {
       method: "PUT",
@@ -149,11 +152,11 @@ export const updateProject = async (projectId: string, updateData: UpdateProject
       },
       body: JSON.stringify(updateData),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Failed to update project: ${response.statusText}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error(`Error updating project ${projectId}:`, error);
@@ -168,11 +171,11 @@ export const deleteProject = async (projectId: string) => {
       method: "DELETE",
       headers: getHeaders(),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Failed to delete project: ${response.statusText}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error(`Error deleting project ${projectId}:`, error);
@@ -182,24 +185,29 @@ export const deleteProject = async (projectId: string) => {
 
 // Add a document to a project
 export const addDocumentToProject = async (
-  projectId: string, 
-  docId: string, 
+  projectId: string,
+  docId: string,
   isRoot: boolean = false
 ) => {
   try {
-    const response = await fetch(`${server_url}/projects/${projectId}/documents`, {
-      method: "POST",
-      headers: {
-        ...getHeaders(),
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ docId, isRoot }),
-    });
-    
+    const response = await fetch(
+      `${server_url}/projects/${projectId}/documents`,
+      {
+        method: "POST",
+        headers: {
+          ...getHeaders(),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ docId, isRoot }),
+      }
+    );
+
     if (!response.ok) {
-      throw new Error(`Failed to add document to project: ${response.statusText}`);
+      throw new Error(
+        `Failed to add document to project: ${response.statusText}`
+      );
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error(`Error adding document to project ${projectId}:`, error);
@@ -208,17 +216,25 @@ export const addDocumentToProject = async (
 };
 
 // Remove a document from a project
-export const removeDocumentFromProject = async (projectId: string, docId: string) => {
+export const removeDocumentFromProject = async (
+  projectId: string,
+  docId: string
+) => {
   try {
-    const response = await fetch(`${server_url}/projects/${projectId}/documents/${docId}`, {
-      method: "DELETE",
-      headers: getHeaders(),
-    });
-    
+    const response = await fetch(
+      `${server_url}/projects/${projectId}/documents/${docId}`,
+      {
+        method: "DELETE",
+        headers: getHeaders(),
+      }
+    );
+
     if (!response.ok) {
-      throw new Error(`Failed to remove document from project: ${response.statusText}`);
+      throw new Error(
+        `Failed to remove document from project: ${response.statusText}`
+      );
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error(`Error removing document from project ${projectId}:`, error);
@@ -228,8 +244,8 @@ export const removeDocumentFromProject = async (projectId: string, docId: string
 
 // Add a user to a project (create permission)
 export const addUserToProject = async (
-  projectId: string, 
-  userId: string, 
+  projectId: string,
+  userId: string,
   canWrite: boolean = false
 ) => {
   try {
@@ -241,11 +257,11 @@ export const addUserToProject = async (
       },
       body: JSON.stringify({ userId, canWrite }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Failed to add user to project: ${response.statusText}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error(`Error adding user to project ${projectId}:`, error);
@@ -254,17 +270,25 @@ export const addUserToProject = async (
 };
 
 // Remove a user from a project (delete permission)
-export const removeUserFromProject = async (projectId: string, userId: string) => {
+export const removeUserFromProject = async (
+  projectId: string,
+  userId: string
+) => {
   try {
-    const response = await fetch(`${server_url}/projects/${projectId}/users/${userId}`, {
-      method: "DELETE",
-      headers: getHeaders(),
-    });
-    
+    const response = await fetch(
+      `${server_url}/projects/${projectId}/users/${userId}`,
+      {
+        method: "DELETE",
+        headers: getHeaders(),
+      }
+    );
+
     if (!response.ok) {
-      throw new Error(`Failed to remove user from project: ${response.statusText}`);
+      throw new Error(
+        `Failed to remove user from project: ${response.statusText}`
+      );
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error(`Error removing user from project ${projectId}:`, error);
@@ -274,27 +298,35 @@ export const removeUserFromProject = async (projectId: string, userId: string) =
 
 // Update a user's permissions in a project
 export const updateUserProjectPermission = async (
-  projectId: string, 
-  userId: string, 
+  projectId: string,
+  userId: string,
   canWrite: boolean
 ) => {
   try {
-    const response = await fetch(`${server_url}/projects/${projectId}/users/${userId}`, {
-      method: "PATCH",
-      headers: {
-        ...getHeaders(),
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ canWrite }),
-    });
-    
+    const response = await fetch(
+      `${server_url}/projects/${projectId}/users/${userId}`,
+      {
+        method: "PATCH",
+        headers: {
+          ...getHeaders(),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ canWrite }),
+      }
+    );
+
     if (!response.ok) {
-      throw new Error(`Failed to update user permission: ${response.statusText}`);
+      throw new Error(
+        `Failed to update user permission: ${response.statusText}`
+      );
     }
-    
+
     return await response.json();
   } catch (error) {
-    console.error(`Error updating user permission in project ${projectId}:`, error);
+    console.error(
+      `Error updating user permission in project ${projectId}:`,
+      error
+    );
     throw error;
   }
 };
@@ -306,19 +338,22 @@ export const addUserToProjectByEmail = async (
   canWrite: boolean = false
 ) => {
   try {
-    const response = await fetch(`${server_url}/projects/${projectId}/users/email`, {
-      method: "POST",
-      headers: {
-        ...getHeaders(),
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, canWrite }),
-    });
-    
+    const response = await fetch(
+      `${server_url}/projects/${projectId}/users/email`,
+      {
+        method: "POST",
+        headers: {
+          ...getHeaders(),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, canWrite }),
+      }
+    );
+
     if (!response.ok) {
       throw new Error(`Failed to add user to project: ${response.statusText}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error(`Error adding user to project ${projectId}:`, error);
@@ -329,14 +364,19 @@ export const addUserToProjectByEmail = async (
 // Get project permissions
 export const fetchProjectPermissions = async (projectId: string) => {
   try {
-    const response = await fetch(`${server_url}/projects/${projectId}/permissions`, {
-      headers: getHeaders(),
-    });
-    
+    const response = await fetch(
+      `${server_url}/projects/${projectId}/permissions`,
+      {
+        headers: getHeaders(),
+      }
+    );
+
     if (!response.ok) {
-      throw new Error(`Failed to fetch project permissions: ${response.statusText}`);
+      throw new Error(
+        `Failed to fetch project permissions: ${response.statusText}`
+      );
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error(`Error fetching project permissions ${projectId}:`, error);
@@ -347,17 +387,20 @@ export const fetchProjectPermissions = async (projectId: string) => {
 // Search for a user by email
 export const searchUserByEmail = async (email: string) => {
   try {
-    const response = await fetch(`${server_url}/users/search?email=${encodeURIComponent(email)}`, {
-      headers: getHeaders(),
-    });
-    
+    const response = await fetch(
+      `${server_url}/users/search?email=${encodeURIComponent(email)}`,
+      {
+        headers: getHeaders(),
+      }
+    );
+
     if (!response.ok) {
       if (response.status === 404) {
         throw new Error("User not found with this email");
       }
       throw new Error(`Failed to search user: ${response.statusText}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error(`Error searching user by email:`, error);
@@ -366,16 +409,25 @@ export const searchUserByEmail = async (email: string) => {
 };
 
 // Download all documents in a project as a zip file
-export const downloadProjectDocuments = async (projectId: string) => {
+import { exportStyle } from "@/components/Export";
+export const downloadProjectDocuments = async (
+  projectId: string,
+  exportFormat: exportStyle
+) => {
   try {
-    const response = await fetch(`${server_url}/projects/${projectId}/export`, {
-      headers: getHeaders(),
-    });
-    
+    const response = await fetch(
+      `${server_url}/projects/${projectId}/export?type=${exportFormat}`,
+      {
+        headers: getHeaders(),
+      }
+    );
+
     if (!response.ok) {
-      throw new Error(`Failed to download project documents: ${response.statusText}`);
+      throw new Error(
+        `Failed to download project documents: ${response.statusText}`
+      );
     }
-    
+
     // Return the blob for direct download
     const blob = await response.blob();
     return blob;

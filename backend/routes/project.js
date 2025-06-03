@@ -11,6 +11,7 @@ const {
   TextRun,
   HeadingLevel,
   AlignmentType,
+  WidthType,
 } = require("docx");
 const path = require("path");
 
@@ -517,77 +518,202 @@ router.delete("/:id", authenticate, async (req, res) => {
 router.get("/:id/export", authenticate, async (req, res) => {
   try {
     const { id } = req.params;
+    const { type } = req.query;
 
-    // Check if project exists and user has permission
-    const project = await prisma.project.findUnique({
-      where: { id },
-      include: {
-        roots: {
-          include: {
-            translations: true,
+    if (type === "side-by-side") {
+      // Check if project exists and user has permission
+      const project = await prisma.project.findUnique({
+        where: { id },
+        include: {
+          roots: {
+            include: {
+              translations: true,
+            },
+          },
+          permissions: {
+            where: { userId: req.user.id },
           },
         },
-        permissions: {
-          where: { userId: req.user.id },
-        },
-      },
-    });
+      });
 
-    if (!project) {
-      return res.status(404).json({ error: "Project not found" });
-    }
-
-    // Check if user has permission to access this project
-    // const hasPermission = project.ownerId === req.user.id || project.permissions.some(p => p.userId === req.user.id && p.canRead);
-    // if (!hasPermission) {
-    // return res.status(403).json({ error: "Not authorized to access this project" });
-    // }
-
-    // Create a zip file
-    const archive = archiver("zip", {
-      zlib: { level: 9 }, // Compression level
-    });
-
-    // Set response headers
-    res.setHeader("Content-Type", "application/zip");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename=${project.name
-        .replace(/[^a-z0-9]/gi, "_")
-        .toLowerCase()}_documents.zip`
-    );
-
-    // Pipe archive data to the response
-    archive.pipe(res);
-
-    // Process all root documents and their translations
-    for (const rootDoc of project.roots) {
-      // Get the content of the root document
-      const rootDocContent = await getDocumentContent(rootDoc.id);
-      if (rootDocContent) {
-        // Add root document to the zip
-        const rootDocx = await createDocxBuffer(rootDoc.name, rootDocContent);
-        archive.append(rootDocx, { name: `${rootDoc.name}.docx` });
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
       }
 
-      // Process translations
-      for (const translation of rootDoc.translations) {
-        const translationContent = await getDocumentContent(translation.id);
-        if (translationContent) {
-          // Add translation document to the zip
-          const translationDocx = await createDocxBuffer(
-            `${rootDoc.name}_${translation.language}`,
-            translationContent
-          );
-          archive.append(translationDocx, {
-            name: `${rootDoc.name}_${translation.language}.docx`,
-          });
+      // Create a zip file
+      const archive = archiver("zip", {
+        zlib: { level: 9 },
+      });
+
+      // Set response headers
+      res.setHeader("Content-Type", "application/zip");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=${project.name
+          .replace(/[^a-z0-9]/gi, "_")
+          .toLowerCase()}_side_by_side.zip`
+      );
+
+      // Pipe archive data to the response
+      archive.pipe(res);
+
+      // Process all root documents and their translations
+      for (const rootDoc of project.roots) {
+        const rootDocContent = await getDocumentContent(rootDoc.id);
+
+        // Process translations
+        for (const translation of rootDoc.translations) {
+          const translationContent = await getDocumentContent(translation.id);
+          if (rootDocContent && translationContent) {
+            // Create a combined document with source and translation side by side
+            const combinedDocx = await createSideBySideDocx(
+              rootDoc.name,
+              rootDocContent,
+              translation.language,
+              translationContent
+            );
+            archive.append(combinedDocx, {
+              name: `${rootDoc.name}_${translation.language}_side_by_side.docx`,
+            });
+          }
         }
       }
-    }
 
-    // Finalize the archive
-    await archive.finalize();
+      // Finalize the archive
+      await archive.finalize();
+    } else if (type === "line-by-line") {
+      // Check if project exists and user has permission
+      const project = await prisma.project.findUnique({
+        where: { id },
+        include: {
+          roots: {
+            include: {
+              translations: true,
+            },
+          },
+          permissions: {
+            where: { userId: req.user.id },
+          },
+        },
+      });
+
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      // Create a zip file
+      const archive = archiver("zip", {
+        zlib: { level: 9 },
+      });
+
+      // Set response headers
+      res.setHeader("Content-Type", "application/zip");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=${project.name
+          .replace(/[^a-z0-9]/gi, "_")
+          .toLowerCase()}_line_by_line.zip`
+      );
+
+      // Pipe archive data to the response
+      archive.pipe(res);
+
+      // Process all root documents and their translations
+      for (const rootDoc of project.roots) {
+        const rootDocContent = await getDocumentContent(rootDoc.id);
+
+        // Process translations
+        for (const translation of rootDoc.translations) {
+          const translationContent = await getDocumentContent(translation.id);
+          if (rootDocContent && translationContent) {
+            // Create a combined document with source and translation line by line
+            const combinedDocx = await createLineByLineDocx(
+              rootDoc.name,
+              rootDocContent,
+              translation.language,
+              translationContent
+            );
+            archive.append(combinedDocx, {
+              name: `${rootDoc.name}_${translation.language}_line_by_line.docx`,
+            });
+          }
+        }
+      }
+
+      // Finalize the archive
+      await archive.finalize();
+    } else {
+      // Check if project exists and user has permission
+      const project = await prisma.project.findUnique({
+        where: { id },
+        include: {
+          roots: {
+            include: {
+              translations: true,
+            },
+          },
+          permissions: {
+            where: { userId: req.user.id },
+          },
+        },
+      });
+
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      // Check if user has permission to access this project
+      // const hasPermission = project.ownerId === req.user.id || project.permissions.some(p => p.userId === req.user.id && p.canRead);
+      // if (!hasPermission) {
+      // return res.status(403).json({ error: "Not authorized to access this project" });
+      // }
+
+      // Create a zip file
+      const archive = archiver("zip", {
+        zlib: { level: 9 }, // Compression level
+      });
+
+      // Set response headers
+      res.setHeader("Content-Type", "application/zip");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=${project.name
+          .replace(/[^a-z0-9]/gi, "_")
+          .toLowerCase()}_documents.zip`
+      );
+
+      // Pipe archive data to the response
+      archive.pipe(res);
+
+      // Process all root documents and their translations
+      for (const rootDoc of project.roots) {
+        // Get the content of the root document
+        const rootDocContent = await getDocumentContent(rootDoc.id);
+        if (rootDocContent) {
+          // Add root document to the zip
+          const rootDocx = await createDocxBuffer(rootDoc.name, rootDocContent);
+          archive.append(rootDocx, { name: `${rootDoc.name}.docx` });
+        }
+
+        // Process translations
+        for (const translation of rootDoc.translations) {
+          const translationContent = await getDocumentContent(translation.id);
+          if (translationContent) {
+            // Add translation document to the zip
+            const translationDocx = await createDocxBuffer(
+              `${rootDoc.name}_${translation.language}`,
+              translationContent
+            );
+            archive.append(translationDocx, {
+              name: `${rootDoc.name}_${translation.language}.docx`,
+            });
+          }
+        }
+      }
+
+      // Finalize the archive
+      await archive.finalize();
+    }
   } catch (error) {
     console.error("Error creating zip file:", error);
     res.status(500).json({ error: error.message });

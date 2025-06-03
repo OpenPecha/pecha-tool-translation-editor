@@ -70,12 +70,7 @@
 .ql-container.font-monlam{
   font-family: var(--font-monlam) !important; 
 }
-.custom-comment {
-  background-color: lightyellow;
-  border-bottom: 2px dashed orange;
-  padding: 2px;
-  border-radius: 3px;
-}
+
 
 body {
   font-family: 'google-sans', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -184,7 +179,7 @@ body {
 /* Handle */
 ::-webkit-scrollbar-thumb {
   background: #888;
-  border-radius: 30%;
+  /* border-radius: 30%; */
 
   cursor: pointer;
 

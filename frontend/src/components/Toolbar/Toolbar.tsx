@@ -168,18 +168,8 @@ const Toolbar = ({
     >
       <div className="flex items-center flex-1 h-full">
         <span className="ql-formats" style={isEnabledStyle}>
-          <button
-            className="ql-undo"
-            title="Undo"
-            disabled={quill?.history.stack.undo.length === 0}
-            onClick={() => quill?.history.undo()}
-          />
-          <button
-            className="ql-redo"
-            title="Redo"
-            disabled={quill?.history.stack.redo.length === 0}
-            onClick={() => quill?.history.redo()}
-          />
+          <button className="ql-undo" title="Undo" />
+          <button className="ql-redo" title="Redo" />
         </span>
         <span className="ql-formats" style={isEnabledStyle}>
           <select className="ql-font" title="Font" defaultValue="sans-serif">
@@ -269,7 +259,7 @@ const Toolbar = ({
                 </div>
               </div>
             </div>,
-            document.getElementById("diff-portal")
+            document.getElementById("diff-portal")!
           )}
       </div>
       <div className="flex items-center gap-2 h-full">

@@ -109,11 +109,17 @@ const Editor = ({
                 quill.format("headerN", value, "user");
               }
             },
+            redo: () => {
+              quill.history.redo();
+            },
+            undo: () => {
+              quill.history.undo();
+            },
           },
         },
-        cursors: {
-          transformOnTextChange: false,
-        },
+        // cursors: {
+        //   transformOnTextChange: false,
+        // },
         keyboard: true,
         counter: { container: `#${counterId}`, unit: "character" },
       },
