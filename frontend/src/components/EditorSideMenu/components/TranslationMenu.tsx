@@ -10,11 +10,13 @@ import {
 import { Input } from "@/components/ui/input";
 
 interface TranslationMenuProps {
+  initialValue: string;
   onEdit: (name: string) => void;
   onDelete: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 const TranslationMenu: React.FC<TranslationMenuProps> = ({
+  initialValue,
   onEdit,
   onDelete,
 }) => {
@@ -24,6 +26,7 @@ const TranslationMenu: React.FC<TranslationMenuProps> = ({
 
   const handleEditClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    setName(initialValue);
     setIsEditing(true);
   };
 
@@ -58,10 +61,12 @@ const TranslationMenu: React.FC<TranslationMenuProps> = ({
           />
           <div className="flex gap-2 w-full justify-end">
             <Button
-              type="submit"
+              type="button"
               variant="ghost"
               size="sm"
-              disabled={name.trim() === ""}
+              onClick={() => {
+                setIsEditing(false);
+              }}
             >
               Cancel
             </Button>

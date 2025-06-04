@@ -130,6 +130,7 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
           </div>
           {!isDeleting && (
             <TranslationMenu
+              initialValue={translation.name}
               onEdit={(name) => onEdit(translation.id, name)}
               onDelete={(e) => onDelete(translation.id, e)}
             />

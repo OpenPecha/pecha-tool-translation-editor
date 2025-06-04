@@ -33,8 +33,11 @@ const Editor = ({
   const [currentRange, setCurrentRange] = useState<Range | null>(null);
   const [showCommentModal, setShowCommentModal] = useState(false);
   const { registerQuill } = useQuillVersion();
-  const { registerQuill: registerQuill2, unregisterQuill: unregisterQuill2 } =
-    useEditor();
+  const {
+    registerQuill: registerQuill2,
+    unregisterQuill: unregisterQuill2,
+    getLineNumber,
+  } = useEditor();
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const quillRef = useRef<Quill | null>(null);
   const updateDocumentMutation = useMutation({
@@ -158,10 +161,13 @@ const Editor = ({
         const domrange = selection.getRangeAt(0);
         const rect = domrange.getBoundingClientRect();
         const { left, top } = rect;
+
+        const lineNumber = getLineNumber(quill);
         const newRange = {
           ...range,
           left,
           top,
+          lineNumber,
         };
         // You can use left and top coordinates for positioning elements
         setCurrentRange(newRange);
