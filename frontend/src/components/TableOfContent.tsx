@@ -16,6 +16,7 @@ import {
   useTableOfContentSyncStore,
   useTableOfContentOpenStore,
 } from "@/stores/tableOfContentStore";
+import { BookOpen } from "lucide-react";
 
 interface Heading {
   text: string;
@@ -201,21 +202,22 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
 
       <div
         className={cn(
-          "relative inset-y-0 left-0 max-w-64 transition-transform duration-300 ease-in-out z-20",
-          isOpen(documentId) ? "translate-x-0 " : "-translate-x-full hidden"
+          "relative inset-y-0 left-0 max-w-64 transition-all duration-300 overflow-hidden ease-in-out z-20",
+          isOpen(documentId) ? "translate-x-0" : "-translate-x-full hidden"
         )}
       >
         <div className="p-4 h-full flex gap-4 flex-col">
-          <button
-            onClick={() => setIsOpen(documentId, false)}
-            className=" hover:text-gray-700 hover:bg-gray-200 hover:shadow rounded-full p-1 w-fit  cursor-pointer"
-          >
-            <HiArrowLeft className="w-5 h-5" />
-          </button>
-          <div className="flex flex-col justify-between">
-            <h3 className="text-md text-gray-600 font-semibold">
+          <div className="flex items-center mb-3">
+            <button
+              onClick={() => setIsOpen(documentId, false)}
+              className=" hover:text-gray-700 hover:bg-gray-200 hover:shadow rounded-full p-1 w-fit mr-3  cursor-pointer"
+            >
+              <HiArrowLeft className="w-5 h-5" />
+            </button>
+            <BookOpen className="mr-2 text-blue-600" size={20} />
+            <h2 className="text-lg font-semibold text-gray-800">
               Table of Contents
-            </h3>
+            </h2>
           </div>
 
           <div className="overflow-y-auto flex-grow">
@@ -394,24 +396,24 @@ const Toc = React.memo(function Toc({
           <div
             key={heading.id}
             className={cn(
-              "text-sm py-1.5 rounded-md transition-colors",
+              " py-1.5 rounded-md transition-colors",
               isNested && `ml-${(heading.level - 1) * 3}`,
-              isActive ? "bg-violet-50" : "hover:bg-gray-100"
+              isActive
+                ? "bg-blue-50 text-blue-700 border-r-2 border-blue-500"
+                : "hover:bg-gray-100"
             )}
             style={{
+              fontSize: 10,
               paddingLeft: isNested ? `${(heading.level - 1) * 12}px` : "8px",
             }}
           >
             <div
-              className={cn(
-                "flex items-center cursor-pointer",
-                isActive && "border-l-2 border-violet-700 pl-2"
-              )}
+              className={cn("flex items-center cursor-pointer")}
               onClick={() => scrollToHeading(heading.id)}
             >
               {hasChildren && (
                 <button
-                  className="mr-2 flex items-center justify-center w-5 h-5 rounded-sm hover:bg-violet-200 text-violet-700"
+                  className="mr-2 flex items-center justify-center w-5 h-5 rounded-sm hover:bg-blue-200 text-blue-700"
                   onClick={(e) => toggleExpand(heading.id, e)}
                   aria-label={
                     isExpanded ? "Collapse section" : "Expand section"
@@ -426,13 +428,7 @@ const Toc = React.memo(function Toc({
                 </button>
               )}
               {/* {!hasChildren && <div className="mr-2 w-5 h-5" />} */}
-              <span
-                className={cn(
-                  " truncate flex-1 font-monlam text-xs pt-1",
-                  isNested ? "text-slate-700" : "font-medium text-slate-900",
-                  isActive && "font-semibold"
-                )}
-              >
+              <span className={cn(" truncate flex-1 font-monlam pt-1")}>
                 {heading.text}
               </span>
             </div>
