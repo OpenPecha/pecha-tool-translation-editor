@@ -16,7 +16,7 @@ import {
   useTableOfContentSyncStore,
   useTableOfContentOpenStore,
 } from "@/stores/tableOfContentStore";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Dot } from "lucide-react";
 
 interface Heading {
   text: string;
@@ -399,12 +399,11 @@ const Toc = React.memo(function Toc({
               " py-1.5 rounded-md transition-colors",
               isNested && `ml-${(heading.level - 1) * 3}`,
               isActive
-                ? "bg-blue-50 text-blue-700 border-r-2 border-blue-500"
+                ? "bg-blue-50 text-blue-700 border-r-2 border-blue-500 pr-2"
                 : "hover:bg-gray-100"
             )}
             style={{
               fontSize: 10,
-              paddingLeft: isNested ? `${(heading.level - 1) * 12}px` : "8px",
             }}
           >
             <div
@@ -425,6 +424,14 @@ const Toc = React.memo(function Toc({
                   ) : (
                     <FaChevronRight size={12} />
                   )}
+                </button>
+              )}
+              {!hasChildren && (
+                <button
+                  className="mr-2 flex items-center justify-center w-5 h-5 rounded-sm hover:bg-blue-200 text-blue-700"
+                  type="button"
+                >
+                  <Dot />
                 </button>
               )}
               {/* {!hasChildren && <div className="mr-2 w-5 h-5" />} */}
