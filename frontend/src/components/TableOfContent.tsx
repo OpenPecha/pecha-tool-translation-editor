@@ -12,7 +12,10 @@ import { MAX_HEADING_LEVEL } from "@/utils/editorConfig";
 import { cn } from "@/lib/utils";
 import { debounce } from "lodash";
 import { HiArrowLeft } from "react-icons/hi2";
-import { useTableOfContentStore } from "@/stores/tableOfContentStore";
+import {
+  useTableOfContentSyncStore,
+  useTableOfContentOpenStore,
+} from "@/stores/tableOfContentStore";
 
 interface Heading {
   text: string;
@@ -28,9 +31,10 @@ interface TableOfContentProps {
 type ExpandedSections = { [key: string]: boolean };
 
 const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const { isOpen, setIsOpen, addDocumentId, removeDocumentId } =
+    useTableOfContentOpenStore();
   const [headings, setHeadings] = useState<Heading[]>([]);
-  const { synced } = useTableOfContentStore();
+  const { synced } = useTableOfContentSyncStore();
   const { getQuill } = useEditor();
   const [expandedSections, setExpandedSections] = useState<ExpandedSections>(
     {}
@@ -57,6 +61,12 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
       debouncedSetActiveHeadingIdRef.current.cancel();
     };
   }, []);
+
+  // Add/remove document ID when component mounts/unmounts
+  useEffect(() => {
+    addDocumentId(documentId);
+    return () => removeDocumentId(documentId);
+  }, [documentId, addDocumentId, removeDocumentId]);
 
   // Define updateActiveHeading at the component level so it can be used in multiple places
   const updateActiveHeading = useCallback(() => {
@@ -90,9 +100,9 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
       debouncedSetActiveHeadingIdRef.current(currentHeading.id);
     }
   }, [quill, generateList, debouncedSetActiveHeadingIdRef]);
-
+  const isTableOpen = isOpen(documentId);
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isTableOpen) return;
     const extractHeadings = () => {
       if (!quill) return;
       const headingElements = quill.root.querySelectorAll(generateList());
@@ -163,10 +173,10 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
         observer.disconnect();
       };
     }
-  }, [quill, isOpen, generateList, updateActiveHeading]);
+  }, [quill, isTableOpen, documentId, generateList, updateActiveHeading]);
 
   const handleToggleTOC = () => {
-    setIsOpen(!isOpen);
+    setIsOpen(documentId, !isOpen(documentId));
     const editorContainer = quill?.root;
 
     // Add a small scroll offset to improve visibility of the current position
@@ -181,7 +191,7 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
     <>
       <Button
         onClick={handleToggleTOC}
-        className={`top-3  p-3 z-2 ${isOpen ? "hidden" : ""}`}
+        className={`top-3  p-3 z-2 ${isOpen(documentId) ? "hidden" : ""}`}
         aria-label="Toggle Table of Contents"
         size="sm"
         variant="outline"
@@ -192,12 +202,12 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
       <div
         className={cn(
           "relative inset-y-0 left-0 max-w-64 transition-transform duration-300 ease-in-out z-20",
-          isOpen ? "translate-x-0 " : "-translate-x-full hidden"
+          isOpen(documentId) ? "translate-x-0 " : "-translate-x-full hidden"
         )}
       >
         <div className="p-4 h-full flex gap-4 flex-col">
           <button
-            onClick={() => setIsOpen(false)}
+            onClick={() => setIsOpen(documentId, false)}
             className=" hover:text-gray-700 hover:bg-gray-200 hover:shadow rounded-full p-1 w-fit  cursor-pointer"
           >
             <HiArrowLeft className="w-5 h-5" />

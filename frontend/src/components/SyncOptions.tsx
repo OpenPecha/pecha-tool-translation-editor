@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import TagOptions from "./TagOptions";
-import { useTableOfContentStore } from "@/stores/tableOfContentStore";
-
+import {
+  useTableOfContentSyncStore,
+  useTableOfContentOpenStore,
+} from "@/stores/tableOfContentStore";
 function SyncOptions({
   syncMode,
   setSyncMode,
@@ -15,7 +17,8 @@ function SyncOptions({
   readonly setSyncType: (type: "heading" | "lineNumber") => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const { setSynced } = useTableOfContentStore();
+  const { setSynced } = useTableOfContentSyncStore();
+  const { openAll } = useTableOfContentOpenStore();
 
   const options = [
     {
@@ -62,6 +65,9 @@ function SyncOptions({
   ) => {
     setSyncMode(mode);
     setSynced(mode === "table");
+    if (mode === "table") {
+      openAll();
+    }
     setIsOpen(false);
   };
 
