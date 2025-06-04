@@ -9,6 +9,7 @@ import EachProject from "./EachProject";
 import { useSearch } from "@/contexts/SearchContext";
 import { useMatomo } from "@datapunt/matomo-tracker-react";
 import { useAuth } from "@/auth/use-auth-hook";
+import { FaSpinner } from "react-icons/fa";
 
 const ProjectList = () => {
   const { searchQuery } = useSearch();
@@ -140,39 +141,23 @@ const ProjectsGrid = ({
           </div>
         </div>
       </div>
-      {isLoading ? (
-        <Loader show={isLoading} />
-      ) : (
-        <div
-          className={`flex flex-wrap gap-4 ${
-            view === "grid"
-              ? "grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-4"
-              : "flex-col"
-          }`}
-        >
-          {projects
-            .filter((project) => showAll || project.ownerId !== currentUser?.id)
-            .map((project) => (
-              <EachProject view={view} key={project.id} project={project} />
-            ))}
-        </div>
-      )}
-    </div>
-  );
-};
-function Loader({ show }: { show: boolean }) {
-  if (!show) return null;
-
-  return (
-    <div className="relative  w-full flex items-center justify-center ">
-      <div className="flex flex-col w-full space-y-2 p-4">
-        <div className="h-14 bg-gray-200 rounded-md animate-pulse "></div>
-        <div className="h-14 bg-gray-200 rounded-md animate-pulse "></div>
-        <div className="h-14 bg-gray-200 rounded-md animate-pulse "></div>
+      {isLoading && <FaSpinner className="animate-spin mb-2" />}
+      <div
+        className={`flex flex-wrap gap-4 ${
+          view === "grid"
+            ? "grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-4"
+            : "flex-col"
+        }`}
+      >
+        {projects
+          .filter((project) => showAll || project.ownerId !== currentUser?.id)
+          .map((project) => (
+            <EachProject view={view} key={project.id} project={project} />
+          ))}
       </div>
     </div>
   );
-}
+};
 
 const PaginationControls = ({
   page,
