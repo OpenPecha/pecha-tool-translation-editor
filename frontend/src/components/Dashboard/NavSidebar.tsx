@@ -71,7 +71,7 @@ const NavSidebar = ({ isOpen, onClose, trigger }: SidebarProps) => {
       <div
         className={cn(
           "fixed inset-0 z-40   transition-all duration-300",
-          isOpen ? "opacity-100" : " pointer-events-none"
+          isOpen ? "opacity-100" : " "
         )}
         onClick={onClose}
         aria-hidden="true"
@@ -100,7 +100,7 @@ const NavSidebar = ({ isOpen, onClose, trigger }: SidebarProps) => {
                 key={tool.link}
                 href={tool.link}
                 className="flex items-center h-10 px-3 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground"
-                onClick={(e) => e.preventDefault()}
+                target="_blank"
               >
                 {tool.iconComponent ? (
                   <tool.iconComponent className="h-4 w-4 mr-3" />
