@@ -1,2 +1,3 @@
 // API URL configuration
-export const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+export const API_URL =
+  import.meta.env.VITE_SERVER_URL || "http://localhost:8000";
