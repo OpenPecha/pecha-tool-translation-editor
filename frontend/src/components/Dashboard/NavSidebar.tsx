@@ -1,15 +1,6 @@
 import React, { useEffect } from "react";
-import {
-  X,
-  Home,
-  Settings,
-  User,
-  BarChart2,
-  FileText,
-  Globe2Icon,
-} from "lucide-react";
+import { Home, Globe2Icon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { fetchTools } from "@/api/workspace/tools";
 

@@ -1,27 +1,26 @@
 import { useState } from "react";
 import { Project } from "@/api/project";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 
-interface EditModalProps {
+interface EditProjectModalProps {
   project: Project;
   onClose: () => void;
   onUpdate: (name: string, identifier: string) => Promise<void>;
 }
 
-const EditModal: React.FC<EditModalProps> = ({
+const EditProjectModal: React.FC<EditProjectModalProps> = ({
   project,
   onClose,
   onUpdate,
 }) => {
   const [name, setName] = useState(project.name);
-  const [identifier, setIdentifier] = useState(project.identifier);
   const [isUpdating, setIsUpdating] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsUpdating(true);
     try {
-      await onUpdate(name, identifier);
+      await onUpdate(name, project.identifier);
       onClose();
     } catch (error) {
       console.error("Error updating project:", error);
@@ -80,4 +79,4 @@ const EditModal: React.FC<EditModalProps> = ({
   );
 };
 
-export default EditModal;
+export default EditProjectModal;

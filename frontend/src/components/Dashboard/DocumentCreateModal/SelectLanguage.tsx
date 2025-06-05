@@ -1,12 +1,6 @@
-import { fetchLanguage } from "@/api/pecha";
-import { Label } from "../ui/label";
-import { useQuery } from "@tanstack/react-query";
+import { Label } from "@/components/ui/label";
 import { memo, useCallback } from "react";
-
-type LanguageType = {
-  code: string;
-  name: string;
-};
+import { languages } from "@/utils/Constants";
 
 function SelectLanguage({
   selectedLanguage,
@@ -15,49 +9,6 @@ function SelectLanguage({
   readonly selectedLanguage: string;
   readonly setSelectedLanguage: (language: string) => void;
 }) {
-  // const { data: languages = [], isLoading } = useQuery<LanguageType[]>({
-  //   queryKey: ["languages"],
-  //   queryFn: fetchLanguage,
-  //   staleTime: 1000 * 60 * 60 * 24, // 1 day
-  //   retry: 2,
-  //   retryDelay: 1000,
-  // });
-
-  const languages = [
-    {
-      code: "bo",
-      name: "Tibetan",
-    },
-    {
-      code: "en",
-      name: "English",
-    },
-    {
-      code: "hi",
-      name: "Hindi",
-    },
-    {
-      code: "it",
-      name: "Italian",
-    },
-    {
-      code: "lzh",
-      name: "Literal Chinese",
-    },
-    {
-      code: "ru",
-      name: "Russian",
-    },
-    {
-      code: "sa",
-      name: "Sanskrit",
-    },
-    {
-      code: "zh",
-      name: "Chinese",
-    },
-  ];
-
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       setSelectedLanguage(e.target.value);

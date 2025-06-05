@@ -1,7 +1,7 @@
 import { fetchPechas } from "@/api/pecha";
-import React, { useState } from "react";
-import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
-import { Label } from "../ui/label";
+import { useState } from "react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { useQuery } from "@tanstack/react-query";
 
 export type PechaType = {

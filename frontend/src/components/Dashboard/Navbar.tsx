@@ -1,14 +1,18 @@
 import { Link } from "react-router-dom";
-import { Button } from "../ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import SearchInput from "./SearchInput";
 import { Menu } from "lucide-react";
 import { memo, useState } from "react";
 import NavSidebar from "./NavSidebar";
 import { User } from "@auth0/auth0-react";
 import { useAuth } from "@/auth/use-auth-hook";
-import AppLauncher from "../Applauncher";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import AppLauncher from "@/components/Applauncher";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import DocIcon from "@/assets/doc_icon.png";
 const Navbar = () => {
   const { currentUser, logout, login, isAuthenticated } = useAuth();

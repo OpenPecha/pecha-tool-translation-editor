@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Input } from "../ui/input";
+import { Input } from "@/components/ui/input";
 import { QueryObserverResult, useMutation } from "@tanstack/react-query";
 import { createDocument } from "@/api/document";
 

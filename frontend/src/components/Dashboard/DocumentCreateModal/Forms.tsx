@@ -1,13 +1,13 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import SelectLanguage from "./SelectLanguage";
 import SelectPechas, { PechaType } from "./SelectPechas";
-import { DialogFooter } from "../ui/dialog";
+import { DialogFooter } from "@/components/ui/dialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ScrollArea } from "../ui/scroll-area";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import TextUploader from "./TextUploader";
 import MetaDataInput from "./MetaDataInput";
 import { createProject } from "@/api/project";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { useMatomo } from "@datapunt/matomo-tracker-react";
 
 export function NewPechaForm({

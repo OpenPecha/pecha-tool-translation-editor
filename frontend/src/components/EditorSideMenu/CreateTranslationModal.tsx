@@ -13,10 +13,12 @@ import { useMutation, QueryObserverResult } from "@tanstack/react-query";
 import { generateTranslation } from "@/api/document";
 import { Switch } from "@/components/ui/switch";
 
-import SelectLanguage from "../DocumentCreateModal/SelectLanguage";
+import SelectLanguage from "../Dashboard/DocumentCreateModal/SelectLanguage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import TextUploader from "../DocumentCreateModal/TextUploader";
-import SelectPechas, { PechaType } from "../DocumentCreateModal/SelectPechas";
+import TextUploader from "../Dashboard/DocumentCreateModal/TextUploader";
+import SelectPechas, {
+  PechaType,
+} from "../Dashboard/DocumentCreateModal/SelectPechas";
 import { useParams } from "react-router-dom";
 import SegmentationOptions from "./SegmentationOptions";
 

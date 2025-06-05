@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { useSearch } from "@/contexts/SearchContext";
-import { ChangeEvent, FC, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import useDebounce from "@/hooks/useDebounce";
 import { MdOutlineSearch } from "react-icons/md";
 import { useMatomo } from "@datapunt/matomo-tracker-react";

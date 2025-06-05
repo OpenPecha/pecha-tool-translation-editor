@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
-import DocumentCreateModal from "../DocumentCreateModal/DocumentCreateModal";
-import "./style.css";
-
-import { Button } from "../ui/button";
+import DocumentCreateModal from "./DocumentCreateModal/DocumentCreateModal";
+import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { fetchProjects, Project } from "@/api/project";
 import EachProject from "./EachProject";

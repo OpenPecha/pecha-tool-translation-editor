@@ -15,20 +15,6 @@ function TagOptions({
           Sync Method
         </label>
         <div className="flex gap-4" aria-labelledby="sync-method-label">
-          {/* <label className="inline-flex items-center">
-            <input
-              type="radio"
-              id="heading-sync"
-              name="sync-type"
-              className="form-radio h-4 w-4 text-blue-600"
-              checked={syncType === "heading"}
-              onChange={() => setSyncType("heading")}
-              aria-labelledby="sync-method-label heading-label"
-            />
-            <span id="heading-label" className="ml-2 text-sm text-gray-700">
-              Headings
-            </span>
-          </label> */}
           <label className="inline-flex items-center">
             <input
               type="radio"

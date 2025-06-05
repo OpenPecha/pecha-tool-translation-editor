@@ -7,7 +7,6 @@ import JoinSvg from "@/assets/toolbar/join.svg";
 import UndoSvg from "@/assets/toolbar/undo.svg";
 import RedoSvg from "@/assets/toolbar/redo.svg";
 import UnderlineSvg from "@/assets/toolbar/underline.svg";
-import { ReactSVG } from "react-svg";
 const ICONS = {
   Underline: {
     component: UnderlineSvg,

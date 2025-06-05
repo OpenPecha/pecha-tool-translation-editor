@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import EditModal from "./EditModal";
+import EditProjectModal from "./EditProjectModal";
 import { useAuth } from "@/auth/use-auth-hook";
 
 import ProjectItem from "./ProjectItem";
@@ -125,7 +125,7 @@ export default function EachProject({ project, view }: EachProjectProps) {
       </Link>
 
       {showEditModal && (
-        <EditModal
+        <EditProjectModal
           project={project}
           onClose={() => setShowEditModal(false)}
           onUpdate={(name, identifier) => handleUpdate(name, identifier)}
