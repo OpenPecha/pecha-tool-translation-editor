@@ -166,7 +166,7 @@ const PaginationControls = ({
   totalPages: number;
   onPageChange: (page: number) => void;
 }) => {
-  if (typeof totalPages === "number" && totalPages < 1) return null;
+  if (typeof totalPages === "number" && totalPages < 2) return null;
   return (
     <div className="flex justify-center items-center gap-2 mt-6">
       <Button

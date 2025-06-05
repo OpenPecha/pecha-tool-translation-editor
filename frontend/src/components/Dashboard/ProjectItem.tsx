@@ -1,5 +1,5 @@
 import React from "react";
-import { FileText, MoreVertical, Users } from "lucide-react";
+import { Delete, FileText, MoreVertical, Users } from "lucide-react";
 import DocIcon from "@/assets/doc_icon.png";
 import {
   DropdownMenu,
@@ -7,6 +7,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { RiDeleteBin6Line } from "react-icons/ri";
+import { BiRename } from "react-icons/bi";
 
 interface ProjectItemProps {
   title: string;
@@ -83,27 +85,11 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
         <div className="flex-shrink-0 text-sm text-gray-500 w-36">{date}</div>
 
         <div className="flex-shrink-0 ml-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="p-1 rounded-full hover:bg-gray-100">
-                <MoreVertical size={16} className="text-gray-500" />
-              </button>
-            </DropdownMenuTrigger>
-            {hasPermission && (
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={updateDocument}>
-                  Update
-                </DropdownMenuItem>
-
-                <DropdownMenuItem
-                  onClick={deleteDocument}
-                  className="text-red-500"
-                >
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            )}
-          </DropdownMenu>
+          <ProjectItemDropdownMenu
+            hasPermission={hasPermission}
+            updateDocument={updateDocument}
+            deleteDocument={deleteDocument}
+          />
         </div>
       </div>
     );
@@ -143,30 +129,45 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
               </span>
             )}
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="p-1 rounded-full hover:bg-gray-100">
-                <MoreVertical size={16} className="text-gray-500" />
-              </button>
-            </DropdownMenuTrigger>
-            {hasPermission && (
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={updateDocument}>
-                  Update
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={deleteDocument}
-                  className="text-red-500"
-                >
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            )}
-          </DropdownMenu>
+          <ProjectItemDropdownMenu
+            hasPermission={hasPermission}
+            updateDocument={updateDocument}
+            deleteDocument={deleteDocument}
+          />
         </div>
       </div>
     </div>
   );
 };
+
+function ProjectItemDropdownMenu({
+  hasPermission,
+  updateDocument,
+  deleteDocument,
+}: {
+  readonly hasPermission: boolean;
+  readonly updateDocument: (e: React.MouseEvent) => void;
+  readonly deleteDocument: (e: React.MouseEvent) => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="p-1 rounded-full hover:bg-gray-100">
+          <MoreVertical size={16} className="text-gray-500" />
+        </button>
+      </DropdownMenuTrigger>
+      {hasPermission && (
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={updateDocument}>
+            <BiRename /> Rename
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={deleteDocument} className="text-red-500">
+            <RiDeleteBin6Line /> Remove
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      )}
+    </DropdownMenu>
+  );
+}
 
 export default ProjectItem;
