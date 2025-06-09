@@ -215,7 +215,7 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
               <HiArrowLeft className="w-5 h-5" />
             </button>
             <BookOpen className="mr-2 text-blue-600" size={20} />
-            <h2 className="text-lg font-semibold text-gray-800">
+            <h2 className="text-lg font-semibold text-gray-700">
               Table of Contents
             </h2>
           </div>
@@ -382,7 +382,7 @@ const Toc = React.memo(function Toc({
 
   if (!headings.length) {
     return (
-      <div className="text-sm italic text-gray-400">No headings found</div>
+      <div className="text-sm italic text-gray-500">No headings found</div>
     );
   }
 

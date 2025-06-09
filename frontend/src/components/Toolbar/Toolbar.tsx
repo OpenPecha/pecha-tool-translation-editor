@@ -266,7 +266,7 @@ const Toolbar = ({
           {synced ? (
             "🟢"
           ) : (
-            <span className="text-xs text-gray-400 italic"> saving... </span>
+            <span className="text-xs text-gray-500 italic"> saving... </span>
           )}
         </div>
       </div>

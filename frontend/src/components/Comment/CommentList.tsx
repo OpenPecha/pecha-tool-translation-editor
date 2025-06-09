@@ -67,7 +67,7 @@ function CommentList() {
                 <div style={{ display: "flex", justifyContent: "flex-end" }}>
                   <button
                     onClick={() => handleDelete(comment.id)}
-                    className="bg-transparent border-none text-gray-600 cursor-pointer p-2 rounded-full transition-all duration-200"
+                    className="bg-transparent border-none text-gray-700 cursor-pointer p-2 rounded-full transition-all duration-200"
                     onMouseOver={(e) => {
                       e.currentTarget.style.backgroundColor = "#fee2e2";
                     }}

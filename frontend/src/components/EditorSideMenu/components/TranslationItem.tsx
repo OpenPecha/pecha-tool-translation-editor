@@ -116,7 +116,7 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
               }
               className="flex-shrink-0"
             />
-            <div className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-gray-600 capitalize">
+            <div className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-gray-700 capitalize">
               {translation.language}
             </div>
           </div>

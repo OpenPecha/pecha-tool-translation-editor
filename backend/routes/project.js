@@ -12,6 +12,10 @@ const {
   HeadingLevel,
   AlignmentType,
   WidthType,
+  Table,
+  TableRow,
+  TableCell,
+  BorderStyle,
 } = require("docx");
 const path = require("path");
 
@@ -1004,6 +1008,338 @@ async function createDocxBuffer(docName, delta) {
       return Buffer.from(`Error processing document ${docName}.`);
     }
   }
+}
+
+/**
+ * Create a side-by-side DOCX document with source and translation
+ * @param {string} docName - The document name
+ * @param {Array} sourceDelta - The source document content as a Delta array
+ * @param {string} targetLanguage - The target language
+ * @param {Array} translationDelta - The translation document content as a Delta array
+ * @returns {Promise<Buffer>} - The DOCX file as a buffer
+ */
+async function createSideBySideDocx(
+  docName,
+  sourceDelta,
+  targetLanguage,
+  translationDelta
+) {
+  try {
+    const docxElements = [];
+
+    // Add document title
+    docxElements.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: `${docName} - Side by Side Comparison`,
+            bold: true,
+            size: 32,
+          }),
+        ],
+        heading: HeadingLevel.HEADING_1,
+        alignment: AlignmentType.CENTER,
+      })
+    );
+
+    // Add some spacing
+    docxElements.push(new Paragraph({ children: [new TextRun({ text: "" })] }));
+
+    // Convert deltas to plain text for easier processing
+    const sourceText = deltaToPlainText(sourceDelta);
+    const translationText = deltaToPlainText(translationDelta);
+
+    // Split by paragraphs (double line breaks) or single line breaks for better granularity
+    const sourceParagraphs = sourceText.split(/\n+/).filter((p) => p.trim());
+    const translationParagraphs = translationText
+      .split(/\n+/)
+      .filter((p) => p.trim());
+
+    const maxParagraphs = Math.max(
+      sourceParagraphs.length,
+      translationParagraphs.length
+    );
+
+    // Create table rows
+    const tableRows = [];
+
+    // Add header row
+    tableRows.push(
+      new TableRow({
+        children: [
+          new TableCell({
+            children: [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: "Source",
+                    bold: true,
+                    color: "FFFFFF",
+                  }),
+                ],
+                alignment: AlignmentType.CENTER,
+              }),
+            ],
+            shading: {
+              fill: "0066CC",
+            },
+            width: {
+              size: 5000,
+              type: WidthType.DXA,
+            },
+          }),
+          new TableCell({
+            children: [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: targetLanguage,
+                    bold: true,
+                    color: "FFFFFF",
+                  }),
+                ],
+                alignment: AlignmentType.CENTER,
+              }),
+            ],
+            shading: {
+              fill: "CC6600",
+            },
+            width: {
+              size: 5000,
+              type: WidthType.DXA,
+            },
+          }),
+        ],
+      })
+    );
+
+    // Add content rows
+    for (let i = 0; i < maxParagraphs; i++) {
+      const sourcePara = sourceParagraphs[i] || "";
+      const translationPara = translationParagraphs[i] || "";
+
+      tableRows.push(
+        new TableRow({
+          children: [
+            new TableCell({
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: sourcePara || " ",
+                    }),
+                  ],
+                }),
+              ],
+              width: {
+                size: 5000,
+                type: WidthType.DXA,
+              },
+            }),
+            new TableCell({
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: translationPara || " ",
+                    }),
+                  ],
+                }),
+              ],
+              width: {
+                size: 5000,
+                type: WidthType.DXA,
+              },
+            }),
+          ],
+        })
+      );
+    }
+
+    // Create the table
+    const table = new Table({
+      rows: tableRows,
+      width: {
+        size: 10000,
+        type: WidthType.DXA,
+      },
+      layout: "fixed",
+      columnWidths: [5000, 5000], // Equal widths in DXA units (twentieths of a point)
+      borders: {
+        top: {
+          style: BorderStyle.SINGLE,
+          size: 1,
+          color: "000000",
+        },
+        bottom: {
+          style: BorderStyle.SINGLE,
+          size: 1,
+          color: "000000",
+        },
+        left: {
+          style: BorderStyle.SINGLE,
+          size: 1,
+          color: "000000",
+        },
+        right: {
+          style: BorderStyle.SINGLE,
+          size: 1,
+          color: "000000",
+        },
+        insideHorizontal: {
+          style: BorderStyle.SINGLE,
+          size: 1,
+          color: "CCCCCC",
+        },
+        insideVertical: {
+          style: BorderStyle.SINGLE,
+          size: 1,
+          color: "CCCCCC",
+        },
+      },
+    });
+
+    docxElements.push(table);
+
+    const doc = new Document({
+      sections: [
+        {
+          properties: {},
+          children: docxElements,
+        },
+      ],
+    });
+
+    return await Packer.toBuffer(doc);
+  } catch (error) {
+    console.error("Error creating side-by-side DOCX:", error);
+    throw error;
+  }
+}
+
+/**
+ * Create a line-by-line DOCX document with source and translation
+ * @param {string} docName - The document name
+ * @param {Array} sourceDelta - The source document content as a Delta array
+ * @param {string} targetLanguage - The target language
+ * @param {Array} translationDelta - The translation document content as a Delta array
+ * @returns {Promise<Buffer>} - The DOCX file as a buffer
+ */
+async function createLineByLineDocx(
+  docName,
+  sourceDelta,
+  targetLanguage,
+  translationDelta
+) {
+  try {
+    const docxParagraphs = [];
+
+    // Add document title
+    docxParagraphs.push(
+      new Paragraph({
+        children: [
+          // new TextRun({
+          //   text: `${docName} - Line by Line Comparison`,
+          //   bold: true,
+          //   size: 32,
+          // }),
+        ],
+        heading: HeadingLevel.HEADING_1,
+        alignment: AlignmentType.CENTER,
+      })
+    );
+
+    // Convert deltas to plain text
+    const sourceText = deltaToPlainText(sourceDelta);
+    const translationText = deltaToPlainText(translationDelta);
+
+    // Split by lines
+    const sourceLines = sourceText
+      .split("\n")
+      .filter((line) => line.trim() !== "");
+    const translationLines = translationText
+      .split("\n")
+      .filter((line) => line.trim() !== "");
+
+    const maxLines = Math.max(sourceLines.length, translationLines.length);
+
+    for (let i = 0; i < maxLines; i++) {
+      const sourceLine = sourceLines[i] || "";
+      const translationLine = translationLines[i] || "";
+
+      // Add source line
+      if (sourceLine) {
+        docxParagraphs.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: sourceLine,
+                size: 28,
+              }),
+            ],
+          })
+        );
+        docxParagraphs.push(
+          new Paragraph({ children: [new TextRun({ text: "" })] })
+        );
+      }
+
+      // Add translation line (on separate line with lighter color)
+      if (translationLine) {
+        docxParagraphs.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `    `, // Indentation for translation
+              }),
+              new TextRun({
+                text: translationLine,
+                color: "999999", // Lighter gray color (lower opacity effect)
+                italics: true, // Make it italic to further distinguish
+              }),
+            ],
+          })
+        );
+      }
+      // Add spacing between line pairs
+      if (i < maxLines - 1 && (sourceLine || translationLine)) {
+        docxParagraphs.push(
+          new Paragraph({ children: [new TextRun({ text: "" })] })
+        );
+      }
+    }
+
+    const doc = new Document({
+      sections: [
+        {
+          properties: {},
+          children: docxParagraphs,
+        },
+      ],
+    });
+
+    return await Packer.toBuffer(doc);
+  } catch (error) {
+    console.error("Error creating line-by-line DOCX:", error);
+    throw error;
+  }
+}
+
+/**
+ * Convert Delta format to plain text
+ * @param {Array} delta - The Delta array
+ * @returns {string} - Plain text content
+ */
+function deltaToPlainText(delta) {
+  if (!Array.isArray(delta)) return "";
+
+  let text = "";
+  for (const op of delta) {
+    if (typeof op.insert === "string") {
+      text += op.insert;
+    }
+  }
+  return text;
 }
 
 module.exports = router;

@@ -2,7 +2,6 @@ import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { AuthProvider } from "./auth/auth-context-provider";
 import { useAuth } from "./auth/use-auth-hook";
-import { SearchProvider } from "./contexts/SearchContext";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import Callback from "./pages/Callback";
 import Login from "./pages/Login";
@@ -41,20 +40,23 @@ const queryClient = new QueryClient();
 //   },
 // });
 
-function Layout({ children }) {
+function Layout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, login, isLoading, getToken } = useAuth();
   useEffect(() => {
-    if (!isAuthenticated && !isLoading) {
-      console.log("No active session detected, attempting silent login");
-      login(true);
-    }
     if (isAuthenticated) {
       getToken().then((token) => {
         localStorage.setItem("access_token", token!);
       });
+      return;
     }
-  }, [isAuthenticated, isLoading, login, getToken]);
-  return <>{children}</>;
+    if (!isAuthenticated && !isLoading) {
+      console.log("No active session detected, attempting silent login");
+      login(true);
+    }
+  }, [isAuthenticated]);
+  if (!isAuthenticated) return null;
+
+  return <Suspense fallback={<LoadingFallback />}>{children}</Suspense>;
 }
 
 function LoadingFallback() {
@@ -64,44 +66,35 @@ function LoadingFallback() {
 }
 
 function AppContent() {
-  const { isAuthenticated } = useAuth();
   return (
     <div className="flex flex-col h-full ">
       {/* <RouteTracker /> */}
-      <Suspense fallback={<LoadingFallback />}>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <Layout>
-                {isAuthenticated && (
-                  <SearchProvider>
-                    <Suspense fallback={<LoadingFallback />}>
-                      <Navbar />
-                      <ProjectList />
-                    </Suspense>
-                  </SearchProvider>
-                )}
-              </Layout>
-            }
-          />
-          <Route path="/login" element={<Login />} />
-          <Route path="/callback" element={<Callback />} />
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <Layout>
+              <Navbar />
+              <ProjectList />
+            </Layout>
+          }
+        />
+        <Route path="/login" element={<Login />} />
+        <Route path="/callback" element={<Callback />} />
 
-          <Route
-            path="/documents/:id"
-            element={
-              <Suspense fallback={<LoadingFallback />}>
-                <QuillVersionProvider>
-                  <DocumentsWrapper />
-                </QuillVersionProvider>
-              </Suspense>
-            }
-          />
+        <Route
+          path="/documents/:id"
+          element={
+            <Suspense fallback={<LoadingFallback />}>
+              <QuillVersionProvider>
+                <DocumentsWrapper />
+              </QuillVersionProvider>
+            </Suspense>
+          }
+        />
 
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      </Suspense>
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
     </div>
   );
 }

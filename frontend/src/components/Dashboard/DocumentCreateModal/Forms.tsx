@@ -144,7 +144,7 @@ function DocumentCreateModalFooter({
       <Button
         type="button"
         variant="ghost"
-        className="px-4 py-2  text-gray-800 rounded cursor-pointer"
+        className="px-4 py-2  text-gray-700 rounded cursor-pointer"
         onClick={closeModal}
       >
         Cancel

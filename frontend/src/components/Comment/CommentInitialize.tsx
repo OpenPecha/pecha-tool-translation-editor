@@ -142,7 +142,7 @@ function CommentInitialize({
 
       <ContentEditableDiv
         ref={commentInputRef}
-        className="w-full  border rounded-[18px] scroll-auto px-2 py-1 mb-4 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
+        className="w-full  border rounded-[18px] scroll-auto px-2 py-1 mb-4 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-500"
         onChange={(e) => {
           setIsDisabled(e.target?.textContent === "");
         }}
@@ -152,7 +152,7 @@ function CommentInitialize({
       {isSuggestion && (
         <ContentEditableDiv
           ref={suggestionInputRef}
-          className="w-full  border rounded-[18px] px-2 py-1 mt-2 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
+          className="w-full  border rounded-[18px] px-2 py-1 mt-2 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-500"
           placeholder="Add a suggestion..."
         />
       )}

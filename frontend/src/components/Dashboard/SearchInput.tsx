@@ -1,17 +1,15 @@
 import { Input } from "@/components/ui/input";
-import { useSearch } from "@/contexts/SearchContext";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState, memo } from "react";
 import useDebounce from "@/hooks/useDebounce";
 import { MdOutlineSearch } from "react-icons/md";
-import { useMatomo } from "@datapunt/matomo-tracker-react";
+import { useSearchStore } from "@/stores/searchStore";
 
 /**
  * SearchInput component that provides a search field with debounced input
  * and analytics tracking capabilities.
  */
 const SearchInput = () => {
-  const { searchQuery, setSearchQuery } = useSearch();
-  const { trackEvent } = useMatomo();
+  const { searchQuery, setSearchQuery } = useSearchStore();
 
   const [inputValue, setInputValue] = useState<string>(searchQuery || "");
 
@@ -23,14 +21,13 @@ const SearchInput = () => {
 
   useEffect(() => {
     setSearchQuery(debouncedValue);
-  }, [debouncedValue, setSearchQuery, trackEvent]);
-
+  }, [debouncedValue, setSearchQuery]);
   return (
     <div className="flex-grow mx-8 max-w-2xl">
       <div className="relative">
         {/* Search icon */}
         <MdOutlineSearch
-          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
           size={20}
           aria-hidden="true"
         />
@@ -39,7 +36,7 @@ const SearchInput = () => {
         <Input
           type="search"
           placeholder="Search documents"
-          className="pl-10 bg-gray-100 border-none rounded-full focus:shadow"
+          className="pl-10 bg-gray-100 border-none rounded-full focus:shadow focus:bg-white"
           value={inputValue}
           onChange={handleInputChange}
           aria-label="Search documents"
@@ -49,4 +46,4 @@ const SearchInput = () => {
   );
 };
 
-export default SearchInput;
+export default memo(SearchInput);

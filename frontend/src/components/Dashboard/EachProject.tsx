@@ -90,16 +90,13 @@ export default function EachProject({ project, view }: EachProjectProps) {
       (count, root) => count + (root.translations?.length ?? 0),
       0
     ) ?? 0);
+  const url =
+    project.roots && project.roots.length > 0
+      ? `/documents/${project.roots[0]?.id}`
+      : "#";
   return (
     <>
-      <Link
-        to={
-          project.roots && project.roots.length > 0
-            ? `/documents/${project.roots[0]?.id}`
-            : "#"
-        }
-        className="contents"
-      >
+      <Link to={url} className="contents">
         <ProjectItem
           title={project.name}
           subtitle={
@@ -121,6 +118,7 @@ export default function EachProject({ project, view }: EachProjectProps) {
           deleteDocument={handleDelete}
           view={view}
           status={project.status}
+          url={url}
         />
       </Link>
 

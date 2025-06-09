@@ -1,45 +1,59 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/icon/icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/icon/icon.png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pecha Editor – Collaborative</title>
+    <meta
+      name="description"
+      content="Pecha Editor is a powerful, collaborative, and easy-to-use rich text editor designed for writing, editing, and reviewing content with inline comments and real-time updates."
+    />
+    <meta
+      name="keywords"
+      content="Pecha Editor, text editor, collaborative editing, inline comments, rich text editor, writing tool, content editor"
+    />
+    <meta name="author" content="Pecha Editor Team" />
 
-  <title>Pecha Editor – Collaborative </title>
-  <meta name="description" content="Pecha Editor is a powerful, collaborative, and easy-to-use rich text editor designed for writing, editing, and reviewing content with inline comments and real-time updates." />
-  <meta name="keywords" content="Pecha Editor, text editor, collaborative editing, inline comments, rich text editor, writing tool, content editor" />
-  <meta name="author" content="Pecha Editor Team" />
+    <!-- Open Graph Meta Tags (for social sharing) -->
+    <meta
+      property="og:title"
+      content="Pecha Editor – Collaborative Rich Text Editor"
+    />
+    <meta
+      property="og:description"
+      content="Work smarter with Pecha Editor – the best tool for writing and collaborating on documents with inline comments and real-time editing."
+    />
+    <meta property="og:image" content="/icon/icon.png" />
+    <meta property="og:url" content="https://translations.pecha.tools" />
+    <meta property="og:type" content="website" />
 
-  <!-- Open Graph Meta Tags (for social sharing) -->
-  <meta property="og:title" content="Pecha Editor – Collaborative Rich Text Editor" />
-  <meta property="og:description" content="Work smarter with Pecha Editor – the best tool for writing and collaborating on documents with inline comments and real-time editing." />
-  <meta property="og:image" content="/icon/icon.png" />
-  <meta property="og:url" content="https://translations.pecha.tools" />
-  <meta property="og:type" content="website" />
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Pecha Editor – Collaborative Rich Text Editor"
+    />
+    <meta
+      name="twitter:description"
+      content="Write, collaborate, and review with ease using Pecha Editor – your modern rich text editing solution."
+    />
+    <meta name="twitter:image" content="/icon/icon.png" />
+  </head>
 
-  <!-- Twitter Card Meta Tags -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Pecha Editor – Collaborative Rich Text Editor" />
-  <meta name="twitter:description" content="Write, collaborate, and review with ease using Pecha Editor – your modern rich text editing solution." />
-  <meta name="twitter:image" content="/icon/icon.png" />
-
-</head>
-
-<body class="h-screen flex flex-col " >
-  <div id="navbar"></div>
-  <div id="toolbar-container"></div>
-  <div id="root" class="flex-1 flex flex-col overflow-hidden"></div>
-  <div class="w-full pl-2 flex justify-between bg-[#e3e6ef] text-[#797c87] ">
-    <div id="bookmark-options" class="flex gap-2"></div>
-    <div class="flex gap-3">
-      <div id="counter" class="flex gap-3">
+  <body class="h-screen flex flex-col">
+    <div id="navbar"></div>
+    <div id="toolbar-container"></div>
+    <div id="root" class="flex-1 flex flex-col overflow-hidden"></div>
+    <div class="w-full pl-2 flex justify-between bg-white text-[#888888]">
+      <div id="bookmark-options" class="flex gap-2"></div>
+      <div class="flex gap-3">
+        <div id="counter" class="flex gap-3"></div>
+        <div id="sync-option" class=""></div>
       </div>
-      <div id="sync-option" class=""></div>
     </div>
-  </div>
-  <div id="diff-portal" style="position: relative; z-index: 999999"></div>
-  <script type="module" src="/src/main.tsx"></script>
-</body>
-
+    <div id="diff-portal" style="position: relative; z-index: 999999"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>

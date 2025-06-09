@@ -166,7 +166,7 @@ const CommentBubble = ({ documentId }: { documentId: string }) => {
       <div className="border-t border-gray-200 p-2 sticky bottom-0 bg-white z-2">
         <ContentEditableDiv
           ref={commentInputRef}
-          className="w-full  rounded-[18px] border border-gray-300 focus:outline-none focus:ring-2  px-2 py-1 empty:before:content-[attr(data-placeholder)] cursor-text empty:before:text-gray-400"
+          className="w-full  rounded-[18px] border border-gray-300 focus:outline-none focus:ring-2  px-2 py-1 empty:before:content-[attr(data-placeholder)] cursor-text empty:before:text-gray-500"
           onChange={(e) => {
             setIsDisabled(e.target?.textContent === "");
           }}
@@ -176,7 +176,7 @@ const CommentBubble = ({ documentId }: { documentId: string }) => {
         {isSuggestion && (
           <ContentEditableDiv
             ref={suggestionInputRef}
-            className="w-full border cursor-text rounded-[18px] px-2 py-1 mt-2 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400    border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border cursor-text rounded-[18px] px-2 py-1 mt-2 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-500    border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Add a suggestion..."
           />
         )}

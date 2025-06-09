@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Delete, FileText, MoreVertical, Users } from "lucide-react";
 import DocIcon from "@/assets/doc_icon.png";
 import {
@@ -23,6 +23,7 @@ interface ProjectItemProps {
   view: "grid" | "list";
   status?: string;
   documentCount?: number;
+  url?: string;
 }
 
 const ProjectItem: React.FC<ProjectItemProps> = ({
@@ -38,10 +39,11 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
   view,
   status,
   documentCount = 0,
+  url,
 }) => {
   if (view === "list") {
     return (
-      <div className="flex items-center py-2 px-1 hover:bg-gray-50 rounded-md">
+      <div className="flex items-center py-2 px-1 hover:bg-blue-100 rounded-md">
         <div className="flex-shrink-0 mr-4">
           <img
             alt="icon"
@@ -59,7 +61,7 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
 
             {hasDocument && (
               <span className="ml-2 p-1 flex items-center">
-                <FileText size={16} className="text-gray-400" />
+                <FileText size={16} className="text-gray-500" />
                 {documentCount > 0 && (
                   <span className="ml-1 text-xs text-gray-500">
                     {documentCount}
@@ -69,7 +71,7 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
             )}
             {hasSharedUsers && (
               <span className="ml-1 p-1">
-                <Users size={16} className="text-gray-400" />
+                <Users size={16} className="text-gray-500" />
               </span>
             )}
           </div>
@@ -89,6 +91,7 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
             hasPermission={hasPermission}
             updateDocument={updateDocument}
             deleteDocument={deleteDocument}
+            url={url}
           />
         </div>
       </div>
@@ -125,7 +128,7 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
             </div>
             {hasSharedUsers && (
               <span>
-                <Users size={16} className="text-gray-400" />
+                <Users size={16} className="text-gray-500" />
               </span>
             )}
           </div>
@@ -144,30 +147,76 @@ function ProjectItemDropdownMenu({
   hasPermission,
   updateDocument,
   deleteDocument,
+  url,
 }: {
   readonly hasPermission: boolean;
   readonly updateDocument: (e: React.MouseEvent) => void;
   readonly deleteDocument: (e: React.MouseEvent) => void;
+  readonly url?: string;
 }) {
+  const [open, setOpen] = useState(false);
+
+  const handleOpenClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setOpen(true);
+  };
+
+  const handleCloseClick = (
+    e: React.MouseEvent,
+    func: (e: React.MouseEvent) => void
+  ) => {
+    setOpen(false);
+    func(e);
+  };
+
+  const handleOpenInNewTab = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (url) {
+      window.open(url, "_blank");
+    }
+    setOpen(false);
+  };
+
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <button className="p-1 rounded-full hover:bg-gray-100">
+        <button
+          className="p-3  hover:bg-gray-200 rounded-lg"
+          onClick={handleOpenClick}
+        >
           <MoreVertical size={16} className="text-gray-500" />
         </button>
       </DropdownMenuTrigger>
-      {hasPermission && (
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={updateDocument}>
-            <BiRename /> Rename
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={deleteDocument} className="text-red-500">
-            <RiDeleteBin6Line /> Remove
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      )}
+      <DropdownMenuContent align="end">
+        {hasPermission && (
+          <>
+            <DropdownMenuItem
+              onClick={(e) => handleCloseClick(e, updateDocument)}
+            >
+              <BiRename /> Rename
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e) => handleCloseClick(e, deleteDocument)}
+            >
+              <RiDeleteBin6Line /> Remove
+            </DropdownMenuItem>
+          </>
+        )}
+        <DropdownMenuItem onClick={handleOpenInNewTab}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="24px"
+            viewBox="0 -960 960 960"
+            width="24px"
+            fill="gray"
+          >
+            <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z" />
+          </svg>
+          Open in a new tab
+        </DropdownMenuItem>
+      </DropdownMenuContent>
     </DropdownMenu>
   );
 }
-
 export default ProjectItem;

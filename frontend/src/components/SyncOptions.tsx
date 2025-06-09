@@ -54,7 +54,7 @@ function SyncOptions({
       const selected = getSelectedOption();
       return (
         <div className="flex flex-col">
-          <span className="font-medium text-gray-900">{selected?.label}</span>
+          <span className="font-medium text-gray-700">{selected?.label}</span>
         </div>
       );
     }
@@ -82,9 +82,9 @@ function SyncOptions({
         >
           {renderButtonContent()}
           {isOpen ? (
-            <FaChevronUp className="w-4 h-4 text-gray-400" />
+            <FaChevronUp className="w-4 h-4 text-gray-500" />
           ) : (
-            <FaChevronDown className="w-4 h-4 text-gray-400" />
+            <FaChevronDown className="w-4 h-4 text-gray-500" />
           )}
         </button>
         {/* Dropdown Menu */}
@@ -97,7 +97,7 @@ function SyncOptions({
                   className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${
                     syncMode === option.value
                       ? "bg-blue-50 text-blue-700"
-                      : "text-gray-900"
+                      : "text-gray-700"
                   }`}
                   onClick={() =>
                     handleSyncModeChange(

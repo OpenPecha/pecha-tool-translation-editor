@@ -38,7 +38,7 @@ const Navbar = ({ title, project }: { title?: string; project: Project }) => {
       <div className="flex gap-2 items-center">
         <Link
           to="/"
-          className="flex items-center gap-3 font-semibold text-gray-700 hover:text-gray-900 transition capitalize"
+          className="flex items-center gap-3 font-semibold text-gray-500 hover:text-gray-700 transition capitalize"
         >
           <img
             alt="icon"
@@ -107,7 +107,7 @@ function ProfileArea({
       </div>
       {isOpen && (
         <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-[999999]">
-          <span className="p-3 capitalize font-medium text-gray-900">
+          <span className="p-3 capitalize font-medium text-gray-700">
             {currentUser?.name}
           </span>
           <button
@@ -187,7 +187,7 @@ function TitleInput({ initialTitle }: { readonly initialTitle: string }) {
           value={inputValue}
           onChange={handleInputChange}
           onBlur={handleBlur}
-          className="text-md text-gray-700 hover:text-gray-900 transition capitalize hover:outline hover:outline-gray-300"
+          className="text-md text-gray-500 hover:text-gray-700 transition capitalize hover:outline hover:outline-gray-300"
           style={{
             width: `${inputValue.length + 1}ch`,
             minWidth: "50px",

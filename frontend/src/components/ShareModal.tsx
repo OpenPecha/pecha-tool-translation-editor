@@ -218,7 +218,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
                       onChange={(e) => setCanWrite(e.target.checked)}
                       className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    <Label htmlFor="canWrite" className="text-sm text-gray-600">
+                    <Label htmlFor="canWrite" className="text-sm text-gray-700">
                       Can edit (otherwise, read-only access)
                     </Label>
                   </div>
@@ -277,7 +277,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
                           className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center text-gray-600 font-medium">
+                            <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center text-gray-700 font-medium">
                               {permission.user?.username
                                 ?.charAt(0)
                                 .toUpperCase() ?? "U"}
@@ -309,7 +309,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
                               />
                               <Label
                                 htmlFor={`canWrite-${permission.id}`}
-                                className="text-sm text-gray-600"
+                                className="text-sm text-gray-700"
                               >
                                 Can edit
                               </Label>

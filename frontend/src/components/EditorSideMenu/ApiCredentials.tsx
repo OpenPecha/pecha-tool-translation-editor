@@ -59,8 +59,8 @@ const ApiCredentials: React.FC = () => {
     },
     onError: (error: Error) => {
       setStatusMessage({
-        text: error.message ?? 'Failed to create API credential',
-        type: 'error',
+        text: error.message ?? "Failed to create API credential",
+        type: "error",
       });
       setTimeout(() => setStatusMessage(null), 3000);
     },
@@ -87,8 +87,8 @@ const ApiCredentials: React.FC = () => {
     },
     onError: (error: Error) => {
       setStatusMessage({
-        text: error.message ?? 'Failed to update API credential',
-        type: 'error',
+        text: error.message ?? "Failed to update API credential",
+        type: "error",
       });
       setTimeout(() => setStatusMessage(null), 3000);
     },
@@ -107,8 +107,8 @@ const ApiCredentials: React.FC = () => {
     },
     onError: (error: Error) => {
       setStatusMessage({
-        text: error.message ?? 'Failed to delete API credential',
-        type: 'error',
+        text: error.message ?? "Failed to delete API credential",
+        type: "error",
       });
       setTimeout(() => setStatusMessage(null), 3000);
     },
@@ -143,30 +143,30 @@ const ApiCredentials: React.FC = () => {
 
   const handleEdit = (credential: ApiCredential) => {
     setIsEditing(credential.id);
-    
+
     // Use the existing API function to fetch the credential details
     // This ensures we use the same authentication mechanism as other API calls
-    import('@/api/apiCredentials')
-      .then(module => {
+    import("@/api/apiCredentials")
+      .then((module) => {
         // Dynamically import and use the fetchApiCredential function
         return module.fetchApiCredential(credential.id);
       })
-      .then(data => {
-        if (data && typeof data === 'object') {
+      .then((data) => {
+        if (data && typeof data === "object") {
           setFormData({
-            provider: data.provider || '',
-            apiKey: data.apiKey || '', // Now we have the actual API key
+            provider: data.provider || "",
+            apiKey: data.apiKey || "", // Now we have the actual API key
           });
           setShowApiKey(false); // Default to hiding the key
         } else {
-          throw new Error('Invalid response format');
+          throw new Error("Invalid response format");
         }
       })
-      .catch(error => {
-        console.error('Error fetching credential:', error);
+      .catch((error) => {
+        console.error("Error fetching credential:", error);
         setStatusMessage({
-          text: error.message ?? 'Error fetching credential details',
-          type: 'error',
+          text: error.message ?? "Error fetching credential details",
+          type: "error",
         });
         setTimeout(() => setStatusMessage(null), 3000);
       });
@@ -270,7 +270,9 @@ const ApiCredentials: React.FC = () => {
             </div>
             {isEditing && (
               <p className="text-xs text-gray-500 mt-1">
-                {formData.apiKey ? "Leave unchanged to keep current key" : "Loading key..."}
+                {formData.apiKey
+                  ? "Leave unchanged to keep current key"
+                  : "Loading key..."}
               </p>
             )}
           </div>
@@ -301,7 +303,7 @@ const ApiCredentials: React.FC = () => {
 
       {!isAdding && !isEditing && credentials && credentials.length === 0 && (
         <div className="text-center p-4 border rounded-md bg-gray-50">
-          <Key className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+          <Key className="mx-auto h-8 w-8 text-gray-500 mb-2" />
           <p className="text-gray-500">No API credentials added yet</p>
           <Button
             onClick={() => setIsAdding(true)}

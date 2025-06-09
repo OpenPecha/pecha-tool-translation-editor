@@ -1,29 +1,26 @@
-import React, { useEffect } from "react";
-import { Home, Globe2Icon } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Home, Globe2Icon, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { fetchTools } from "@/api/workspace/tools";
 
-interface SidebarProps {
-  isOpen: boolean;
-  onClose: () => void;
-  trigger: React.ReactNode;
-}
+const NavSidebar = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const closeSidebar = () => setIsOpen(false);
 
-const NavSidebar = ({ isOpen, onClose, trigger }: SidebarProps) => {
   // Close sidebar when pressing escape key
   useEffect(() => {
     const signal = new AbortController();
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
-        onClose();
+        closeSidebar();
       }
     };
 
     document.addEventListener("keydown", handleEscape, signal);
     return () => signal.abort();
-  }, [isOpen, onClose]);
-  const { data: toolList = [], isLoading } = useQuery({
+  }, [isOpen]);
+  const { data: toolList = [] } = useQuery({
     queryKey: ["tools"],
     queryFn: fetchTools,
     staleTime: 1000 * 60 * 5, // 5 minutes (stays "fresh" for this duration)
@@ -57,27 +54,32 @@ const NavSidebar = ({ isOpen, onClose, trigger }: SidebarProps) => {
 
   return (
     <>
-      {trigger}
+      <button
+        className="p-2 rounded-full hover:bg-gray-100 h-fit transition-colors"
+        onClick={() => setIsOpen(true)}
+      >
+        <Menu size={20} />
+      </button>
       {/* Backdrop overlay */}
       <div
         className={cn(
           "  transition-all duration-300",
           isOpen ? "fixed inset-0  opacity-100 z-40 " : " "
         )}
-        onClick={onClose}
+        onClick={closeSidebar}
         aria-hidden="true"
       />
 
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed top-0 left-0 z-50 h-full w-[280px] bg-background border-r shadow-lg transform transition-transform duration-300 ease-in-out",
+          "fixed top-0 left-0 z-50 h-full w-[280px] bg-white border-r shadow-lg transform transition-transform duration-300 ease-in-out",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div className="flex flex-col h-full">
           {/* Sidebar header */}
-          <div className="h-20 flex items-center p-6 border-b text-[#5f6368] font-google-sans text-xl tracking-widest">
+          <div className="h-20 flex items-center p-6 border-b text-[#888] font-google-sans text-xl tracking-widest">
             <span className="flex-1 font-semibold text-[#8e57f1]">
               {" "}
               <span className="text-[#12dfec]">Pecha</span>Tool

@@ -85,7 +85,7 @@ function VersionDiff({ onClose }: VersionDiffProps) {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-600">Loading versions...</div>
+        <div className="text-gray-700">Loading versions...</div>
       </div>
     );
   }
@@ -96,7 +96,7 @@ function VersionDiff({ onClose }: VersionDiffProps) {
       <div className="bg-white border-b px-4 py-2 flex justify-between items-center">
         <button
           onClick={onClose}
-          className="flex flex-row items-center text-gray-600 hover:text-gray-900"
+          className="flex flex-row items-center text-gray-500 hover:text-gray-700"
         >
           <IoMdClose size={20} className="mr-2 font-bold" />
         </button>

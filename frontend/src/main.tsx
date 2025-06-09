@@ -11,12 +11,12 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 // Create a client
 const queryClient = new QueryClient();
 
-if (import.meta.env.MODE === "development") {
-  const script = document.createElement("script");
-  script.src = "//unpkg.com/react-scan/dist/auto.global.js";
-  script.async = true;
-  document.body.appendChild(script);
-}
+// if (import.meta.env.MODE === "development") {
+//   const script = document.createElement("script");
+//   script.src = "//unpkg.com/react-scan/dist/auto.global.js";
+//   script.async = true;
+//   document.body.appendChild(script);
+// }
 
 root.render(
   <BrowserRouter>

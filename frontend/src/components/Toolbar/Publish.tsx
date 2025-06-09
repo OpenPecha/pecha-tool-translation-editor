@@ -12,7 +12,7 @@ export const PublishButton = ({ quill }: { quill: Quill }) => {
   return (
     <div className="flex items-center mr-2">
       <div
-        className="bg-gray-300 shadow rounded px-2 cursor-pointer capitalize text-gray-600 font-google-sans hover:bg-gray-200 transition-all"
+        className="bg-gray-300 shadow rounded px-2 cursor-pointer capitalize text-gray-700 font-google-sans hover:bg-gray-200 transition-all"
         onClick={handlePublish}
       >
         publish

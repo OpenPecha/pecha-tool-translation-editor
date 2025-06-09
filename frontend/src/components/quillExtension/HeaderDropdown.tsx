@@ -53,7 +53,7 @@ const HeaderDropdown = ({
         tabIndex={0}
       >
         {value === "" ? "Normal" : `H${value}`}
-        <span className="text-gray-400" aria-hidden="true">
+        <span className="text-gray-500" aria-hidden="true">
           ▾
         </span>
       </div>

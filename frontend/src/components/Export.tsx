@@ -45,7 +45,7 @@ function ExportButton({
   return (
     <div className="flex flex-col w-full gap-6">
       <div className="flex items-center space-x-2">
-        <FileText className="w-5 h-5 text-gray-600" />
+        <FileText className="w-5 h-5 text-gray-700" />
         <h3 className="text-lg font-semibold text-gray-800">Export Style</h3>
       </div>
 
@@ -62,7 +62,7 @@ function ExportButton({
           />
           <Label htmlFor="side-by-side" className="cursor-pointer flex-1">
             <div>
-              <div className="font-medium text-gray-800">Side by Side</div>
+              <div className="font-medium text-gray-700">Side by Side</div>
               <div className="text-sm text-gray-500 mt-1">
                 Source and translation in columns
               </div>
@@ -78,7 +78,7 @@ function ExportButton({
           />
           <Label htmlFor="line-by-line" className="cursor-pointer flex-1">
             <div>
-              <div className="font-medium text-gray-800">Line by Line</div>
+              <div className="font-medium text-gray-700">Line by Line</div>
               <div className="text-sm text-gray-500 mt-1">
                 Alternating source and translation lines
               </div>

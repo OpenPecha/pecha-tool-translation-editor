@@ -4,13 +4,13 @@ import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { fetchProjects, Project } from "@/api/project";
 import EachProject from "./EachProject";
-import { useSearch } from "@/contexts/SearchContext";
 import { useMatomo } from "@datapunt/matomo-tracker-react";
 import { useAuth } from "@/auth/use-auth-hook";
 import { FaSpinner } from "react-icons/fa";
+import { useSearchStore } from "@/stores/searchStore";
 
 const ProjectList = () => {
-  const { searchQuery } = useSearch();
+  const { searchQuery } = useSearchStore();
   const [page, setPage] = useState(1);
   const { trackSiteSearch } = useMatomo();
   const limit = 10;
@@ -39,7 +39,7 @@ const ProjectList = () => {
     <div className="flex flex-1 flex-col h-[100vh] overflow-y-scroll ">
       <div className="pt-10 px-6">
         <div className="max-w-5xl mx-auto">
-          <h1 className="text-lg font-medium mb-6 text-gray-600">
+          <h1 className="text-lg font-medium mb-6 text-gray-700">
             Start a new project
           </h1>
           <DocumentCreateModal />
@@ -52,7 +52,7 @@ const ProjectList = () => {
           </div>
         )}
         <div className="max-w-5xl mx-auto mb-2">
-          {projects?.length === 0 && !isLoading && (
+          {projects?.length === 0 && !isLoading && !isFetching && (
             <div className="text-center py-8">
               <p>You don't have any projects yet. Create one to get started!</p>
             </div>
@@ -94,13 +94,14 @@ const ProjectsGrid = ({
   return (
     <div className="mb-8 ">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-base font-medium text-gray-600">Your Projects</h2>
+        <h2 className="text-base font-medium text-gray-700">Your Projects</h2>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
-            className={`h-8 text-sm cursor-pointer`}
+            className={`h-8 text-sm cursor-pointer `}
             onClick={() => setShowAll((p) => !p)}
+            color="white"
           >
             {!showAll ? "All Projects" : "Shared Projects"}
           </Button>
@@ -177,7 +178,7 @@ const PaginationControls = ({
       >
         Previous
       </Button>
-      <span className="text-sm text-gray-600">
+      <span className="text-sm text-gray-700">
         Page {page} of {totalPages}
       </span>
       <Button

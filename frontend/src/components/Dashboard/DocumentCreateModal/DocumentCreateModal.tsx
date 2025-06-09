@@ -24,7 +24,7 @@ function DocumentCreateModal() {
             <div className=" p-4 rounded-full flex items-center justify-center  transition-colors">
               <img src={PlusIcon} width={70} alt="" />
             </div>
-            <p className="mt-4 text-sm text-gray-600">Create New Project</p>
+            <p className="mt-4 text-sm text-gray-700">Create New Project</p>
           </div>
         </div>
       </DialogTrigger>
