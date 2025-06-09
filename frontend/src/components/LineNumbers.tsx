@@ -303,7 +303,7 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
               <button
                 onClick={handleScrollToPrevBookmark}
                 title="Previous bookmark"
-                className=" text-[#888888] rounded-l "
+                className=" text-gray-500 rounded-l "
               >
                 <FaChevronUp />
               </button>
@@ -314,7 +314,7 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
                 bookmarks[currentBookmarkIndex]
               )}
               title="Go to current bookmark"
-              className=" text-[#888888]  "
+              className=" text-gray-500  "
             >
               <FaBookmark />
             </button>
@@ -322,7 +322,7 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
               <button
                 onClick={handleScrollToNextBookmark}
                 title="Next bookmark"
-                className=" text-[#888888] rounded-r "
+                className=" text-gray-500 rounded-r "
               >
                 <FaChevronDown />
               </button>

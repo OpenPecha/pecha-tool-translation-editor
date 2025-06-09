@@ -79,7 +79,7 @@ const NavSidebar = () => {
       >
         <div className="flex flex-col h-full">
           {/* Sidebar header */}
-          <div className="h-20 flex items-center p-6 border-b text-[#888] font-google-sans text-xl tracking-widest">
+          <div className="h-20 flex items-center p-6 border-b text-gray-500 font-google-sans text-xl tracking-widest">
             <span className="flex-1 font-semibold text-[#8e57f1]">
               {" "}
               <span className="text-[#12dfec]">Pecha</span>Tool
@@ -111,9 +111,7 @@ const NavSidebar = () => {
 
           {/* Sidebar footer */}
           <div className="p-4 border-t">
-            <p className="text-sm text-muted-foreground">
-              © 2025 My Application
-            </p>
+            <p className="text-sm text-gray-500">© 2025 My Application</p>
           </div>
         </div>
       </aside>
