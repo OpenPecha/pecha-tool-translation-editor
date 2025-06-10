@@ -874,23 +874,9 @@ router.get("/:id/export", authenticate, async (req, res) => {
 
           // Process each translation separately (like side-by-side export)
           for (const translation of rootDoc.translations) {
-            console.log(
-              `📥 Processing translation: ${translation.id} - ${translation.language}`
-            );
             const translationContent = await getDocumentContent(translation.id);
-            console.log(
-              `📄 Translation content for ${translation.language}:`,
-              translationContent ? "FOUND" : "NULL"
-            );
 
             if (translationContent) {
-              console.log(
-                `📄 Translation content length for ${translation.language}:`,
-                Array.isArray(translationContent)
-                  ? translationContent.length
-                  : "NOT_ARRAY"
-              );
-
               // Create side-by-side style DOCX template for this source/translation pair
               const combinedDocx = await createSideBySideDocxTemplate(
                 rootDoc.name,
@@ -1585,10 +1571,6 @@ async function createSideBySideDocxTemplate(
       });
     }
 
-    console.log(
-      `📄 Created ${pages.length} pages for ${docName} - ${targetLanguage}`
-    );
-
     // Check if template exists
     if (!fs.existsSync(TEMPLATE_PATH)) {
       console.warn(
@@ -1626,10 +1608,6 @@ async function createSideBySideDocxTemplate(
       totalPages: pages.length,
       pages: pages,
     };
-
-    console.log(
-      `📊 Template data prepared for ${docName} - ${targetLanguage}: ${pages.length} pages`
-    );
 
     sendProgress(progressId, 70, "Rendering template...");
 
@@ -1779,16 +1757,14 @@ async function createSourceOnlyDocxTemplate(docName, sourceDelta, progressId) {
  * @returns {Promise<Buffer>} - DOCX buffer
  */
 async function createFallbackSideBySideDocxTemplate(pages) {
-  // Create separate sections for each page to ensure proper page breaks
-  const sections = [];
+  const docxElements = [];
 
   for (let i = 0; i < pages.length; i++) {
     const page = pages[i];
-    const sectionElements = [];
 
     // Add source content (clean format, no labels)
     if (page.source) {
-      sectionElements.push(
+      docxElements.push(
         new Paragraph({
           children: [
             new TextRun({
@@ -1800,14 +1776,14 @@ async function createFallbackSideBySideDocxTemplate(pages) {
       );
 
       // Add spacing between source and translation
-      sectionElements.push(
+      docxElements.push(
         new Paragraph({ children: [new TextRun({ text: "" })] })
       );
     }
 
     // Add translation content (clean format, no labels)
     if (page.translation) {
-      sectionElements.push(
+      docxElements.push(
         new Paragraph({
           children: [
             new TextRun({
@@ -1820,15 +1796,38 @@ async function createFallbackSideBySideDocxTemplate(pages) {
       );
     }
 
-    // Create a section for each page
-    sections.push({
-      properties: {},
-      children: sectionElements,
-    });
+    // Add explicit page break after each source/translation pair (except the last one)
+    if (i < pages.length - 1) {
+      docxElements.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "",
+              break: 1, // Page break
+            }),
+          ],
+          pageBreakBefore: true, // Force page break
+        })
+      );
+    }
   }
 
   const doc = new Document({
-    sections: sections,
+    sections: [
+      {
+        properties: {
+          page: {
+            margin: {
+              top: 1440, // 1 inch margins
+              right: 1440,
+              bottom: 1440,
+              left: 1440,
+            },
+          },
+        },
+        children: docxElements,
+      },
+    ],
   });
 
   return await Packer.toBuffer(doc);
