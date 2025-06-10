@@ -137,8 +137,9 @@ const AITranslation = ({
   );
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [segmentationMethod, setSegmentationMethod] =
-    useState<string>("newline");
+  const [segmentationMethod, setSegmentationMethod] = useState<
+    "newline" | "botok"
+  >("newline");
   const generateTranslationMutation = useMutation({
     mutationFn: generateTranslation,
     onSuccess: (data) => {
@@ -191,6 +192,12 @@ const AITranslation = ({
               value={"claude-3-haiku-20240307"}
             >
               claude-3-haiku-20240307
+            </SelectItem>
+            <SelectItem
+              key={"claude-sonnet-4-20250514"}
+              value={"claude-sonnet-4-20250514"}
+            >
+              claude-sonnet-4-20250514
             </SelectItem>
           </SelectContent>
         </Select>

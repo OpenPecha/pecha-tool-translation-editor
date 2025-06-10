@@ -995,8 +995,7 @@ router.post("/generate-translation", authenticate, async (req, res) => {
         .json({ error: "Translation worker is not healthy" });
     }
 
-    const apiKey =
-      model === "claude-3-haiku-20240307" ? process.env.CLAUDE_API_KEY : "";
+    const apiKey = model.startsWith("claude") ? process.env.CLAUDE_API_KEY : "";
     if (apiKey === "") {
       return res.status(400).json({ error: "API key is required" });
     }

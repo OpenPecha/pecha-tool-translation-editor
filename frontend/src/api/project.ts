@@ -1,5 +1,5 @@
 import { getHeaders } from "./utils";
-const server_url = import.meta.env.VITE_SERVER_URL;
+export const server_url = import.meta.env.VITE_SERVER_URL;
 
 export interface Permission {
   userId: string;
@@ -413,12 +413,16 @@ import { exportStyle } from "@/components/Export";
 export const downloadProjectDocuments = async (
   projectId: string,
   exportFormat: exportStyle,
-  documentId?: string
+  documentId?: string,
+  progressId?: string
 ) => {
   try {
     const queryParams = new URLSearchParams({ type: exportFormat });
     if (documentId) {
       queryParams.append("documentId", documentId);
+    }
+    if (progressId) {
+      queryParams.append("progressId", progressId);
     }
 
     const response = await fetch(

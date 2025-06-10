@@ -9,8 +9,8 @@ import {
 import { Info } from "lucide-react";
 
 interface SegmentationOptionsProps {
-  selectedMethod: string;
-  onMethodChange: (method: string) => void;
+  selectedMethod: "botok" | "newline";
+  onMethodChange: (method: "botok" | "newline") => void;
 }
 
 const SegmentationOptions = ({
@@ -28,6 +28,15 @@ const SegmentationOptions = ({
           onValueChange={onMethodChange}
           className="pl-2 mt-2"
         >
+          <div className="flex items-center space-x-3">
+            <RadioGroupItem value="newline" id="newline" />
+            <Label
+              htmlFor="newline"
+              className="text-sm text-gray-700 cursor-pointer"
+            >
+              Use source text segmentation
+            </Label>
+          </div>
           <div className="flex items-center space-x-3">
             <RadioGroupItem value="botok" id="botok" />
             <Label
@@ -47,16 +56,6 @@ const SegmentationOptions = ({
                 </p>
               </TooltipContent>
             </Tooltip>
-          </div>
-
-          <div className="flex items-center space-x-3">
-            <RadioGroupItem value="newline" id="newline" />
-            <Label
-              htmlFor="newline"
-              className="text-sm text-gray-700 cursor-pointer"
-            >
-              Use source text segmentation
-            </Label>
           </div>
         </RadioGroup>
       </TooltipProvider>

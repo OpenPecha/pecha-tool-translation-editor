@@ -21,8 +21,13 @@ const path = require("path");
 const sharp = require("sharp");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
+const Docxtemplater = require("docxtemplater");
+const PizZip = require("pizzip");
 
 const prisma = new PrismaClient();
+
+// Store active progress streams
+const progressStreams = new Map();
 
 // Configuration constants
 const TEXT_CHUNK_LENGTH = 300; // Characters per chunk
@@ -32,6 +37,7 @@ const FRAME_IMAGE_PATH = path.join(
   "static",
   "pecha-frame.png"
 );
+const TEMPLATE_PATH = path.join(__dirname, "..", "static", "template.docx");
 const TEXT_AREA = {
   x: 100, // Left margin for text
   y: 120, // Top margin for text
@@ -384,6 +390,50 @@ router.delete("/:id/users/:userId", authenticate, async (req, res) => {
     console.error("Error removing user from project:", error);
     res.status(500).json({ error: error.message });
   }
+});
+
+// SSE endpoint for export progress (no authentication needed - progressId acts as unique identifier)
+router.get("/:id/export-progress/:progressId", async (req, res) => {
+  const { progressId } = req.params;
+
+  // Set SSE headers
+  res.writeHead(200, {
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    Connection: "keep-alive",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Cache-Control",
+  });
+
+  // Store the response object for this progress ID
+  progressStreams.set(progressId, res);
+
+  // Send initial connection message
+  const initialMessage = JSON.stringify({
+    progress: 0,
+    message: "Connection established...",
+  });
+
+  console.log(`📤 Sending initial SSE message: ${initialMessage}`);
+  res.write(`data: ${initialMessage}\n\n`);
+
+  // Send a second message to confirm connection and indicate readiness
+  setTimeout(() => {
+    const readyMessage = JSON.stringify({
+      progress: 1,
+      message: "Ready for export...",
+    });
+    res.write(`data: ${readyMessage}\n\n`);
+  }, 200);
+
+  // Clean up when client disconnects
+  req.on("close", () => {
+    progressStreams.delete(progressId);
+  });
+
+  req.on("aborted", () => {
+    progressStreams.delete(progressId);
+  });
 });
 
 // Get documents list for export options
@@ -760,9 +810,9 @@ router.get("/:id/export", authenticate, async (req, res) => {
 
       // Finalize the archive
       await archive.finalize();
-    } else if (type === "pecha-pdf") {
-      // Get optional document ID for specific document export
-      const { documentId } = req.query;
+    } else if (type === "docx-template") {
+      // Get optional progress ID (no document selection needed)
+      const { progressId } = req.query;
 
       // Check if project exists and user has permission
       const project = await prisma.project.findUnique({
@@ -788,10 +838,8 @@ router.get("/:id/export", authenticate, async (req, res) => {
         zlib: { level: 9 },
       });
 
-      // Set response headers
-      const zipFileName = documentId
-        ? `${project.name}_selected_document_pecha_pdf.zip`
-        : `${project.name}_pecha_pdf.zip`;
+      // Set response headers - always export all documents combined
+      const zipFileName = `${project.name}_combined_docx_template.zip`;
 
       res.setHeader("Content-Type", "application/zip");
       res.setHeader(
@@ -804,16 +852,105 @@ router.get("/:id/export", authenticate, async (req, res) => {
       // Pipe archive data to the response
       archive.pipe(res);
 
-      if (documentId) {
-        // Export specific document only
-        await exportSpecificDocument(archive, documentId, project);
-      } else {
-        // Export all documents (existing behavior)
-        await exportAllDocuments(archive, project);
+      // Send initial progress update
+      sendProgress(progressId, 5, "Starting docx-template export...");
+
+      // Process all root documents with their translations combined
+      let totalDocs = project.roots.length;
+      let processedDocs = 0;
+
+      for (const rootDoc of project.roots) {
+        sendProgress(
+          progressId,
+          Math.round((processedDocs / totalDocs) * 90) + 5,
+          `Processing ${rootDoc.name} with translations...`
+        );
+
+        const rootDocContent = await getDocumentContent(rootDoc.id);
+        if (rootDocContent) {
+          console.log(
+            `🔍 Root document ${rootDoc.name} has ${rootDoc.translations.length} translations`
+          );
+
+          // Process each translation separately (like side-by-side export)
+          for (const translation of rootDoc.translations) {
+            console.log(
+              `📥 Processing translation: ${translation.id} - ${translation.language}`
+            );
+            const translationContent = await getDocumentContent(translation.id);
+            console.log(
+              `📄 Translation content for ${translation.language}:`,
+              translationContent ? "FOUND" : "NULL"
+            );
+
+            if (translationContent) {
+              console.log(
+                `📄 Translation content length for ${translation.language}:`,
+                Array.isArray(translationContent)
+                  ? translationContent.length
+                  : "NOT_ARRAY"
+              );
+
+              // Create side-by-side style DOCX template for this source/translation pair
+              const combinedDocx = await createSideBySideDocxTemplate(
+                rootDoc.name,
+                rootDocContent,
+                translation.language,
+                translationContent,
+                progressId
+              );
+
+              const fileName = `${rootDoc.name}_${translation.language}_docx_template.docx`;
+              archive.append(combinedDocx, { name: fileName });
+
+              console.log(
+                `✅ Created docx-template for ${rootDoc.name} - ${translation.language}`
+              );
+            } else {
+              console.log(
+                `❌ No content found for translation ${translation.language} (ID: ${translation.id})`
+              );
+            }
+          }
+
+          // Also create a source-only document if there are no translations
+          if (rootDoc.translations.length === 0) {
+            const sourceOnlyDocx = await createSourceOnlyDocxTemplate(
+              rootDoc.name,
+              rootDocContent,
+              progressId
+            );
+
+            const fileName = `${rootDoc.name}_source_only_docx_template.docx`;
+            archive.append(sourceOnlyDocx, { name: fileName });
+
+            console.log(
+              `✅ Created source-only docx-template for ${rootDoc.name}`
+            );
+          }
+        }
+        processedDocs++;
       }
 
       // Finalize the archive
       await archive.finalize();
+
+      // Send completion signal
+      if (progressId) {
+        sendProgress(progressId, 100, "Export completed!");
+        // Clean up the progress stream after a short delay
+        setTimeout(() => {
+          const stream = progressStreams.get(progressId);
+          if (stream) {
+            try {
+              stream.end();
+            } catch (error) {
+              console.error("Error closing progress stream:", error);
+            }
+            progressStreams.delete(progressId);
+          }
+        }, 1000);
+      }
     } else {
       // Check if project exists and user has permission
       const project = await prisma.project.findUnique({
@@ -893,104 +1030,25 @@ router.get("/:id/export", authenticate, async (req, res) => {
 });
 
 /**
- * Export all documents in the project
- * @param {Object} archive - The archiver instance
- * @param {Object} project - The project object
+ * Send progress update via SSE
+ * @param {string} progressId - Progress tracking ID
+ * @param {number} progress - Progress percentage (0-100)
+ * @param {string} message - Progress message
  */
-async function exportAllDocuments(archive, project) {
-  // Process all root documents and their translations
-  for (const rootDoc of project.roots) {
-    const rootDocContent = await getDocumentContent(rootDoc.id);
-    if (rootDocContent) {
-      // Create pecha-style PDF for root document
-      const rootPdf = await createPechaPdf(rootDoc.name, rootDocContent);
-      archive.append(rootPdf, { name: `${rootDoc.name}_pecha.pdf` });
+function sendProgress(progressId, progress, message) {
+  const stream = progressStreams.get(progressId);
+  if (stream) {
+    try {
+      const progressData = JSON.stringify({ progress, message });
+
+      stream.write(`data: ${progressData}\n\n`);
+    } catch (error) {
+      progressStreams.delete(progressId);
     }
-
-    // Process translations
-    for (const translation of rootDoc.translations) {
-      const translationContent = await getDocumentContent(translation.id);
-      if (translationContent) {
-        // Create pecha-style PDF for translation
-        const translationPdf = await createPechaPdf(
-          `${rootDoc.name}_${translation.language}`,
-          translationContent
-        );
-        archive.append(translationPdf, {
-          name: `${rootDoc.name}_${translation.language}_pecha.pdf`,
-        });
-      }
-    }
-  }
-}
-
-/**
- * Export a specific document by ID
- * @param {Object} archive - The archiver instance
- * @param {string} documentId - The document ID to export
- * @param {Object} project - The project object
- */
-async function exportSpecificDocument(archive, documentId, project) {
-  try {
-    // First check if it's a root document
-    const rootDoc = project.roots.find((root) => root.id === documentId);
-
-    if (rootDoc) {
-      // Export the root document
-      const rootDocContent = await getDocumentContent(rootDoc.id);
-      if (rootDocContent) {
-        const rootPdf = await createPechaPdf(rootDoc.name, rootDocContent);
-        archive.append(rootPdf, { name: `${rootDoc.name}_pecha.pdf` });
-        console.log(`Exported root document: ${rootDoc.name}`);
-        return;
-      }
-    }
-
-    // Check if it's a translation document
-    for (const rootDoc of project.roots) {
-      const translation = rootDoc.translations.find(
-        (trans) => trans.id === documentId
-      );
-      if (translation) {
-        const translationContent = await getDocumentContent(translation.id);
-        if (translationContent) {
-          const translationPdf = await createPechaPdf(
-            `${rootDoc.name}_${translation.language}`,
-            translationContent
-          );
-          archive.append(translationPdf, {
-            name: `${rootDoc.name}_${translation.language}_pecha.pdf`,
-          });
-          console.log(
-            `Exported translation: ${rootDoc.name}_${translation.language}`
-          );
-          return;
-        }
-      }
-    }
-
-    // If document not found in project, try to get it directly
-    const docContent = await getDocumentContent(documentId);
-    if (docContent) {
-      // Get document details from database
-      const doc = await prisma.doc.findUnique({
-        where: { id: documentId },
-        select: { id: true, identifier: true, name: true },
-      });
-
-      if (doc) {
-        const docName = doc.name || doc.identifier || `document_${documentId}`;
-        const pdf = await createPechaPdf(docName, docContent);
-        archive.append(pdf, { name: `${docName}_pecha.pdf` });
-        console.log(`Exported document: ${docName}`);
-      } else {
-        console.error(`Document ${documentId} not found`);
-      }
-    } else {
-      console.error(`No content found for document ${documentId}`);
-    }
-  } catch (error) {
-    console.error(`Error exporting specific document ${documentId}:`, error);
+  } else {
+    console.log(`⚠️ No SSE stream found for progressId: ${progressId}`);
+    console.log(`📊 Available streams:`, Array.from(progressStreams.keys()));
+    console.log(`📊 Total streams: ${progressStreams.size}`);
   }
 }
 
@@ -1027,256 +1085,6 @@ async function getDocumentContent(docId) {
   } catch (error) {
     console.error("Error getting document content:", error);
     return null;
-  }
-}
-/**
- * Create a DOCX buffer from document content
- * @param {string} docName - The document name
- * @param {Array} delta - The document content as a Delta array
- * @returns {Promise<Buffer>} - The DOCX file as a buffer
- */
-async function createDocxBuffer(docName, delta) {
-  try {
-    if (!Array.isArray(delta) || delta.length === 0) {
-      // Create a simple document with the document name if no content
-      const doc = new Document({
-        sections: [
-          {
-            properties: {},
-            children: [
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: `Document: ${docName} (No content available)`,
-                  }),
-                ],
-              }),
-            ],
-          },
-        ],
-      });
-      return await Packer.toBuffer(doc);
-    }
-
-    // Process the delta to create text runs with proper formatting
-    const docxParagraphs = [];
-    let currentRuns = [];
-    let currentAttributes = {};
-
-    // Process each operation in the delta
-    for (let i = 0; i < delta.length; i++) {
-      const op = delta[i];
-
-      // Handle text insertions
-      if (typeof op.insert === "string") {
-        // Split by newlines to handle paragraphs
-        const textParts = op.insert.split("\n");
-
-        for (let j = 0; j < textParts.length; j++) {
-          const text = textParts[j];
-
-          // Only add non-empty text
-          if (text.length > 0) {
-            // Create a text run with the current formatting attributes
-            // Determine if this is a heading and what level
-            const isHeading =
-              op.attributes?.header ||
-              op.attributes?.h1 === true ||
-              op.attributes?.h2 === true ||
-              op.attributes?.h === 1 ||
-              op.attributes?.h === 2;
-
-            // Determine heading level
-            const headingLevel =
-              op.attributes?.header ||
-              (op.attributes?.h1 === true ? 1 : undefined) ||
-              (op.attributes?.h2 === true ? 2 : undefined) ||
-              op.attributes?.h;
-
-            // Set font size based on heading level
-            let fontSize = 24; // Default size (12pt)
-            if (isHeading) {
-              if (headingLevel === 1) fontSize = 36; // 18pt for H1
-              else if (headingLevel === 2) fontSize = 30; // 15pt for H2
-            } else if (op.attributes?.size) {
-              fontSize =
-                op.attributes?.size === "large"
-                  ? 32
-                  : op.attributes?.size === "huge"
-                  ? 36
-                  : op.attributes?.size === "small"
-                  ? 20
-                  : 24;
-            }
-
-            const textRun = new TextRun({
-              text: text,
-              bold: op.attributes?.bold || currentAttributes.bold || isHeading, // Make headings bold
-              italics: op.attributes?.italic || currentAttributes.italic,
-              strike: op.attributes?.strike || currentAttributes.strike,
-              underline: op.attributes?.underline
-                ? { type: "single" }
-                : undefined,
-              color: op.attributes?.color
-                ? op.attributes.color.replace("#", "")
-                : undefined,
-              highlight: op.attributes?.background ? "yellow" : undefined,
-              size: fontSize,
-            });
-
-            currentRuns.push(textRun);
-          }
-
-          // If not the last part, create a new paragraph
-          if (j < textParts.length - 1) {
-            // Create paragraph with appropriate formatting
-            const paragraph = new Paragraph({
-              children: currentRuns,
-              heading:
-                op.attributes?.header === 1
-                  ? HeadingLevel.HEADING_1
-                  : op.attributes?.header === 2
-                  ? HeadingLevel.HEADING_2
-                  : undefined,
-              alignment:
-                op.attributes?.align === "center"
-                  ? AlignmentType.CENTER
-                  : op.attributes?.align === "right"
-                  ? AlignmentType.RIGHT
-                  : op.attributes?.align === "justify"
-                  ? AlignmentType.JUSTIFIED
-                  : AlignmentType.LEFT,
-            });
-
-            docxParagraphs.push(paragraph);
-            currentRuns = [];
-
-            // Preserve attributes for the next paragraph if they exist
-            if (op.attributes) {
-              currentAttributes = { ...op.attributes };
-            }
-          }
-        }
-      }
-      // Handle embedded content (images, etc.)
-      else if (op.insert && typeof op.insert === "object") {
-        // Handle image if present (not fully implemented, would need image processing)
-        if (op.insert.image) {
-          // For now, just add a placeholder text
-          currentRuns.push(new TextRun({ text: "[Image]", italics: true }));
-        }
-      }
-
-      // If this is the last operation or the next one starts a new paragraph,
-      // create a paragraph with the current runs
-      if (
-        i === delta.length - 1 ||
-        (delta[i + 1] &&
-          typeof delta[i + 1].insert === "string" &&
-          delta[i + 1].insert.includes("\n"))
-      ) {
-        if (currentRuns.length > 0) {
-          const paragraph = new Paragraph({
-            children: currentRuns,
-            heading:
-              op.attributes?.header === 1
-                ? HeadingLevel.HEADING_1
-                : op.attributes?.header === 2
-                ? HeadingLevel.HEADING_2
-                : op.attributes?.h1
-                ? HeadingLevel.HEADING_1
-                : op.attributes?.h2
-                ? HeadingLevel.HEADING_2
-                : op.attributes?.h === 1
-                ? HeadingLevel.HEADING_1
-                : op.attributes?.h === 2
-                ? HeadingLevel.HEADING_2
-                : undefined,
-            alignment:
-              op.attributes?.align === "center"
-                ? AlignmentType.CENTER
-                : op.attributes?.align === "right"
-                ? AlignmentType.RIGHT
-                : op.attributes?.align === "justify"
-                ? AlignmentType.JUSTIFIED
-                : AlignmentType.LEFT,
-          });
-
-          docxParagraphs.push(paragraph);
-          currentRuns = [];
-        }
-      }
-    }
-
-    // If there are any remaining runs, create a final paragraph
-    if (currentRuns.length > 0) {
-      docxParagraphs.push(new Paragraph({ children: currentRuns }));
-    }
-
-    // If no paragraphs were created, add a default one
-    if (docxParagraphs.length === 0) {
-      docxParagraphs.push(
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: `Document: ${docName} (No content available)`,
-            }),
-          ],
-        })
-      );
-    }
-
-    // Create the document with all the paragraphs
-    const doc = new Document({
-      sections: [
-        {
-          properties: {},
-          children: docxParagraphs,
-        },
-      ],
-    });
-
-    // Generate the DOCX file as a buffer
-    return await Packer.toBuffer(doc);
-  } catch (error) {
-    console.error("Error creating DOCX buffer:", error);
-
-    // Fallback to simple text if docx generation fails
-    try {
-      let plainText = "";
-      if (Array.isArray(delta)) {
-        for (const op of delta) {
-          if (typeof op.insert === "string") {
-            plainText += op.insert;
-          }
-        }
-      }
-
-      // Create a simple document with the plain text
-      const doc = new Document({
-        sections: [
-          {
-            properties: {},
-            children: [
-              new Paragraph({
-                children: [
-                  new TextRun(
-                    plainText || `Document: ${docName} (No content available)`
-                  ),
-                ],
-              }),
-            ],
-          },
-        ],
-      });
-
-      return await Packer.toBuffer(doc);
-    } catch (fallbackError) {
-      console.error("Fallback error:", fallbackError);
-
-      // Last resort: return a simple text buffer
-      return Buffer.from(`Error processing document ${docName}.`);
-    }
   }
 }
 
@@ -1618,124 +1426,6 @@ function deltaToPlainText(delta) {
 }
 
 /**
- * Create a pecha-style PDF from document content
- * @param {string} docName - The document name
- * @param {Array} delta - The document content as a Delta array
- * @returns {Promise<Buffer>} - The PDF file as a buffer
- */
-async function createPechaPdf(docName, delta) {
-  try {
-    // Convert delta to plain text
-    const plainText = deltaToPlainText(delta);
-
-    if (!plainText.trim()) {
-      // Create a simple PDF with document name if no content
-      const doc = new PDFDocument();
-      const chunks = [];
-
-      doc.on("data", (chunk) => chunks.push(chunk));
-      doc.on("end", () => {});
-
-      doc
-        .fontSize(16)
-        .text(`Document: ${docName} (No content available)`, 50, 50);
-      doc.end();
-
-      return new Promise((resolve) => {
-        doc.on("end", () => resolve(Buffer.concat(chunks)));
-      });
-    }
-
-    // Chunk the text
-    const textChunks = chunkText(plainText, TEXT_CHUNK_LENGTH);
-
-    // Check if frame image exists
-    if (!fs.existsSync(FRAME_IMAGE_PATH)) {
-      console.warn(
-        `Frame image not found at ${FRAME_IMAGE_PATH}, using fallback`
-      );
-      return createFallbackPdf(textChunks, docName);
-    }
-
-    // Create PDF document
-    const doc = new PDFDocument({ autoFirstPage: false });
-    const chunks = [];
-
-    doc.on("data", (chunk) => chunks.push(chunk));
-    doc.on("end", () => {});
-
-    // Process each chunk
-    for (let i = 0; i < textChunks.length; i++) {
-      const chunk = textChunks[i];
-
-      try {
-        // Create pecha frame image with text overlay
-        const imageWithText = await createFrameImageWithText(
-          chunk,
-          i + 1,
-          textChunks.length
-        );
-
-        // Get image dimensions to ensure proper PDF sizing
-        const metadata = await sharp(imageWithText).metadata();
-        console.log(
-          `Adding PDF page ${i + 1}: ${metadata.width}x${metadata.height}px`
-        );
-
-        // Add page with exact image dimensions
-        doc.addPage({
-          size: [metadata.width, metadata.height],
-          margins: { top: 0, bottom: 0, left: 0, right: 0 },
-        });
-
-        // Add the pecha frame image to PDF (full page)
-        doc.image(imageWithText, 0, 0, {
-          width: metadata.width,
-          height: metadata.height,
-          fit: [metadata.width, metadata.height],
-        });
-
-        console.log(
-          `Successfully added pecha frame page ${i + 1}/${textChunks.length}`
-        );
-      } catch (imageError) {
-        console.error(`Error creating image for chunk ${i + 1}:`, imageError);
-
-        // Fallback to text-only page
-        doc.addPage();
-        doc
-          .fontSize(18) // Increased from 14 to match larger text
-          .fillColor("#2c1810")
-          .text(chunk, 50, 50, {
-            width: doc.page.width - 100,
-            align: "left",
-            lineGap: 8, // Increased line gap for better readability
-          });
-
-        doc
-          .fontSize(10)
-          .fillColor("#666666")
-          .text(
-            `${i + 1} / ${textChunks.length}`,
-            doc.page.width / 2 - 20,
-            doc.page.height - 50,
-            { align: "center" }
-          );
-      }
-    }
-
-    doc.end();
-
-    return new Promise((resolve) => {
-      doc.on("end", () => resolve(Buffer.concat(chunks)));
-    });
-  } catch (error) {
-    console.error("Error creating pecha PDF:", error);
-    return createFallbackPdf([plainText || `Error: ${docName}`], docName);
-  }
-}
-
-/**
  * Chunk text by splitting on newlines
  * @param {string} text - The text to chunk
  * @param {number} chunkLength - Not used, kept for compatibility
@@ -1744,338 +1434,404 @@ async function createPechaPdf(docName, delta) {
 function chunkText(text, chunkLength) {
   // Split text by newlines to create chunks
   const chunks = text.split(/\n+/);
-
   // Filter out empty chunks but preserve single line breaks
   return chunks.filter((chunk) => chunk.trim().length > 0);
 }
 
-/**
- * Create an image with text overlay on the pecha frame
- * @param {string} text - The text to render
- * @param {number} pageNum - Current page number
- * @param {number} totalPages - Total number of pages
- * @returns {Promise<Buffer>} - Image buffer
- */
-async function createFrameImageWithText(text, pageNum, totalPages) {
-  try {
-    // Verify frame image exists
-    if (!fs.existsSync(FRAME_IMAGE_PATH)) {
-      throw new Error(`Pecha frame image not found at: ${FRAME_IMAGE_PATH}`);
-    }
+// Old function removed - functionality moved inline in export route
 
-    // Read the pecha frame image
-    const frameBuffer = fs.readFileSync(FRAME_IMAGE_PATH);
-    const frameImage = sharp(frameBuffer);
-    const { width, height } = await frameImage.metadata();
-    console.log(`Using pecha frame: ${width}x${height}px for page ${pageNum}`);
+// Old complex function removed - replaced with simpler side-by-side approach
 
-    // Detect language for proper text processing
-    const language = detectLanguage(text);
+// Old complex function removed - replaced with simpler side-by-side approach
 
-    // Create text overlay SVG positioned within the frame
-    const textSvg = createTextOverlaySVG(
-      text,
-      pageNum,
-      totalPages,
-      width,
-      height,
-      language
-    );
-
-    // Composite text overlay onto the pecha frame
-    const result = await frameImage
-      .composite([
-        {
-          input: Buffer.from(textSvg),
-          top: 0,
-          left: 0,
-          blend: "over", // Ensure text is overlaid on top
-        },
-      ])
-      .png()
-      .toBuffer();
-
-    console.log(
-      `Created frame image with text for page ${pageNum}/${totalPages}`
-    );
-    return result;
-  } catch (error) {
-    console.error("Error creating frame image with text:", error);
-    throw error;
-  }
-}
+// Old complex fallback function removed - replaced with simpler side-by-side approach
 
 /**
- * Create SVG overlay for text
- * @param {string} text - Text to render
- * @param {number} pageNum - Page number
- * @param {number} totalPages - Total pages
- * @param {number} imageWidth - Frame image width
- * @param {number} imageHeight - Frame image height
- * @param {string} language - Language code (optional, detects Tibetan automatically)
- * @returns {string} - SVG content
- */
-function createTextOverlaySVG(
-  text,
-  pageNum,
-  totalPages,
-  imageWidth,
-  imageHeight,
-  language = null
-) {
-  // Detect if text is Tibetan (contains Tibetan Unicode characters)
-  const isTibetan =
-    language === "tibetan" || language === "bo" || /[\u0F00-\u0FFF]/.test(text);
-
-  // Calculate responsive text area based on image size and language
-  const textArea = {
-    x: Math.floor(imageWidth * 0.08), // 15% margin from left (more space for frame border)
-    y: Math.floor(imageHeight * 0.2), // 20% margin from top (more space for frame header)
-    width: Math.floor(imageWidth), // Tibetan needs more width
-    height: Math.floor(imageHeight * 0.6), // 60% of image height (leaving space for frame footer)
-    lineHeight: Math.floor(imageHeight * (isTibetan ? 0.1 : 0.06)), // Tibetan needs more line height
-    fontSize: Math.floor(imageHeight * (isTibetan ? 0.06 : 0.045)), // Larger font for Tibetan
-  };
-
-  // Process text preserving original line structure - NO MERGING EVER
-  let lines = [];
-
-  // Split by existing linebreaks to preserve exact original structure
-  const originalLines = text.split(/\n/);
-
-  for (const originalLine of originalLines) {
-    if (originalLine.trim() === "") {
-      // Preserve empty lines exactly as they are
-      lines.push("");
-      continue;
-    }
-
-    // Check if this single original line fits within width
-    // If yes: keep as-is, if no: break into multiple lines
-    if (isTibetan) {
-      // For Tibetan: check syllable count
-      const syllables = originalLine.split("་").filter((s) => s.length > 0);
-      const maxSyllablesPerLine = Math.floor(
-        textArea.width / (textArea.fontSize * 2.5)
-      );
-
-      if (syllables.length <= maxSyllablesPerLine) {
-        // Original line fits - keep exactly as-is
-        lines.push(originalLine);
-      } else {
-        // Original line too wide - break it into multiple lines
-        const syllablesWithSeparator = syllables.map((s) => s + "་");
-        let currentLine = "";
-
-        for (const syllable of syllablesWithSeparator) {
-          const currentSyllableCount = currentLine
-            ? currentLine.split("་").length - 1
-            : 0;
-          if (currentSyllableCount < maxSyllablesPerLine) {
-            currentLine = currentLine ? currentLine + syllable : syllable;
-          } else {
-            if (currentLine) {
-              lines.push(currentLine);
-              currentLine = syllable;
-            }
-          }
-        }
-        if (currentLine) {
-          lines.push(currentLine);
-        }
-      }
-    } else {
-      // For non-Tibetan: check character count
-      const maxCharsPerLine = Math.floor(
-        textArea.width / (textArea.fontSize * 0.55)
-      );
-
-      if (originalLine.length <= maxCharsPerLine) {
-        // Original line fits - keep exactly as-is
-        lines.push(originalLine);
-      } else {
-        // Original line too wide - break it into multiple lines
-        const words = originalLine
-          .split(/\s+/)
-          .filter((word) => word.length > 0);
-        let currentLine = "";
-
-        for (const word of words) {
-          const testLine = currentLine ? `${currentLine} ${word}` : word;
-          if (testLine.length <= maxCharsPerLine) {
-            currentLine = testLine;
-          } else {
-            if (currentLine) {
-              lines.push(currentLine);
-              currentLine = word;
-            } else {
-              // Handle very long words by breaking them
-              let remainingWord = word;
-              while (remainingWord.length > maxCharsPerLine) {
-                lines.push(remainingWord.substring(0, maxCharsPerLine));
-                remainingWord = remainingWord.substring(maxCharsPerLine);
-              }
-              currentLine = remainingWord;
-            }
-          }
-        }
-        if (currentLine) {
-          lines.push(currentLine);
-        }
-      }
-    }
-  }
-
-  // Limit lines to fit in text area
-  const maxLines = Math.floor(textArea.height / textArea.lineHeight);
-  const displayLines = lines.slice(0, maxLines);
-  if (lines.length > maxLines) {
-    displayLines[maxLines - 1] = displayLines[maxLines - 1] + "...";
-  }
-
-  // Get font base64 first for Tibetan if needed
-  const fontBase64 = isTibetan ? getFontBase64() : "";
-
-  // Select appropriate font family based on language
-  const fontFamily = isTibetan
-    ? fontBase64
-      ? "MonlamTBslim, serif"
-      : "serif" // Fall back to serif if custom font not available
-    : "serif";
-  const fontWeight = isTibetan ? "normal" : "bold"; // Tibetan fonts often don't need bold
-
-  // Create font definition for Tibetan if needed
-  const fontDef =
-    isTibetan && fontBase64
-      ? `
-    <defs>
-      <style>
-        @font-face {
-          font-family: 'MonlamTBslim';
-          src: url('data:font/woff;base64,${fontBase64}') format('woff');
-        }
-      </style>
-    </defs>`
-      : "";
-
-  // Create SVG text elements positioned within the frame
-  const textElements = displayLines
-    .map((line, index) => {
-      const y = textArea.y + (index + 1) * textArea.lineHeight;
-      return `<text x="${
-        textArea.x
-      }" y="${y}" font-family="${fontFamily}" font-size="${
-        textArea.fontSize
-      }" fill="#2c1810" font-weight="${fontWeight}">${escapeXml(line)}</text>`;
-    })
-    .join("\n");
-
-  // Page number (always use serif for page numbers)
-  const pageNumberY = imageHeight - Math.floor(imageHeight * 0.05);
-  const pageNumberX = Math.floor(imageWidth / 2);
-  const pageNumberElement = `<text x="${pageNumberX}" y="${pageNumberY}" font-family="serif" font-size="${Math.floor(
-    textArea.fontSize * 0.7
-  )}" fill="#666666" text-anchor="middle">${pageNum} / ${totalPages}</text>`;
-
-  return `
-    <svg width="${imageWidth}" height="${imageHeight}" xmlns="http://www.w3.org/2000/svg">
-      ${fontDef}
-      ${textElements}
-      ${pageNumberElement}
-    </svg>
-  `;
-}
-
-/**
- * Escape XML special characters
- * @param {string} text - Text to escape
- * @returns {string} - Escaped text
- */
-function escapeXml(text) {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
-/**
- * Detect language from text content
- * @param {string} text - Text to analyze
- * @returns {string} - Language code ('tibetan' or 'other')
- */
-function detectLanguage(text) {
-  // Check for Tibetan Unicode range (U+0F00-U+0FFF)
-  if (/[\u0F00-\u0FFF]/.test(text)) {
-    return "tibetan";
-  }
-  return "other";
-}
-
-/**
- * Get Tibetan font as base64 string
- * @returns {string} - Base64 encoded font data
- */
-function getFontBase64() {
-  try {
-    const fontPath = path.join(__dirname, "..", "static", "MonlamTBslim.woff");
-    if (fs.existsSync(fontPath)) {
-      const fontBuffer = fs.readFileSync(fontPath);
-      return fontBuffer.toString("base64");
-    } else {
-      console.warn(`Tibetan font not found at: ${fontPath}`);
-      return "";
-    }
-  } catch (error) {
-    console.error("Error loading Tibetan font:", error);
-    return "";
-  }
-}
-
-/**
- * Create fallback PDF when frame image is not available
+ * Create fallback DOCX template when frame image is not available
  * @param {Array<string>} textChunks - Text chunks
  * @param {string} docName - Document name
- * @returns {Promise<Buffer>} - PDF buffer
+ * @returns {Promise<Buffer>} - DOCX buffer
  */
-async function createFallbackPdf(textChunks, docName) {
-  const doc = new PDFDocument();
-  const chunks = [];
+async function createFallbackDocxTemplate(textChunks, docName) {
+  const docxElements = [];
 
-  doc.on("data", (chunk) => chunks.push(chunk));
-  doc.on("end", () => {});
+  // Add document title
+  docxElements.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: `${docName} - Pecha Template (Fallback)`,
+          bold: true,
+          size: 32,
+        }),
+      ],
+      heading: HeadingLevel.HEADING_1,
+      alignment: AlignmentType.CENTER,
+    })
+  );
 
   textChunks.forEach((chunk, index) => {
-    if (index > 0) doc.addPage();
+    // Add page title
+    docxElements.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: `Page ${index + 1}`,
+            bold: true,
+            size: 24,
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+      })
+    );
 
-    // Add pecha-style styling
-    doc
-      .fontSize(18) // Increased from 14 to match larger text
-      .fillColor("#2c1810")
-      .text(chunk, 50, 50, {
-        width: doc.page.width - 100,
-        align: "left",
-        lineGap: 8, // Increased line gap for better readability
-      });
+    // Add text content
+    docxElements.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: chunk,
+            size: 36, // Larger font size for pecha-style appearance
+          }),
+        ],
+      })
+    );
 
     // Add page number
-    doc
-      .fontSize(10)
-      .fillColor("#666666")
-      .text(
-        `${index + 1} / ${textChunks.length}`,
-        doc.page.width / 2 - 20,
-        doc.page.height - 50,
-        { align: "center" }
+    docxElements.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: `${index + 1} / ${textChunks.length}`,
+            size: 20,
+            color: "666666",
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+      })
+    );
+
+    // Add page break except for the last page
+    if (index < textChunks.length - 1) {
+      docxElements.push(
+        new Paragraph({
+          children: [new TextRun({ text: "", break: 1 })],
+          pageBreakBefore: true,
+        })
       );
+    }
   });
 
-  doc.end();
-
-  return new Promise((resolve) => {
-    doc.on("end", () => resolve(Buffer.concat(chunks)));
+  const doc = new Document({
+    sections: [
+      {
+        properties: {},
+        children: docxElements,
+      },
+    ],
   });
+
+  return await Packer.toBuffer(doc);
+}
+
+/**
+ * Create a side-by-side style DOCX template from source and translation content
+ * @param {string} docName - The document name
+ * @param {Array} sourceDelta - The source document content as a Delta array
+ * @param {string} targetLanguage - The target language
+ * @param {Array} translationDelta - The translation document content as a Delta array
+ * @param {string} progressId - Progress tracking ID
+ * @returns {Promise<Buffer>} - The DOCX file as a buffer
+ */
+async function createSideBySideDocxTemplate(
+  docName,
+  sourceDelta,
+  targetLanguage,
+  translationDelta,
+  progressId
+) {
+  try {
+    sendProgress(
+      progressId,
+      20,
+      `Creating template for ${docName} - ${targetLanguage}...`
+    );
+
+    // Convert deltas to plain text
+    const sourceText = deltaToPlainText(sourceDelta);
+    const translationText = deltaToPlainText(translationDelta);
+
+    // Split by paragraphs (double line breaks) or single line breaks for better granularity
+    const sourceParagraphs = sourceText.split(/\n+/).filter((p) => p.trim());
+    const translationParagraphs = translationText
+      .split(/\n+/)
+      .filter((p) => p.trim());
+
+    const maxParagraphs = Math.max(
+      sourceParagraphs.length,
+      translationParagraphs.length
+    );
+
+    // Create pages array with source/translation pairs (clean format)
+    const pages = [];
+    for (let i = 0; i < maxParagraphs; i++) {
+      const sourcePara = sourceParagraphs[i] || "";
+      const translationPara = translationParagraphs[i] || "";
+
+      pages.push({
+        source: sourcePara,
+        translation: translationPara,
+        isLast: i === maxParagraphs - 1, // Flag to identify last page for template
+      });
+    }
+
+    console.log(
+      `📄 Created ${pages.length} pages for ${docName} - ${targetLanguage}`
+    );
+
+    // Check if template exists
+    if (!fs.existsSync(TEMPLATE_PATH)) {
+      console.warn(
+        `Template not found at ${TEMPLATE_PATH}, using fallback DOCX`
+      );
+      return createFallbackSideBySideDocxTemplate(pages);
+    }
+
+    sendProgress(progressId, 50, "Processing template...");
+
+    // Read the template file
+    const templateContent = fs.readFileSync(TEMPLATE_PATH);
+
+    // Use docxtemplater to populate the template
+    const zip = new PizZip(templateContent);
+
+    let doc;
+    try {
+      doc = new Docxtemplater(zip, {
+        paragraphLoop: true,
+        linebreaks: true,
+        nullGetter: () => "", // Return empty string for null values
+      });
+    } catch (templateError) {
+      console.error("Template parsing error:", templateError);
+      console.log(
+        "Template may be corrupted or have malformed tags. Using fallback..."
+      );
+      return createFallbackSideBySideDocxTemplate(pages);
+    }
+
+    const templateData = {
+      docName: docName || "Untitled Document",
+      targetLanguage: targetLanguage,
+      totalPages: pages.length,
+      pages: pages,
+    };
+
+    console.log(
+      `📊 Template data prepared for ${docName} - ${targetLanguage}: ${pages.length} pages`
+    );
+
+    sendProgress(progressId, 70, "Rendering template...");
+
+    // Render the template with data
+    try {
+      doc.render(templateData);
+    } catch (renderError) {
+      console.error("Template rendering error:", renderError);
+      console.log("Template rendering failed. Using fallback...");
+      return createFallbackSideBySideDocxTemplate(pages);
+    }
+
+    sendProgress(progressId, 85, "Generating final document...");
+
+    // Get the generated document buffer
+    const docBuffer = doc.getZip().generate({
+      type: "nodebuffer",
+      compression: "DEFLATE",
+    });
+
+    console.log(`✅ Generated DOCX template buffer: ${docBuffer.length} bytes`);
+
+    return docBuffer;
+  } catch (error) {
+    console.error("Error creating side-by-side DOCX template:", error);
+    // Fallback to simple structure
+    const pages = [
+      {
+        source: "Error",
+        translation: error.message,
+      },
+    ];
+    return createFallbackSideBySideDocxTemplate(pages);
+  }
+}
+
+/**
+ * Create a source-only DOCX template
+ * @param {string} docName - The document name
+ * @param {Array} sourceDelta - The source document content as a Delta array
+ * @param {string} progressId - Progress tracking ID
+ * @returns {Promise<Buffer>} - The DOCX file as a buffer
+ */
+async function createSourceOnlyDocxTemplate(docName, sourceDelta, progressId) {
+  try {
+    sendProgress(
+      progressId,
+      20,
+      `Creating source-only template for ${docName}...`
+    );
+
+    // Convert delta to plain text
+    const sourceText = deltaToPlainText(sourceDelta);
+
+    // Split by paragraphs
+    const sourceParagraphs = sourceText.split(/\n+/).filter((p) => p.trim());
+
+    // Create pages array with source only (clean format)
+    const pages = [];
+    for (let i = 0; i < sourceParagraphs.length; i++) {
+      pages.push({
+        source: sourceParagraphs[i],
+        translation: "", // Empty translation
+        isLast: true, // Flag to identify last page for template
+      });
+    }
+    console.log(pages);
+    console.log(`📄 Created ${pages.length} source-only pages for ${docName}`);
+
+    // Check if template exists
+    if (!fs.existsSync(TEMPLATE_PATH)) {
+      console.warn(
+        `Template not found at ${TEMPLATE_PATH}, using fallback DOCX`
+      );
+      return createFallbackSideBySideDocxTemplate(pages);
+    }
+
+    sendProgress(progressId, 50, "Processing template...");
+
+    // Read the template file
+    const templateContent = fs.readFileSync(TEMPLATE_PATH);
+
+    // Use docxtemplater to populate the template
+    const zip = new PizZip(templateContent);
+
+    let doc;
+    try {
+      doc = new Docxtemplater(zip, {
+        paragraphLoop: true,
+        linebreaks: true,
+        nullGetter: () => "", // Return empty string for null values
+      });
+    } catch (templateError) {
+      console.error("Template parsing error:", templateError);
+      console.log(
+        "Template may be corrupted or have malformed tags. Using fallback..."
+      );
+      return createFallbackSideBySideDocxTemplate(pages);
+    }
+
+    const templateData = {
+      docName: docName || "Untitled Document",
+      targetLanguage: "Source Only",
+      totalPages: pages.length,
+      pages: pages,
+    };
+
+    console.log(
+      `📊 Template data prepared for ${docName} (source only): ${pages.length} pages`
+    );
+
+    sendProgress(progressId, 70, "Rendering template...");
+
+    // Render the template with data
+    try {
+      doc.render(templateData);
+    } catch (renderError) {
+      console.error("Template rendering error:", renderError);
+      console.log("Template rendering failed. Using fallback...");
+      return createFallbackSideBySideDocxTemplate(pages);
+    }
+
+    sendProgress(progressId, 85, "Generating final document...");
+
+    // Get the generated document buffer
+    const docBuffer = doc.getZip().generate({
+      type: "nodebuffer",
+      compression: "DEFLATE",
+    });
+
+    console.log(
+      `✅ Generated source-only DOCX template buffer: ${docBuffer.length} bytes`
+    );
+
+    return docBuffer;
+  } catch (error) {
+    console.error("Error creating source-only DOCX template:", error);
+    // Fallback to simple structure
+    const pages = [{ source: "Error", translation: "" }];
+    return createFallbackSideBySideDocxTemplate(pages);
+  }
+}
+
+/**
+ * Create fallback side-by-side DOCX template when template is not available
+ * @param {Array} pages - Pages array with source/translation pairs
+ * @returns {Promise<Buffer>} - DOCX buffer
+ */
+async function createFallbackSideBySideDocxTemplate(pages) {
+  // Create separate sections for each page to ensure proper page breaks
+  const sections = [];
+
+  for (let i = 0; i < pages.length; i++) {
+    const page = pages[i];
+    const sectionElements = [];
+
+    // Add source content (clean format, no labels)
+    if (page.source) {
+      sectionElements.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: page.source,
+              size: 32,
+            }),
+          ],
+        })
+      );
+
+      // Add spacing between source and translation
+      sectionElements.push(
+        new Paragraph({ children: [new TextRun({ text: "" })] })
+      );
+    }
+
+    // Add translation content (clean format, no labels)
+    if (page.translation) {
+      sectionElements.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: page.translation,
+              size: 32,
+              italics: true,
+            }),
+          ],
+        })
+      );
+    }
+
+    // Create a section for each page
+    sections.push({
+      properties: {},
+      children: sectionElements,
+    });
+  }
+
+  const doc = new Document({
+    sections: sections,
+  });
+
+  return await Packer.toBuffer(doc);
 }
 
 module.exports = router;

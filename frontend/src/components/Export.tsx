@@ -1,6 +1,6 @@
 import { Button } from "./ui/button";
 import { useMutation } from "@tanstack/react-query";
-import { downloadProjectDocuments } from "@/api/project";
+import { downloadProjectDocuments, server_url } from "@/api/project";
 import { useState } from "react";
 import { Download, ChevronDown, HelpCircle } from "lucide-react";
 import { Label } from "./ui/label";
@@ -21,7 +21,11 @@ import {
 import { useCurrentDocTranslations } from "@/hooks/useCurrentDoc";
 import { useParams } from "react-router-dom";
 
-export type exportStyle = "line-by-line" | "side-by-side" | "pecha-pdf";
+export type exportStyle =
+  | "line-by-line"
+  | "side-by-side"
+  | "pecha-pdf"
+  | "docx-template";
 
 interface Document {
   id: string;
@@ -95,17 +99,108 @@ function ExportButton({
   const [isExporting, setIsExporting] = useState(false);
   const [exportFormat, setExportFormat] = useState<exportStyle>("side-by-side");
   const [selectedDocumentId, setSelectedDocumentId] = useState<string>(rootId);
+  const [exportProgress, setExportProgress] = useState<number>(0);
+  const [exportMessage, setExportMessage] = useState<string>("");
 
   const { mutate: downloadZip, isPending } = useMutation({
-    mutationFn: () => {
-      if (exportFormat === "pecha-pdf" && selectedDocumentId) {
-        return downloadProjectDocuments(
-          projectId,
-          exportFormat,
-          selectedDocumentId
-        );
+    mutationFn: async () => {
+      if (exportFormat === "pecha-pdf" || exportFormat === "docx-template") {
+        // Generate unique progress ID
+        const progressId = `export_${Date.now()}_${Math.random()
+          .toString(36)
+          .substr(2, 9)}`;
+
+        // Start SSE connection for progress updates (no authentication needed)
+        const sseUrl =
+          server_url + `/projects/${projectId}/export-progress/${progressId}`;
+        console.log("🔗 SSE URL:", sseUrl);
+
+        const progressEventSource = new EventSource(`${sseUrl}`);
+
+        let sseConnectionReady = false;
+
+        progressEventSource.onopen = (event) => {
+          console.log("✅ SSE connection opened:", event);
+          sseConnectionReady = true;
+        };
+
+        progressEventSource.onmessage = (event) => {
+          console.log("📩 SSE message received:", event.data);
+          try {
+            const data = JSON.parse(event.data);
+            console.log("📊 Progress update:", data);
+            setExportProgress(data.progress);
+            setExportMessage(data.message);
+          } catch (error) {
+            console.error("❌ Error parsing progress data:", error);
+          }
+        };
+
+        progressEventSource.onerror = (error) => {
+          console.error("❌ SSE connection error:", error);
+          console.log("SSE readyState:", progressEventSource.readyState);
+          progressEventSource.close();
+        };
+
+        // Wait for SSE connection to be established before starting export
+        const waitForConnection = () => {
+          return new Promise((resolve) => {
+            if (sseConnectionReady) {
+              resolve(true);
+            } else {
+              const checkInterval = setInterval(() => {
+                if (sseConnectionReady) {
+                  clearInterval(checkInterval);
+                  resolve(true);
+                }
+              }, 100);
+
+              // Timeout after 5 seconds
+              setTimeout(() => {
+                clearInterval(checkInterval);
+                console.log("⏰ SSE connection timeout, proceeding anyway");
+                resolve(true);
+              }, 5000);
+            }
+          });
+        };
+
+        await waitForConnection();
+        console.log("🚀 Starting export after SSE connection established");
+
+        try {
+          // Start the download with progress tracking
+          const blob =
+            exportFormat === "pecha-pdf" && selectedDocumentId
+              ? await downloadProjectDocuments(
+                  projectId,
+                  exportFormat,
+                  selectedDocumentId,
+                  progressId
+                )
+              : await downloadProjectDocuments(
+                  projectId,
+                  exportFormat,
+                  undefined,
+                  progressId
+                );
+
+          // Close the SSE connection
+          progressEventSource.close();
+
+          // Reset progress
+          setExportProgress(100);
+          setExportMessage("Download complete!");
+
+          return blob;
+        } catch (error) {
+          progressEventSource.close();
+          throw error;
+        }
+      } else {
+        // For non-progress exports (side-by-side, line-by-line), use the regular method
+        return downloadProjectDocuments(projectId, exportFormat);
       }
-      return downloadProjectDocuments(projectId, exportFormat);
     },
     onSuccess: (blob) => {
       const url = URL.createObjectURL(blob);
@@ -114,6 +209,8 @@ function ExportButton({
       const suffix =
         exportFormat === "pecha-pdf" && selectedDocumentId
           ? "_pecha_pdf"
+          : exportFormat === "docx-template"
+          ? "_docx_template"
           : "_documents";
       a.download = `${projectName}${suffix}.zip`;
       document.body.appendChild(a);
@@ -121,11 +218,19 @@ function ExportButton({
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       setIsExporting(false);
+
+      // Reset progress after successful download
+      setTimeout(() => {
+        setExportProgress(0);
+        setExportMessage("");
+      }, 2000);
     },
     onError: (error) => {
       console.error("Error downloading project documents:", error);
       alert("Failed to download project documents. Please try again.");
       setIsExporting(false);
+      setExportProgress(0);
+      setExportMessage("");
     },
   });
 
@@ -267,20 +372,23 @@ function ExportButton({
               </div>
             </Label>
           </div>
+
           <div className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-            <RadioGroupItem value="pecha-pdf" id="pecha-pdf" className="mt-1" />
-            <Label htmlFor="pecha-pdf" className="cursor-pointer flex-1">
+            <RadioGroupItem
+              value="docx-template"
+              id="docx-template"
+              className="mt-1"
+            />
+            <Label htmlFor="docx-template" className="cursor-pointer flex-1">
               <div>
-                <div className="font-medium text-gray-700">Pecha PDF</div>
-                <div className="text-sm text-gray-500 mt-1">
-                  pecha view in a PDF
-                </div>
+                <div className="font-medium text-gray-700">Docx-template</div>
+                <div className="text-sm text-gray-500 mt-1">docx-template</div>
               </div>
             </Label>
           </div>
         </RadioGroup>
 
-        {/* Document selection for pecha-pdf */}
+        {/* Document selection for pecha-pdf only */}
         {exportFormat === "pecha-pdf" && (
           <PechaPdfDocumentSelector
             selectedDocumentId={selectedDocumentId}
@@ -295,7 +403,23 @@ function ExportButton({
         >
           <Download className="w-5 h-5 mr-2" />
           {isPending || isExporting ? (
-            <span className="animate-pulse">Downloading...</span>
+            <div className="flex flex-col items-center">
+              {exportFormat === "pecha-pdf" ||
+              exportFormat === "docx-template" ? (
+                <div className="flex flex-col items-center">
+                  <span className="text-sm font-medium">
+                    {exportProgress > 0 ? `${exportProgress}%` : "Preparing..."}
+                  </span>
+                  {exportMessage && (
+                    <span className="text-xs text-gray-500 mt-1">
+                      {exportMessage}
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <span className="animate-pulse">Downloading...</span>
+              )}
+            </div>
           ) : (
             "Download"
           )}
