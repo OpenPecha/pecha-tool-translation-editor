@@ -73,7 +73,6 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
     translation.translationStatus === "started" ||
     translation.translationStatus === "failed" ||
     isDeleting;
-
   return (
     <div key={translation.id} className="flex flex-col w-full">
       <div className="flex items-center w-full">
@@ -92,9 +91,7 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
               (e.key === "Enter" &&
                 translation.translationStatus === "completed")
             ) {
-              if (!disabled) {
-                setSelectedTranslationId(translation.id);
-              }
+              setSelectedTranslationId(translation.id);
             }
           }}
           className={`flex flex-1 items-center gap-2 p-2 rounded-md w-full text-left flex-grow ${

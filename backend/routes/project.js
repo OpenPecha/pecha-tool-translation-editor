@@ -18,8 +18,28 @@ const {
   BorderStyle,
 } = require("docx");
 const path = require("path");
+const sharp = require("sharp");
+const PDFDocument = require("pdfkit");
+const fs = require("fs");
 
 const prisma = new PrismaClient();
+
+// Configuration constants
+const TEXT_CHUNK_LENGTH = 300; // Characters per chunk
+const FRAME_IMAGE_PATH = path.join(
+  __dirname,
+  "..",
+  "static",
+  "pecha-frame.png"
+);
+const TEXT_AREA = {
+  x: 100, // Left margin for text
+  y: 120, // Top margin for text
+  width: 600, // Text area width
+  height: 400, // Text area height
+  lineHeight: 30,
+  fontSize: 18,
+};
 
 // Get all projects
 router.get("/", authenticate, async (req, res) => {
@@ -366,6 +386,100 @@ router.delete("/:id/users/:userId", authenticate, async (req, res) => {
   }
 });
 
+// Get documents list for export options
+router.get("/:id/documents", authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const project = await prisma.project.findUnique({
+      where: { id },
+      include: {
+        owner: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
+        roots: {
+          select: {
+            id: true,
+            name: true,
+            identifier: true,
+            translations: {
+              select: {
+                id: true,
+                language: true,
+                name: true,
+                identifier: true,
+              },
+            },
+          },
+        },
+        permissions: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!project) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    // Check if user has permission to view this project
+    const hasPermission =
+      project.ownerId === req.user.id ||
+      project.permissions.some((p) => p.userId === req.user.id);
+
+    if (!hasPermission) {
+      return res
+        .status(403)
+        .json({ error: "Not authorized to view this project" });
+    }
+
+    // Format documents for export selection
+    const documents = [];
+
+    // Add root documents
+    for (const root of project.roots) {
+      documents.push({
+        id: root.id,
+        name: root.name || root.identifier,
+        type: "root",
+        language: "original",
+      });
+
+      // Add translations
+      for (const translation of root.translations) {
+        documents.push({
+          id: translation.id,
+          name: `${root.name || root.identifier} (${translation.language})`,
+          type: "translation",
+          language: translation.language,
+          parentName: root.name || root.identifier,
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      data: {
+        projectName: project.name,
+        documents: documents,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching project documents:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get project by ID
 router.get("/:id", authenticate, async (req, res) => {
   try {
@@ -646,6 +760,60 @@ router.get("/:id/export", authenticate, async (req, res) => {
 
       // Finalize the archive
       await archive.finalize();
+    } else if (type === "pecha-pdf") {
+      // Get optional document ID for specific document export
+      const { documentId } = req.query;
+
+      // Check if project exists and user has permission
+      const project = await prisma.project.findUnique({
+        where: { id },
+        include: {
+          roots: {
+            include: {
+              translations: true,
+            },
+          },
+          permissions: {
+            where: { userId: req.user.id },
+          },
+        },
+      });
+
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      // Create a zip file
+      const archive = archiver("zip", {
+        zlib: { level: 9 },
+      });
+
+      // Set response headers
+      const zipFileName = documentId
+        ? `${project.name}_selected_document_pecha_pdf.zip`
+        : `${project.name}_pecha_pdf.zip`;
+
+      res.setHeader("Content-Type", "application/zip");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=${zipFileName
+          .replace(/[^a-z0-9]/gi, "_")
+          .toLowerCase()}`
+      );
+
+      // Pipe archive data to the response
+      archive.pipe(res);
+
+      if (documentId) {
+        // Export specific document only
+        await exportSpecificDocument(archive, documentId, project);
+      } else {
+        // Export all documents (existing behavior)
+        await exportAllDocuments(archive, project);
+      }
+
+      // Finalize the archive
+      await archive.finalize();
     } else {
       // Check if project exists and user has permission
       const project = await prisma.project.findUnique({
@@ -723,6 +891,108 @@ router.get("/:id/export", authenticate, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+/**
+ * Export all documents in the project
+ * @param {Object} archive - The archiver instance
+ * @param {Object} project - The project object
+ */
+async function exportAllDocuments(archive, project) {
+  // Process all root documents and their translations
+  for (const rootDoc of project.roots) {
+    const rootDocContent = await getDocumentContent(rootDoc.id);
+    if (rootDocContent) {
+      // Create pecha-style PDF for root document
+      const rootPdf = await createPechaPdf(rootDoc.name, rootDocContent);
+      archive.append(rootPdf, { name: `${rootDoc.name}_pecha.pdf` });
+    }
+
+    // Process translations
+    for (const translation of rootDoc.translations) {
+      const translationContent = await getDocumentContent(translation.id);
+      if (translationContent) {
+        // Create pecha-style PDF for translation
+        const translationPdf = await createPechaPdf(
+          `${rootDoc.name}_${translation.language}`,
+          translationContent
+        );
+        archive.append(translationPdf, {
+          name: `${rootDoc.name}_${translation.language}_pecha.pdf`,
+        });
+      }
+    }
+  }
+}
+
+/**
+ * Export a specific document by ID
+ * @param {Object} archive - The archiver instance
+ * @param {string} documentId - The document ID to export
+ * @param {Object} project - The project object
+ */
+async function exportSpecificDocument(archive, documentId, project) {
+  try {
+    // First check if it's a root document
+    const rootDoc = project.roots.find((root) => root.id === documentId);
+
+    if (rootDoc) {
+      // Export the root document
+      const rootDocContent = await getDocumentContent(rootDoc.id);
+      if (rootDocContent) {
+        const rootPdf = await createPechaPdf(rootDoc.name, rootDocContent);
+        archive.append(rootPdf, { name: `${rootDoc.name}_pecha.pdf` });
+        console.log(`Exported root document: ${rootDoc.name}`);
+        return;
+      }
+    }
+
+    // Check if it's a translation document
+    for (const rootDoc of project.roots) {
+      const translation = rootDoc.translations.find(
+        (trans) => trans.id === documentId
+      );
+      if (translation) {
+        const translationContent = await getDocumentContent(translation.id);
+        if (translationContent) {
+          const translationPdf = await createPechaPdf(
+            `${rootDoc.name}_${translation.language}`,
+            translationContent
+          );
+          archive.append(translationPdf, {
+            name: `${rootDoc.name}_${translation.language}_pecha.pdf`,
+          });
+          console.log(
+            `Exported translation: ${rootDoc.name}_${translation.language}`
+          );
+          return;
+        }
+      }
+    }
+
+    // If document not found in project, try to get it directly
+    const docContent = await getDocumentContent(documentId);
+    if (docContent) {
+      // Get document details from database
+      const doc = await prisma.doc.findUnique({
+        where: { id: documentId },
+        select: { id: true, identifier: true, name: true },
+      });
+
+      if (doc) {
+        const docName = doc.name || doc.identifier || `document_${documentId}`;
+        const pdf = await createPechaPdf(docName, docContent);
+        archive.append(pdf, { name: `${docName}_pecha.pdf` });
+        console.log(`Exported document: ${docName}`);
+      } else {
+        console.error(`Document ${documentId} not found`);
+      }
+    } else {
+      console.error(`No content found for document ${documentId}`);
+    }
+  } catch (error) {
+    console.error(`Error exporting specific document ${documentId}:`, error);
+  }
+}
 
 /**
  * Get the content of a document
@@ -1339,7 +1609,473 @@ function deltaToPlainText(delta) {
       text += op.insert;
     }
   }
-  return text;
+
+  // Preserve original linebreaks, only normalize excessive whitespace
+  return text
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n\s*\n\s*/g, "\n\n")
+    .trim();
+}
+
+/**
+ * Create a pecha-style PDF from document content
+ * @param {string} docName - The document name
+ * @param {Array} delta - The document content as a Delta array
+ * @returns {Promise<Buffer>} - The PDF file as a buffer
+ */
+async function createPechaPdf(docName, delta) {
+  try {
+    // Convert delta to plain text
+    const plainText = deltaToPlainText(delta);
+
+    if (!plainText.trim()) {
+      // Create a simple PDF with document name if no content
+      const doc = new PDFDocument();
+      const chunks = [];
+
+      doc.on("data", (chunk) => chunks.push(chunk));
+      doc.on("end", () => {});
+
+      doc
+        .fontSize(16)
+        .text(`Document: ${docName} (No content available)`, 50, 50);
+      doc.end();
+
+      return new Promise((resolve) => {
+        doc.on("end", () => resolve(Buffer.concat(chunks)));
+      });
+    }
+
+    // Chunk the text
+    const textChunks = chunkText(plainText, TEXT_CHUNK_LENGTH);
+
+    // Check if frame image exists
+    if (!fs.existsSync(FRAME_IMAGE_PATH)) {
+      console.warn(
+        `Frame image not found at ${FRAME_IMAGE_PATH}, using fallback`
+      );
+      return createFallbackPdf(textChunks, docName);
+    }
+
+    // Create PDF document
+    const doc = new PDFDocument({ autoFirstPage: false });
+    const chunks = [];
+
+    doc.on("data", (chunk) => chunks.push(chunk));
+    doc.on("end", () => {});
+
+    // Process each chunk
+    for (let i = 0; i < textChunks.length; i++) {
+      const chunk = textChunks[i];
+
+      try {
+        // Create pecha frame image with text overlay
+        const imageWithText = await createFrameImageWithText(
+          chunk,
+          i + 1,
+          textChunks.length
+        );
+
+        // Get image dimensions to ensure proper PDF sizing
+        const metadata = await sharp(imageWithText).metadata();
+        console.log(
+          `Adding PDF page ${i + 1}: ${metadata.width}x${metadata.height}px`
+        );
+
+        // Add page with exact image dimensions
+        doc.addPage({
+          size: [metadata.width, metadata.height],
+          margins: { top: 0, bottom: 0, left: 0, right: 0 },
+        });
+
+        // Add the pecha frame image to PDF (full page)
+        doc.image(imageWithText, 0, 0, {
+          width: metadata.width,
+          height: metadata.height,
+          fit: [metadata.width, metadata.height],
+        });
+
+        console.log(
+          `Successfully added pecha frame page ${i + 1}/${textChunks.length}`
+        );
+      } catch (imageError) {
+        console.error(`Error creating image for chunk ${i + 1}:`, imageError);
+
+        // Fallback to text-only page
+        doc.addPage();
+        doc
+          .fontSize(18) // Increased from 14 to match larger text
+          .fillColor("#2c1810")
+          .text(chunk, 50, 50, {
+            width: doc.page.width - 100,
+            align: "left",
+            lineGap: 8, // Increased line gap for better readability
+          });
+
+        doc
+          .fontSize(10)
+          .fillColor("#666666")
+          .text(
+            `${i + 1} / ${textChunks.length}`,
+            doc.page.width / 2 - 20,
+            doc.page.height - 50,
+            { align: "center" }
+          );
+      }
+    }
+
+    doc.end();
+
+    return new Promise((resolve) => {
+      doc.on("end", () => resolve(Buffer.concat(chunks)));
+    });
+  } catch (error) {
+    console.error("Error creating pecha PDF:", error);
+    return createFallbackPdf([plainText || `Error: ${docName}`], docName);
+  }
+}
+
+/**
+ * Chunk text by splitting on newlines
+ * @param {string} text - The text to chunk
+ * @param {number} chunkLength - Not used, kept for compatibility
+ * @returns {Array<string>} - Array of text chunks split by newlines
+ */
+function chunkText(text, chunkLength) {
+  // Split text by newlines to create chunks
+  const chunks = text.split(/\n+/);
+
+  // Filter out empty chunks but preserve single line breaks
+  return chunks.filter((chunk) => chunk.trim().length > 0);
+}
+
+/**
+ * Create an image with text overlay on the pecha frame
+ * @param {string} text - The text to render
+ * @param {number} pageNum - Current page number
+ * @param {number} totalPages - Total number of pages
+ * @returns {Promise<Buffer>} - Image buffer
+ */
+async function createFrameImageWithText(text, pageNum, totalPages) {
+  try {
+    // Verify frame image exists
+    if (!fs.existsSync(FRAME_IMAGE_PATH)) {
+      throw new Error(`Pecha frame image not found at: ${FRAME_IMAGE_PATH}`);
+    }
+
+    // Read the pecha frame image
+    const frameBuffer = fs.readFileSync(FRAME_IMAGE_PATH);
+    const frameImage = sharp(frameBuffer);
+    const { width, height } = await frameImage.metadata();
+    console.log(`Using pecha frame: ${width}x${height}px for page ${pageNum}`);
+
+    // Detect language for proper text processing
+    const language = detectLanguage(text);
+
+    // Create text overlay SVG positioned within the frame
+    const textSvg = createTextOverlaySVG(
+      text,
+      pageNum,
+      totalPages,
+      width,
+      height,
+      language
+    );
+
+    // Composite text overlay onto the pecha frame
+    const result = await frameImage
+      .composite([
+        {
+          input: Buffer.from(textSvg),
+          top: 0,
+          left: 0,
+          blend: "over", // Ensure text is overlaid on top
+        },
+      ])
+      .png()
+      .toBuffer();
+
+    console.log(
+      `Created frame image with text for page ${pageNum}/${totalPages}`
+    );
+    return result;
+  } catch (error) {
+    console.error("Error creating frame image with text:", error);
+    throw error;
+  }
+}
+
+/**
+ * Create SVG overlay for text
+ * @param {string} text - Text to render
+ * @param {number} pageNum - Page number
+ * @param {number} totalPages - Total pages
+ * @param {number} imageWidth - Frame image width
+ * @param {number} imageHeight - Frame image height
+ * @param {string} language - Language code (optional, detects Tibetan automatically)
+ * @returns {string} - SVG content
+ */
+function createTextOverlaySVG(
+  text,
+  pageNum,
+  totalPages,
+  imageWidth,
+  imageHeight,
+  language = null
+) {
+  // Detect if text is Tibetan (contains Tibetan Unicode characters)
+  const isTibetan =
+    language === "tibetan" || language === "bo" || /[\u0F00-\u0FFF]/.test(text);
+
+  // Calculate responsive text area based on image size and language
+  const textArea = {
+    x: Math.floor(imageWidth * 0.08), // 15% margin from left (more space for frame border)
+    y: Math.floor(imageHeight * 0.2), // 20% margin from top (more space for frame header)
+    width: Math.floor(imageWidth), // Tibetan needs more width
+    height: Math.floor(imageHeight * 0.6), // 60% of image height (leaving space for frame footer)
+    lineHeight: Math.floor(imageHeight * (isTibetan ? 0.1 : 0.06)), // Tibetan needs more line height
+    fontSize: Math.floor(imageHeight * (isTibetan ? 0.06 : 0.045)), // Larger font for Tibetan
+  };
+
+  // Process text preserving original line structure - NO MERGING EVER
+  let lines = [];
+
+  // Split by existing linebreaks to preserve exact original structure
+  const originalLines = text.split(/\n/);
+
+  for (const originalLine of originalLines) {
+    if (originalLine.trim() === "") {
+      // Preserve empty lines exactly as they are
+      lines.push("");
+      continue;
+    }
+
+    // Check if this single original line fits within width
+    // If yes: keep as-is, if no: break into multiple lines
+    if (isTibetan) {
+      // For Tibetan: check syllable count
+      const syllables = originalLine.split("་").filter((s) => s.length > 0);
+      const maxSyllablesPerLine = Math.floor(
+        textArea.width / (textArea.fontSize * 2.5)
+      );
+
+      if (syllables.length <= maxSyllablesPerLine) {
+        // Original line fits - keep exactly as-is
+        lines.push(originalLine);
+      } else {
+        // Original line too wide - break it into multiple lines
+        const syllablesWithSeparator = syllables.map((s) => s + "་");
+        let currentLine = "";
+
+        for (const syllable of syllablesWithSeparator) {
+          const currentSyllableCount = currentLine
+            ? currentLine.split("་").length - 1
+            : 0;
+          if (currentSyllableCount < maxSyllablesPerLine) {
+            currentLine = currentLine ? currentLine + syllable : syllable;
+          } else {
+            if (currentLine) {
+              lines.push(currentLine);
+              currentLine = syllable;
+            }
+          }
+        }
+        if (currentLine) {
+          lines.push(currentLine);
+        }
+      }
+    } else {
+      // For non-Tibetan: check character count
+      const maxCharsPerLine = Math.floor(
+        textArea.width / (textArea.fontSize * 0.55)
+      );
+
+      if (originalLine.length <= maxCharsPerLine) {
+        // Original line fits - keep exactly as-is
+        lines.push(originalLine);
+      } else {
+        // Original line too wide - break it into multiple lines
+        const words = originalLine
+          .split(/\s+/)
+          .filter((word) => word.length > 0);
+        let currentLine = "";
+
+        for (const word of words) {
+          const testLine = currentLine ? `${currentLine} ${word}` : word;
+          if (testLine.length <= maxCharsPerLine) {
+            currentLine = testLine;
+          } else {
+            if (currentLine) {
+              lines.push(currentLine);
+              currentLine = word;
+            } else {
+              // Handle very long words by breaking them
+              let remainingWord = word;
+              while (remainingWord.length > maxCharsPerLine) {
+                lines.push(remainingWord.substring(0, maxCharsPerLine));
+                remainingWord = remainingWord.substring(maxCharsPerLine);
+              }
+              currentLine = remainingWord;
+            }
+          }
+        }
+        if (currentLine) {
+          lines.push(currentLine);
+        }
+      }
+    }
+  }
+
+  // Limit lines to fit in text area
+  const maxLines = Math.floor(textArea.height / textArea.lineHeight);
+  const displayLines = lines.slice(0, maxLines);
+  if (lines.length > maxLines) {
+    displayLines[maxLines - 1] = displayLines[maxLines - 1] + "...";
+  }
+
+  // Get font base64 first for Tibetan if needed
+  const fontBase64 = isTibetan ? getFontBase64() : "";
+
+  // Select appropriate font family based on language
+  const fontFamily = isTibetan
+    ? fontBase64
+      ? "MonlamTBslim, serif"
+      : "serif" // Fall back to serif if custom font not available
+    : "serif";
+  const fontWeight = isTibetan ? "normal" : "bold"; // Tibetan fonts often don't need bold
+
+  // Create font definition for Tibetan if needed
+  const fontDef =
+    isTibetan && fontBase64
+      ? `
+    <defs>
+      <style>
+        @font-face {
+          font-family: 'MonlamTBslim';
+          src: url('data:font/woff;base64,${fontBase64}') format('woff');
+        }
+      </style>
+    </defs>`
+      : "";
+
+  // Create SVG text elements positioned within the frame
+  const textElements = displayLines
+    .map((line, index) => {
+      const y = textArea.y + (index + 1) * textArea.lineHeight;
+      return `<text x="${
+        textArea.x
+      }" y="${y}" font-family="${fontFamily}" font-size="${
+        textArea.fontSize
+      }" fill="#2c1810" font-weight="${fontWeight}">${escapeXml(line)}</text>`;
+    })
+    .join("\n");
+
+  // Page number (always use serif for page numbers)
+  const pageNumberY = imageHeight - Math.floor(imageHeight * 0.05);
+  const pageNumberX = Math.floor(imageWidth / 2);
+  const pageNumberElement = `<text x="${pageNumberX}" y="${pageNumberY}" font-family="serif" font-size="${Math.floor(
+    textArea.fontSize * 0.7
+  )}" fill="#666666" text-anchor="middle">${pageNum} / ${totalPages}</text>`;
+
+  return `
+    <svg width="${imageWidth}" height="${imageHeight}" xmlns="http://www.w3.org/2000/svg">
+      ${fontDef}
+      ${textElements}
+      ${pageNumberElement}
+    </svg>
+  `;
+}
+
+/**
+ * Escape XML special characters
+ * @param {string} text - Text to escape
+ * @returns {string} - Escaped text
+ */
+function escapeXml(text) {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/**
+ * Detect language from text content
+ * @param {string} text - Text to analyze
+ * @returns {string} - Language code ('tibetan' or 'other')
+ */
+function detectLanguage(text) {
+  // Check for Tibetan Unicode range (U+0F00-U+0FFF)
+  if (/[\u0F00-\u0FFF]/.test(text)) {
+    return "tibetan";
+  }
+  return "other";
+}
+
+/**
+ * Get Tibetan font as base64 string
+ * @returns {string} - Base64 encoded font data
+ */
+function getFontBase64() {
+  try {
+    const fontPath = path.join(__dirname, "..", "static", "MonlamTBslim.woff");
+    if (fs.existsSync(fontPath)) {
+      const fontBuffer = fs.readFileSync(fontPath);
+      return fontBuffer.toString("base64");
+    } else {
+      console.warn(`Tibetan font not found at: ${fontPath}`);
+      return "";
+    }
+  } catch (error) {
+    console.error("Error loading Tibetan font:", error);
+    return "";
+  }
+}
+
+/**
+ * Create fallback PDF when frame image is not available
+ * @param {Array<string>} textChunks - Text chunks
+ * @param {string} docName - Document name
+ * @returns {Promise<Buffer>} - PDF buffer
+ */
+async function createFallbackPdf(textChunks, docName) {
+  const doc = new PDFDocument();
+  const chunks = [];
+
+  doc.on("data", (chunk) => chunks.push(chunk));
+  doc.on("end", () => {});
+
+  textChunks.forEach((chunk, index) => {
+    if (index > 0) doc.addPage();
+
+    // Add pecha-style styling
+    doc
+      .fontSize(18) // Increased from 14 to match larger text
+      .fillColor("#2c1810")
+      .text(chunk, 50, 50, {
+        width: doc.page.width - 100,
+        align: "left",
+        lineGap: 8, // Increased line gap for better readability
+      });
+
+    // Add page number
+    doc
+      .fontSize(10)
+      .fillColor("#666666")
+      .text(
+        `${index + 1} / ${textChunks.length}`,
+        doc.page.width / 2 - 20,
+        doc.page.height - 50,
+        { align: "center" }
+      );
+  });
+
+  doc.end();
+
+  return new Promise((resolve) => {
+    doc.on("end", () => resolve(Buffer.concat(chunks)));
+  });
 }
 
 module.exports = router;

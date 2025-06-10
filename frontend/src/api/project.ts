@@ -412,11 +412,17 @@ export const searchUserByEmail = async (email: string) => {
 import { exportStyle } from "@/components/Export";
 export const downloadProjectDocuments = async (
   projectId: string,
-  exportFormat: exportStyle
+  exportFormat: exportStyle,
+  documentId?: string
 ) => {
   try {
+    const queryParams = new URLSearchParams({ type: exportFormat });
+    if (documentId) {
+      queryParams.append("documentId", documentId);
+    }
+
     const response = await fetch(
-      `${server_url}/projects/${projectId}/export?type=${exportFormat}`,
+      `${server_url}/projects/${projectId}/export?${queryParams.toString()}`,
       {
         headers: getHeaders(),
       }

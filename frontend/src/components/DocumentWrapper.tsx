@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useCurrentDoc } from "@/hooks/useCurrentDoc";
 import { EditorProvider } from "@/contexts/EditorContext";
 import { useParams } from "react-router-dom";
@@ -9,6 +9,11 @@ import Navbar from "./Navbar";
 import { useDevToolsStatus } from "@/hooks/useDevToolStatus";
 import { createPortal } from "react-dom";
 import { IoIosArrowForward } from "react-icons/io";
+import {
+  fetchTranslationStatus,
+  fetchTranslationStatusByJobId,
+} from "@/api/document";
+import { useQuery } from "@tanstack/react-query";
 
 export type { Translation } from "@/hooks/useCurrentDoc";
 
@@ -80,7 +85,15 @@ function TranslationEditor({
   readonly handleSelectTranslation: (translationId: string | null) => void;
 }) {
   const { currentDoc } = useCurrentDoc(selectedTranslationId);
-
+  if (currentDoc?.translationStatus !== "completed") {
+    console.log("currentDoc", currentDoc);
+    return (
+      <TranslationFetcher
+        jobId={currentDoc?.translationJobId!}
+        handleSelectTranslation={handleSelectTranslation}
+      />
+    );
+  }
   return (
     <div className="relative w-full flex flex-1 group">
       <div className="relative h-full">
@@ -104,6 +117,33 @@ function TranslationEditor({
       />
     </div>
   );
+}
+
+function TranslationFetcher({
+  jobId,
+  handleSelectTranslation,
+}: {
+  jobId: string;
+  handleSelectTranslation: (translationId: string | null) => void;
+}) {
+  //get translation status from api tat
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["translation-status", jobId],
+    queryFn: () => fetchTranslationStatusByJobId(jobId),
+    refetchInterval: 2000,
+    enabled: !!jobId,
+  });
+  console.log(data);
+  useEffect(() => {
+    if (data?.status?.status_type === "completed") {
+      setTimeout(() => {
+        handleSelectTranslation(null);
+      }, 1000);
+    }
+  }, [data?.status?.status_type]);
+  const transaltedText = data?.translated_text;
+  if (isLoading || !transaltedText) return null;
+  return <textarea className="w-[50vw] h-full">{transaltedText}</textarea>;
 }
 
 function Loader({ show }: { show: boolean }) {

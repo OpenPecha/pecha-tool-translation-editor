@@ -18,18 +18,21 @@ export const fetchPublicDocuments = async () => {
   }
 };
 
-export const fetchDocuments = async ({ search, isRoot }: { search?: string, isRoot?: boolean } = {}) => {
+export const fetchDocuments = async ({
+  search,
+  isRoot,
+}: { search?: string; isRoot?: boolean } = {}) => {
   try {
     let url = `${server_url}/documents`;
     const params = new URLSearchParams();
-    
-    if (search) params.append('search', search);
-    if (isRoot !== undefined) params.append('isRoot', isRoot.toString());
-    
+
+    if (search) params.append("search", search);
+    if (isRoot !== undefined) params.append("isRoot", isRoot.toString());
+
     if (params.toString()) {
       url += `?${params.toString()}`;
     }
-    
+
     const response = await fetch(url, {
       headers: getHeaders(),
     });
@@ -59,7 +62,6 @@ export const fetchDocument = async (id: string) => {
   }
 };
 
-
 export const fetchDocumentWithContent = async (id: string) => {
   try {
     const response = await fetch(`${server_url}/documents/${id}/content`, {
@@ -75,7 +77,6 @@ export const fetchDocumentWithContent = async (id: string) => {
     throw error;
   }
 };
-
 
 export const createDocument = async (formData: FormData) => {
   const response = await fetch(`${server_url}/documents`, {
@@ -136,7 +137,7 @@ export const deleteDocument = async (id: string) => {
 };
 
 interface UpdateDocumentParams {
-  name: string| undefined;
+  name: string | undefined;
   docs_prosemirror_delta: Op[] | undefined;
 }
 
@@ -147,20 +148,23 @@ interface UpdateDocumentParams {
  */
 export const fetchDocumentTranslations = async (documentId: string) => {
   try {
-    const response = await fetch(`${server_url}/documents/${documentId}/translations`, {
-      method: 'GET',
-      headers: getHeaders(),
-    });
+    const response = await fetch(
+      `${server_url}/documents/${documentId}/translations`,
+      {
+        method: "GET",
+        headers: getHeaders(),
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message ?? 'Failed to fetch translations');
+      throw new Error(errorData.message ?? "Failed to fetch translations");
     }
 
     const data = await response.json();
     return data.data;
   } catch (error) {
-    console.error('Error fetching translations:', error);
+    console.error("Error fetching translations:", error);
     throw error;
   }
 };
@@ -191,21 +195,25 @@ export const updateDocument = async (
   }
 };
 
-
 export interface GenerateTranslationParams {
   rootId: string;
   language: string;
   model: string;
-  use_segmentation: string |null;
+  use_segmentation: string | null;
 }
 
-export const generateTranslation = async (params: GenerateTranslationParams) => {
+export const generateTranslation = async (
+  params: GenerateTranslationParams
+) => {
   try {
-    const response = await fetch(`${server_url}/documents/generate-translation`, {
-      method: "POST",
-      headers: getHeaders(),
-      body: JSON.stringify(params),
-    });
+    const response = await fetch(
+      `${server_url}/documents/generate-translation`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify(params),
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -221,10 +229,13 @@ export const generateTranslation = async (params: GenerateTranslationParams) => 
   }
 };
 
-export const updateContentDocument=async(id:string, data:UpdateDocumentParams)=>{
+export const updateContentDocument = async (
+  id: string,
+  data: UpdateDocumentParams
+) => {
   try {
     const response = await fetch(`${server_url}/documents/${id}/content`, {
-      method: "PATCH", 
+      method: "PATCH",
       headers: getHeaders(),
       body: JSON.stringify(data),
     });
@@ -248,16 +259,41 @@ export const updateContentDocument=async(id:string, data:UpdateDocumentParams)=>
  */
 export const fetchTranslationStatus = async (rootId: string) => {
   try {
-    const response = await fetch(`${server_url}/documents/${rootId}/translations/status`, {
-      headers: getHeaders(),
-    });
-    
+    const response = await fetch(
+      `${server_url}/documents/${rootId}/translations/status`,
+      {
+        headers: getHeaders(),
+      }
+    );
+
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.error ?? "Failed to fetch translation status");
     }
-    
-    return await response.json();
+    const respond = await response.json();
+    return respond;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+    throw new Error("Failed to fetch translation status");
+  }
+};
+
+export const fetchTranslationStatusByJobId = async (jobId: string) => {
+  try {
+    const response = await fetch(
+      `${server_url}/documents/translation-status/${jobId}`,
+      {
+        headers: getHeaders(),
+      }
+    );
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error ?? "Failed to fetch translation status");
+    }
+    const respond = await response.json();
+    return respond;
   } catch (error) {
     if (error instanceof Error) {
       throw new Error(error.message);

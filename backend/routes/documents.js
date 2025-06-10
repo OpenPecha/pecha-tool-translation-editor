@@ -253,7 +253,8 @@ router.get("/:id", authenticate, async (req, res) => {
         rootId: true,
         isPublic: true,
         docs_prosemirror_delta: true,
-        docs_y_doc_state: true,
+        translationStatus: true,
+        translationJobId: true,
         createdAt: true,
         updatedAt: true,
         rootProjectId: true,
@@ -1264,7 +1265,6 @@ router.get("/:id/translations/status", authenticate, async (req, res) => {
             const status = await getTranslationStatus(
               translation.translationJobId
             );
-            console.log(`Translation status for ${translation.id}:`, status);
 
             // If the translation is completed, update the database to reflect the final state
             if (status.status.status_type === "completed") {
@@ -1305,10 +1305,6 @@ router.get("/:id/translations/status", authenticate, async (req, res) => {
                   userId: req.user.id,
                 },
               });
-
-              console.log(
-                `Translation ${translation.id} marked as completed in database`
-              );
             }
 
             if (status.status.status_type === "failed") {
@@ -1355,6 +1351,35 @@ router.get("/:id/translations/status", authenticate, async (req, res) => {
   } catch (error) {
     console.error("Error fetching translation status:", error);
     res.status(500).json({ error: "Error fetching translation status" });
+  }
+});
+
+/**
+ * GET /documents/translation-status/{jobId}
+ * @summary Get translation status by job ID
+ * @tags Documents - Document management operations
+ * @security BearerAuth
+ * @param {string} jobId.path.required - Translation job ID
+ * @return {object} 200 - Translation status information
+ * @return {object} 400 - Bad request - Missing job ID
+ * @return {object} 500 - Server error
+ */
+router.get("/translation-status/:jobId", authenticate, async (req, res) => {
+  try {
+    const jobId = req.params.jobId;
+
+    if (!jobId) {
+      return res.status(400).json({ error: "Job ID is required" });
+    }
+
+    const status = await getTranslationStatus(jobId);
+    res.json(status);
+  } catch (error) {
+    console.error("Error fetching translation status:", error);
+    res.status(500).json({
+      error: "Error fetching translation status",
+      message: error.message,
+    });
   }
 });
 

@@ -33,9 +33,9 @@ function SelectTranslation({
     useQuery({
       queryKey: [`translation-status-${rootId}`],
       queryFn: () => fetchTranslationStatus(rootId),
-      enabled: false, // Don't fetch on mount, we'll control this with the interval
+      enabled: false,
+      refetchOnWindowFocus: false, // Don't fetch on mount, we'll control this with the interval
     });
-
   // Set up polling for translation progress updates
   useEffect(() => {
     // Only poll if there are translations in progress and none have failed
@@ -139,7 +139,6 @@ function SelectTranslation({
     // Implement edit functionality here
     updateTitleMutation.mutate({ id: translationId, name });
   };
-
   return (
     <div className="rounded-lg overflow-hidden">
       <div className="flex justify-between items-center mb-4">
@@ -165,7 +164,6 @@ function SelectTranslation({
           deletingTranslationId={deletingTranslationId}
         />
       </div>
-
       {showCreateModal && (
         <CreateTranslationModal
           rootId={rootId}
