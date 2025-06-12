@@ -15,53 +15,52 @@ const documentsRoutes = require("./routes/documents");
 const pechaRoutes = require("./routes/pecha");
 const textsRoutes = require("./routes/texts");
 const userRoutes = require("./routes/user");
-const projectRoutes= require("./routes/project");
+const projectRoutes = require("./routes/project");
 const apiCredentialsRoutes = require("./routes/apiCredentials");
 
 const options = {
   info: {
-    version: '1.0.0',
-    title: 'Pecha Translation Editor API',
-    description: 'API for the Pecha Translation Editor application',
+    version: "1.0.0",
+    title: "Pecha Translation Editor API",
+    description: "API for the Pecha Translation Editor application",
     license: {
-      name: 'MIT',
+      name: "MIT",
     },
   },
   security: {
     BearerAuth: {
-      type: 'http',
-      scheme: 'bearer',
-      bearerFormat: 'JWT'
+      type: "http",
+      scheme: "bearer",
+      bearerFormat: "JWT",
     },
   },
   // Base directory which we use to locate your JSDOC files
   baseDir: __dirname,
   // Glob pattern to find your jsdoc files (multiple patterns can be added in an array)
-  filesPattern: './**/*.js',
+  filesPattern: "./**/*.js",
   // URL where SwaggerUI will be rendered
-  swaggerUIPath: '/docs',
+  swaggerUIPath: "/docs",
   // Expose OpenAPI UI
   exposeSwaggerUI: true,
   // Expose Open API JSON Docs documentation in `apiDocsPath` path.
   exposeApiDocs: true,
   // Open API JSON Docs endpoint.
-  apiDocsPath: '/api-docs.json',
+  apiDocsPath: "/api-docs.json",
   // Set non-required fields as nullable by default
   notRequiredAsNullable: false,
   // You can customize your UI options.
   swaggerUiOptions: {
     explorer: true,
-    docExpansion: 'list',
-    filter: true
+    docExpansion: "list",
+    filter: true,
   },
   // multiple option in case you want more that one instance
   multiple: false,
   // Exclude routes that don't have explicit documentation
-  ignorePaths: ['/'],
+  ignorePaths: ["/"],
 };
 
-
-const expressJSDocSwagger = require('express-jsdoc-swagger');
+const expressJSDocSwagger = require("express-jsdoc-swagger");
 
 // const { auth0VerifyToken } = require("./middleware/authenticate");
 // const prisma = new PrismaClient();
@@ -69,12 +68,14 @@ const app = express();
 // const SECRET_KEY = process.env.SECRET_KEY || "super-secret-key";
 
 // const ALLOWED_URLS = process.env.ALLOWED_URLS ? process.env.ALLOWED_URLS.split(",") : ["http://localhost:3000"];
-app.use(cors({
-  origin: true, // reflects the request origin
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS','PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-}));
+app.use(
+  cors({
+    origin: true, // reflects the request origin
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  })
+);
 
 expressJSDocSwagger(app)(options);
 
@@ -88,12 +89,11 @@ const server = http.createServer(app);
 // });
 // let count=0;
 
- 
-app.get('/', (req, res) => {
-  res.json({ 
-    status: 'success', 
-    message: 'API is running properly', 
-    version: '1.0.0'
+app.get("/", (req, res) => {
+  res.json({
+    status: "success",
+    message: "API is running properly",
+    version: "1.0.0",
   });
 });
 
@@ -104,15 +104,15 @@ app.use("/versions", versionsRoutes);
 app.use("/documents", documentsRoutes);
 app.use("/pecha", pechaRoutes);
 app.use("/texts", textsRoutes);
-app.use("/users",userRoutes)
-app.use("/projects",projectRoutes)
-app.use("/api-credentials", apiCredentialsRoutes)
+app.use("/users", userRoutes);
+app.use("/projects", projectRoutes);
+app.use("/api-credentials", apiCredentialsRoutes);
 const clients = new Set();
 // const getYDoc = (docId, userId) =>
 //   map.setIfUndefined(utils.docs, docId, () => {
 //     const doc = new WSSharedDoc(docId, userId);
 //     // Disable garbage collection for large docs
-//     doc.gc = true; 
+//     doc.gc = true;
 //     console.log()
 //     if(utils.persistence !== null) {
 //       utils.persistence.bindState(docId, doc)
@@ -153,7 +153,7 @@ const clients = new Set();
 
 //       if (docObject) {
 //         await addMemberAsViewer(docId, userId);
-//       } 
+//       }
 //     }
 //   } catch (error) {
 //     console.error(error);
@@ -161,7 +161,7 @@ const clients = new Set();
 
 //   doc.conns.set(injectedWS, new Set());
 
-//   ws.on("message", async (message) => {  
+//   ws.on("message", async (message) => {
 //     messageListener(injectedWS, doc, new Uint8Array(message));
 //     clients.add(ws);
 //     for (const client of clients) {
@@ -196,15 +196,13 @@ const clients = new Set();
 //     clearInterval(pingInterval);
 //   });
 
-
 //   ws.on("ping", () => {
 //     pingReceived = true;
 //   });
 
 //   // Check if document is large before sending initial state
 //   {
-    
-      
+
 //       const encoder = utils.encoding.createEncoder();
 //       utils.encoding.writeVarUint(encoder, utils.messageSync);
 //       utils.syncProtocol.writeSyncStep1(encoder, doc);
@@ -271,7 +269,7 @@ const clients = new Set();
 //   }
 // }
 
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 9000;
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

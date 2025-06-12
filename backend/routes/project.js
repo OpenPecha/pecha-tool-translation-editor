@@ -1563,14 +1563,22 @@ async function createSideBySideDocxTemplate(
     for (let i = 0; i < maxParagraphs; i++) {
       const sourcePara = sourceParagraphs[i] || "";
       const translationPara = translationParagraphs[i] || "";
-
+      const pageBreak = i >= 0 ? '<w:br w:type="page"/>' : "";
+      // dont push if source and translation are empty
+      if (sourcePara.trim() === "") {
+        continue;
+      }
+      const pageNumber = i + 1;
       pages.push({
         source: sourcePara,
         translation: translationPara,
         isLast: i === maxParagraphs - 1, // Flag to identify last page for template
+        pageBreak,
+        needsPageBreak: i > 0,
+        tibetanPageMarker: pageNumber % 2 === 1 ? "༄༅། །" : "",
+        isOddPage: pageNumber % 2 === 1,
       });
     }
-
     // Check if template exists
     if (!fs.existsSync(TEMPLATE_PATH)) {
       console.warn(
@@ -1592,6 +1600,7 @@ async function createSideBySideDocxTemplate(
       doc = new Docxtemplater(zip, {
         paragraphLoop: true,
         linebreaks: true,
+
         nullGetter: () => "", // Return empty string for null values
       });
     } catch (templateError) {
@@ -1668,10 +1677,16 @@ async function createSourceOnlyDocxTemplate(docName, sourceDelta, progressId) {
     // Create pages array with source only (clean format)
     const pages = [];
     for (let i = 0; i < sourceParagraphs.length; i++) {
+      const pageBreak = i >= 0 ? '<w:br w:type="page"/>' : "";
+      const pageNumber = i + 1;
       pages.push({
         source: sourceParagraphs[i],
         translation: "", // Empty translation
         isLast: true, // Flag to identify last page for template
+        pageBreak,
+        needsPageBreak: i > 0,
+        tibetanPageMarker: pageNumber % 2 === 1 ? "༄༅། །" : "",
+        isOddPage: pageNumber % 2 === 1,
       });
     }
     console.log(pages);
@@ -1774,11 +1789,6 @@ async function createFallbackSideBySideDocxTemplate(pages) {
           ],
         })
       );
-
-      // Add spacing between source and translation
-      docxElements.push(
-        new Paragraph({ children: [new TextRun({ text: "" })] })
-      );
     }
 
     // Add translation content (clean format, no labels)
@@ -1792,21 +1802,6 @@ async function createFallbackSideBySideDocxTemplate(pages) {
               italics: true,
             }),
           ],
-        })
-      );
-    }
-
-    // Add explicit page break after each source/translation pair (except the last one)
-    if (i < pages.length - 1) {
-      docxElements.push(
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: "",
-              break: 1, // Page break
-            }),
-          ],
-          pageBreakBefore: true, // Force page break
         })
       );
     }

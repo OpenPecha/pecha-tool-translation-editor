@@ -1080,7 +1080,7 @@ router.post("/generate-translation", authenticate, async (req, res) => {
 
     // Create the webhook URL for receiving translation results
     const serverUrl =
-      process.env.SERVER_URL || `http://localhost:${process.env.PORT || 8000}`;
+      process.env.SERVER_URL || `http://localhost:${process.env.PORT || 9000}`;
     const webhookUrl = `${serverUrl}/documents/translation-webhook/${translationId}`;
 
     console.log(`Setting up webhook URL: ${webhookUrl}`);

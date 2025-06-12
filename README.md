@@ -87,4 +87,4 @@ Make sure to configure all required variables in both `.env` files before procee
 ## API Documentation
 
 For local development, API docs are available at:
-`http://localhost:8000/docs`
+`http://localhost:9000/docs`
