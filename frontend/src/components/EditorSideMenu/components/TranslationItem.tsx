@@ -5,6 +5,10 @@ import { Translation } from "../../DocumentWrapper";
 import TranslationMenu from "./TranslationMenu";
 import TranslationProgressBar from "./TranslationProgressBar";
 import formatTimeAgo from "@/lib/formatTimeAgo";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { deleteDocument, updateDocument } from "@/api/document";
+import { useParams } from "react-router-dom";
+import { FaSpinner } from "react-icons/fa";
 
 interface TranslationStatusData {
   id: string;
@@ -19,20 +23,69 @@ interface TranslationItemProps {
   };
   translationStatusData?: TranslationStatusData[];
   setSelectedTranslationId: (id: string) => void;
-  onDelete: (id: string, event: React.MouseEvent<HTMLButtonElement>) => void;
-  onEdit: (id: string, name: string) => void;
-  isDeleting?: boolean;
 }
 
 const TranslationItem: React.FC<TranslationItemProps> = ({
   translation,
   translationStatusData,
   setSelectedTranslationId,
-  onDelete,
-  onEdit,
-  isDeleting = false,
 }) => {
+  const queryClient = useQueryClient();
+  const { id } = useParams();
+  const rootId = id as string;
   // Helper function to render the status indicator
+  const refetchTranslations = () =>
+    queryClient.invalidateQueries({
+      queryKey: [`translations-${rootId}`],
+    });
+  const deleteTranslationMutation = useMutation({
+    mutationFn: (translationId: string) => deleteDocument(translationId),
+    onSuccess: () => {
+      // Refresh document data and translations list
+      refetchTranslations();
+      // Clear the deleting state
+    },
+    onError: (error) => {
+      console.error("Error deleting translation:", error);
+      // Clear the deleting state on error too
+      window.alert(
+        `Error: ${
+          error instanceof Error
+            ? error.message
+            : "Failed to delete translation"
+        }`
+      );
+    },
+  });
+
+  // Set up mutation for updating document title
+  const updateTitleMutation = useMutation({
+    mutationFn: async (data: { id: string; name: string }) => {
+      if (!id) throw new Error("Document ID not found");
+      // Update the document name instead of the identifier
+      return await updateDocument(data.id, { name: data.name });
+    },
+    onSuccess: () => {
+      // Invalidate and refetch document data and translations
+      refetchTranslations();
+    },
+    onError: (error) => {
+      console.error("Failed to update document title:", error);
+      // Revert to original title on error
+    },
+  });
+
+  const onEdit = (translationId: string, name: string) => {
+    // Implement edit functionality here
+    updateTitleMutation.mutate({ id: translationId, name });
+  };
+  const onDelete = (translationId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    if (window.confirm("Are you sure you want to delete this translation?")) {
+      // Set the deleting state before starting the mutation
+      deleteTranslationMutation.mutate(translationId);
+    }
+  };
   const renderStatusIndicator = () => {
     if (isDeleting) {
       return (
@@ -68,11 +121,14 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
 
     return formatTimeAgo(translation.updatedAt);
   };
+  const isDeleting = deleteTranslationMutation.isPending;
+  const isUpdating = updateTitleMutation.isPending;
   const disabled =
     translation.translationStatus === "progress" ||
     translation.translationStatus === "started" ||
     translation.translationStatus === "failed" ||
-    isDeleting;
+    isDeleting ||
+    isUpdating;
   return (
     <div key={translation.id} className="flex flex-col w-full">
       <div className="flex items-center w-full">
@@ -125,7 +181,9 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
               {renderStatusIndicator()}
             </div>
           </div>
-          {!isDeleting && (
+          {isDeleting || isUpdating ? (
+            <FaSpinner className="animate-spin" />
+          ) : (
             <TranslationMenu
               initialValue={translation.name}
               onEdit={(name) => onEdit(translation.id, name)}

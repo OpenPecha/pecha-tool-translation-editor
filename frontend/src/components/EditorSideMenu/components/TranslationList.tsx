@@ -17,18 +17,12 @@ interface TranslationListProps {
   >;
   translationStatusData?: TranslationStatusData[];
   setSelectedTranslationId: (id: string) => void;
-  onDeleteTranslation: (id: string, event: React.MouseEvent) => void;
-  onEditTranslation: (id: string, name: string) => void;
-  deletingTranslationId: string | null;
 }
 
 const TranslationList: React.FC<TranslationListProps> = ({
   translations,
   translationStatusData,
   setSelectedTranslationId,
-  onDeleteTranslation,
-  onEditTranslation,
-  deletingTranslationId,
 }) => {
   if (translations.length === 0) {
     return (
@@ -44,9 +38,6 @@ const TranslationList: React.FC<TranslationListProps> = ({
           translation={translation}
           translationStatusData={translationStatusData}
           setSelectedTranslationId={setSelectedTranslationId}
-          onDelete={onDeleteTranslation}
-          onEdit={onEditTranslation}
-          isDeleting={deletingTranslationId === translation.id}
         />
       ))}
     </>
