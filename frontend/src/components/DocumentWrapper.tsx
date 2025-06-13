@@ -86,7 +86,6 @@ function TranslationEditor({
 }) {
   const { currentDoc } = useCurrentDoc(selectedTranslationId);
   if (currentDoc?.translationStatus !== "completed") {
-    console.log("currentDoc", currentDoc);
     return (
       <TranslationFetcher
         jobId={currentDoc?.translationJobId!}

@@ -62,7 +62,6 @@ function SelectTranslation({
     refetchTranslationStatus();
     return () => {
       clearInterval(intervalId);
-      console.log("cleaned up");
     };
   }, [translations, refetchTranslationStatus, rootId]);
 
@@ -77,7 +76,6 @@ function SelectTranslation({
       );
     // If all translations are completed, stop polling and refresh translations
     if (allTranslationsCompleted) {
-      console.log("All translations completed, stopping status polling");
       // Refresh both document data and translations
       refetchTranslations();
     }
@@ -88,7 +86,6 @@ function SelectTranslation({
     onSuccess: () => {
       // Refresh document data and translations list
       refetchTranslations();
-      console.log("Translation deleted successfully");
       // Clear the deleting state
       setDeletingTranslationId(null);
     },

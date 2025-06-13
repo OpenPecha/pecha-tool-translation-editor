@@ -21,6 +21,7 @@ import SelectPechas, {
 } from "../Dashboard/DocumentCreateModal/SelectPechas";
 import { useParams } from "react-router-dom";
 import SegmentationOptions from "./SegmentationOptions";
+import { models, token_limit } from "@/config";
 
 interface CreateTranslationModalProps {
   rootId: string;
@@ -78,14 +79,15 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
                 <TabsTrigger value="file" className={selectedTabClass("file")}>
                   File
                 </TabsTrigger>
+                <TabsTrigger value="ai" className={selectedTabClass("ai")}>
+                  AI Generate
+                </TabsTrigger>
                 <TabsTrigger
                   value="openpecha"
+                  disabled={true}
                   className={selectedTabClass("openpecha")}
                 >
                   OpenPecha
-                </TabsTrigger>
-                <TabsTrigger value="ai" className={selectedTabClass("ai")}>
-                  AI Generate
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="file" className="pt-2">
@@ -133,7 +135,7 @@ const AITranslation = ({
   // AI generation related states
   const { id } = useParams();
   const [selectedCredential, setSelectedCredential] = useState<string>(
-    "claude-3-haiku-20240307"
+    models.default
   );
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -143,8 +145,6 @@ const AITranslation = ({
   const generateTranslationMutation = useMutation({
     mutationFn: generateTranslation,
     onSuccess: (data) => {
-      console.log("Translation generation started:", data);
-
       // Refresh the document list to show the new translation with progress bar
       setIsGenerating(false);
       refetchTranslations();
@@ -187,21 +187,18 @@ const AITranslation = ({
             <SelectValue placeholder="Select API credential" />
           </SelectTrigger>
           <SelectContent className="z-[10000]">
-            <SelectItem
-              key={"claude-3-haiku-20240307"}
-              value={"claude-3-haiku-20240307"}
-            >
-              claude-3-haiku-20240307
-            </SelectItem>
-            <SelectItem
-              key={"claude-sonnet-4-20250514"}
-              value={"claude-sonnet-4-20250514"}
-            >
-              claude-sonnet-4-20250514
-            </SelectItem>
+            {models.options.map((model) => (
+              <SelectItem key={model.name} value={model.value}>
+                {model.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
+        <p className="text-sm text-gray-500">
+          {token_limit} tokens are allowed. Contact us for more tokens.
+        </p>
       </div>
+      {/* mention only 30000 tokens are allowed */}
 
       {/* Segmentation toggle */}
       <SegmentationOptions
