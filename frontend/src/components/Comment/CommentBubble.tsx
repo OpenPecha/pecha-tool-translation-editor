@@ -159,7 +159,7 @@ const CommentBubble = ({ documentId }: { documentId: string }) => {
       className="absolute bg-[#fff]  border border-[#e5e7eb] flex-col  p-[2] rounded-lg "
     >
       <div style={{ padding: "0 4px" }}>
-        <CommentList />
+        <CommentList commentThread={commentThread} />
       </div>
 
       {/* Comment input */}

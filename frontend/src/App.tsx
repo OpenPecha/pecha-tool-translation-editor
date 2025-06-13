@@ -49,11 +49,12 @@ function Layout({ children }: { children: React.ReactNode }) {
       });
       return;
     }
+    console.log(isAuthenticated, isLoading);
     if (!isAuthenticated && !isLoading) {
       console.log("No active session detected, attempting silent login");
       login(true);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isLoading]);
   if (!isAuthenticated) return null;
 
   return <Suspense fallback={<LoadingFallback />}>{children}</Suspense>;
