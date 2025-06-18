@@ -2,90 +2,77 @@ import { Button } from "./ui/button";
 import { useMutation } from "@tanstack/react-query";
 import { downloadProjectDocuments, server_url } from "@/api/project";
 import { useState } from "react";
-import { Download, ChevronDown, HelpCircle } from "lucide-react";
+import { BookOpen, Download, HelpCircle } from "lucide-react";
 import { Label } from "./ui/label";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
+
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
-import { useCurrentDocTranslations } from "@/hooks/useCurrentDoc";
 import { useParams } from "react-router-dom";
+import { Card, CardContent } from "./ui/card";
 
-export type exportStyle =
-  | "line-by-line"
+export type ExportMode = "single" | "with_translation";
+export type ExportFormat =
   | "side-by-side"
-  | "pecha-pdf"
-  | "docx-template";
+  | "line-by-line"
+  | "pecha-template"
+  | "page-view"
+  | "single-pecha-templates";
 
-interface Document {
-  id: string;
-  name: string;
-  type: "root" | "translation";
-  language: string;
-  parentName?: string;
-}
-
-interface PechaPdfDocumentSelectorProps {
-  projectId: string;
-  selectedDocumentId: string;
-  onDocumentSelect: (documentId: string) => void;
-}
-
-function PechaPdfDocumentSelector({
-  selectedDocumentId,
-  onDocumentSelect,
-}: Omit<PechaPdfDocumentSelectorProps, "projectId">) {
-  // Fetch documents for pecha-pdf selection
-  const { id } = useParams();
-  const rootId = id as string;
-  const { translations } = useCurrentDocTranslations(rootId);
-  const documents = [
-    { id: rootId, name: "root", type: "root", language: "en" },
-    ...translations,
-  ];
-  const documentsLoading = !translations;
-  return (
-    <div className="flex flex-col gap-3">
-      {documentsLoading ? (
-        <div className="text-sm text-gray-500 animate-pulse">
-          Loading documents...
-        </div>
-      ) : (
-        <Select value={selectedDocumentId} onValueChange={onDocumentSelect}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Choose a document to export" />
-            <ChevronDown className="w-4 h-4 opacity-50" />
-          </SelectTrigger>
-          <SelectContent>
-            {documents.map((doc: Document) => (
-              <SelectItem key={doc.id} value={doc.id}>
-                <div className="flex flex-col">
-                  <span className="font-medium">{doc.name}</span>
-                  <span className="text-xs text-gray-500">
-                    {doc.type === "translation"
-                      ? `${doc.language} translation`
-                      : "Original"}
-                    {doc.parentName ? ` of ${doc.parentName}` : ""}
-                  </span>
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
-    </div>
-  );
-}
+const ExportModeOptions: {
+  label: string;
+  value: ExportMode;
+  formatOptions: {
+    label: string;
+    value: ExportFormat;
+    img?: string;
+    description: string;
+  }[];
+}[] = [
+  {
+    label: "Single",
+    value: "single",
+    formatOptions: [
+      {
+        label: "Pecha Template",
+        value: "single-pecha-templates",
+        description: "View in pecha format",
+      },
+      {
+        label: "Page View",
+        value: "page-view",
+        description: "View in page view",
+      },
+    ],
+  },
+  {
+    label: "With Translation",
+    value: "with_translation",
+    formatOptions: [
+      {
+        label: "Side by Side",
+        value: "side-by-side",
+        img: "/previews/side-by-side.png",
+        description: "Source and translation in columns",
+      },
+      {
+        label: "Line by Line",
+        value: "line-by-line",
+        img: "/previews/line-by-line.png",
+        description: "Alternating source and translation lines",
+      },
+      {
+        label: "Pecha template",
+        value: "pecha-template",
+        description: "View in pecha format",
+      },
+    ],
+  },
+];
 
 function ExportButton({
   projectId,
@@ -97,14 +84,33 @@ function ExportButton({
   const { id } = useParams();
   const rootId = id as string;
   const [isExporting, setIsExporting] = useState(false);
-  const [exportFormat, setExportFormat] = useState<exportStyle>("side-by-side");
-  const [selectedDocumentId, setSelectedDocumentId] = useState<string>(rootId);
+  const [exportFormat, setExportFormat] = useState<ExportFormat>("page-view");
   const [exportProgress, setExportProgress] = useState<number>(0);
   const [exportMessage, setExportMessage] = useState<string>("");
-
+  const [exportMode, setExportMode] = useState<ExportMode>("single");
   const { mutate: downloadZip, isPending } = useMutation({
     mutationFn: async () => {
-      if (exportFormat === "pecha-pdf" || exportFormat === "docx-template") {
+      // Determine the actual export type based on mode and format
+      let actualExportType: string = exportFormat;
+
+      if (exportMode === "single") {
+        if (exportFormat === "pecha-template") {
+          actualExportType = "single-pecha-templates";
+        } else if (exportFormat === "page-view") {
+          actualExportType = "page-view";
+        }
+      } else {
+        // with_translation mode - use the format as is
+        actualExportType = exportFormat;
+      }
+
+      // Determine if we need progress tracking
+      const needsProgress =
+        actualExportType === "pecha-template" ||
+        actualExportType === "single-pecha-templates" ||
+        actualExportType === "page-view";
+
+      if (needsProgress) {
         // Generate unique progress ID
         const progressId = `export_${Date.now()}_${Math.random()
           .toString(36)
@@ -119,16 +125,13 @@ function ExportButton({
 
         let sseConnectionReady = false;
 
-        progressEventSource.onopen = (event) => {
-          console.log("✅ SSE connection opened:", event);
+        progressEventSource.onopen = () => {
           sseConnectionReady = true;
         };
 
         progressEventSource.onmessage = (event) => {
-          console.log("📩 SSE message received:", event.data);
           try {
             const data = JSON.parse(event.data);
-            console.log("📊 Progress update:", data);
             setExportProgress(data.progress);
             setExportMessage(data.message);
           } catch (error) {
@@ -136,8 +139,7 @@ function ExportButton({
           }
         };
 
-        progressEventSource.onerror = (error) => {
-          console.error("❌ SSE connection error:", error);
+        progressEventSource.onerror = () => {
           console.log("SSE readyState:", progressEventSource.readyState);
           progressEventSource.close();
         };
@@ -170,20 +172,12 @@ function ExportButton({
 
         try {
           // Start the download with progress tracking
-          const blob =
-            exportFormat === "pecha-pdf" && selectedDocumentId
-              ? await downloadProjectDocuments(
-                  projectId,
-                  exportFormat,
-                  selectedDocumentId,
-                  progressId
-                )
-              : await downloadProjectDocuments(
-                  projectId,
-                  exportFormat,
-                  undefined,
-                  progressId
-                );
+          const blob = await downloadProjectDocuments(
+            projectId,
+            actualExportType,
+            exportMode === "single" ? undefined : rootId,
+            progressId
+          );
 
           // Close the SSE connection
           progressEventSource.close();
@@ -198,20 +192,36 @@ function ExportButton({
           throw error;
         }
       } else {
-        // For non-progress exports (side-by-side, line-by-line), use the regular method
-        return downloadProjectDocuments(projectId, exportFormat);
+        // For non-progress exports, use the regular method
+        return downloadProjectDocuments(projectId, actualExportType);
       }
     },
     onSuccess: (blob) => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      const suffix =
-        exportFormat === "pecha-pdf" && selectedDocumentId
-          ? "_pecha_pdf"
-          : exportFormat === "docx-template"
-          ? "_docx_template"
-          : "_documents";
+
+      // Generate appropriate filename based on mode and format
+      let suffix = "_documents";
+      if (exportMode === "single") {
+        if (exportFormat === "pecha-template") {
+          suffix = "_pecha_templates";
+        } else if (exportFormat === "page-view") {
+          suffix = "_page_view";
+        } else {
+          suffix = "_documents";
+        }
+      } else {
+        // with_translation mode
+        if (exportFormat === "pecha-template") {
+          suffix = "_pecha_template";
+        } else if (exportFormat === "side-by-side") {
+          suffix = "_side_by_side";
+        } else if (exportFormat === "line-by-line") {
+          suffix = "_line_by_line";
+        }
+      }
+
       a.download = `${projectName}${suffix}.zip`;
       document.body.appendChild(a);
       a.click();
@@ -235,166 +245,130 @@ function ExportButton({
   });
 
   const exportZip = () => {
-    if (exportFormat === "pecha-pdf" && !selectedDocumentId) {
-      alert("Please select a document for pecha-pdf export.");
-      return;
-    }
     setIsExporting(true);
     downloadZip();
   };
 
+  // Get the current mode's format options
+  const currentMode = ExportModeOptions.find(
+    (mode) => mode.value === exportMode
+  );
+  const formatOptions = currentMode?.formatOptions || [];
+
   return (
     <TooltipProvider>
-      <div className="flex flex-col w-full gap-6">
-        <RadioGroup
-          value={exportFormat}
-          onValueChange={(value: exportStyle) => setExportFormat(value)}
-          className="flex-1 space-y-4"
-        >
-          <div className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-            <RadioGroupItem
-              value="side-by-side"
-              id="side-by-side"
-              className="mt-1"
-            />
-            <Label htmlFor="side-by-side" className="cursor-pointer flex-1">
-              <div>
-                <div className="font-medium text-gray-700 flex items-center gap-2">
-                  Side by Side
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent side="right" className="max-w-xs">
-                      <div className="p-2">
-                        <img
-                          src="/previews/side-by-side.png"
-                          alt="Side by Side Preview"
-                          className="w-64 h-40 object-contain rounded mb-2"
-                          onLoad={() => {
-                            console.log(
-                              "✅ Side by side image loaded successfully"
-                            );
-                          }}
-                          onError={(e) => {
-                            console.error(
-                              "❌ Side by side image failed to load:",
-                              e
-                            );
-                            console.log(
-                              "Attempted to load:",
-                              e.currentTarget.src
-                            );
-                            const target = e.currentTarget as HTMLImageElement;
-                            target.style.display = "none";
-                            const fallbackDiv =
-                              target.nextElementSibling as HTMLElement;
-                            if (fallbackDiv) {
-                              fallbackDiv.classList.remove("hidden");
-                              fallbackDiv.textContent = `Failed to load: ${target.src}`;
-                            }
-                          }}
-                        />
-                        <div className="text-xs text-gray-600 text-center hidden">
-                          Preview image not available
-                        </div>
-                        <div className="text-xs text-gray-500 text-center">
-                          Side by Side Layout
-                        </div>
+      <div className="flex flex-col w-full gap-2 ">
+        {/* Export Mode Selection */}
+        <div className="space-y-4">
+          <div className="text-sm font-medium text-gray-900">Export Mode</div>
+          <RadioGroup
+            value={exportMode}
+            onValueChange={(value) => setExportMode(value as ExportMode)}
+            className="space-y-3"
+          >
+            {ExportModeOptions.map((mode) => (
+              <div key={mode.label} className="flex items-start space-x-3">
+                <RadioGroupItem
+                  value={mode.value}
+                  id={mode.value}
+                  className="mt-1"
+                />
+                <div className="flex-1">
+                  <Label
+                    htmlFor={mode.value}
+                    className="text-sm font-medium text-gray-900 cursor-pointer"
+                  >
+                    {mode.label}
+                  </Label>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {mode.value === "single"
+                      ? "Export all documents as individual files"
+                      : "Export source content with translations"}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </RadioGroup>
+        </div>
+
+        {/* Format Options based on selected mode */}
+        {formatOptions.length > 0 && (
+          <div className="mb-4">
+            <div className="text-sm font-medium text-gray-900 mb-2">
+              Export Format
+            </div>
+            <RadioGroup
+              value={exportFormat}
+              onValueChange={(value) => setExportFormat(value as ExportFormat)}
+              className="space-y-3"
+            >
+              {formatOptions.map((option) => (
+                <div
+                  key={option.value}
+                  className="flex items-start space-x-3 px-3 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <RadioGroupItem value={option.value} id={option.value} />
+                  <Label
+                    htmlFor={option.value}
+                    className="cursor-pointer flex-1"
+                  >
+                    <div>
+                      <div className="font-medium text-gray-700 flex items-center gap-2">
+                        {option.label}
+                        {option?.img && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent side="right" className="max-w-xs">
+                              <div className="p-2">
+                                <img
+                                  src={option.img}
+                                  alt={`${option.label} Preview`}
+                                  className="w-64 h-40 object-contain rounded mb-2"
+                                />
+                                <div className="text-xs text-gray-500 text-center">
+                                  {option.label} Layout
+                                </div>
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
                       </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-                <div className="text-sm text-gray-500 mt-1">
-                  Source and translation in columns
-                </div>
-              </div>
-            </Label>
-          </div>
-
-          <div className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-            <RadioGroupItem
-              value="line-by-line"
-              id="line-by-line"
-              className="mt-1"
-            />
-            <Label htmlFor="line-by-line" className="cursor-pointer flex-1">
-              <div>
-                <div className="font-medium text-gray-700 flex items-center gap-2">
-                  Line by Line
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent side="right" className="max-w-xs">
-                      <div className="p-2">
-                        <img
-                          src="/previews/line-by-line.png"
-                          alt="Line by Line Preview"
-                          className="w-64 h-40 object-contain rounded mb-2"
-                          onLoad={() => {
-                            console.log(
-                              "✅ Line by line image loaded successfully"
-                            );
-                          }}
-                          onError={(e) => {
-                            console.error(
-                              "❌ Line by line image failed to load:",
-                              e
-                            );
-                            console.log(
-                              "Attempted to load:",
-                              e.currentTarget.src
-                            );
-                            const target = e.currentTarget as HTMLImageElement;
-                            target.style.display = "none";
-                            const fallbackDiv =
-                              target.nextElementSibling as HTMLElement;
-                            if (fallbackDiv) {
-                              fallbackDiv.classList.remove("hidden");
-                              fallbackDiv.textContent = `Failed to load: ${target.src}`;
-                            }
-                          }}
-                        />
-                        <div className="text-xs text-gray-600 text-center hidden">
-                          Preview image not available
-                        </div>
-                        <div className="text-xs text-gray-500 text-center">
-                          Line by Line Layout
-                        </div>
+                      <div className="text-sm text-gray-500 mt-1">
+                        {option.description}
                       </div>
-                    </TooltipContent>
-                  </Tooltip>
+                    </div>
+                  </Label>
                 </div>
-                <div className="text-sm text-gray-500 mt-1">
-                  Alternating source and translation lines
-                </div>
-              </div>
-            </Label>
+              ))}
+            </RadioGroup>
           </div>
-
-          <div className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-            <RadioGroupItem
-              value="docx-template"
-              id="docx-template"
-              className="mt-1"
-            />
-            <Label htmlFor="docx-template" className="cursor-pointer flex-1">
-              <div>
-                <div className="font-medium text-gray-700">Docx-template</div>
-                <div className="text-sm text-gray-500 mt-1">docx-template</div>
-              </div>
-            </Label>
-          </div>
-        </RadioGroup>
-
-        {/* Document selection for pecha-pdf only */}
-        {exportFormat === "pecha-pdf" && (
-          <PechaPdfDocumentSelector
-            selectedDocumentId={selectedDocumentId}
-            onDocumentSelect={setSelectedDocumentId}
-          />
         )}
+
+        {/* Preview Card */}
+        <Card className="bg-gray-50 border-gray-200 !p-2">
+          <CardContent className="capitalize">
+            <div className="flex items-center space-x-2 text-sm text-gray-600">
+              <BookOpen className="w-4 h-4" />
+              <span>
+                Selected:{" "}
+                {
+                  ExportModeOptions.find((mode) => mode.value === exportMode)
+                    ?.label
+                }
+                -
+                {
+                  ExportModeOptions.find(
+                    (mode) => mode.value === exportMode
+                  )?.formatOptions.find(
+                    (option) => option.value === exportFormat
+                  )?.label
+                }
+              </span>
+            </div>
+          </CardContent>
+        </Card>
 
         <Button
           onClick={exportZip}
@@ -404,8 +378,7 @@ function ExportButton({
           <Download className="w-5 h-5 mr-2" />
           {isPending || isExporting ? (
             <div className="flex flex-col items-center">
-              {exportFormat === "pecha-pdf" ||
-              exportFormat === "docx-template" ? (
+              {exportFormat === "pecha-template" ? (
                 <div className="flex flex-col items-center">
                   <span className="text-sm font-medium">
                     {exportProgress > 0 ? `${exportProgress}%` : "Preparing..."}

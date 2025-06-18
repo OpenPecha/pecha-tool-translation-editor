@@ -59,7 +59,10 @@ function DocumentsWrapper() {
                 currentDoc={currentDoc}
               />
               {!selectedTranslationId ? (
-                <SideMenu setSelectedTranslationId={handleSelectTranslation} />
+                <SideMenu
+                  setSelectedTranslationId={handleSelectTranslation}
+                  documentId={id!}
+                />
               ) : (
                 <TranslationEditor
                   selectedTranslationId={selectedTranslationId}

@@ -19,10 +19,13 @@ const {
 } = require("docx");
 const path = require("path");
 const sharp = require("sharp");
-const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const Docxtemplater = require("docxtemplater");
 const PizZip = require("pizzip");
+const { exec } = require("child_process");
+const { promisify } = require("util");
+
+const execAsync = promisify(exec);
 
 const prisma = new PrismaClient();
 
@@ -31,21 +34,137 @@ const progressStreams = new Map();
 
 // Configuration constants
 const TEXT_CHUNK_LENGTH = 300; // Characters per chunk
-const FRAME_IMAGE_PATH = path.join(
-  __dirname,
-  "..",
-  "static",
-  "pecha-frame.png"
-);
+
 const TEMPLATE_PATH = path.join(__dirname, "..", "static", "template.docx");
-const TEXT_AREA = {
-  x: 100, // Left margin for text
-  y: 120, // Top margin for text
-  width: 600, // Text area width
-  height: 400, // Text area height
-  lineHeight: 30,
-  fontSize: 18,
-};
+
+/**
+ * Check if Pandoc is available on the system
+ * @returns {Promise<boolean>} - True if Pandoc is available
+ */
+async function isPandocAvailable() {
+  try {
+    await execAsync("pandoc --version");
+    return true;
+  } catch (error) {
+    console.log("⚠️ Pandoc not available:", error.message);
+    return false;
+  }
+}
+
+/**
+ * Generate Markdown with footnotes from delta content
+ * @param {Array} delta - The document content as a Delta array
+ * @param {Array} footnotes - Array of footnote objects with position and content
+ * @returns {string} - Markdown content with footnotes
+ */
+function generateMarkdownWithFootnotes(delta, footnotes) {
+  if (!Array.isArray(delta)) return "";
+
+  let markdown = "";
+  let currentPosition = 0;
+  let footnoteIndex = 0;
+
+  // Sort footnotes by position
+  const sortedFootnotes = [...footnotes].sort(
+    (a, b) => a.position - b.position
+  );
+
+  for (const op of delta) {
+    if (typeof op.insert === "string") {
+      let text = op.insert;
+
+      // Check if we need to insert footnotes at this position
+      while (
+        footnoteIndex < sortedFootnotes.length &&
+        currentPosition <= sortedFootnotes[footnoteIndex].position &&
+        sortedFootnotes[footnoteIndex].position < currentPosition + text.length
+      ) {
+        const footnote = sortedFootnotes[footnoteIndex];
+        const relativePosition = footnote.position - currentPosition;
+
+        // Split text at footnote position
+        const beforeFootnote = text.substring(0, relativePosition);
+        const afterFootnote = text.substring(relativePosition);
+
+        // Add text before footnote
+        if (beforeFootnote) {
+          markdown += beforeFootnote;
+        }
+
+        // Add footnote reference
+        markdown += `[^${footnote.number}]`;
+
+        // Continue with remaining text
+        text = afterFootnote;
+        currentPosition = footnote.position;
+        footnoteIndex++;
+      }
+
+      // Add remaining text
+      if (text) {
+        markdown += text;
+        currentPosition += text.length;
+      }
+    }
+  }
+
+  // Add footnote definitions at the end
+  if (sortedFootnotes.length > 0) {
+    markdown += "\n\n";
+    for (const footnote of sortedFootnotes) {
+      markdown += `[^${footnote.number}]: ${footnote.content}\n\n`;
+    }
+  }
+
+  return markdown;
+}
+
+/**
+ * Convert Markdown to DOCX using Pandoc
+ * @param {string} markdown - Markdown content
+ * @param {string} outputPath - Path for the output DOCX file
+ * @param {boolean} useTemplate - Whether to use the template (default: true)
+ * @returns {Promise<Buffer>} - DOCX file as buffer
+ */
+async function convertMarkdownToDocx(markdown, outputPath, useTemplate = true) {
+  try {
+    // Ensure uploads directory exists
+    const uploadsDir = path.dirname(outputPath);
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+
+    // Create temporary markdown file
+    const tempMarkdownPath = outputPath.replace(".docx", ".md");
+    fs.writeFileSync(tempMarkdownPath, markdown, "utf8");
+
+    // Convert using Pandoc with or without template
+    let pandocCommand;
+    if (useTemplate) {
+      pandocCommand = `pandoc "${tempMarkdownPath}" -o "${outputPath}" --reference-doc="${TEMPLATE_PATH}"`;
+    } else {
+      pandocCommand = `pandoc "${tempMarkdownPath}" -o "${outputPath}"`;
+    }
+    console.log(`🔄 Running Pandoc command: ${pandocCommand}`);
+
+    await execAsync(pandocCommand);
+
+    // Read the generated DOCX file
+    const docxBuffer = fs.readFileSync(outputPath);
+
+    // Clean up temporary files
+    fs.unlinkSync(tempMarkdownPath);
+    fs.unlinkSync(outputPath);
+
+    console.log(
+      `✅ Successfully converted Markdown to DOCX: ${docxBuffer.length} bytes`
+    );
+    return docxBuffer;
+  } catch (error) {
+    console.error("❌ Error converting Markdown to DOCX:", error);
+    throw error;
+  }
+}
 
 // Get all projects
 router.get("/", authenticate, async (req, res) => {
@@ -810,7 +929,7 @@ router.get("/:id/export", authenticate, async (req, res) => {
 
       // Finalize the archive
       await archive.finalize();
-    } else if (type === "docx-template") {
+    } else if (type === "pecha-template") {
       // Get optional progress ID (no document selection needed)
       const { progressId } = req.query;
 
@@ -925,6 +1044,591 @@ router.get("/:id/export", authenticate, async (req, res) => {
       if (progressId) {
         sendProgress(progressId, 100, "Export completed!");
         // Clean up the progress stream after a short delay
+        setTimeout(() => {
+          const stream = progressStreams.get(progressId);
+          if (stream) {
+            try {
+              stream.end();
+            } catch (error) {
+              console.error("Error closing progress stream:", error);
+            }
+            progressStreams.delete(progressId);
+          }
+        }, 1000);
+      }
+    } else if (type === "page-view") {
+      // Export individual DOCX files for each document in page view format (single language mode)
+      const { progressId } = req.query;
+
+      // Check if project exists and user has permission
+      const project = await prisma.project.findUnique({
+        where: { id },
+        include: {
+          roots: {
+            include: {
+              translations: true,
+            },
+          },
+          permissions: {
+            where: { userId: req.user.id },
+          },
+        },
+      });
+
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      // Create a zip file
+      const archive = archiver("zip", {
+        zlib: { level: 9 },
+      });
+
+      // Set response headers
+      res.setHeader("Content-Type", "application/zip");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=${project.name
+          .replace(/[^a-z0-9]/gi, "_")
+          .toLowerCase()}_page_view.zip`
+      );
+
+      // Pipe archive data to the response
+      archive.pipe(res);
+
+      // Send initial progress update
+      sendProgress(progressId, 5, "Starting page view export...");
+
+      // Calculate total documents (roots + translations)
+      let totalDocs = project.roots.length;
+      for (const root of project.roots) {
+        totalDocs += root.translations.length;
+      }
+      let processedDocs = 0;
+
+      // Helper function to extract footnotes from delta
+      async function extractFootnotesFromDelta(delta, docName) {
+        if (!Array.isArray(delta)) {
+          return [];
+        }
+
+        const footnotes = [];
+        let currentPosition = 0;
+        const footnoteMap = new Map();
+
+        for (let i = 0; i < delta.length; i++) {
+          const op = delta[i];
+
+          if (typeof op.insert === "string") {
+            if (op.attributes && op.attributes.footnote) {
+              let threadId = op.attributes.footnote;
+              if (typeof threadId === "object" && threadId !== null) {
+                threadId = threadId.id || threadId.threadId;
+              }
+              if (typeof threadId !== "string") {
+                continue;
+              }
+              if (!footnoteMap.has(threadId)) {
+                const footnoteNumber = footnoteMap.size + 1;
+                let actualContent = `Footnote ${footnoteNumber}`;
+                let deltaContent = "";
+
+                if (op.attributes.footnoteContent) {
+                  deltaContent = op.attributes.footnoteContent;
+                }
+                if (op.attributes.footnoteText) {
+                  deltaContent = op.attributes.footnoteText;
+                }
+                if (op.attributes.note_on) {
+                  deltaContent = op.attributes.note_on;
+                }
+                if (op.attributes.content) {
+                  deltaContent = op.attributes.content;
+                }
+                if (op.attributes.text) {
+                  deltaContent = op.attributes.text;
+                }
+                if (op.attributes.footnote_content) {
+                  deltaContent = op.attributes.footnote_content;
+                }
+                if (op.attributes.footnote_text) {
+                  deltaContent = op.attributes.footnote_text;
+                }
+
+                try {
+                  const footnoteRecord = await prisma.footnote.findFirst({
+                    where: { threadId: threadId },
+                    select: {
+                      id: true,
+                      threadId: true,
+                      content: true,
+                      order: true,
+                      docId: true,
+                    },
+                  });
+
+                  if (footnoteRecord) {
+                    if (footnoteRecord.content) {
+                      if (
+                        deltaContent &&
+                        deltaContent !== footnoteRecord.content
+                      ) {
+                        actualContent = `${footnoteRecord.content}\n\n${deltaContent}`;
+                      } else {
+                        actualContent = footnoteRecord.content;
+                      }
+                    } else if (deltaContent) {
+                      actualContent = deltaContent;
+                    }
+                  } else {
+                    if (deltaContent) {
+                      actualContent = deltaContent;
+                    }
+                  }
+                } catch (error) {
+                  if (deltaContent) {
+                    actualContent = deltaContent;
+                  }
+                }
+
+                const footnote = {
+                  threadId: threadId,
+                  number: footnoteNumber,
+                  position: currentPosition,
+                  content: actualContent,
+                  order: footnoteNumber,
+                  operationIndex: i,
+                };
+                footnoteMap.set(threadId, footnote);
+                footnotes.push(footnote);
+              }
+            }
+            currentPosition += op.insert.length;
+          }
+        }
+
+        return footnotes;
+      }
+
+      // Process all root documents
+      for (const rootDoc of project.roots) {
+        sendProgress(
+          progressId,
+          Math.round((processedDocs / totalDocs) * 90) + 5,
+          `Processing ${rootDoc.name}...`
+        );
+
+        const rootDocContent = await getDocumentContent(rootDoc.id);
+        if (rootDocContent) {
+          // Extract footnotes from root document
+          const rootFootnotes = await extractFootnotesFromDelta(
+            rootDocContent,
+            rootDoc.name
+          );
+
+          // Check if Pandoc is available
+          const pandocAvailable = await isPandocAvailable();
+
+          let docx;
+          if (pandocAvailable && rootFootnotes.length > 0) {
+            // Generate Markdown with footnotes
+            const markdown = generateMarkdownWithFootnotes(
+              rootDocContent,
+              rootFootnotes
+            );
+
+            // Create temporary file path
+            const tempDocxPath = path.join(
+              __dirname,
+              "..",
+              "uploads",
+              `temp_${rootDoc.name}_${Date.now()}.docx`
+            );
+
+            // Convert Markdown to DOCX using Pandoc without template
+            docx = await convertMarkdownToDocx(markdown, tempDocxPath, false);
+          } else {
+            // Fallback to simple DOCX creation
+            docx = await createDocxBuffer(rootDoc.name, rootDocContent);
+          }
+
+          archive.append(docx, { name: `${rootDoc.name}.docx` });
+        }
+        processedDocs++;
+
+        // Process translations for this root document
+        for (const translation of rootDoc.translations) {
+          sendProgress(
+            progressId,
+            Math.round((processedDocs / totalDocs) * 90) + 5,
+            `Processing ${rootDoc.name} - ${translation.language}...`
+          );
+
+          const translationContent = await getDocumentContent(translation.id);
+          if (translationContent) {
+            // Extract footnotes from translation document
+            const translationFootnotes = await extractFootnotesFromDelta(
+              translationContent,
+              `${rootDoc.name} - ${translation.language}`
+            );
+
+            // Check if Pandoc is available
+            const pandocAvailable = await isPandocAvailable();
+
+            let translationDocx;
+            if (pandocAvailable && translationFootnotes.length > 0) {
+              // Generate Markdown with footnotes
+              const markdown = generateMarkdownWithFootnotes(
+                translationContent,
+                translationFootnotes
+              );
+
+              // Create temporary file path
+              const tempDocxPath = path.join(
+                __dirname,
+                "..",
+                "uploads",
+                `temp_${rootDoc.name}_${
+                  translation.language
+                }_${Date.now()}.docx`
+              );
+
+              // Convert Markdown to DOCX using Pandoc without template
+              translationDocx = await convertMarkdownToDocx(
+                markdown,
+                tempDocxPath,
+                false
+              );
+            } else {
+              // Fallback to simple DOCX creation
+              translationDocx = await createDocxBuffer(
+                `${rootDoc.name}_${translation.language}`,
+                translationContent
+              );
+            }
+
+            archive.append(translationDocx, {
+              name: `${rootDoc.name}_${translation.language}.docx`,
+            });
+          }
+          processedDocs++;
+        }
+      }
+
+      // Finalize the archive
+      await archive.finalize();
+
+      // Send completion signal
+      if (progressId) {
+        sendProgress(progressId, 100, "Export completed!");
+        setTimeout(() => {
+          const stream = progressStreams.get(progressId);
+          if (stream) {
+            try {
+              stream.end();
+            } catch (error) {
+              console.error("Error closing progress stream:", error);
+            }
+            progressStreams.delete(progressId);
+          }
+        }, 1000);
+      }
+    } else if (type === "single-documents") {
+      // Export individual DOCX files for each document (single language mode)
+      const { progressId } = req.query;
+
+      // Check if project exists and user has permission
+      const project = await prisma.project.findUnique({
+        where: { id },
+        include: {
+          roots: {
+            include: {
+              translations: true,
+            },
+          },
+          permissions: {
+            where: { userId: req.user.id },
+          },
+        },
+      });
+
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      // Create a zip file
+      const archive = archiver("zip", {
+        zlib: { level: 9 },
+      });
+
+      // Set response headers
+      res.setHeader("Content-Type", "application/zip");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=${project.name
+          .replace(/[^a-z0-9]/gi, "_")
+          .toLowerCase()}_documents.zip`
+      );
+
+      // Pipe archive data to the response
+      archive.pipe(res);
+
+      // Send initial progress update
+      sendProgress(progressId, 5, "Starting simple documents export...");
+
+      // Calculate total documents (roots + translations)
+      let totalDocs = project.roots.length;
+      for (const root of project.roots) {
+        totalDocs += root.translations.length;
+      }
+      let processedDocs = 0;
+
+      // Helper function to extract footnotes from delta
+      async function extractFootnotesFromDelta(delta, docName) {
+        if (!Array.isArray(delta)) {
+          console.log(`📄 ${docName}: No delta found or delta is not an array`);
+          return [];
+        }
+
+        const footnotes = [];
+        let currentPosition = 0;
+        const footnoteMap = new Map();
+
+        for (let i = 0; i < delta.length; i++) {
+          const op = delta[i];
+
+          if (typeof op.insert === "string") {
+            // Check if this operation has footnote attributes
+            if (op.attributes && op.attributes.footnote) {
+              let threadId = op.attributes.footnote?.id;
+              if (typeof threadId === "object" && threadId !== null) {
+                threadId = threadId.id || threadId.threadId;
+              }
+              if (typeof threadId !== "string") {
+                continue;
+              }
+              if (!footnoteMap.has(threadId)) {
+                const footnoteNumber = footnoteMap.size + 1;
+                // Fetch actual footnote content from database
+                let actualContent = ``;
+                let startIndex = 0;
+
+                try {
+                  const footnoteRecord = await prisma.footnote.findFirst({
+                    where: { threadId: threadId },
+                    select: {
+                      id: true,
+                      threadId: true,
+                      content: true,
+                      order: true,
+                      docId: true,
+                    },
+                  });
+                  if (footnoteRecord) {
+                    const footnote = {
+                      id: threadId,
+                      number: footnoteNumber,
+                      content: footnoteRecord?.content,
+                      order: footnoteRecord?.order,
+                      operationIndex: i,
+                    };
+                    footnoteMap.set(threadId, footnote);
+                    footnotes.push(footnote);
+                  }
+                } catch (error) {
+                  console.error(error);
+                }
+              }
+            }
+            currentPosition += op.insert.length;
+          }
+        }
+
+        return footnotes;
+      }
+
+      // Process all root documents
+      for (const rootDoc of project.roots) {
+        sendProgress(
+          progressId,
+          Math.round((processedDocs / totalDocs) * 90) + 5,
+          `Processing ${rootDoc.name}...`
+        );
+
+        const rootDocContent = await getDocumentContent(rootDoc.id);
+
+        if (rootDocContent) {
+          // Extract and log footnotes from root document
+          const rootFootnotes = await extractFootnotesFromDelta(
+            rootDocContent,
+            rootDoc.name
+          );
+          console.log("single-documents", rootFootnotes);
+          // Create simple DOCX for root document (no templates, no Pandoc)
+          const docx = await createDocxBuffer(rootDoc.name, rootDocContent);
+
+          archive.append(docx, { name: `${rootDoc.name}.docx` });
+        }
+        processedDocs++;
+
+        // Process translations for this root document
+        for (const translation of rootDoc.translations) {
+          sendProgress(
+            progressId,
+            Math.round((processedDocs / totalDocs) * 90) + 5,
+            `Processing ${rootDoc.name} - ${translation.language}...`
+          );
+
+          const translationContent = await getDocumentContent(translation.id);
+          if (translationContent) {
+            console.log(
+              `\n📄 Processing translation: ${rootDoc.name} - ${translation.language}`
+            );
+
+            // Extract and log footnotes from translation document
+            const translationFootnotes = await extractFootnotesFromDelta(
+              translationContent,
+              `${rootDoc.name} - ${translation.language}`
+            );
+
+            // Create simple DOCX for translation (no templates, no Pandoc)
+            const translationDocx = await createDocxBuffer(
+              `${rootDoc.name}_${translation.language}`,
+              translationContent
+            );
+
+            archive.append(translationDocx, {
+              name: `${rootDoc.name}_${translation.language}.docx`,
+            });
+
+            console.log(
+              `✅ Created simple DOCX for ${rootDoc.name} - ${translation.language}`
+            );
+          }
+          processedDocs++;
+        }
+      }
+
+      // Finalize the archive
+      await archive.finalize();
+
+      // Send completion signal
+      if (progressId) {
+        sendProgress(progressId, 100, "Export completed!");
+        setTimeout(() => {
+          const stream = progressStreams.get(progressId);
+          if (stream) {
+            try {
+              stream.end();
+            } catch (error) {
+              console.error("Error closing progress stream:", error);
+            }
+            progressStreams.delete(progressId);
+          }
+        }, 1000);
+      }
+    } else if (type === "single-pecha-templates") {
+      // Export individual pecha template DOCX files for each document (single language mode)
+      const { progressId } = req.query;
+
+      // Check if project exists and user has permission
+      const project = await prisma.project.findUnique({
+        where: { id },
+        include: {
+          roots: {
+            include: {
+              translations: true,
+            },
+          },
+          permissions: {
+            where: { userId: req.user.id },
+          },
+        },
+      });
+
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      // Create a zip file
+      const archive = archiver("zip", {
+        zlib: { level: 9 },
+      });
+
+      // Set response headers
+      res.setHeader("Content-Type", "application/zip");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=${project.name
+          .replace(/[^a-z0-9]/gi, "_")
+          .toLowerCase()}_pecha_templates.zip`
+      );
+
+      // Pipe archive data to the response
+      archive.pipe(res);
+
+      // Send initial progress update
+      sendProgress(progressId, 5, "Starting pecha templates export...");
+
+      // Calculate total documents (roots + translations)
+      let totalDocs = project.roots.length;
+      for (const root of project.roots) {
+        totalDocs += root.translations.length;
+      }
+      let processedDocs = 0;
+
+      // Process all root documents
+      for (const rootDoc of project.roots) {
+        sendProgress(
+          progressId,
+          Math.round((processedDocs / totalDocs) * 90) + 5,
+          `Processing ${rootDoc.name} as pecha template...`
+        );
+
+        const rootDocContent = await getDocumentContent(rootDoc.id);
+        if (rootDocContent) {
+          // Create pecha template DOCX for root document
+          const pechaDocx = await createSourceOnlyDocxTemplate(
+            rootDoc.name,
+            rootDocContent,
+            progressId
+          );
+
+          const fileName = `${rootDoc.name}_pecha_template.docx`;
+          archive.append(pechaDocx, { name: fileName });
+        }
+        processedDocs++;
+
+        // Process translations for this root document
+        for (const translation of rootDoc.translations) {
+          sendProgress(
+            progressId,
+            Math.round((processedDocs / totalDocs) * 90) + 5,
+            `Processing ${rootDoc.name} - ${translation.language} as pecha template...`
+          );
+
+          const translationContent = await getDocumentContent(translation.id);
+          if (translationContent) {
+            // Create pecha template DOCX for translation
+            const translationPechaDocx = await createSourceOnlyDocxTemplate(
+              `${rootDoc.name}_${translation.language}`,
+              translationContent,
+              progressId
+            );
+
+            const fileName = `${rootDoc.name}_${translation.language}_pecha_template.docx`;
+            archive.append(translationPechaDocx, { name: fileName });
+          }
+          processedDocs++;
+        }
+      }
+
+      // Finalize the archive
+      await archive.finalize();
+
+      // Send completion signal
+      if (progressId) {
+        sendProgress(progressId, 100, "Export completed!");
         setTimeout(() => {
           const stream = progressStreams.get(progressId);
           if (stream) {
@@ -1605,9 +2309,7 @@ async function createSideBySideDocxTemplate(
       });
     } catch (templateError) {
       console.error("Template parsing error:", templateError);
-      console.log(
-        "Template may be corrupted or have malformed tags. Using fallback..."
-      );
+
       return createFallbackSideBySideDocxTemplate(pages);
     }
 
@@ -1625,7 +2327,6 @@ async function createSideBySideDocxTemplate(
       doc.render(templateData);
     } catch (renderError) {
       console.error("Template rendering error:", renderError);
-      console.log("Template rendering failed. Using fallback...");
       return createFallbackSideBySideDocxTemplate(pages);
     }
 
@@ -1636,8 +2337,6 @@ async function createSideBySideDocxTemplate(
       type: "nodebuffer",
       compression: "DEFLATE",
     });
-
-    console.log(`✅ Generated DOCX template buffer: ${docBuffer.length} bytes`);
 
     return docBuffer;
   } catch (error) {
@@ -1689,8 +2388,6 @@ async function createSourceOnlyDocxTemplate(docName, sourceDelta, progressId) {
         isOddPage: pageNumber % 2 === 1,
       });
     }
-    console.log(pages);
-    console.log(`📄 Created ${pages.length} source-only pages for ${docName}`);
 
     // Check if template exists
     if (!fs.existsSync(TEMPLATE_PATH)) {
@@ -1717,9 +2414,7 @@ async function createSourceOnlyDocxTemplate(docName, sourceDelta, progressId) {
       });
     } catch (templateError) {
       console.error("Template parsing error:", templateError);
-      console.log(
-        "Template may be corrupted or have malformed tags. Using fallback..."
-      );
+
       return createFallbackSideBySideDocxTemplate(pages);
     }
 
@@ -1741,7 +2436,6 @@ async function createSourceOnlyDocxTemplate(docName, sourceDelta, progressId) {
       doc.render(templateData);
     } catch (renderError) {
       console.error("Template rendering error:", renderError);
-      console.log("Template rendering failed. Using fallback...");
       return createFallbackSideBySideDocxTemplate(pages);
     }
 
@@ -1752,10 +2446,6 @@ async function createSourceOnlyDocxTemplate(docName, sourceDelta, progressId) {
       type: "nodebuffer",
       compression: "DEFLATE",
     });
-
-    console.log(
-      `✅ Generated source-only DOCX template buffer: ${docBuffer.length} bytes`
-    );
 
     return docBuffer;
   } catch (error) {
@@ -1826,6 +2516,420 @@ async function createFallbackSideBySideDocxTemplate(pages) {
   });
 
   return await Packer.toBuffer(doc);
+}
+
+/**
+ * Create a simple DOCX buffer from document content
+ * @param {string} docName - The document name
+ * @param {Array} delta - The document content as a Delta array
+ * @returns {Promise<Buffer>} - The DOCX file as a buffer
+ */
+async function createDocxBuffer(docName, delta) {
+  try {
+    const docxElements = [];
+
+    // Add document title
+    docxElements.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: docName,
+            bold: true,
+            size: 32,
+          }),
+        ],
+        heading: HeadingLevel.HEADING_1,
+        alignment: AlignmentType.CENTER,
+      })
+    );
+
+    // Add some spacing
+    docxElements.push(new Paragraph({ children: [new TextRun({ text: "" })] }));
+
+    // Extract footnotes from delta with actual content from database
+    const footnotes = [];
+    let currentPosition = 0;
+    const footnoteMap = new Map();
+
+    for (let i = 0; i < delta.length; i++) {
+      const op = delta[i];
+
+      if (typeof op.insert === "string") {
+        if (op.attributes && op.attributes.footnote) {
+          let threadId = op.attributes.footnote;
+          if (typeof threadId === "object" && threadId !== null) {
+            threadId = threadId.id || threadId.threadId;
+          }
+          if (typeof threadId !== "string") {
+            continue;
+          }
+          if (!footnoteMap.has(threadId)) {
+            const footnoteNumber = footnoteMap.size + 1;
+            // Fetch actual footnote content from database
+            let actualContent = `Footnote ${footnoteNumber}`;
+            let deltaContent = "";
+            if (op.attributes.footnoteContent) {
+              deltaContent = op.attributes.footnoteContent;
+            }
+            if (op.attributes.footnoteText) {
+              deltaContent = op.attributes.footnoteText;
+            }
+            if (op.attributes.note_on) {
+              deltaContent = op.attributes.note_on;
+            }
+            if (op.attributes.content) {
+              deltaContent = op.attributes.content;
+            }
+            if (op.attributes.text) {
+              deltaContent = op.attributes.text;
+            }
+            if (op.attributes.footnote_content) {
+              deltaContent = op.attributes.footnote_content;
+            }
+            if (op.attributes.footnote_text) {
+              deltaContent = op.attributes.footnote_text;
+            }
+            try {
+              const footnoteRecord = await prisma.footnote.findFirst({
+                where: { threadId: threadId },
+                select: {
+                  id: true,
+                  threadId: true,
+                  content: true,
+                  order: true,
+                  docId: true,
+                },
+              });
+              if (footnoteRecord) {
+                if (footnoteRecord.content) {
+                  if (deltaContent && deltaContent !== footnoteRecord.content) {
+                    actualContent = `${footnoteRecord.content}\n\n${deltaContent}`;
+                  } else {
+                    actualContent = footnoteRecord.content;
+                  }
+                } else if (deltaContent) {
+                  actualContent = deltaContent;
+                }
+              } else {
+                if (deltaContent) {
+                  actualContent = deltaContent;
+                }
+              }
+            } catch (error) {
+              if (deltaContent) {
+                actualContent = deltaContent;
+              }
+            }
+            const footnote = {
+              threadId: threadId,
+              number: footnoteNumber,
+              position: currentPosition,
+              content: actualContent,
+              order: footnoteNumber,
+              operationIndex: i,
+            };
+            footnoteMap.set(threadId, footnote);
+            footnotes.push(footnote);
+          } else {
+            console.log(
+              `📝 ${docName}: Footnote with thread ID ${threadId} already processed`
+            );
+          }
+        }
+        currentPosition += op.insert.length;
+      }
+    }
+
+    // Convert delta to plain text with footnote markers
+    const text = deltaToPlainText(delta);
+    const paragraphs = text.split(/\n+/).filter((p) => p.trim());
+
+    // Add content paragraphs
+    for (const paragraph of paragraphs) {
+      docxElements.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: paragraph,
+              size: 24,
+            }),
+          ],
+        })
+      );
+    }
+
+    // Add footnotes if any exist
+    if (footnotes.length > 0) {
+      // Add separator
+      docxElements.push(
+        new Paragraph({
+          children: [new TextRun({ text: "" })],
+        })
+      );
+      docxElements.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Footnotes:",
+              bold: true,
+              size: 24,
+            }),
+          ],
+        })
+      );
+
+      // Add each footnote
+      for (const footnote of footnotes) {
+        docxElements.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `${footnote.number}. `,
+                bold: true,
+                size: 20,
+              }),
+              new TextRun({
+                text: footnote.content,
+                size: 20,
+              }),
+            ],
+          })
+        );
+      }
+    }
+
+    const doc = new Document({
+      sections: [
+        {
+          properties: {},
+          children: docxElements,
+        },
+      ],
+    });
+
+    return await Packer.toBuffer(doc);
+  } catch (error) {
+    console.error("Error creating DOCX buffer:", error);
+    throw error;
+  }
+}
+
+/**
+ * Create a page view DOCX buffer from document content (simple page-based format)
+ * @param {string} docName - The document name
+ * @param {Array} delta - The document content as a Delta array
+ * @returns {Promise<Buffer>} - The DOCX file as a buffer
+ */
+async function createPageViewDocxBuffer(docName, delta) {
+  try {
+    const docxElements = [];
+
+    // Add document title
+    docxElements.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: docName,
+            bold: true,
+            size: 32,
+          }),
+        ],
+        heading: HeadingLevel.HEADING_1,
+        alignment: AlignmentType.CENTER,
+      })
+    );
+
+    // Add some spacing
+    docxElements.push(new Paragraph({ children: [new TextRun({ text: "" })] }));
+
+    // Extract footnotes from delta with actual content from database
+    const footnotes = [];
+    let currentPosition = 0;
+    const footnoteMap = new Map();
+
+    for (let i = 0; i < delta.length; i++) {
+      const op = delta[i];
+
+      if (typeof op.insert === "string") {
+        if (op.attributes && op.attributes.footnote) {
+          let threadId = op.attributes.footnote;
+          if (typeof threadId === "object" && threadId !== null) {
+            threadId = threadId.id || threadId.threadId;
+          }
+          if (typeof threadId !== "string") {
+            continue;
+          }
+          if (!footnoteMap.has(threadId)) {
+            const footnoteNumber = footnoteMap.size + 1;
+            // Fetch actual footnote content from database
+            let actualContent = `Footnote ${footnoteNumber}`;
+            let deltaContent = "";
+            if (op.attributes.footnoteContent) {
+              deltaContent = op.attributes.footnoteContent;
+            }
+            if (op.attributes.footnoteText) {
+              deltaContent = op.attributes.footnoteText;
+            }
+            if (op.attributes.note_on) {
+              deltaContent = op.attributes.note_on;
+            }
+            if (op.attributes.content) {
+              deltaContent = op.attributes.content;
+            }
+            if (op.attributes.text) {
+              deltaContent = op.attributes.text;
+            }
+            if (op.attributes.footnote_content) {
+              deltaContent = op.attributes.footnote_content;
+            }
+            if (op.attributes.footnote_text) {
+              deltaContent = op.attributes.footnote_text;
+            }
+            try {
+              const footnoteRecord = await prisma.footnote.findFirst({
+                where: { threadId: threadId },
+                select: {
+                  id: true,
+                  threadId: true,
+                  content: true,
+                  order: true,
+                  docId: true,
+                },
+              });
+              if (footnoteRecord) {
+                if (footnoteRecord.content) {
+                  if (deltaContent && deltaContent !== footnoteRecord.content) {
+                    actualContent = `${footnoteRecord.content}\n\n${deltaContent}`;
+                  } else {
+                    actualContent = footnoteRecord.content;
+                  }
+                } else if (deltaContent) {
+                  actualContent = deltaContent;
+                }
+              } else {
+                if (deltaContent) {
+                  actualContent = deltaContent;
+                }
+              }
+            } catch (error) {
+              if (deltaContent) {
+                actualContent = deltaContent;
+              }
+            }
+            const footnote = {
+              threadId: threadId,
+              number: footnoteNumber,
+              position: currentPosition,
+              content: actualContent,
+              order: footnoteNumber,
+              operationIndex: i,
+            };
+            footnoteMap.set(threadId, footnote);
+            footnotes.push(footnote);
+          } else {
+            console.log(
+              `📝 ${docName}: Footnote with thread ID ${threadId} already processed`
+            );
+          }
+        }
+        currentPosition += op.insert.length;
+      }
+    }
+
+    // Convert delta to plain text
+    const text = deltaToPlainText(delta);
+    const paragraphs = text.split(/\n+/).filter((p) => p.trim());
+
+    // Add content paragraphs with page breaks for page view format
+    for (let i = 0; i < paragraphs.length; i++) {
+      const paragraph = paragraphs[i];
+
+      // Add paragraph content
+      docxElements.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: paragraph,
+              size: 28, // Larger font for page view
+            }),
+          ],
+        })
+      );
+
+      // Add page break after each paragraph (except the last one)
+      if (i < paragraphs.length - 1) {
+        docxElements.push(
+          new Paragraph({
+            children: [new TextRun({ text: "", break: 1 })],
+            pageBreakBefore: true,
+          })
+        );
+      }
+    }
+
+    // Add footnotes if any exist
+    if (footnotes.length > 0) {
+      // Add separator
+      docxElements.push(
+        new Paragraph({
+          children: [new TextRun({ text: "" })],
+        })
+      );
+      docxElements.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Footnotes:",
+              bold: true,
+              size: 24,
+            }),
+          ],
+        })
+      );
+
+      // Add each footnote
+      for (const footnote of footnotes) {
+        docxElements.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `${footnote.number}. `,
+                bold: true,
+                size: 20,
+              }),
+              new TextRun({
+                text: footnote.content,
+                size: 20,
+              }),
+            ],
+          })
+        );
+      }
+    }
+
+    const doc = new Document({
+      sections: [
+        {
+          properties: {
+            page: {
+              margin: {
+                top: 1440, // 1 inch margins
+                right: 1440,
+                bottom: 1440,
+                left: 1440,
+              },
+            },
+          },
+          children: docxElements,
+        },
+      ],
+    });
+
+    return await Packer.toBuffer(doc);
+  } catch (error) {
+    console.error("Error creating page view DOCX buffer:", error);
+    throw error;
+  }
 }
 
 module.exports = router;

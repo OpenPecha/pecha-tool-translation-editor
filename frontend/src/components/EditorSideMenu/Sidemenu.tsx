@@ -1,21 +1,26 @@
 import React, { useState } from "react";
-import { Settings, Languages, MessageSquare } from "lucide-react";
+import { Settings, Languages, MessageSquare, FileText } from "lucide-react";
 import SelectTranslation from "./SelectTranslation";
 import { Button } from "@/components/ui/button";
 import { IoIosArrowForward } from "react-icons/io";
 import Comments from "./Comments";
 import SettingsPanel from "./Settings";
+import FootnoteView from "../Footnote/FootnoteView";
+
 type MenuOption =
   | "translations"
   | "settings"
   | "main"
   | "comments"
-  | "commentary";
+  | "commentary"
+  | "footnotes";
 
 function SideMenu({
   setSelectedTranslationId,
+  documentId,
 }: {
   readonly setSelectedTranslationId: (id: string) => void;
+  readonly documentId: string;
 }) {
   const [currentView, setCurrentView] = useState<MenuOption>("main");
   const reset = () => {
@@ -44,6 +49,12 @@ function SideMenu({
             <Comments />
           </InMenuWrapper>
         );
+      case "footnotes":
+        return (
+          <InMenuWrapper onBackClick={reset}>
+            <FootnoteView documentId={documentId} />
+          </InMenuWrapper>
+        );
 
       default:
         return (
@@ -60,6 +71,13 @@ function SideMenu({
               title="comments"
             >
               <MessageSquare size={16} />
+            </MenuButton>
+
+            <MenuButton
+              onClick={() => setCurrentView("footnotes")}
+              title="footnotes"
+            >
+              <FileText size={16} />
             </MenuButton>
 
             <MenuButton

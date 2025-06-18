@@ -2,25 +2,28 @@ import emitter from "@/services/eventBus";
 import Quill from "quill";
 const Inline = Quill.import("blots/inline");
 
-class CommentBlot extends Inline {
-  static blotName = "comment";
+class footnote extends Inline {
+  static blotName = "footnote";
   static tagName = "span";
-  static className = "comments";
+  static className = "footnote";
 
   static create(value) {
-    let node = super.create();
+    const node = super.create();
 
     // Check if this node already has the suggestion
     const existingSuggestionId = node.getAttribute("data-id");
     if (existingSuggestionId === value.id) {
       // If it does, remove the suggestion formatting
       node.removeAttribute("data-id");
+      node.removeAttribute("data-order");
       node.removeEventListener("click", this.handleClick);
       return node;
     }
-
+    if (value.id && value.order) {
+      node.setAttribute("data-id", value.id);
+      node.setAttribute("data-order", value.order);
+    }
     // Otherwise add the new suggestion
-    node.setAttribute("data-id", value.id);
     node.addEventListener("click", (event) => {
       // Positioning logic
       const bubbleWidth = 250;
@@ -36,14 +39,15 @@ class CommentBlot extends Inline {
         top = window.innerHeight - bubbleHeight - 10;
       }
 
-      let __data = {
+      const __data = {
         id: value.id,
+        order: value.order,
         position: {
           top: top,
           left: left,
         },
       };
-      emitter.emit("showCommentBubble", __data);
+      emitter.emit("showfootnotebubble", __data);
     });
 
     return node;
@@ -52,27 +56,8 @@ class CommentBlot extends Inline {
   static formats(node) {
     return {
       id: node.getAttribute("data-id"),
+      order: node.getAttribute("data-order"),
     };
-  }
-
-  format(name, value) {
-    if (name === "suggest") {
-      if (value) {
-        // Check if already has this suggestion
-        const existingId = this.domNode.getAttribute("data-id");
-        if (existingId === value.id) {
-          // Remove if already exists
-          this.domNode.removeAttribute("data-id");
-        } else {
-          // Add new suggestion
-          this.domNode.setAttribute("data-id", value.id);
-        }
-      } else {
-        this.domNode.removeAttribute("data-id");
-      }
-    } else {
-      super.format(name, value);
-    }
   }
 
   delete() {
@@ -80,4 +65,4 @@ class CommentBlot extends Inline {
   }
 }
 
-export default CommentBlot;
+export default footnote;

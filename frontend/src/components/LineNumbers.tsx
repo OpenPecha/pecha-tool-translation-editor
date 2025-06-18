@@ -336,7 +336,7 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
         className={`line-numbers mt-[3px] h-full ${
           isRoot ? "quill-1" : "quill-2"
         } text-right relative`}
-        style={{ width: `${maxLineWidth + 1}ch` }}
+        style={{ width: `${maxLineWidth + 2}ch` }}
       >
         {lineNumbers.map((lineNum) => (
           <span
