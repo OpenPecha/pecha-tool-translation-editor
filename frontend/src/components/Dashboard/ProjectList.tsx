@@ -109,35 +109,37 @@ const ProjectsGrid = ({
           </Button>
           <div className="flex gap-1">
             {view === "list" ? (
-              <Button
+              <button
+                title="grid view"
+                className="rounded-full cursor-pointer h-8 w-8 flex justify-center items-center hover:bg-gray-200 "
                 onClick={() => setView("grid")}
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
               >
                 <span className="sr-only">Grid view</span>
-                <svg width="16" height="16" viewBox="0 0 16 16">
-                  <path
-                    fill="currentColor"
-                    d="M1 1h6v6H1V1zm8 0h6v6H9V1zm-8 8h6v6H1V9zm8 0h6v6H9V9z"
-                  />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="24px"
+                  viewBox="0 -960 960 960"
+                  fill="gray"
+                >
+                  <path d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm0-360h160v-200H160v200Zm240 0h160v-200H400v200Zm240 0h160v-200H640v200ZM320-240v-200H160v200h160Zm80 0h160v-200H400v200Zm240 0h160v-200H640v200Z" />
                 </svg>
-              </Button>
+              </button>
             ) : (
-              <Button
+              <button
                 onClick={() => setView("list")}
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
+                className="rounded-full cursor-pointer h-8 w-8 flex justify-center items-center hover:bg-gray-200 "
               >
                 <span className="sr-only">List view</span>
-                <svg width="16" height="16" viewBox="0 0 16 16">
-                  <path
-                    fill="currentColor"
-                    d="M1 1h14v2H1V1zm0 4h14v2H1V5zm0 4h14v2H1V9zm0 4h14v2H1v-2z"
-                  />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="24px"
+                  viewBox="0 -960 960 960"
+                  width="24px"
+                  fill="gray"
+                >
+                  <path d="M80-160v-160h160v160H80Zm240 0v-160h560v160H320ZM80-400v-160h160v160H80Zm240 0v-160h560v160H320ZM80-640v-160h160v160H80Zm240 0v-160h560v160H320Z" />
                 </svg>
-              </Button>
+              </button>
             )}
           </div>
         </div>

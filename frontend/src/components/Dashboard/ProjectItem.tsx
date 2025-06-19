@@ -37,13 +37,12 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
   updateDocument,
   deleteDocument,
   view,
-  status,
   documentCount = 0,
   url,
 }) => {
   if (view === "list") {
     return (
-      <div className="flex items-center py-2 px-1 hover:bg-blue-100 rounded-md">
+      <div className="flex items-center py-2 px-1 border-b border-gray-200 hover:bg-blue-50 transition-all rounded-md">
         <div className="flex-shrink-0 mr-4">
           <img
             alt="icon"
@@ -136,6 +135,7 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
             hasPermission={hasPermission}
             updateDocument={updateDocument}
             deleteDocument={deleteDocument}
+            url={url}
           />
         </div>
       </div>

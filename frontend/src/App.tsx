@@ -7,6 +7,7 @@ import Callback from "./pages/Callback";
 import Login from "./pages/Login";
 import DocumentsWrapper from "./components/DocumentWrapper";
 import Navbar from "./components/Dashboard/Navbar";
+import OpenPecha from "./assets/icon.png";
 
 const ProjectList = lazy(() => import("./components/Dashboard/ProjectList"));
 const QuillVersionProvider = lazy(() =>
@@ -26,9 +27,7 @@ function Layout({ children }: { children: React.ReactNode }) {
       });
       return;
     }
-    console.log(isAuthenticated, isLoading);
     if (!isAuthenticated && !isLoading) {
-      console.log("No active session detected, attempting silent login");
       login(true);
     }
   }, [isAuthenticated, isLoading]);
@@ -43,6 +42,24 @@ function LoadingFallback() {
   );
 }
 
+function Footer() {
+  return (
+    <div className="bg-gray-100 p-4">
+      <p className="text-center text-sm text-gray-500 ">
+        Powered by{" "}
+        <a href="https://pecha.org" className=" text-blue-500 ">
+          <img
+            src={OpenPecha}
+            alt="OpenPecha"
+            className="w-4 h-4 inline mr-1 ml-2"
+          />
+          OpenPecha
+        </a>
+      </p>
+    </div>
+  );
+}
+
 function AppContent() {
   return (
     <div className="flex flex-col h-full ">
@@ -54,6 +71,7 @@ function AppContent() {
             <Layout>
               <Navbar />
               <ProjectList />
+              <Footer />
             </Layout>
           }
         />

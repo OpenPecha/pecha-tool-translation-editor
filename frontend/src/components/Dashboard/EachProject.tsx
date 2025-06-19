@@ -96,7 +96,7 @@ export default function EachProject({ project, view }: EachProjectProps) {
       : "#";
   return (
     <>
-      <Link to={url} className="contents">
+      <Link to={url} className=" ">
         <ProjectItem
           title={project.name}
           subtitle={
