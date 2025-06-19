@@ -347,7 +347,7 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
               height: `${lineNum.height}px`,
             }}
             onClick={handleClickOnLineNumber}
-            className={`line-number relative flex w-full items-center justify-start pl-1`}
+            className={`line-number relative flex w-full min-w-[3ch] items-center justify-start pl-1`}
             id={`${documentId}-line-${lineNum.number}`}
           >
             <span

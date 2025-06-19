@@ -235,7 +235,7 @@ const Editor = ({
             editorRef={editorRef}
             documentId={documentId}
           />
-          <div className="flex flex-col overflow-y-auto">
+          <div className="flex flex-col overflow-y-auto flex-1">
             <div
               ref={editorRef}
               className={`editor-content flex-1 pb-1 w-full overflow-hidden`}

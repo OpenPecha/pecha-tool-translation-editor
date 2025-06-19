@@ -51,8 +51,8 @@ const SegmentationOptions = ({
               </TooltipTrigger>
               <TooltipContent>
                 <p>
-                  Botok is a word tokenizer for Tibetan text that automatically
-                  segments words and identifies grammatical structures
+                  For Tibetan text that is not segmented. Enables word
+                  segmentation using the Botok tokenizer.
                 </p>
               </TooltipContent>
             </Tooltip>

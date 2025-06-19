@@ -16,7 +16,7 @@ const ProjectList = () => {
   const limit = 10;
   const [view, setView] = useState<"grid" | "list">("list");
 
-  const { data, isLoading, isError, isFetching } = useQuery({
+  const { data, isLoading, isError, isFetching, isPending } = useQuery({
     queryKey: ["projects", searchQuery, page],
     initialData: { data: [] },
     queryFn: () => fetchProjects({ searchQuery, page, limit }),
@@ -34,6 +34,8 @@ const ProjectList = () => {
       });
     }
   }, [data]);
+
+  const showLoader = isLoading || isFetching || isPending;
 
   return (
     <div className="flex flex-1 flex-col h-[100vh] overflow-y-scroll ">
@@ -61,7 +63,7 @@ const ProjectList = () => {
             <>
               <ProjectsGrid
                 projects={projects}
-                isLoading={isLoading || isFetching}
+                isLoading={showLoader}
                 view={view}
                 setView={setView}
               />
@@ -140,7 +142,9 @@ const ProjectsGrid = ({
           </div>
         </div>
       </div>
-      {isLoading && <FaSpinner className="animate-spin mb-2" />}
+      {isLoading && (
+        <FaSpinner size="30" className="animate-spin w-full mb-2" />
+      )}
       <div
         className={`flex flex-wrap gap-4 ${
           view === "grid"
