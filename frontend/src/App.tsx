@@ -47,7 +47,7 @@ function Footer() {
     <div className="bg-gray-100 p-4">
       <p className="text-center text-sm text-gray-500 ">
         Powered by{" "}
-        <a href="https://pecha.org" className=" text-blue-500 ">
+        <a href="https://openpecha.org/" className=" text-blue-500 ">
           <img
             src={OpenPecha}
             alt="OpenPecha"
