@@ -16,6 +16,7 @@ const pechaRoutes = require("./routes/pecha");
 const textsRoutes = require("./routes/texts");
 const userRoutes = require("./routes/user");
 const projectRoutes = require("./routes/project");
+const footnotesRoutes = require("./routes/footnote");
 const apiCredentialsRoutes = require("./routes/apiCredentials");
 
 const options = {
@@ -107,6 +108,7 @@ app.use("/texts", textsRoutes);
 app.use("/users", userRoutes);
 app.use("/projects", projectRoutes);
 app.use("/api-credentials", apiCredentialsRoutes);
+app.use("/footnotes", footnotesRoutes);
 const clients = new Set();
 // const getYDoc = (docId, userId) =>
 //   map.setIfUndefined(utils.docs, docId, () => {

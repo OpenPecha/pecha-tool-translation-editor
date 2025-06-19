@@ -11,16 +11,19 @@ import { createPortal } from "react-dom";
 import VersionDiff from "./VersionDiff";
 import Quill from "quill";
 const isEnabled = !EDITOR_READ_ONLY;
+
 interface ToolbarProps {
   addComment: () => void;
   synced: boolean;
   documentId: string;
   toolbarId: string;
   range: any;
+  addFootnote: () => void;
 }
 
 const Toolbar = ({
   addComment,
+  addFootnote,
   synced,
   documentId,
   toolbarId,
@@ -232,6 +235,21 @@ const Toolbar = ({
             onClick={() => setOpenHistory(!openHistory)}
           >
             <FaHistory />
+          </ToolbarButton>
+          <ToolbarButton
+            title="Footnote"
+            className=""
+            onClick={() => addFootnote()}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              height="24px"
+              viewBox="0 -960 960 960"
+              width="24px"
+              fill="#e3e3e3"
+            >
+              <path d="M120-240v-80h480v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z" />
+            </svg>
           </ToolbarButton>
         </span>
 

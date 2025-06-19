@@ -10,10 +10,11 @@ import TableOfContent from "./TableOfContent";
 import { useEditor } from "@/contexts/EditorContext";
 import { editor_config, EDITOR_ENTER_ONLY } from "@/utils/editorConfig";
 import { updateContentDocument } from "@/api/document";
-import { useCurrentDoc } from "@/hooks/useCurrentDoc";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import CommentBubble from "./Comment/CommentBubble";
 import { createPortal } from "react-dom";
+import FootnoteInitialize from "./Footnote/FootnoteInitialize";
+import FootnoteView from "./Footnote/FootnoteView";
 quill_import();
 
 const Editor = ({
@@ -32,6 +33,7 @@ const Editor = ({
     "counter-container" + "-" + Math.random().toString(36).slice(2, 6);
   const [currentRange, setCurrentRange] = useState<Range | null>(null);
   const [showCommentModal, setShowCommentModal] = useState(false);
+  const [showFootNoteModal, setShowFootNoteModal] = useState(false);
   const { registerQuill } = useQuillVersion();
   const {
     registerQuill: registerQuill2,
@@ -208,12 +210,17 @@ const Editor = ({
 
     setShowCommentModal(true);
   }
+  function addFootnote() {
+    if (!currentRange || currentRange?.length === 0) return;
+    setShowFootNoteModal(true);
+  }
   if (!documentId) return null;
   return (
     <>
       {createPortal(
         <Toolbar
           addComment={addComment}
+          addFootnote={addFootnote}
           synced={isSynced}
           documentId={documentId}
           toolbarId={toolbarId}
@@ -228,15 +235,18 @@ const Editor = ({
             editorRef={editorRef}
             documentId={documentId}
           />
-          <div
-            ref={editorRef}
-            className={`editor-content flex-1 pb-3 w-full`}
-            style={{
-              fontFamily: "Monlam",
-              fontSize: "1rem",
-              lineHeight: 1.5,
-            }}
-          />
+          <div className="flex flex-col overflow-y-auto">
+            <div
+              ref={editorRef}
+              className={`editor-content flex-1 pb-1 w-full overflow-hidden`}
+              style={{
+                fontFamily: "Monlam",
+                fontSize: "1rem",
+                lineHeight: 1.5,
+              }}
+            />
+            <FootnoteView documentId={documentId} />
+          </div>
           {createPortal(
             <div id={`${counterId}`}>0 Characters</div>,
             document.getElementById("counter")!
@@ -245,6 +255,14 @@ const Editor = ({
             <CommentInitialize
               documentId={documentId}
               setShowCommentModal={setShowCommentModal}
+              currentRange={currentRange}
+            />
+          )}
+
+          {showFootNoteModal && (
+            <FootnoteInitialize
+              documentId={documentId}
+              setShowFootnoteModal={setShowFootNoteModal}
               currentRange={currentRange}
             />
           )}

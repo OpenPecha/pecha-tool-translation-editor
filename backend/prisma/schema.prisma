@@ -19,6 +19,7 @@ model User {
   project     Project[]
   version     Version[]
   apikeys     ApiCredential[]
+  footnotes   Footnote[]
 }
 
 model Project {
@@ -54,6 +55,7 @@ model Doc {
   permissions            Permission[] // A document can have multiple permission entries
   comments               Comment[] // A document can have multiple comments
   versions               Version[] // A document can have multiple versions
+  footnotes              Footnote[] // A document can have multiple footnotes
   metadata               Json? // Additional metadata for the document
 
   // Translation tracking fields
@@ -108,6 +110,22 @@ model Comment {
   user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   is_suggestion        Boolean   @default(false)
   suggested_text       String?
+}
+
+model Footnote {
+  id                   String   @id @default(uuid())
+  order                Int      @default(0)
+  threadId             String?
+  docId                String
+  userId               String
+  content              String
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  note_on              String?
+  initial_start_offset Int
+  initial_end_offset   Int
+  doc                  Doc      @relation(fields: [docId], references: [id], onDelete: Cascade)
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Version {
