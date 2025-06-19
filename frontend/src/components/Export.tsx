@@ -38,14 +38,14 @@ const ExportModeOptions: {
     value: "single",
     formatOptions: [
       {
-        label: "Pecha Template",
-        value: "single-pecha-templates",
-        description: "View in pecha format",
-      },
-      {
         label: "Page View",
         value: "page-view",
         description: "View in page view",
+      },
+      {
+        label: "Pecha Template",
+        value: "single-pecha-templates",
+        description: "View in pecha format",
       },
     ],
   },
@@ -84,10 +84,22 @@ function ExportButton({
   const { id } = useParams();
   const rootId = id as string;
   const [isExporting, setIsExporting] = useState(false);
+  const [exportMode, setExportMode] = useState<ExportMode>("single");
   const [exportFormat, setExportFormat] = useState<ExportFormat>("page-view");
   const [exportProgress, setExportProgress] = useState<number>(0);
   const [exportMessage, setExportMessage] = useState<string>("");
-  const [exportMode, setExportMode] = useState<ExportMode>("single");
+
+  // Update export format when mode changes
+  const handleExportModeChange = (value: ExportMode) => {
+    setExportMode(value);
+    // Set default format based on mode
+    if (value === "single") {
+      setExportFormat("page-view");
+    } else {
+      setExportFormat("side-by-side");
+    }
+  };
+
   const { mutate: downloadZip, isPending } = useMutation({
     mutationFn: async () => {
       // Determine the actual export type based on mode and format
@@ -263,7 +275,9 @@ function ExportButton({
           <div className="text-sm font-medium text-gray-900">Export Mode</div>
           <RadioGroup
             value={exportMode}
-            onValueChange={(value) => setExportMode(value as ExportMode)}
+            onValueChange={(value) =>
+              handleExportModeChange(value as ExportMode)
+            }
             className="space-y-3"
           >
             {ExportModeOptions.map((mode) => (
