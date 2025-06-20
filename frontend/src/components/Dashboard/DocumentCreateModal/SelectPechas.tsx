@@ -4,17 +4,12 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useQuery } from "@tanstack/react-query";
 
-export type PechaType = {
-  id: string;
-  title: string;
-};
-
 function SelectPechas({
-  selectedRootPecha,
-  setSelectedRootPecha,
+  selectedPecha,
+  setSelectedPecha,
 }: {
-  readonly selectedRootPecha: PechaType | null;
-  readonly setSelectedRootPecha: (pecha: PechaType | null) => void;
+  readonly selectedPecha: string | null;
+  readonly setSelectedPecha: (id: string | null) => void;
 }) {
   const [filterBy, setFilterBy] = useState<
     "commentary_of" | "version_of" | "translation_of"
@@ -32,7 +27,11 @@ function SelectPechas({
         <RadioGroup
           defaultValue="version_of"
           value={filterBy}
-          onValueChange={setFilterBy}
+          onValueChange={(value) =>
+            setFilterBy(
+              value as "commentary_of" | "version_of" | "translation_of"
+            )
+          }
         >
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="version_of" id="version_of" />
@@ -56,11 +55,10 @@ function SelectPechas({
         <select
           id="rootDocSelect"
           onChange={(e) => {
-            const selected = pechas.find((p) => p.id === e.target.value);
-            setSelectedRootPecha(selected || null);
+            setSelectedPecha(e.target.value);
           }}
           className="w-full p-2 border rounded"
-          value={selectedRootPecha?.id || ""}
+          value={selectedPecha || ""}
         >
           <option value="">Select a root document</option>
           {pechas?.metadata?.map((d) => (
@@ -69,6 +67,11 @@ function SelectPechas({
             </option>
           ))}
         </select>
+        {selectedPecha && pechas?.metadata?.length > 0 && (
+          <div className="text-sm text-gray-500">
+            {pechas?.metadata?.find((p) => p.id === selectedPecha)?.id}
+          </div>
+        )}
       </div>
     </>
   );

@@ -110,7 +110,7 @@ export function PechaFromOpenPecha({
 }: {
   readonly closeModal: () => void;
 }) {
-  const [selectedRootPecha, setSelectedRootPecha] = useState<PechaType | null>(
+  const [selectedRootPecha, setSelectedRootPecha] = useState<string | null>(
     null
   );
   //selected datas
@@ -118,8 +118,8 @@ export function PechaFromOpenPecha({
   return (
     <div className="p-4">
       <SelectPechas
-        selectedRootPecha={selectedRootPecha}
-        setSelectedRootPecha={setSelectedRootPecha}
+        selectedPecha={selectedRootPecha}
+        setSelectedPecha={setSelectedRootPecha}
       />
       <DocumentCreateModalFooter
         createDoc={() => {}}

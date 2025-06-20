@@ -10,7 +10,7 @@ const {
   convertMarkdownToDocx,
   createSideBySideDocxTemplate,
   createSourceOnlyDocxTemplate,
-} = require("../utils/Docx");
+} = require("../utils/docx");
 const {
   generateMarkdownWithFootnotes,
   extractFootnotesFromDelta,

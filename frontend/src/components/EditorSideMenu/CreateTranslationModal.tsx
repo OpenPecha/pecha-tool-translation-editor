@@ -11,8 +11,6 @@ import {
 } from "@/components/ui/select";
 import { useMutation, QueryObserverResult } from "@tanstack/react-query";
 import { generateTranslation } from "@/api/document";
-import { Switch } from "@/components/ui/switch";
-
 import SelectLanguage from "../Dashboard/DocumentCreateModal/SelectLanguage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TextUploader from "../Dashboard/DocumentCreateModal/TextUploader";
@@ -38,7 +36,7 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
   const [uploadMethod, setUploadMethod] = useState<"file" | "openpecha" | "ai">(
     "file"
   );
-  const [selectedRootPecha, setSelectedRootPecha] = useState<PechaType | null>(
+  const [selectedRootPecha, setSelectedRootPecha] = useState<string | null>(
     null
   );
   const [translationId, setTranslationId] = useState<string | null>(null);
@@ -103,8 +101,8 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
 
               <TabsContent value="openpecha" className="pt-2">
                 <SelectPechas
-                  selectedRootPecha={selectedRootPecha}
-                  setSelectedRootPecha={setSelectedRootPecha}
+                  selectedPecha={selectedRootPecha}
+                  setSelectedPecha={setSelectedRootPecha}
                 />
               </TabsContent>
 
