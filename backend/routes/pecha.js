@@ -1,5 +1,10 @@
 const express = require("express");
-const { getPechaList, getPechaLanguages } = require("../apis/openpecha_api");
+const {
+  getPechaList,
+  getPechaLanguages,
+  getPechaBase,
+  getPechaCategories,
+} = require("../apis/openpecha_api");
 const router = express.Router();
 
 /**
@@ -13,11 +18,11 @@ const router = express.Router();
  * @return {object} 500 - Server error
  */
 router.post("/", async (req, res) => {
-  const { filterBy } = req.body;
-  if (!filterBy) {
+  const { type } = req.body;
+  if (!type) {
     return res.status(400).json({ error: "Filter by is required" });
   }
-  const pechaList = await getPechaList(filterBy);
+  const pechaList = await getPechaList(type);
   res.json(pechaList);
 });
 
@@ -29,9 +34,38 @@ router.post("/", async (req, res) => {
  * @return {object} 500 - Server error
  */
 router.get("/languages", async (req, res) => {
- 
   const language_list = await getPechaLanguages();
   res.json(language_list);
+});
+
+/**
+ * GET /pecha/categories
+ * @summary Get a list of available Pecha categories
+ * @tags Pecha - Pecha document operations
+ * @return {array<string>} 200 - List of available categories
+ * @return {object} 500 - Server error
+ */
+router.get("/categories", async (req, res) => {
+  const category_list = await getPechaCategories();
+  res.json(category_list);
+});
+
+/**
+ * GET /pecha/{id}/bases
+ * @summary Get a list of Pecha bases
+ * @tags Pecha - Pecha document operations
+ * @param {string} id.path.required - Pecha ID
+ * @return {object} 400 - Bad request - Pecha ID is required
+ * @return {object} 500 - Server error
+ */
+router.get("/:id/bases", async (req, res) => {
+  const pechaId = req.params.id;
+  try {
+    const base = await getPechaBase(pechaId);
+    res.json(base);
+  } catch (e) {
+    res.status(500).json({ error: "Error retrieving pecha base" });
+  }
 });
 
 module.exports = router;

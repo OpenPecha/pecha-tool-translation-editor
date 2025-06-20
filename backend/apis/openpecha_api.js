@@ -1,29 +1,19 @@
 const API_ENDPOINT = process.env.OPENPECHA_ENDPOINT;
+const WORKSPACE_ENDPOINT = process.env.WORKSPACE_ENDPOINT;
 
 //filterBy: commentary_of, version_of, translation_of
-async function getPechaList(filterBy) {
-  let body = { filter: {} };
-  const filters = {
-    commentary_of: {
-      and: [
-        { field: "commentary_of", operator: "==", value: null },
-        { field: "translation_of", operator: "==", value: null },
-      ],
-    },
-    version_of: {
-      and: [
-        { field: "commentary_of", operator: "==", value: null },
-        { field: "version_of", operator: "==", value: null },
-      ],
-    },
-    translation_of: {
-      field: "language",
+async function getPechaList(type) {
+  let body = {
+    filter: {
+      field: "type",
       operator: "==",
-      value: "bo",
+      value: type === "pecha" ? "root" : type,
     },
+    page: 1,
+    limit: 20,
   };
 
-  body.filter = filters[filterBy] || {};
+  console.log(body);
   const response = await fetch(`${API_ENDPOINT}/metadata/filter/`, {
     method: "POST",
     headers: {
@@ -38,9 +28,9 @@ async function getPechaList(filterBy) {
   }
 
   const data = await response.json();
+  console.log(data);
   return data;
 }
-
 
 async function getPechaLanguages() {
   const response = await fetch(`${API_ENDPOINT}/languages/`);
@@ -50,4 +40,33 @@ async function getPechaLanguages() {
   const data = await response.json();
   return data;
 }
-module.exports = { getPechaList,getPechaLanguages };
+
+async function getPechaCategories() {
+  const response = await fetch(`${API_ENDPOINT}/categories/`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch pecha categories: ${response.statusText}`);
+  }
+  const data = await response.json();
+  return data;
+}
+
+async function getPechaBase(pechaId) {
+  const response = await fetch(`${WORKSPACE_ENDPOINT}/pecha/${pechaId}/bases`, {
+    headers: {
+      accept: "application/json",
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to fetch pecha base info: ${response.statusText}`);
+  }
+  const data = await response.json();
+  return data;
+}
+
+module.exports = {
+  getPechaList,
+  getPechaLanguages,
+  getPechaBase,
+  getPechaCategories,
+};

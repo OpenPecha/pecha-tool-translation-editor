@@ -95,7 +95,6 @@ router.post("/", authenticate, async (req, res) => {
     ) {
       return res.status(400).json({ error: "Missing required fields" });
     }
-    console.log(initial_start_offset, initial_end_offset);
 
     // Create the new footnote first with a temporary order
     const tempData = {
