@@ -55,7 +55,10 @@ function DocumentCreateModal() {
             <NewPechaForm projectName={projectName} closeModal={closeModal} />
           </TabsContent>
           <TabsContent value="OpenPecha">
-            <PechaFromOpenPecha closeModal={closeModal} />
+            <PechaFromOpenPecha
+              projectName={projectName}
+              closeModal={closeModal}
+            />
           </TabsContent>
         </Tabs>
       </DialogContent>

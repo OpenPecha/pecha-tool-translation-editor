@@ -95,6 +95,22 @@ export const createDocument = async (formData: FormData) => {
   return response.json();
 };
 
+export const createDocumentWithContent = async (formData: FormData) => {
+  const body = JSON.stringify(Object.fromEntries(formData));
+  console.log("sending", body);
+  const response = await fetch(`${server_url}/documents/content`, {
+    method: "POST",
+    headers: getHeaders(),
+    body,
+  });
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(error ?? "Failed to create document");
+  }
+
+  return response.json();
+};
+
 export const updatePermission = async (
   id: string,
   email: string,

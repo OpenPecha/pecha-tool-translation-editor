@@ -8,6 +8,14 @@ import TextUploader from "./TextUploader";
 import MetaDataInput from "./MetaDataInput";
 import { createProject } from "@/api/project";
 import { Button } from "@/components/ui/button";
+import PechaView from "./PechaView";
+
+export type SelectedPechaType = {
+  id: string;
+  type: PechaType;
+  language: string;
+  title: string;
+};
 
 export function NewPechaForm({
   projectName,
@@ -95,25 +103,79 @@ export function NewPechaForm({
 }
 
 export function PechaFromOpenPecha({
+  projectName,
   closeModal,
 }: {
+  readonly projectName: string;
   readonly closeModal: () => void;
 }) {
-  const [selectedRootPecha, setSelectedRootPecha] = useState<string | null>(
+  const [selectedPecha, setSelectedPecha] = useState<SelectedPechaType | null>(
     null
   );
-  //selected datas
+  const [error, setError] = useState("");
+  const [rootId, setRootId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
+  //selected datas
+  const createProjectMutation = useMutation({
+    mutationFn: () => {
+      if (!projectName) {
+        throw new Error("Project name is required");
+      }
+      return createProject({
+        name: projectName,
+        identifier: projectName.toLowerCase().replace(/\s+/g, "-"),
+        rootId: rootId ?? undefined,
+      });
+    },
+    onSuccess: (data) => {
+      // Invalidate and refetch projects query
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      // Close modal and reset form
+      closeModal();
+    },
+    onError: (error: Error) => {
+      setError(error.message || "Failed to create project");
+    },
+  });
+
+  const handleCreateProject = () => {
+    if (!rootId) {
+      setError("Root document is required");
+      return;
+    }
+
+    if (!projectName) {
+      setError("Project name is required");
+      return;
+    }
+    createProjectMutation.mutate();
+  };
   return (
     <div className="p-4">
+      {error != "" && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
       <SelectPechas
-        selectedPecha={selectedRootPecha}
-        setSelectedPecha={setSelectedRootPecha}
+        selectedPecha={selectedPecha}
+        setSelectedPecha={setSelectedPecha}
       />
+      {selectedPecha?.id && (
+        <PechaView
+          isRoot={true}
+          rootId={rootId ?? undefined}
+          setRootId={setRootId}
+          selectedPecha={selectedPecha}
+        />
+      )}
       <DocumentCreateModalFooter
-        createDoc={() => {}}
+        createDoc={handleCreateProject}
         closeModal={closeModal}
-        disable={true}
+        disable={
+          !rootId || !selectedPecha?.language || selectedPecha.language === ""
+        }
       />
     </div>
   );
@@ -129,7 +191,7 @@ function DocumentCreateModalFooter({
   readonly disable: boolean;
 }) {
   return (
-    <DialogFooter className="flex w-full sm:justify-between">
+    <DialogFooter className="flex w-full sm:justify-between mt-2">
       <Button
         type="button"
         variant="ghost"

@@ -13,7 +13,6 @@ async function getPechaList(type) {
     limit: 20,
   };
 
-  console.log(body);
   const response = await fetch(`${API_ENDPOINT}/metadata/filter/`, {
     method: "POST",
     headers: {
@@ -28,7 +27,6 @@ async function getPechaList(type) {
   }
 
   const data = await response.json();
-  console.log(data);
   return data;
 }
 

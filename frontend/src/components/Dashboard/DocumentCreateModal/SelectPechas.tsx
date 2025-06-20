@@ -1,15 +1,9 @@
-import {
-  fetchPechaBase,
-  fetchPechas,
-  fetchLanguage,
-  fetchCategories,
-} from "@/api/pecha";
+import { fetchPechas } from "@/api/pecha";
 import { useEffect, useState } from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useQuery } from "@tanstack/react-query";
-import { languages } from "@/utils/Constants";
-import { Textarea } from "@/components/ui/textarea";
+import { SelectedPechaType } from "./Forms";
 
 interface PechaMetadata {
   id: string;
@@ -22,8 +16,8 @@ function SelectPechas({
   selectedPecha,
   setSelectedPecha,
 }: {
-  readonly selectedPecha: string | null;
-  readonly setSelectedPecha: (id: string | null) => void;
+  readonly selectedPecha: SelectedPechaType | null;
+  readonly setSelectedPecha: (data: SelectedPechaType | null) => void;
 }) {
   const [type, setType] = useState<
     "pecha" | "commentary" | "version" | "translation"
@@ -53,11 +47,25 @@ function SelectPechas({
   const handleFilterChange = (value: string) => {
     setType(value as "pecha" | "commentary" | "version" | "translation");
   };
+
+  const handlePechaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedPecha = pechas.metadata.find(
+      (pecha: PechaMetadata) => pecha.id === e.target.value
+    );
+    setSelectedPecha({
+      id: selectedPecha?.id,
+      type: selectedPecha?.type,
+      language: selectedPecha?.language,
+      title: selectedPecha?.title?.bo ?? selectedPecha?.title?.en ?? "",
+    });
+  };
+
   return (
     <>
       <div className="mb-4">
         <div className="block mb-2">Type:</div>
         <RadioGroup
+          className="flex"
           defaultValue="version_of"
           value={type}
           onValueChange={handleFilterChange}
@@ -80,11 +88,9 @@ function SelectPechas({
         ) : (
           <select
             id="rootDocSelect"
-            onChange={(e) => {
-              setSelectedPecha(e.target.value);
-            }}
+            onChange={handlePechaChange}
             className="w-full p-2 border rounded"
-            value={selectedPecha || ""}
+            value={selectedPecha?.id || ""}
           >
             <option value="">Select a root document</option>
             {pechas?.metadata?.map((d: PechaMetadata) => (
@@ -94,47 +100,8 @@ function SelectPechas({
             ))}
           </select>
         )}
-        {selectedPecha && <PechaView pechaId={selectedPecha} />}
       </div>
     </>
-  );
-}
-
-function PechaView({ pechaId }: { pechaId: string }) {
-  const {
-    data: pecha,
-    refetch,
-    error,
-    isPending,
-  } = useQuery({
-    queryKey: ["pecha", pechaId],
-    queryFn: () => fetchPechaBase(pechaId),
-  });
-  useEffect(() => {
-    refetch();
-  }, [pechaId]);
-  if (error) {
-    return <div>Error: {error.message}</div>;
-  }
-  const contents = pecha?.bases
-    ? Object.entries(pecha.bases).map(([key, value]) => ({
-        id: key,
-        content: value,
-      }))
-    : [];
-  const content = contents.length > 0 ? (contents[0].content as string) : "";
-  if (isPending) {
-    return <div>Loading...</div>;
-  }
-  return content ? (
-    <Textarea
-      value={content}
-      rows={10}
-      onChange={() => {}}
-      className="font-monlam"
-    />
-  ) : (
-    <div>No content</div>
   );
 }
 

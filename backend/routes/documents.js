@@ -135,6 +135,70 @@ router.post("/", authenticate, upload.single("file"), async (req, res) => {
   }
 });
 
+router.post("/content", authenticate, async (req, res) => {
+  try {
+    const { identifier, isRoot, rootId, language, name, content } = req.body;
+
+    console.log(identifier, isRoot, rootId, language, name);
+    if (!identifier)
+      return res
+        .status(400)
+        .json({ error: "Missing identifier in query params" });
+
+    const doc = new WSSharedDoc(identifier, req.user.id);
+    const prosemirrorText = doc.getText(identifier);
+    if (content) {
+      const textContent = content;
+      if (textContent) {
+        prosemirrorText.delete(0, prosemirrorText.length);
+        prosemirrorText.insert(0, textContent);
+      }
+    }
+    const delta = prosemirrorText.toDelta();
+    const state = Y.encodeStateAsUpdateV2(doc);
+    const document = await prisma.$transaction(async (tx) => {
+      const doc = await tx.doc.create({
+        data: {
+          id: identifier,
+          identifier,
+          name,
+          ownerId: req.user.id,
+          docs_y_doc_state: state,
+          docs_prosemirror_delta: delta,
+          isRoot: isRoot === "true",
+          rootId: rootId ?? null,
+          language,
+        },
+        select: {
+          id: true,
+          name: true,
+        },
+      });
+      await tx.permission.create({
+        data: {
+          docId: doc.id,
+          userId: req.user.id,
+          canRead: true,
+          canWrite: true,
+        },
+      });
+      await tx.version.create({
+        data: {
+          content: { ops: delta },
+          docId: doc.id,
+          label: "initail Auto-save",
+        },
+      });
+
+      return doc;
+    });
+
+    res.status(201).json(document);
+  } catch (error) {
+    res.status(500).json({ error: "Error creating document: " + error });
+  }
+});
+
 /**
  * GET /documents
  * @summary Get all documents for the authenticated user
