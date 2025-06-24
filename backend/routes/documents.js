@@ -1179,13 +1179,17 @@ router.post("/generate-translation", authenticate, async (req, res) => {
         },
       });
 
-      console.log("Translation job created:", response.id);
-
       // Return the created document
       res.status(201).json(updated);
     } catch (error) {
-      console.error("Translation request failed:", error);
-
+      let updated = await prisma.doc.update({
+        where: { id: translationId },
+        data: {
+          translationJobId: null,
+          translationStatus: "failed",
+          translationProgress: 0,
+        },
+      });
       // Return the created document
       res.status(201).json({ error: error.message });
     }
@@ -1320,8 +1324,7 @@ router.get("/:id/translations/status", authenticate, async (req, res) => {
           translation.translationJobId &&
           (translation.translationStatus === "progress" ||
             translation.translationStatus === "started" ||
-            translation.translationStatus === "pending" ||
-            translation.translationStatus === "failed")
+            translation.translationStatus === "pending")
         ) {
           try {
             // Get the latest status directly from the translation worker (Redis-based, faster)

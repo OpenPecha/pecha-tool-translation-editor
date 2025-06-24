@@ -1,14 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import AvatarWrapper from "./ui/custom-avatar";
 import { useAuth } from "@/auth/use-auth-hook";
-import { useTranslation } from "react-i18next";
+import { useTranslate } from "@tolgee/react";
 import { MdKeyboardArrowDown, MdLogout } from "react-icons/md";
 import LanguageSwitcher from "./LanguageSwitcher";
 
 function ProfileArea() {
   const [isOpen, setIsOpen] = useState(false);
   const { currentUser, logout: handleLogout } = useAuth();
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const toggleDropdown = () => setIsOpen(!isOpen);
@@ -87,7 +87,7 @@ function ProfileArea() {
           <LanguageSwitcher />
           <button
             onClick={onLogout}
-            className="w-min px-2 py-1 flex items-center self-end shadow-md  text-sm gap-2 bg-blue-100 hover:bg-blue-200 cursor-pointer dark:hover:bg-red-900/20 rounded-lg transition-colors duration-150"
+            className="w-max px-2 py-1 flex items-center self-end shadow-md  text-sm gap-2 bg-blue-100 hover:bg-blue-200 cursor-pointer dark:hover:bg-red-900/20 rounded-lg transition-colors duration-150"
           >
             <MdLogout /> <span>{t("auth.logout")}</span>
           </button>

@@ -15,7 +15,7 @@ import CommentBubble from "./Comment/CommentBubble";
 import { createPortal } from "react-dom";
 import FootnoteInitialize from "./Footnote/FootnoteInitialize";
 import FootnoteView from "./Footnote/FootnoteView";
-import { useTranslation } from "react-i18next";
+import { useTranslate } from "@tolgee/react";
 quill_import();
 
 const Editor = ({
@@ -43,7 +43,7 @@ const Editor = ({
   } = useEditor();
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const quillRef = useRef<Quill | null>(null);
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const updateDocumentMutation = useMutation({
     mutationFn: (content: any) =>
       updateContentDocument(documentId as string, {

@@ -52,11 +52,6 @@ async function sendTranslationRequest(data) {
       throw new Error("Valid priority (1-10) is required");
     if (!data.webhook) throw new Error("Webhook URL is required");
 
-    console.log(
-      `Sending request to translation worker at: ${translation_endpoint}/messages`
-    );
-    console.log("Request data:", { ...data, api_key: "***REDACTED***" });
-
     const response = await fetch(`${translation_endpoint}/messages`, {
       method: "POST",
       headers: {
@@ -83,7 +78,7 @@ async function sendTranslationRequest(data) {
       throw new Error(
         `Translation request failed: ${
           errorData.message || response.statusText
-        }`
+        } ${JSON.stringify(errorData)}`
       );
     }
 

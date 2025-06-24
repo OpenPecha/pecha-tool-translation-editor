@@ -1,15 +1,14 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import App from "./App";
 import "./index.css";
 import { Auth0ProviderWithNavigate } from "./auth/auth0-provider";
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
+const rootElement = document.getElementById("root");
+if (!rootElement) throw new Error("Failed to find the root element");
 
-// Create a client
-const queryClient = new QueryClient();
+const root = ReactDOM.createRoot(rootElement);
 
 // if (import.meta.env.MODE === "development") {
 //   const script = document.createElement("script");
@@ -21,9 +20,7 @@ const queryClient = new QueryClient();
 root.render(
   <BrowserRouter>
     <Auth0ProviderWithNavigate>
-      <QueryClientProvider client={queryClient}>
-        <App />
-      </QueryClientProvider>
+      <App />
     </Auth0ProviderWithNavigate>
   </BrowserRouter>
 );

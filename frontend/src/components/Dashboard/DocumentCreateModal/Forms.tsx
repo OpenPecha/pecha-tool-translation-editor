@@ -9,7 +9,7 @@ import MetaDataInput from "./MetaDataInput";
 import { createProject } from "@/api/project";
 import { Button } from "@/components/ui/button";
 import PechaView from "./PechaView";
-import { useTranslation } from "react-i18next";
+import { useTranslate } from "@tolgee/react";
 
 export type SelectedPechaType = {
   id: string;
@@ -174,7 +174,7 @@ export const DocumentCreateModalFooter = ({
   readonly closeModal: () => void;
   readonly disable: boolean;
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   return (
     <DialogFooter className="flex w-full sm:justify-between mt-2 ">
       <Button

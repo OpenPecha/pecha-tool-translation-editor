@@ -11,12 +11,12 @@ import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import PlusIcon from "@/assets/plus.svg";
-import { useTranslation } from "react-i18next";
+import { useTranslate } from "@tolgee/react";
 function DocumentCreateModal() {
   const [projectName, setProjectName] = useState("");
   const [open, setOpen] = useState(false);
   const closeModal = () => setOpen(false);
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger className="cursor-pointer ">

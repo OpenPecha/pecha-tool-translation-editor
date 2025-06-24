@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Project } from "@/api/project";
 import { Button } from "@/components/ui/button";
 import { Input } from "../ui/input";
-import { useTranslation } from "react-i18next";
+import { useTranslate } from "@tolgee/react";
 
 interface EditProjectModalProps {
   project: Project;
@@ -17,7 +17,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
 }) => {
   const [name, setName] = useState(project.name);
   const [isUpdating, setIsUpdating] = useState(false);
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsUpdating(true);

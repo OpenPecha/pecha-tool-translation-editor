@@ -10,7 +10,7 @@ import DocIcon from "@/assets/doc_icon.png";
 import ShareModal from "./ShareModal";
 import { BiShare } from "react-icons/bi";
 import ProfileArea from "./ProfileArea";
-import { useTranslation } from "react-i18next";
+import { useTranslate } from "@tolgee/react";
 
 type Project = {
   id: string;
@@ -156,7 +156,7 @@ export function NavMenuList({
 }: {
   readonly permissionsOpen: (e: React.MouseEvent) => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   return (
     <div className="flex gap-3 font-google-sans">
       <Button

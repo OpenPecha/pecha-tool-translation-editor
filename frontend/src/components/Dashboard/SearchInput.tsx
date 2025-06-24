@@ -3,14 +3,14 @@ import { ChangeEvent, useEffect, useState, memo } from "react";
 import useDebounce from "@/hooks/useDebounce";
 import { MdOutlineSearch } from "react-icons/md";
 import { useSearchStore } from "@/stores/searchStore";
-import { useTranslation } from "react-i18next";
+import { useTranslate } from "@tolgee/react";
 /**
  * SearchInput component that provides a search field with debounced input
  * and analytics tracking capabilities.
  */
 const SearchInput = () => {
   const { searchQuery, setSearchQuery } = useSearchStore();
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const [inputValue, setInputValue] = useState<string>(searchQuery || "");
 
   const debouncedValue = useDebounce(inputValue?.toLowerCase(), 1000);

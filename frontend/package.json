@@ -28,6 +28,7 @@
     "@radix-ui/react-tooltip": "^1.2.4",
     "@tailwindcss/vite": "^4.0.15",
     "@tanstack/react-query": "^5.74.3",
+    "@tolgee/react": "^6.2.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "devtools-detect": "^4.0.2",

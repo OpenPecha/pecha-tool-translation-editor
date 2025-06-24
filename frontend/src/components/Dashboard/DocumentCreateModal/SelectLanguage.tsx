@@ -1,7 +1,7 @@
 import { Label } from "@/components/ui/label";
 import { memo, useCallback } from "react";
 import { languages } from "@/utils/Constants";
-import { useTranslation } from "react-i18next";
+import { useTranslate } from "@tolgee/react";
 
 function SelectLanguage({
   selectedLanguage,
@@ -10,7 +10,7 @@ function SelectLanguage({
   readonly selectedLanguage: string;
   readonly setSelectedLanguage: (language: string) => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       setSelectedLanguage(e.target.value);

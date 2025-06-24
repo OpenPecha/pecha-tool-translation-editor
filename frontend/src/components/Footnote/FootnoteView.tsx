@@ -13,7 +13,7 @@ import { ScrollArea } from "../ui/scroll-area";
 import emitter from "@/services/eventBus";
 import { useEditor } from "@/contexts/EditorContext";
 import Quill from "quill";
-import { useTranslation } from "react-i18next";
+import { useTranslate } from "@tolgee/react";
 
 interface Footnote {
   id: string;
@@ -279,7 +279,7 @@ function FootnoteView({ documentId }: { readonly documentId: string }) {
       emitter?.off("showfootnotebubble", openHandler);
     };
   }, [documentId]);
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   return (
     <Accordion
       type="single"

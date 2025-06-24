@@ -20,7 +20,7 @@ import SelectPechas, {
 import { useParams } from "react-router-dom";
 import SegmentationOptions from "./SegmentationOptions";
 import { models, token_limit } from "@/config";
-import { useTranslation } from "react-i18next";
+import { useTranslate } from "@tolgee/react";
 
 interface CreateTranslationModalProps {
   rootId: string;
@@ -41,7 +41,7 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
     null
   );
   const [translationId, setTranslationId] = useState<string | null>(null);
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   useEffect(() => {
     if (translationId) {
       onClose();

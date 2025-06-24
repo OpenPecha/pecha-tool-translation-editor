@@ -7,7 +7,7 @@ import EachProject from "./EachProject";
 import { useAuth } from "@/auth/use-auth-hook";
 import { FaSpinner } from "react-icons/fa";
 import { useSearchStore } from "@/stores/searchStore";
-import { useTranslation } from "react-i18next";
+import { useTranslate } from "@tolgee/react";
 
 const ProjectList = () => {
   const { searchQuery } = useSearchStore();
@@ -23,7 +23,7 @@ const ProjectList = () => {
   });
   const { data: projects, pagination } = data;
   const totalPages = Math.ceil(pagination?.totalItems / limit);
-  const { t } = useTranslation();
+  const { t } = useTranslate();
 
   const showLoader = isLoading || isFetching || isPending;
 
@@ -80,7 +80,7 @@ const ProjectsGrid = ({
   setView: (view: "grid" | "list") => void;
 }) => {
   const [showAll, setShowAll] = useState<boolean>(true);
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { currentUser } = useAuth();
   return (
     <div className="mb-8 ">

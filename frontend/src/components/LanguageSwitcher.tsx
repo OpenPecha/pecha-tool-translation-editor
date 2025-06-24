@@ -1,18 +1,17 @@
-import { useTranslation } from "react-i18next";
+import { useTranslate, useTolgee } from "@/localization/TolgeeWrapper";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
-import { MdLanguage } from "react-icons/md";
 import { i18n_languages } from "@/utils/Constants";
 import { useEffect } from "react";
 import useLocalStorage from "@/hooks/useLocalStorage";
 
 const LanguageSwitcher = () => {
-  const { i18n, t } = useTranslation();
+  const { t } = useTranslate();
+  const tolgee = useTolgee(["language"]);
   const [currentLanguage, setCurrentLanguage] = useLocalStorage(
     "language",
     "en"
@@ -20,14 +19,14 @@ const LanguageSwitcher = () => {
 
   const changeLanguage = (lng: string) => {
     setCurrentLanguage(lng);
-    i18n.changeLanguage(lng);
+    tolgee.changeLanguage(lng);
   };
 
   const selectedLanguage =
     i18n_languages.find((lang) => lang.code === currentLanguage) ||
     i18n_languages[0];
   useEffect(() => {
-    i18n.changeLanguage(currentLanguage);
+    tolgee.changeLanguage(currentLanguage);
   }, [currentLanguage]);
   return (
     <div className="flex items-center gap-2">

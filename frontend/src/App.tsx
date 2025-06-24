@@ -8,8 +8,7 @@ import Login from "./pages/Login";
 import DocumentsWrapper from "./components/DocumentWrapper";
 import Navbar from "./components/Dashboard/Navbar";
 import OpenPecha from "./assets/icon.png";
-import { useTranslation } from "react-i18next";
-import "@/localization/i18n";
+import TolgeeWrapper, { useTolgee } from "./localization/TolgeeWrapper";
 
 const ProjectList = lazy(() => import("./components/Dashboard/ProjectList"));
 const QuillVersionProvider = lazy(() =>
@@ -74,8 +73,9 @@ function Footer() {
 }
 
 function AppContent() {
-  const { i18n } = useTranslation();
-  const currentLanguage = i18n.language;
+  const tolgee = useTolgee();
+  const currentLanguage = tolgee.getLanguage();
+
   return (
     <div
       className={`flex flex-col h-full ${
@@ -119,7 +119,9 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <AppContent />
+        <TolgeeWrapper>
+          <AppContent />
+        </TolgeeWrapper>
       </AuthProvider>
     </QueryClientProvider>
   );

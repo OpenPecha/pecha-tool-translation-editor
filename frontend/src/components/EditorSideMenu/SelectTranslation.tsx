@@ -9,7 +9,7 @@ import { fetchTranslationStatus } from "@/api/document";
 
 // Import components
 import TranslationList from "./components/TranslationList";
-import { useTranslation } from "react-i18next";
+import { useTranslate } from "@tolgee/react";
 
 function SelectTranslation({
   setSelectedTranslationId,
@@ -17,7 +17,7 @@ function SelectTranslation({
   readonly setSelectedTranslationId: (id: string) => void;
 }) {
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { id } = useParams();
   const rootId = id as string;
   const { translations, refetchTranslations } =

@@ -17,7 +17,7 @@ import {
   useTableOfContentOpenStore,
 } from "@/stores/tableOfContentStore";
 import { BookOpen, Dot } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { useTranslate } from "@tolgee/react";
 
 interface Heading {
   text: string;
@@ -188,7 +188,7 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
       editorContainer.scrollTop = currentScrollTop + 1;
     }
   };
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   return (
     <>
       <Button

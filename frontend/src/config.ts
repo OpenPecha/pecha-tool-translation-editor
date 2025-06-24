@@ -9,8 +9,8 @@ export const models = {
       value: "claude-sonnet-4-20250514",
     },
     {
-      name: "claude-3-haiku",
-      value: "claude-3-haiku-20240307",
+      name: "Claude Sonnet 3.7",
+      value: "claude-3-7-sonnet-20250219",
     },
   ],
   default: "claude-sonnet-4-20250514",
