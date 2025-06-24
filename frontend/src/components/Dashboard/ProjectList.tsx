@@ -147,11 +147,12 @@ const ProjectsGrid = ({
             : "flex-col"
         }`}
       >
-        {projects
-          .filter((project) => showAll || project.ownerId !== currentUser?.id)
-          .map((project) => (
-            <EachProject view={view} key={project.id} project={project} />
-          ))}
+        {projects.length > 0 &&
+          projects
+            .filter((project) => showAll || project.ownerId !== currentUser?.id)
+            .map((project) => (
+              <EachProject view={view} key={project.id} project={project} />
+            ))}
       </div>
     </div>
   );
