@@ -9,6 +9,7 @@ import { fetchTranslationStatus } from "@/api/document";
 
 // Import components
 import TranslationList from "./components/TranslationList";
+import { useTranslation } from "react-i18next";
 
 function SelectTranslation({
   setSelectedTranslationId,
@@ -16,7 +17,7 @@ function SelectTranslation({
   readonly setSelectedTranslationId: (id: string) => void;
 }) {
   const [showCreateModal, setShowCreateModal] = useState(false);
-
+  const { t } = useTranslation();
   const { id } = useParams();
   const rootId = id as string;
   const { translations, refetchTranslations } =
@@ -79,7 +80,7 @@ function SelectTranslation({
     <div className="rounded-lg overflow-hidden">
       <div className="flex justify-between items-center mb-4">
         <h3 className="font-medium font-google-sans text-gray-700">
-          Translations
+          {t("translation.translations")}
         </h3>
         <Button
           onClick={() => setShowCreateModal(true)}

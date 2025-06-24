@@ -20,6 +20,7 @@ import SelectPechas, {
 import { useParams } from "react-router-dom";
 import SegmentationOptions from "./SegmentationOptions";
 import { models, token_limit } from "@/config";
+import { useTranslation } from "react-i18next";
 
 interface CreateTranslationModalProps {
   rootId: string;
@@ -40,7 +41,7 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
     null
   );
   const [translationId, setTranslationId] = useState<string | null>(null);
-
+  const { t } = useTranslation();
   useEffect(() => {
     if (translationId) {
       onClose();
@@ -54,7 +55,9 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
       <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
         <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold">Create Translation</h2>
+          <h2 className="text-lg font-semibold">
+            {t("translation.createTranslation")}
+          </h2>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>

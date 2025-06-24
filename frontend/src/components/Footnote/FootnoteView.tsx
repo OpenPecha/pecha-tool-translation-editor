@@ -13,6 +13,7 @@ import { ScrollArea } from "../ui/scroll-area";
 import emitter from "@/services/eventBus";
 import { useEditor } from "@/contexts/EditorContext";
 import Quill from "quill";
+import { useTranslation } from "react-i18next";
 
 interface Footnote {
   id: string;
@@ -278,7 +279,7 @@ function FootnoteView({ documentId }: { readonly documentId: string }) {
       emitter?.off("showfootnotebubble", openHandler);
     };
   }, [documentId]);
-
+  const { t } = useTranslation();
   return (
     <Accordion
       type="single"
@@ -297,7 +298,9 @@ function FootnoteView({ documentId }: { readonly documentId: string }) {
         >
           <div className="flex items-center gap-2 text-gray-600">
             <FileText className="h-4 w-4" />
-            <span className="text-sm font-medium ">Footnotes</span>
+            <span className="text-sm font-medium ">
+              {t("editor.footnotes")}
+            </span>
           </div>
         </AccordionTrigger>
         <AccordionContent className="h-[20vh] overflow-y-auto relative">

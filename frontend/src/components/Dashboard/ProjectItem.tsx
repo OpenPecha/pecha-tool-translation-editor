@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { BiRename } from "react-icons/bi";
+import { useTranslation } from "react-i18next";
 
 interface ProjectItemProps {
   title: string;
@@ -177,7 +178,7 @@ function ProjectItemDropdownMenu({
     }
     setOpen(false);
   };
-
+  const { t } = useTranslation();
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
@@ -194,12 +195,12 @@ function ProjectItemDropdownMenu({
             <DropdownMenuItem
               onClick={(e) => handleCloseClick(e, updateDocument)}
             >
-              <BiRename /> Rename
+              <BiRename /> {t("common.rename")}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={(e) => handleCloseClick(e, deleteDocument)}
             >
-              <RiDeleteBin6Line /> Remove
+              <RiDeleteBin6Line /> {t("common.remove")}
             </DropdownMenuItem>
           </>
         )}
@@ -213,7 +214,7 @@ function ProjectItemDropdownMenu({
           >
             <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z" />
           </svg>
-          Open in a new tab
+          {t("common.openinnewtab")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

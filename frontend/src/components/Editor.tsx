@@ -15,6 +15,7 @@ import CommentBubble from "./Comment/CommentBubble";
 import { createPortal } from "react-dom";
 import FootnoteInitialize from "./Footnote/FootnoteInitialize";
 import FootnoteView from "./Footnote/FootnoteView";
+import { useTranslation } from "react-i18next";
 quill_import();
 
 const Editor = ({
@@ -42,6 +43,7 @@ const Editor = ({
   } = useEditor();
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const quillRef = useRef<Quill | null>(null);
+  const { t } = useTranslation();
   const updateDocumentMutation = useMutation({
     mutationFn: (content: any) =>
       updateContentDocument(documentId as string, {
@@ -248,9 +250,12 @@ const Editor = ({
             <FootnoteView documentId={documentId} />
           </div>
           {createPortal(
-            <div id={`${counterId}`}>0 Characters</div>,
+            <div id={`${counterId}`} className="leading-[normal]">
+              0 {t("editor.characters")}
+            </div>,
             document.getElementById("counter")!
           )}
+
           {showCommentModal && (
             <CommentInitialize
               documentId={documentId}

@@ -57,6 +57,14 @@ function VersionList({ handleViewAll }: { handleViewAll: () => void }) {
 
 function EachVersion({ version }: { version: Version }) {
   const { currentVersionId, loadVersion, deleteVersion } = useQuillVersion();
+
+  const handleVersionSelect = () => {
+    if (version.id === currentVersionId) {
+      alert("You need to save the current version first");
+      return;
+    }
+    loadVersion(version.id);
+  };
   return (
     <div
       key={version.id}
@@ -68,8 +76,7 @@ function EachVersion({ version }: { version: Version }) {
         <div className="font-sm">{version.label}</div>
         <div className="flex gap-2">
           <button
-            onClick={() => loadVersion(version.id)}
-            disabled={version.id === currentVersionId}
+            onClick={handleVersionSelect}
             title="Load version"
             className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm"
           >

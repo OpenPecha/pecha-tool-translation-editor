@@ -8,6 +8,7 @@ import { useMatomo } from "@datapunt/matomo-tracker-react";
 import { useAuth } from "@/auth/use-auth-hook";
 import { FaSpinner } from "react-icons/fa";
 import { useSearchStore } from "@/stores/searchStore";
+import { useTranslation } from "react-i18next";
 
 const ProjectList = () => {
   const { searchQuery } = useSearchStore();
@@ -23,7 +24,7 @@ const ProjectList = () => {
   });
   const { data: projects, pagination } = data;
   const totalPages = Math.ceil(pagination?.totalItems / limit);
-
+  const { t } = useTranslation();
   useEffect(() => {
     const result_count = projects?.length;
     if (searchQuery && data?.pagination) {
@@ -42,7 +43,7 @@ const ProjectList = () => {
       <div className="pt-10 px-6">
         <div className="max-w-5xl mx-auto">
           <h1 className="text-lg font-medium mb-6 text-gray-700">
-            Start a new project
+            {t(`projects.startNewProject`)}
           </h1>
           <DocumentCreateModal />
         </div>
@@ -92,11 +93,14 @@ const ProjectsGrid = ({
   setView: (view: "grid" | "list") => void;
 }) => {
   const [showAll, setShowAll] = useState<boolean>(true);
+  const { t } = useTranslation();
   const { currentUser } = useAuth();
   return (
     <div className="mb-8 ">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-base font-medium text-gray-700">Your Projects</h2>
+        <h2 className="text-base font-medium text-gray-700">
+          {t("projects.yourproject")}
+        </h2>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -105,7 +109,9 @@ const ProjectsGrid = ({
             onClick={() => setShowAll((p) => !p)}
             color="white"
           >
-            {!showAll ? "All Projects" : "Shared Projects"}
+            {!showAll
+              ? t("projects.allprojects")
+              : t("projects.sharedprojects")}
           </Button>
           <div className="flex gap-1">
             {view === "list" ? (

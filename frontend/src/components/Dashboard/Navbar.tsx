@@ -1,17 +1,11 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import SearchInput from "./SearchInput";
-import { memo, useState } from "react";
 import NavSidebar from "./NavSidebar";
 import { useAuth } from "@/auth/use-auth-hook";
 import AppLauncher from "@/components/Applauncher";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import DocIcon from "@/assets/doc_icon.png";
+import ProfileArea from "../ProfileArea";
 const Navbar = () => {
   const { login, isAuthenticated } = useAuth();
   return (
@@ -47,39 +41,5 @@ const Navbar = () => {
     </nav>
   );
 };
-
-const ProfileArea = memo(() => {
-  const [isOpen, setIsOpen] = useState(false);
-  const { currentUser, logout } = useAuth();
-
-  const onLogout = () => {
-    logout();
-    setIsOpen(false);
-  };
-
-  return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
-        <Avatar>
-          <AvatarImage src={currentUser?.picture} />
-          <AvatarFallback style={{ backgroundColor: "#f59e0b", color: "#fff" }}>
-            {currentUser?.name?.slice(0, 2)}
-          </AvatarFallback>
-        </Avatar>
-      </PopoverTrigger>
-      <PopoverContent align="end">
-        <span className="p-3 capitalize font-medium text-gray-700">
-          {currentUser?.name}
-        </span>
-        <button
-          onClick={onLogout}
-          className="block w-full text-left px-4 py-2 text-sm  hover:bg-gray-100"
-        >
-          Logout
-        </button>
-      </PopoverContent>
-    </Popover>
-  );
-});
 
 export default Navbar;

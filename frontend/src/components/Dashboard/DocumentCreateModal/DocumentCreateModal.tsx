@@ -11,11 +11,12 @@ import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import PlusIcon from "@/assets/plus.svg";
+import { useTranslation } from "react-i18next";
 function DocumentCreateModal() {
   const [projectName, setProjectName] = useState("");
   const [open, setOpen] = useState(false);
   const closeModal = () => setOpen(false);
-
+  const { t } = useTranslation();
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger className="cursor-pointer ">
@@ -24,31 +25,32 @@ function DocumentCreateModal() {
             <div className=" p-4 rounded-full flex items-center justify-center  transition-colors">
               <img src={PlusIcon} width={90} alt="" />
             </div>
-            <p className="mt-4 text-sm text-gray-700">Create New Project</p>
           </div>
         </div>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[60%] w-[95%] max-h-[90vh] overflow-hidden">
         <DialogHeader>
-          <DialogTitle className="text-xl">Create Project</DialogTitle>
+          <DialogTitle className="text-xl">
+            {t(`projects.createProject`)}
+          </DialogTitle>
         </DialogHeader>
         <div className="grid w-full items-center gap-1.5 mb-2">
-          <Label htmlFor="projectName">Project Name</Label>
+          <Label htmlFor="projectName">{t(`projects.projectName`)}</Label>
           <Input
             id="projectName"
             value={projectName}
             className="w-full"
             onChange={(e) => setProjectName(e.target.value)}
-            placeholder="Enter project name"
+            placeholder={t(`projects.enterProjectName`)}
           />
         </div>
         <Tabs defaultValue="upload" className="w-full">
           <TabsList className="w-full">
             <TabsTrigger value="upload" className="cursor-pointer">
-              File
+              {t("common.file")}
             </TabsTrigger>
             <TabsTrigger value="OpenPecha" className="cursor-pointer">
-              OpenPecha
+              {t("common.openpecha")}
             </TabsTrigger>
           </TabsList>
           <TabsContent value="upload">

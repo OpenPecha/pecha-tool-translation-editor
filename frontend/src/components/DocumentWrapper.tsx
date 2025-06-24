@@ -9,10 +9,7 @@ import Navbar from "./Navbar";
 import { useDevToolsStatus } from "@/hooks/useDevToolStatus";
 import { createPortal } from "react-dom";
 import { IoIosArrowForward } from "react-icons/io";
-import {
-  fetchTranslationStatus,
-  fetchTranslationStatusByJobId,
-} from "@/api/document";
+import { fetchTranslationStatusByJobId } from "@/api/document";
 import { useQuery } from "@tanstack/react-query";
 
 export type { Translation } from "@/hooks/useCurrentDoc";
@@ -88,7 +85,10 @@ function TranslationEditor({
   readonly handleSelectTranslation: (translationId: string | null) => void;
 }) {
   const { currentDoc } = useCurrentDoc(selectedTranslationId);
-  if (currentDoc?.translationStatus !== "completed") {
+  if (
+    currentDoc?.translationStatus &&
+    currentDoc?.translationStatus !== "completed"
+  ) {
     return (
       <TranslationFetcher
         jobId={currentDoc?.translationJobId!}
@@ -97,7 +97,7 @@ function TranslationEditor({
     );
   }
   return (
-    <div className="relative w-full flex flex-1 group">
+    <div className="flex-1  relative w-full flex group">
       <div className="relative h-full">
         {/* Vertical Line (hidden by default, shows on hover) */}
         <div className="absolute left-1/2 top-0 h-full w-px bg-gray-300 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
@@ -135,7 +135,6 @@ function TranslationFetcher({
     refetchInterval: 2000,
     enabled: !!jobId,
   });
-  console.log(data);
   useEffect(() => {
     if (data?.status?.status_type === "completed") {
       setTimeout(() => {

@@ -9,6 +9,7 @@ import MetaDataInput from "./MetaDataInput";
 import { createProject } from "@/api/project";
 import { Button } from "@/components/ui/button";
 import PechaView from "./PechaView";
+import { useTranslation } from "react-i18next";
 
 export type SelectedPechaType = {
   id: string;
@@ -53,11 +54,6 @@ export function NewPechaForm({
   });
 
   const handleCreateProject = () => {
-    if (!rootId) {
-      setError("Root document is required");
-      return;
-    }
-
     if (!projectName) {
       setError("Project name is required");
       return;
@@ -66,7 +62,7 @@ export function NewPechaForm({
   };
 
   return (
-    <div className="p-4">
+    <>
       {error != "" && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           {error}
@@ -98,7 +94,7 @@ export function NewPechaForm({
         closeModal={closeModal}
         disable={!rootId || !selectedLanguage || selectedLanguage === ""}
       />
-    </div>
+    </>
   );
 }
 
@@ -113,19 +109,19 @@ export function PechaFromOpenPecha({
     null
   );
   const [error, setError] = useState("");
-  const [rootId, setRootId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   //selected datas
   const createProjectMutation = useMutation({
-    mutationFn: () => {
+    mutationFn: ({ rootId }: { rootId: string }) => {
       if (!projectName) {
         throw new Error("Project name is required");
       }
+
       return createProject({
         name: projectName,
         identifier: projectName.toLowerCase().replace(/\s+/g, "-"),
-        rootId: rootId ?? undefined,
+        rootId: rootId,
       });
     },
     onSuccess: (data) => {
@@ -139,20 +135,15 @@ export function PechaFromOpenPecha({
     },
   });
 
-  const handleCreateProject = () => {
-    if (!rootId) {
-      setError("Root document is required");
-      return;
-    }
-
+  const handleCreateProject = (rootId: string) => {
     if (!projectName) {
       setError("Project name is required");
       return;
     }
-    createProjectMutation.mutate();
+    createProjectMutation.mutate({ rootId });
   };
   return (
-    <div className="p-4">
+    <>
       {error != "" && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           {error}
@@ -165,23 +156,16 @@ export function PechaFromOpenPecha({
       {selectedPecha?.id && (
         <PechaView
           isRoot={true}
-          rootId={rootId ?? undefined}
-          setRootId={setRootId}
           selectedPecha={selectedPecha}
+          closeModal={closeModal}
+          handleCreateProject={handleCreateProject}
         />
       )}
-      <DocumentCreateModalFooter
-        createDoc={handleCreateProject}
-        closeModal={closeModal}
-        disable={
-          !rootId || !selectedPecha?.language || selectedPecha.language === ""
-        }
-      />
-    </div>
+    </>
   );
 }
 
-function DocumentCreateModalFooter({
+export const DocumentCreateModalFooter = ({
   createDoc,
   closeModal,
   disable,
@@ -189,16 +173,17 @@ function DocumentCreateModalFooter({
   readonly createDoc: () => void;
   readonly closeModal: () => void;
   readonly disable: boolean;
-}) {
+}) => {
+  const { t } = useTranslation();
   return (
-    <DialogFooter className="flex w-full sm:justify-between mt-2">
+    <DialogFooter className="flex w-full sm:justify-between mt-2 ">
       <Button
         type="button"
         variant="ghost"
         className="px-4 py-2  text-gray-700 rounded cursor-pointer"
         onClick={closeModal}
       >
-        Cancel
+        {t("common.cancel")}
       </Button>
       <Button
         type="button"
@@ -206,8 +191,8 @@ function DocumentCreateModalFooter({
         onClick={createDoc}
         disabled={disable}
       >
-        Create
+        {t("common.create")}
       </Button>
     </DialogFooter>
   );
-}
+};

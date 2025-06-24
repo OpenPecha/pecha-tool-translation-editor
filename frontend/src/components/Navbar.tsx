@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { User } from "@auth0/auth0-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useAuth } from "../auth/use-auth-hook";
@@ -8,9 +7,10 @@ import { Button } from "./ui/button";
 import { updateDocument } from "@/api/document";
 
 import DocIcon from "@/assets/doc_icon.png";
-import AvatarWrapper from "./ui/custom-avatar";
 import ShareModal from "./ShareModal";
 import { BiShare } from "react-icons/bi";
+import ProfileArea from "./ProfileArea";
+import { useTranslation } from "react-i18next";
 
 type Project = {
   id: string;
@@ -18,11 +18,9 @@ type Project = {
 };
 
 const Navbar = ({ title, project }: { title?: string; project: Project }) => {
-  const { currentUser, logout, login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const [showPermissionsModal, setShowPermissionsModal] = useState(false);
-  const handleLogout = () => {
-    logout();
-  };
+
   const handleAuth0Login = () => {
     login(false);
   };
@@ -56,7 +54,7 @@ const Navbar = ({ title, project }: { title?: string; project: Project }) => {
       <div className="flex items-center gap-4">
         <NavMenuList permissionsOpen={permissionsOpen} />
         {isAuthenticated ? (
-          <ProfileArea handleLogout={handleLogout} currentUser={currentUser} />
+          <ProfileArea />
         ) : (
           <Button
             onClick={handleAuth0Login}
@@ -76,51 +74,6 @@ const Navbar = ({ title, project }: { title?: string; project: Project }) => {
     </nav>
   );
 };
-
-function ProfileArea({
-  handleLogout,
-  currentUser,
-}: {
-  readonly handleLogout: () => void;
-  readonly currentUser: User | null;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const toggleDropdown = () => setIsOpen(!isOpen);
-
-  const onLogout = () => {
-    handleLogout();
-    setIsOpen(false);
-  };
-
-  return (
-    <div className="relative">
-      <div
-        className="text-gray-700 text-sm flex gap-1 items-center cursor-pointer"
-        onClick={toggleDropdown}
-      >
-        <AvatarWrapper
-          imageUrl={currentUser?.picture}
-          name={currentUser?.name}
-          size={32}
-        />
-      </div>
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-[999999]">
-          <span className="p-3 capitalize font-medium text-gray-700">
-            {currentUser?.name}
-          </span>
-          <button
-            onClick={onLogout}
-            className="block w-full text-left px-4 py-2 text-sm  hover:bg-gray-100"
-          >
-            Logout
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
 
 function TitleWrapper({ title }: { readonly title: string }) {
   // Create a separate component for the input to avoid conditional hook calls
@@ -181,7 +134,7 @@ function TitleInput({ initialTitle }: { readonly initialTitle: string }) {
   };
 
   return (
-    <div className="inline-block">
+    <div className="inline-block font-monlam text-lg leading-[normal]">
       <form onSubmit={handleSubmit}>
         <input
           value={inputValue}
@@ -203,6 +156,7 @@ export function NavMenuList({
 }: {
   readonly permissionsOpen: (e: React.MouseEvent) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="flex gap-3 font-google-sans">
       <Button
@@ -212,7 +166,7 @@ export function NavMenuList({
         aria-label="Share document"
       >
         <BiShare className="text-blue-600" />
-        <span>Share</span>
+        <span className="capitalize leading-[normal]">{t("common.share")}</span>
       </Button>
     </div>
   );

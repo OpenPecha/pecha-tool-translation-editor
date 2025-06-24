@@ -12,6 +12,7 @@ import {
   underlineIcon,
   UndoIcon,
 } from "../Toolbar/ToolbarIcons";
+import { t } from "i18next";
 
 const customHeaders: any[] = [];
 export default function quill_import() {
@@ -29,7 +30,7 @@ export default function quill_import() {
         if (options.unit === "word") {
           container.innerText = text.split(/\s+/).length + " words";
         } else {
-          container.innerText = text?.length + " Characters";
+          container.innerText = text?.length + " " + t("editor.characters");
         }
       });
   });
