@@ -8,7 +8,7 @@ import Login from "./pages/Login";
 import DocumentsWrapper from "./components/DocumentWrapper";
 import Navbar from "./components/Dashboard/Navbar";
 import OpenPecha from "./assets/icon.png";
-import TolgeeWrapper, { useTolgee } from "./localization/TolgeeWrapper";
+import TolgeeProvider, { useCurrentLanguage } from "./contexts/TolgeeContext";
 
 const ProjectList = lazy(() => import("./components/Dashboard/ProjectList"));
 const QuillVersionProvider = lazy(() =>
@@ -73,12 +73,10 @@ function Footer() {
 }
 
 function AppContent() {
-  const tolgee = useTolgee();
-  const currentLanguage = tolgee.getLanguage();
-
+  const currentLanguage = useCurrentLanguage();
   return (
     <div
-      className={`flex flex-col h-full ${
+      className={`flex s flex-col h-full ${
         currentLanguage === "bo" && "font-monlam leading-[normal]"
       }`}
     >
@@ -119,9 +117,9 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TolgeeWrapper>
+        <TolgeeProvider>
           <AppContent />
-        </TolgeeWrapper>
+        </TolgeeProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

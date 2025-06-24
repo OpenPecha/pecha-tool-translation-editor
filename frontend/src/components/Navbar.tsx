@@ -10,7 +10,7 @@ import DocIcon from "@/assets/doc_icon.png";
 import ShareModal from "./ShareModal";
 import { BiShare } from "react-icons/bi";
 import ProfileArea from "./ProfileArea";
-import { useTranslate } from "@tolgee/react";
+import { useTolgee, useTranslate } from "@tolgee/react";
 
 type Project = {
   id: string;
@@ -20,7 +20,8 @@ type Project = {
 const Navbar = ({ title, project }: { title?: string; project: Project }) => {
   const { login, isAuthenticated } = useAuth();
   const [showPermissionsModal, setShowPermissionsModal] = useState(false);
-
+  const tolgee = useTolgee();
+  const currentLanguage = tolgee.getLanguage();
   const handleAuth0Login = () => {
     login(false);
   };
@@ -31,7 +32,11 @@ const Navbar = ({ title, project }: { title?: string; project: Project }) => {
     setShowPermissionsModal(true);
   };
   return (
-    <nav className="  px-6 pt-2 flex justify-between items-center">
+    <nav
+      className={`${
+        currentLanguage === "bo" && " leading-[normal]"
+      } px-6 pt-2 flex justify-between items-center`}
+    >
       {/* Logo and Brand */}
       <div className="flex gap-2 items-center">
         <Link

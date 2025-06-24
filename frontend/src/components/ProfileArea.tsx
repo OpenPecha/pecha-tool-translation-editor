@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import AvatarWrapper from "./ui/custom-avatar";
 import { useAuth } from "@/auth/use-auth-hook";
 import { useTranslate } from "@tolgee/react";
+import { useCurrentLanguage } from "@/contexts/TolgeeContext";
 import { MdKeyboardArrowDown, MdLogout } from "react-icons/md";
 import LanguageSwitcher from "./LanguageSwitcher";
 
@@ -9,6 +10,7 @@ function ProfileArea() {
   const [isOpen, setIsOpen] = useState(false);
   const { currentUser, logout: handleLogout } = useAuth();
   const { t } = useTranslate();
+  const currentLanguage = useCurrentLanguage();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const toggleDropdown = () => setIsOpen(!isOpen);
@@ -45,8 +47,12 @@ function ProfileArea() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  console.log(currentLanguage);
   return (
-    <div className="relative " ref={dropdownRef}>
+    <div
+      className={`relative ${currentLanguage === "bo" && "font-monlam-2"} `}
+      ref={dropdownRef}
+    >
       {/* Profile Button */}
       <button
         onClick={toggleDropdown}

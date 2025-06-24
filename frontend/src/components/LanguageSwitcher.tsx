@@ -1,4 +1,4 @@
-import { useTranslate, useTolgee } from "@/localization/TolgeeWrapper";
+import { useTranslate, useSetLanguage } from "@/contexts/TolgeeContext";
 import {
   Select,
   SelectContent,
@@ -6,28 +6,25 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { i18n_languages } from "@/utils/Constants";
-import { useEffect } from "react";
 import useLocalStorage from "@/hooks/useLocalStorage";
 
 const LanguageSwitcher = () => {
   const { t } = useTranslate();
-  const tolgee = useTolgee(["language"]);
+  const setter = useSetLanguage();
   const [currentLanguage, setCurrentLanguage] = useLocalStorage(
-    "language",
+    "selected_language",
     "en"
   );
 
   const changeLanguage = (lng: string) => {
     setCurrentLanguage(lng);
-    tolgee.changeLanguage(lng);
+    setter(lng);
   };
 
   const selectedLanguage =
     i18n_languages.find((lang) => lang.code === currentLanguage) ||
     i18n_languages[0];
-  useEffect(() => {
-    tolgee.changeLanguage(currentLanguage);
-  }, [currentLanguage]);
+
   return (
     <div className="flex items-center gap-2">
       <p className="text-sm text-gray-500">{t("common.language")}</p>
