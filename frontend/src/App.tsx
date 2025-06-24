@@ -40,7 +40,26 @@ function Layout({ children }: { children: React.ReactNode }) {
 
 function LoadingFallback() {
   return (
-    <div className="flex justify-center items-center h-screen">Loading...</div>
+    <div className="flex flex-col justify-center items-center h-screen bg-gray-50">
+      <div className="flex flex-col items-center space-y-6">
+        {/* Logo */}
+        <div className="flex items-center space-x-3">
+          <img
+            src={OpenPecha}
+            alt="OpenPecha"
+            className="w-12 h-12 animate-pulse"
+          />
+          <h1 className="text-2xl font-semibold text-gray-500">OpenPecha</h1>
+        </div>
+
+        {/* Spinner */}
+        <div className="relative">
+          <div className="w-12 h-12 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
+        </div>
+
+        {/* Loading text */}
+      </div>
+    </div>
   );
 }
 
@@ -76,11 +95,13 @@ function AppContent() {
         <Route
           path="/"
           element={
-            <Layout>
-              <Navbar />
-              <ProjectList />
-              <Footer />
-            </Layout>
+            <Suspense fallback={<LoadingFallback />}>
+              <Layout>
+                <Navbar />
+                <ProjectList />
+                <Footer />
+              </Layout>
+            </Suspense>
           }
         />
         <Route path="/login" element={<Login />} />
