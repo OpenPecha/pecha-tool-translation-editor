@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import DocumentCreateModal from "./DocumentCreateModal/DocumentCreateModal";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { fetchProjects, Project } from "@/api/project";
 import EachProject from "./EachProject";
-import { useMatomo } from "@datapunt/matomo-tracker-react";
 import { useAuth } from "@/auth/use-auth-hook";
 import { FaSpinner } from "react-icons/fa";
 import { useSearchStore } from "@/stores/searchStore";
@@ -13,7 +12,6 @@ import { useTranslation } from "react-i18next";
 const ProjectList = () => {
   const { searchQuery } = useSearchStore();
   const [page, setPage] = useState(1);
-  const { trackSiteSearch } = useMatomo();
   const limit = 10;
   const [view, setView] = useState<"grid" | "list">("list");
 
@@ -21,20 +19,11 @@ const ProjectList = () => {
     queryKey: ["projects", searchQuery, page],
     initialData: { data: [] },
     queryFn: () => fetchProjects({ searchQuery, page, limit }),
+    refetchOnWindowFocus: false,
   });
   const { data: projects, pagination } = data;
   const totalPages = Math.ceil(pagination?.totalItems / limit);
   const { t } = useTranslation();
-  useEffect(() => {
-    const result_count = projects?.length;
-    if (searchQuery && data?.pagination) {
-      trackSiteSearch({
-        keyword: searchQuery,
-        category: "search project",
-        count: result_count,
-      });
-    }
-  }, [data]);
 
   const showLoader = isLoading || isFetching || isPending;
 
@@ -60,20 +49,18 @@ const ProjectList = () => {
               <p>You don't have any projects yet. Create one to get started!</p>
             </div>
           )}
+          <ProjectsGrid
+            projects={projects}
+            isLoading={showLoader}
+            view={view}
+            setView={setView}
+          />
           {projects?.length > 0 && (
-            <>
-              <ProjectsGrid
-                projects={projects}
-                isLoading={showLoader}
-                view={view}
-                setView={setView}
-              />
-              <PaginationControls
-                page={page}
-                totalPages={totalPages}
-                onPageChange={setPage}
-              />
-            </>
+            <PaginationControls
+              page={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+            />
           )}
         </div>
       </div>

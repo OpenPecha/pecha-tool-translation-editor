@@ -65,11 +65,7 @@ function Footer() {
       <p className="text-center text-sm text-gray-500 ">
         Powered by{" "}
         <a href="https://openpecha.org/" className=" text-blue-500 ">
-          <img
-            src={OpenPecha}
-            alt="OpenPecha"
-            className="w-4 h-4 inline mr-1 ml-2"
-          />
+          <img src={OpenPecha} alt="OpenPecha" className="w-4 h-4 inline" />{" "}
           OpenPecha
         </a>
       </p>
@@ -86,7 +82,6 @@ function AppContent() {
         currentLanguage === "bo" && "font-monlam leading-[normal]"
       }`}
     >
-      {/* <RouteTracker /> */}
       <Routes>
         <Route
           path="/"

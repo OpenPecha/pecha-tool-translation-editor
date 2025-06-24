@@ -2,13 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import AvatarWrapper from "./ui/custom-avatar";
 import { useAuth } from "@/auth/use-auth-hook";
 import { useTranslation } from "react-i18next";
-import {
-  MdKeyboardArrowDown,
-  MdPerson,
-  MdSettings,
-  MdLogout,
-} from "react-icons/md";
-import SelectLanguage from "./Dashboard/DocumentCreateModal/SelectLanguage";
+import { MdKeyboardArrowDown, MdLogout } from "react-icons/md";
 import LanguageSwitcher from "./LanguageSwitcher";
 
 function ProfileArea() {
@@ -93,9 +87,9 @@ function ProfileArea() {
           <LanguageSwitcher />
           <button
             onClick={onLogout}
-            className="w-full flex items-center py-2 text-sm   cursor-pointer dark:hover:bg-red-900/20 rounded-lg transition-colors duration-150"
+            className="w-min px-2 py-1 flex items-center self-end shadow-md  text-sm gap-2 bg-blue-100 hover:bg-blue-200 cursor-pointer dark:hover:bg-red-900/20 rounded-lg transition-colors duration-150"
           >
-            <span>{t("auth.logout")}</span>
+            <MdLogout /> <span>{t("auth.logout")}</span>
           </button>
         </div>
       </div>
