@@ -41,7 +41,6 @@ const setStoredLanguage = (language: Language): void => {
 };
 
 const tolgee = Tolgee()
-  .use(DevTools())
   .use(FormatSimple())
   .use(BackendFetch())
   .init({
