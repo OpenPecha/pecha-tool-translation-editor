@@ -76,7 +76,9 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
             )}
           </div>
           {subtitle && (
-            <p className="text-xs text-gray-500 truncate">{subtitle}</p>
+            <p className="text-xs text-gray-500 truncate leading-[normal]">
+              {subtitle}
+            </p>
           )}
         </div>
 

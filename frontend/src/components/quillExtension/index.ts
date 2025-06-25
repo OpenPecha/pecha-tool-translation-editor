@@ -12,7 +12,7 @@ import {
   underlineIcon,
   UndoIcon,
 } from "../Toolbar/ToolbarIcons";
-import { t } from "i18next";
+import { tolgee } from "@/contexts/TolgeeContext";
 
 const customHeaders: any[] = [];
 export default function quill_import() {
@@ -21,7 +21,6 @@ export default function quill_import() {
   const Block = Quill.import("blots/block");
   Block.tagName = "p";
   fonts.whitelist = ["initial", "sans-serif", "serif", "monospace", "monlam"];
-
   Quill.register("modules/counter", function (quill: any, options: any) {
     const container = document.querySelector(options.container);
     if (container)
@@ -30,7 +29,7 @@ export default function quill_import() {
         if (options.unit === "word") {
           container.innerText = text.split(/\s+/).length + " words";
         } else {
-          container.innerText = text?.length + " " + t("editor.characters");
+          container.innerText = text?.length;
         }
       });
   });

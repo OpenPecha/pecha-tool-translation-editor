@@ -1,4 +1,9 @@
-import { useTranslate, useSetLanguage } from "@/contexts/TolgeeContext";
+import {
+  useTranslate,
+  useSetLanguage,
+  useCurrentLanguage,
+  Language,
+} from "@/contexts/TolgeeContext";
 import {
   Select,
   SelectContent,
@@ -6,19 +11,13 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { i18n_languages } from "@/utils/Constants";
-import useLocalStorage from "@/hooks/useLocalStorage";
 
 const LanguageSwitcher = () => {
   const { t } = useTranslate();
-  const setter = useSetLanguage();
-  const [currentLanguage, setCurrentLanguage] = useLocalStorage(
-    "selected_language",
-    "en"
-  );
-
-  const changeLanguage = (lng: string) => {
-    setCurrentLanguage(lng);
-    setter(lng);
+  const changeLanguage = useSetLanguage();
+  const currentLanguage = useCurrentLanguage();
+  const setLang = async (lng: Language) => {
+    changeLanguage(lng);
   };
 
   const selectedLanguage =
@@ -28,7 +27,7 @@ const LanguageSwitcher = () => {
   return (
     <div className="flex items-center gap-2">
       <p className="text-sm text-gray-500">{t("common.language")}</p>
-      <Select value={currentLanguage} onValueChange={changeLanguage}>
+      <Select value={currentLanguage} onValueChange={setLang}>
         <SelectTrigger className=" flex-1 bg-white border-2 border-gray-200 rounded-lg shadow-sm hover:border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:hover:border-gray-500">
           <div className="flex items-center space-x-2 gap-2">
             <span className="text-lg">{selectedLanguage?.flag}</span>

@@ -250,8 +250,11 @@ const Editor = ({
             <FootnoteView documentId={documentId} />
           </div>
           {createPortal(
-            <div id={`${counterId}`} className="leading-[normal]">
-              0 {t("editor.characters")}
+            <div className="flex gap-1 items-center">
+              <div id={`${counterId}`} className="leading-[normal]">
+                0
+              </div>
+              {t("editor.characters")}
             </div>,
             document.getElementById("counter")!
           )}

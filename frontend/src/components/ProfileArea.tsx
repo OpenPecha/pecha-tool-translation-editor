@@ -49,10 +49,7 @@ function ProfileArea() {
 
   console.log(currentLanguage);
   return (
-    <div
-      className={`relative ${currentLanguage === "bo" && "font-monlam-2"} `}
-      ref={dropdownRef}
-    >
+    <div className={`relative `} ref={dropdownRef}>
       {/* Profile Button */}
       <button
         onClick={toggleDropdown}
@@ -83,11 +80,10 @@ function ProfileArea() {
       {/* Dropdown Menu */}
       <div
         style={{ display: isOpen ? "block" : "none" }}
-        className="absolute right-0 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-50"
+        className={` ${
+          currentLanguage === "bo" && "font-monlam-2 !text-xs"
+        } absolute right-0 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-50`}
       >
-        {/* Menu Items */}
-        {/* Language Selector */}
-
         {/* Logout Button */}
         <div className="px-4 pt-2 flex flex-col gap-2">
           <LanguageSwitcher />

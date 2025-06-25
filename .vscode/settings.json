@@ -1,0 +1,6 @@
+{
+  "sonarlint.connectedMode.project": {
+    "connectionId": "openpecha",
+    "projectKey": "OpenPecha_monlamai-app-web"
+  }
+}

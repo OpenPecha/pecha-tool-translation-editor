@@ -77,7 +77,7 @@ function AppContent() {
   return (
     <div
       className={`flex s flex-col h-full ${
-        currentLanguage === "bo" && "font-monlam leading-[normal]"
+        currentLanguage === "bo" && "font-monlam-2 !text-md"
       }`}
     >
       <Routes>

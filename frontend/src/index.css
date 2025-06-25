@@ -71,6 +71,7 @@
 
 @theme {
   --font-monlam: monlam, sans-serif ;
+  --font-monlam-2: monlam-2, sans-serif;
   --font-google-sans: 'google-sans', sans-serif;
   --primary-color: rgba(18,223,236,0.1);
 }

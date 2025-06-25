@@ -163,6 +163,6 @@ export const useLanguageOptions = () => {
   };
 };
 
-export { useTranslate, useTolgee };
+export { useTranslate, useTolgee, tolgee };
 export type { Language };
 export default TolgeeContextProvider;
