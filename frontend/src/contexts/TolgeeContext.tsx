@@ -17,6 +17,8 @@ import {
 
 const apiKey = import.meta.env.VITE_APP_TOLGEE_API_KEY;
 const apiUrl = import.meta.env.VITE_APP_TOLGEE_API_URL;
+const environment = import.meta.env.VITE_ENV;
+const prefix = import.meta.env.VITE_APP_TOLGEE_PREFIX;
 
 // Available languages configuration
 const AVAILABLE_LANGUAGES = ["en", "bo", "zh"] as const;
@@ -39,11 +41,14 @@ const setStoredLanguage = (language: Language): void => {
     console.warn("Failed to store language preference:", error);
   }
 };
-const environment = import.meta.env.VITE_ENV;
 const tolgee = Tolgee()
   .use(environment === "development" ? DevTools() : undefined)
   .use(FormatSimple())
-  .use(BackendFetch())
+  .use(
+    BackendFetch({
+      prefix,
+    })
+  )
   .init({
     availableLanguages: [...AVAILABLE_LANGUAGES],
     apiKey: apiKey || "your-api-key-here",
