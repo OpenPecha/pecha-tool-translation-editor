@@ -57,6 +57,7 @@ function FootnoteView({ documentId }: { readonly documentId: string }) {
     queryKey: [`footnotes-${documentId}`],
     queryFn: () => fetchFootnotes(documentId),
     enabled: !!documentId,
+    refetchOnWindowFocus: false,
   });
 
   // Update footnote mutation
@@ -141,10 +142,7 @@ function FootnoteView({ documentId }: { readonly documentId: string }) {
     }
   };
 
-  // Handle different response formats and ensure we have an array
-  const footnotes: Footnote[] = Array.isArray(footnotesData)
-    ? footnotesData
-    : footnotesData?.data || footnotesData?.footnotes || [];
+  const footnotes: Footnote[] = footnotesData || [];
 
   // Get active footnotes from the editor content
   const getActiveFootnotes = (): Footnote[] => {
@@ -197,10 +195,7 @@ function FootnoteView({ documentId }: { readonly documentId: string }) {
   };
 
   // Get active footnotes (already sorted by position)
-  const activeFootnotes = getActiveFootnotes();
-
-  // No need to sort again since getActiveFootnotes already sorts by position
-  const sortedFootnotes = activeFootnotes;
+  const sortedFootnotes = getActiveFootnotes();
 
   const handleFootnoteClick = (footnote: Footnote) => {
     // Find the footnote span in the editor and scroll to it
@@ -251,7 +246,6 @@ function FootnoteView({ documentId }: { readonly documentId: string }) {
 
   const handleAccordionChange = (value: string) => {
     setIsModalOpen(value === "footnotes");
-    handleRefresh();
   };
 
   const handleTriggerClick = () => {
@@ -316,7 +310,7 @@ function FootnoteView({ documentId }: { readonly documentId: string }) {
                 Failed to load footnotes
               </div>
             </div>
-          ) : activeFootnotes.length === 0 ? (
+          ) : sortedFootnotes.length === 0 ? (
             <div className="flex items-center justify-center py-4">
               <div className="text-sm text-muted-foreground">
                 No footnotes found

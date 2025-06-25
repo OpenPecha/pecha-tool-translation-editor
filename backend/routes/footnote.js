@@ -14,14 +14,12 @@ router.get("/", authenticate, async (req, res) => {
     if (docId) {
       footnotes = await prisma.footnote.findMany({
         where: { docId },
-        include: { user: true },
         orderBy: {
           order: "asc",
         },
       });
     } else {
       footnotes = await prisma.footnote.findMany({
-        include: { user: true },
         orderBy: {
           order: "asc",
         },
@@ -42,7 +40,11 @@ router.get("/:docId", authenticate, async (req, res) => {
 
     const footnotes = await prisma.footnote.findMany({
       where: { docId },
-      include: { user: true },
+      select: {
+        threadId: true,
+        content: true,
+        id: true,
+      },
       orderBy: {
         order: "asc",
       },
