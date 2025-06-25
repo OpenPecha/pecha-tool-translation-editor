@@ -39,9 +39,9 @@ const setStoredLanguage = (language: Language): void => {
     console.warn("Failed to store language preference:", error);
   }
 };
-
+const environment = import.meta.env.VITE_ENV;
 const tolgee = Tolgee()
-  .use(DevTools())
+  .use(environment === "development" ? DevTools() : undefined)
   .use(FormatSimple())
   .use(BackendFetch())
   .init({
