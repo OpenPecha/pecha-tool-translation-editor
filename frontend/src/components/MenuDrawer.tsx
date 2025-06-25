@@ -5,6 +5,7 @@ import SyncOptions from "./SyncOptions";
 import useScrollHook from "@/hooks/useScrollHook";
 import { useEditor } from "@/contexts/EditorContext";
 import { BiSync } from "react-icons/bi";
+import { useTranslate } from "@tolgee/react";
 
 function MenuDrawer({
   rootId,
@@ -15,6 +16,7 @@ function MenuDrawer({
 }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const { getQuill } = useEditor();
+  const { t } = useTranslate();
   const quill1 = getQuill(rootId);
   const quill2 = getQuill(translationId);
   const { syncMode, setSyncMode, syncType, setSyncType } = useScrollHook(
@@ -30,7 +32,7 @@ function MenuDrawer({
         className="cursor-pointer flex gap-1 bg-gray-700 text-white px-2 items-center"
       >
         <BiSync />
-        Sync options
+        {t("common.syncOptions")}
       </button>
 
       {/* Drawer */}

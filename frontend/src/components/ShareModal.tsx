@@ -12,6 +12,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/auth/use-auth-hook";
 import ExportButton from "./Export";
+import { useTranslate } from "@tolgee/react";
 
 interface User {
   id: string;
@@ -45,7 +46,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
   const [activeTab, setActiveTab] = useState<"share" | "export">("share");
   const queryClient = useQueryClient();
   const { currentUser } = useAuth();
-
+  const { t } = useTranslate();
   // Fetch project permissions
   const { data: permissionsData, isLoading } = useQuery({
     queryKey: ["projectPermissions", projectId],
@@ -151,7 +152,9 @@ const ShareModal: React.FC<ShareModalProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-4 border-b">
-          <div className="text-lg font-semibold">Share Project</div>
+          <div className="text-lg font-semibold capitalize">
+            {t("share.shareProject")}
+          </div>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
@@ -168,7 +171,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
               }`}
               onClick={() => setActiveTab("share")}
             >
-              Share
+              {t("common.share")}
             </button>
             <button
               className={`px-6 py-3 text-sm font-medium transition-colors ${
@@ -178,7 +181,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
               }`}
               onClick={() => setActiveTab("export")}
             >
-              Export
+              {t("pecha.export")}
             </button>
           </div>
         </div>
@@ -190,7 +193,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
               <form onSubmit={handleAddUser} className="space-y-4">
                 <div>
                   <Label htmlFor="email" className="text-sm font-medium">
-                    Add user by email
+                    {t("share.addUserByEmail")}
                   </Label>
                   <div className="flex gap-2 mt-1">
                     <Input
@@ -207,7 +210,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
                       className="whitespace-nowrap"
                     >
                       <UserPlus className="h-4 w-4 mr-1" />
-                      Add
+                      {t("common.add")}
                     </Button>
                   </div>
                   <div className="flex items-center gap-2 mt-2">
@@ -219,7 +222,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
                       className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
                     <Label htmlFor="canWrite" className="text-sm text-gray-700">
-                      Can edit (otherwise, read-only access)
+                      {t("share.canEdit")} (otherwise, read-only access)
                     </Label>
                   </div>
                 </div>

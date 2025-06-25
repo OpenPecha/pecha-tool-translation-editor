@@ -11,11 +11,14 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { i18n_languages } from "@/utils/Constants";
+import { useTolgee } from "@tolgee/react";
 
 const LanguageSwitcher = () => {
   const { t } = useTranslate();
   const changeLanguage = useSetLanguage();
   const currentLanguage = useCurrentLanguage();
+  const tolgee = useTolgee();
+  const isLoading = tolgee.isLoading();
   const setLang = async (lng: Language) => {
     changeLanguage(lng);
   };
@@ -27,11 +30,24 @@ const LanguageSwitcher = () => {
   return (
     <div className="flex items-center gap-2">
       <p className="text-sm text-gray-500">{t("common.language")}</p>
-      <Select value={currentLanguage} onValueChange={setLang}>
-        <SelectTrigger className=" flex-1 bg-white border-2 border-gray-200 rounded-lg shadow-sm hover:border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:hover:border-gray-500">
+      <Select
+        value={currentLanguage}
+        onValueChange={setLang}
+        disabled={isLoading}
+      >
+        <SelectTrigger className="flex-1 bg-white border-2 border-gray-200 rounded-lg shadow-sm hover:border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:hover:border-gray-500 disabled:opacity-50 disabled:cursor-not-allowed">
           <div className="flex items-center space-x-2 gap-2">
-            <span className="text-lg">{selectedLanguage?.flag}</span>
-            {selectedLanguage?.name}
+            {isLoading ? (
+              <div className="flex items-center space-x-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                <span className="text-sm text-gray-500">Loading...</span>
+              </div>
+            ) : (
+              <>
+                <span className="text-lg">{selectedLanguage?.flag}</span>
+                {selectedLanguage?.name}
+              </>
+            )}
           </div>
         </SelectTrigger>
         <SelectContent className="bg-white border border-gray-200 rounded-lg shadow-xl dark:bg-gray-800 dark:border-gray-600">

@@ -14,6 +14,7 @@ import {
 } from "./ui/tooltip";
 import { useParams } from "react-router-dom";
 import { Card, CardContent } from "./ui/card";
+import { useTranslate } from "@tolgee/react";
 
 export type ExportMode = "single" | "with_translation";
 export type ExportFormat =
@@ -88,7 +89,7 @@ function ExportButton({
   const [exportFormat, setExportFormat] = useState<ExportFormat>("page-view");
   const [exportProgress, setExportProgress] = useState<number>(0);
   const [exportMessage, setExportMessage] = useState<string>("");
-
+  const { t } = useTranslate();
   // Update export format when mode changes
   const handleExportModeChange = (value: ExportMode) => {
     setExportMode(value);
@@ -272,7 +273,9 @@ function ExportButton({
       <div className="flex flex-col w-full gap-2 ">
         {/* Export Mode Selection */}
         <div className="space-y-4">
-          <div className="text-sm font-medium text-gray-900">Export Mode</div>
+          <div className="text-sm font-medium text-gray-900">
+            {t("export.exportMode")}
+          </div>
           <RadioGroup
             value={exportMode}
             onValueChange={(value) =>
@@ -309,7 +312,7 @@ function ExportButton({
         {formatOptions.length > 0 && (
           <div className="mb-4">
             <div className="text-sm font-medium text-gray-900 mb-2">
-              Export Format
+              {t("export.exportFormat")}
             </div>
             <RadioGroup
               value={exportFormat}
@@ -404,11 +407,13 @@ function ExportButton({
                   )}
                 </div>
               ) : (
-                <span className="animate-pulse">Downloading...</span>
+                <span className="animate-pulse">
+                  {t("common.downloading")}...
+                </span>
               )}
             </div>
           ) : (
-            "Download"
+            <span className="capitalize">{t("common.download")}</span>
           )}
         </Button>
       </div>
