@@ -2,12 +2,6 @@ import React from "react";
 import { Translation } from "../../DocumentWrapper";
 import TranslationItem from "./TranslationItem";
 
-interface TranslationStatusData {
-  id: string;
-  translationStatus: string;
-  translationProgress?: number;
-}
-
 interface TranslationListProps {
   translations: Array<
     Translation & {
@@ -15,13 +9,11 @@ interface TranslationListProps {
       translationProgress?: number;
     }
   >;
-  translationStatusData?: TranslationStatusData[];
   setSelectedTranslationId: (id: string) => void;
 }
 
 const TranslationList: React.FC<TranslationListProps> = ({
   translations,
-  translationStatusData,
   setSelectedTranslationId,
 }) => {
   if (translations.length === 0) {
@@ -36,7 +28,6 @@ const TranslationList: React.FC<TranslationListProps> = ({
         <TranslationItem
           key={translation.id}
           translation={translation}
-          translationStatusData={translationStatusData}
           setSelectedTranslationId={setSelectedTranslationId}
         />
       ))}

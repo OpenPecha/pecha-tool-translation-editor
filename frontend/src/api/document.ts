@@ -317,3 +317,30 @@ export const fetchTranslationStatusByJobId = async (jobId: string) => {
     throw new Error("Failed to fetch translation status");
   }
 };
+
+/**
+ * Fetches status for a single translation by its document ID
+ * More efficient than fetching all translations when only one needs updating
+ */
+export const fetchSingleTranslationStatus = async (translationId: string) => {
+  try {
+    const response = await fetch(
+      `${server_url}/documents/translation/${translationId}/status`,
+      {
+        headers: getHeaders(),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error ?? "Failed to fetch translation status");
+    }
+    const respond = await response.json();
+    return respond;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+    throw new Error("Failed to fetch translation status");
+  }
+};

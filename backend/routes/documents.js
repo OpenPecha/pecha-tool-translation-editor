@@ -1453,4 +1453,171 @@ router.get("/translation-status/:jobId", authenticate, async (req, res) => {
   }
 });
 
+/**
+ * GET /documents/translation/{id}/status
+ * @summary Get translation status and progress for a single translation
+ * @tags Documents - Document management operations
+ * @security BearerAuth
+ * @param {string} id.path.required - Translation document ID
+ * @return {object} 200 - Translation status information
+ * @return {object} 403 - Forbidden - No access
+ * @return {object} 404 - Document not found
+ * @return {object} 500 - Server error
+ */
+router.get("/translation/:id/status", authenticate, async (req, res) => {
+  try {
+    const translationId = req.params.id;
+
+    // Get the specific translation
+    const translation = await prisma.doc.findUnique({
+      where: { id: translationId },
+      select: {
+        id: true,
+        name: true,
+        language: true,
+        translationStatus: true,
+        translationProgress: true,
+        translationJobId: true,
+        updatedAt: true,
+        rootId: true,
+        rootsProject: {
+          include: {
+            permissions: true,
+          },
+        },
+      },
+    });
+
+    if (!translation) {
+      return res.status(404).json({
+        success: false,
+        message: "Translation not found",
+      });
+    }
+
+    // Check if user has permission to access this translation
+    const hasPermission = checkDocumentPermission(translation, req.user.id);
+    if (!hasPermission) {
+      return res.status(403).json({
+        success: false,
+        message: "You do not have permission to access this translation",
+      });
+    }
+
+    // Only check status with translation worker if there's a job ID and translation is in progress
+    if (
+      translation.translationJobId &&
+      (translation.translationStatus === "started" ||
+        translation.translationStatus === "pending")
+    ) {
+      try {
+        // Get the latest status directly from the translation worker
+        const status = await getTranslationStatus(translation.translationJobId);
+        console.log(`Status for ${translationId}:`, status);
+
+        // If the translation is completed, update the database to reflect the final state
+        if (status.status.status_type === "completed") {
+          // Create a new Y.Doc to store the translated content
+          const translatedDoc = new WSSharedDoc(
+            translation.identifier,
+            translation.ownerId
+          );
+          const translatedText = translatedDoc.getText(translation.identifier);
+
+          // Insert the translated content
+          if (status?.translated_text) {
+            translatedText.insert(0, status.translated_text);
+          }
+
+          // Get the delta and state
+          const translatedDelta = translatedText.toDelta();
+          const translatedState = Y.encodeStateAsUpdateV2(translatedDoc);
+
+          await prisma.doc.update({
+            where: { id: translation.id },
+            data: {
+              translationStatus: "completed",
+              translationProgress: 100,
+              docs_prosemirror_delta: translatedDelta,
+              docs_y_doc_state: translatedState,
+            },
+          });
+
+          await prisma.version.create({
+            data: {
+              docId: translation.id,
+              label: "auto generated",
+              content: translatedDelta,
+              userId: req.user.id,
+            },
+          });
+
+          // Return the updated translation
+          return res.json({
+            ...translation,
+            translationStatus: "completed",
+            translationProgress: 100,
+          });
+        }
+
+        if (status.status.status_type === "failed") {
+          await prisma.doc.update({
+            where: { id: translation.id },
+            data: {
+              translationStatus: "failed",
+              translationProgress: status.status.progress,
+            },
+          });
+
+          return res.json({
+            ...translation,
+            translationStatus: "failed",
+            translationProgress: status.status.progress,
+          });
+        }
+
+        // If we got a valid status, return it directly without updating the database
+        if (
+          status.status.status_type === "pending" ||
+          status.status.status_type === "progress" ||
+          status.status.status_type === "started"
+        ) {
+          return res.json({
+            ...translation,
+            translationStatus:
+              status.status.status_type || translation.translationStatus,
+            translationProgress:
+              status.status.progress || translation.translationProgress,
+            message: status?.status?.message || "",
+          });
+        }
+      } catch (error) {
+        console.error(
+          `Error checking translation status for ${translationId}:`,
+          error
+        );
+        await prisma.doc.update({
+          where: { id: translation.id },
+          data: {
+            translationStatus: "failed",
+            translationProgress: 0,
+          },
+        });
+
+        return res.json({
+          ...translation,
+          translationStatus: "failed",
+          translationProgress: 0,
+        });
+      }
+    }
+
+    // Return the original translation if no job ID or not in progress
+    res.json(translation);
+  } catch (error) {
+    console.error("Error fetching translation status:", error);
+    res.status(500).json({ error: "Error fetching translation status" });
+  }
+});
+
 module.exports = router;
