@@ -116,8 +116,8 @@ async function getTranslationStatus(messageId) {
         }`
       );
     }
-
-    return await response.json();
+    const jsonResponse = await response.json();
+    return jsonResponse;
   } catch (error) {
     console.error("Translation status check failed:", error);
     throw error;

@@ -1322,8 +1322,7 @@ router.get("/:id/translations/status", authenticate, async (req, res) => {
         // Only check status with translation worker if there's a job ID and translation is in progress
         if (
           translation.translationJobId &&
-          (translation.translationStatus === "progress" ||
-            translation.translationStatus === "started" ||
+          (translation.translationStatus === "started" ||
             translation.translationStatus === "pending")
         ) {
           try {
@@ -1331,7 +1330,7 @@ router.get("/:id/translations/status", authenticate, async (req, res) => {
             const status = await getTranslationStatus(
               translation.translationJobId
             );
-
+            console.log(status);
             // If the translation is completed, update the database to reflect the final state
             if (status.status.status_type === "completed") {
               // Update the database record to mark the translation as completed
@@ -1383,7 +1382,11 @@ router.get("/:id/translations/status", authenticate, async (req, res) => {
               });
             }
             // If we got a valid status, use it directly without updating the database
-            if (status) {
+            if (
+              status.status.status_type === "pending" ||
+              status.status.status_type === "progress" ||
+              status.status.status_type === "started"
+            ) {
               // Return the translation with the updated status from the worker
               return {
                 ...translation,
@@ -1391,6 +1394,7 @@ router.get("/:id/translations/status", authenticate, async (req, res) => {
                   status.status.status_type || translation.translationStatus,
                 translationProgress:
                   status.status.progress || translation.translationProgress,
+                message: status?.status?.message || "",
               };
             }
           } catch (error) {

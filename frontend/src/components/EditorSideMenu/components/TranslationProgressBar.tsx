@@ -16,10 +16,11 @@ interface ProgressBarProps {
   };
 }
 
-const TranslationProgressBar: React.FC<ProgressBarProps> = ({ 
-  translationStatusData, 
-  translation 
+const TranslationProgressBar: React.FC<ProgressBarProps> = ({
+  translationStatusData,
+  translation,
 }) => {
+  console.log(translationStatusData);
   // Get status from status endpoint if available, otherwise use translation data
   const statusFromEndpoint = translationStatusData?.length
     ? translationStatusData?.find((d) => d.id === translation.id)
