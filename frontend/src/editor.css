@@ -213,7 +213,7 @@
   counter-increment: footnote-counter;
 }
 
-.footnote::before {
+.footnote::after {
   content: counter(footnote-counter);
   position: relative;
   margin-right: 0.2em;
