@@ -16,4 +16,4 @@ export const models = {
   default: "claude-3-7-sonnet-20250219",
 };
 
-export const token_limit = 30000;
+export const token_limit = 100000;
