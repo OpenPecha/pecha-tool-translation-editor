@@ -1048,10 +1048,18 @@ function convertProseMirrorDeltaToYDelta(prosemirrorDelta) {
  * @return {object} 400 - Bad request
  * @return {object} 500 - Server error
  */
+
+const api_keys = {
+  claude: process.env.CLAUDE_API_KEY,
+  gemini: process.env.GEMINI_API_KEY,
+};
+
 router.post("/generate-translation", authenticate, async (req, res) => {
   try {
     const { rootId, language, model, use_segmentation } = req.body;
-
+    if (!model || !language) {
+      return res.status(400).json({ error: "Model and language are required" });
+    }
     const isTranslationWorkerHealthy = await getHealthWorker();
     if (!isTranslationWorkerHealthy) {
       return res
@@ -1059,7 +1067,7 @@ router.post("/generate-translation", authenticate, async (req, res) => {
         .json({ error: "Translation worker is not healthy" });
     }
 
-    const apiKey = model.startsWith("claude") ? process.env.CLAUDE_API_KEY : "";
+    const apiKey = api_keys[model.split("-")[0].toLowerCase()] || "";
     if (apiKey === "") {
       return res.status(400).json({ error: "API key is required" });
     }
@@ -1158,7 +1166,7 @@ router.post("/generate-translation", authenticate, async (req, res) => {
         target_language: language,
         document_id: translationId, // Pass the document ID for reference
       },
-      model_name: model || "claude-3-haiku-20240307",
+      model_name: model,
       priority: 5,
       webhook: webhookUrl, // Add the webhook URL
     };
