@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchFootnotes, deleteFootnote, updateFootnote } from "@/api/footnote";
-import { FileText, Edit2, Trash2Icon } from "lucide-react";
+import { FileText, Edit2, Trash2Icon, ChevronDown } from "lucide-react";
 import { Button } from "../ui/button";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
+  AccordionReverseTrigger,
   AccordionTrigger,
 } from "../ui/accordion";
 import { ScrollArea } from "../ui/scroll-area";
@@ -286,8 +287,8 @@ function FootnoteView({ documentId }: { readonly documentId: string }) {
         value="footnotes"
         className="!p-0 !m-0 !rounded-none !bg-transparent !border-none"
       >
-        <AccordionTrigger
-          className="w-full hover:no-underline !p-2 !m-0 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+        <AccordionReverseTrigger
+          className="footnote-trigger w-full hover:no-underline !p-2 !m-0 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
           onClick={handleTriggerClick}
         >
           <div className="flex items-center gap-2 text-gray-600">
@@ -296,7 +297,7 @@ function FootnoteView({ documentId }: { readonly documentId: string }) {
               {t("editor.footnotes")}
             </span>
           </div>
-        </AccordionTrigger>
+        </AccordionReverseTrigger>
         <AccordionContent className="h-[20vh] overflow-y-auto relative">
           {isLoading ? (
             <div className="flex items-center justify-center py-4">
