@@ -156,7 +156,6 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
     currentStatus === "failed" ||
     isDeleting ||
     isUpdating;
-  console.log(statusData);
   return (
     <div key={translation.id} className="flex flex-col w-full">
       <div className="flex items-center w-full">
