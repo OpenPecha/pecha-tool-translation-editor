@@ -9,6 +9,7 @@ import DocumentsWrapper from "./components/DocumentWrapper";
 import Navbar from "./components/Dashboard/Navbar";
 import OpenPecha from "./assets/icon.png";
 import TolgeeProvider, { useCurrentLanguage } from "./contexts/TolgeeContext";
+import Documentation from "./documentation/Documentation";
 
 const ProjectList = lazy(() => import("./components/Dashboard/ProjectList"));
 const QuillVersionProvider = lazy(() =>
@@ -106,6 +107,7 @@ function AppContent() {
             </Suspense>
           }
         />
+        <Route path="/help" element={<Documentation />} />
 
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
