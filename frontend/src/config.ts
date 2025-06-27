@@ -11,6 +11,7 @@ export const models = {
     {
       name: "Gemini 2.5 pro",
       value: "gemini-2.5-pro-exp-06-25",
+      disabled: true,
     },
   ],
   default: "claude-3-7-sonnet-20250219",

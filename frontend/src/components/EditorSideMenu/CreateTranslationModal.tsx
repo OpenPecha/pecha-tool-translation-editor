@@ -189,8 +189,17 @@ const AITranslation = ({
           </SelectTrigger>
           <SelectContent className="z-[10000]">
             {models.options.map((model) => (
-              <SelectItem key={model.name} value={model.value}>
-                {model.name}
+              <SelectItem
+                key={model.name}
+                value={model.value}
+                disabled={model.disabled}
+              >
+                <>
+                  {model.name}{" "}
+                  {model.disabled && (
+                    <span className="text-red-500">(Coming Soon)</span>
+                  )}
+                </>
               </SelectItem>
             ))}
           </SelectContent>

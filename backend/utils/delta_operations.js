@@ -46,7 +46,24 @@ function processTextWithFootnotes(
   let remainingText = text;
   let newPosition = currentPosition;
   let newFootnoteIndex = footnoteIndex;
+  let footnotesInThisSegment = [];
 
+  // First pass: collect all footnotes that belong to this text segment
+  while (
+    shouldInsertFootnote(
+      sortedFootnotes,
+      newFootnoteIndex,
+      newPosition,
+      remainingText
+    )
+  ) {
+    const footnote = sortedFootnotes[newFootnoteIndex];
+    footnotesInThisSegment.push(footnote);
+    newFootnoteIndex++;
+  }
+
+  // Second pass: build the markdown without footnotes
+  newFootnoteIndex = footnoteIndex;
   while (
     shouldInsertFootnote(
       sortedFootnotes,
@@ -57,7 +74,7 @@ function processTextWithFootnotes(
   ) {
     const footnote = sortedFootnotes[newFootnoteIndex];
     const result = insertFootnoteInText(remainingText, footnote, newPosition);
-    markdown += result.beforeFootnote + `[^${footnote.number}]`;
+    markdown += result.beforeFootnote; // Don't add footnote reference here
     remainingText = result.afterFootnote;
     newPosition = footnote.position;
     newFootnoteIndex++;
@@ -66,6 +83,23 @@ function processTextWithFootnotes(
   if (remainingText) {
     markdown += remainingText;
     newPosition += remainingText.length;
+  }
+
+  // Add all footnotes at the end of this text segment
+  if (footnotesInThisSegment.length > 0) {
+    const footnoteReferences = footnotesInThisSegment
+      .map((footnote) => `[^${footnote.number}]`)
+      .join("");
+
+    // Add footnotes at the end, before any punctuation
+    const lastChar = markdown.slice(-1);
+    if ([".", "!", "?", ":", ";"].includes(lastChar)) {
+      // Insert before the punctuation
+      markdown = markdown.slice(0, -1) + footnoteReferences + lastChar;
+    } else {
+      // Add at the end
+      markdown += footnoteReferences;
+    }
   }
 
   return { markdown, newPosition, newFootnoteIndex };

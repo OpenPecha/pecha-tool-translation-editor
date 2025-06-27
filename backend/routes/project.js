@@ -652,7 +652,7 @@ router.get("/:id/export", authenticate, async (req, res) => {
                 translationContent,
                 progressId
               );
-
+              console.log(combinedDocx);
               const fileName = `${rootDoc.name}_${translation.language}_docx_template.docx`;
               archive.append(combinedDocx, { name: fileName });
 
@@ -820,7 +820,6 @@ router.get("/:id/export", authenticate, async (req, res) => {
                 translationContent,
                 translationFootnotes
               );
-
               // Create temporary file path
               const tempDocxPath = path.join(
                 __dirname,

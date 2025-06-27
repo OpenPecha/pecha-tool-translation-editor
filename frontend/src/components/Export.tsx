@@ -46,7 +46,7 @@ const ExportModeOptions: {
       {
         label: "Pecha Template",
         value: "single-pecha-templates",
-        description: "View in pecha format",
+        description: "Use Microsoft Word to open the template",
       },
     ],
   },
@@ -69,7 +69,7 @@ const ExportModeOptions: {
       {
         label: "Pecha template",
         value: "pecha-template",
-        description: "View in pecha format",
+        description: "Use Microsoft Word to open the template",
       },
     ],
   },

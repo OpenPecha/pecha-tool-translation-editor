@@ -250,6 +250,12 @@ async function createSideBySideDocx(
       .split(/\n+/)
       .filter((p) => p.trim());
 
+    // Create source-translation mapping for better alignment
+    const sourceTranslationMapping = createSourceTranslationMapping(
+      sourceParagraphs,
+      translationParagraphs
+    );
+
     const maxParagraphs = Math.max(
       sourceParagraphs.length,
       translationParagraphs.length
@@ -565,7 +571,6 @@ async function convertMarkdownToDocx(markdown, outputPath, useTemplate = true) {
     } else {
       pandocCommand = `pandoc "${tempMarkdownPath}" -o "${outputPath}"`;
     }
-    console.log(`🔄 Running Pandoc command: ${pandocCommand}`);
 
     await execAsync(pandocCommand);
 
@@ -584,6 +589,134 @@ async function convertMarkdownToDocx(markdown, outputPath, useTemplate = true) {
     console.error("❌ Error converting Markdown to DOCX:", error);
     throw error;
   }
+}
+
+/**
+ * Create a mapping between source and translation paragraphs for better alignment
+ * @param {Array} sourceParagraphs - Array of source paragraphs
+ * @param {Array} translationParagraphs - Array of translation paragraphs
+ * @returns {Array} - Array of mapped objects with source, translation, and metadata
+ */
+function createSourceTranslationMapping(
+  sourceParagraphs,
+  translationParagraphs
+) {
+  const mapping = [];
+  const maxLength = Math.max(
+    sourceParagraphs.length,
+    translationParagraphs.length
+  );
+
+  for (let i = 0; i < maxLength; i++) {
+    const sourcePara = sourceParagraphs[i] || "";
+    const translationPara = translationParagraphs[i] || "";
+
+    // Skip if both source and translation are empty
+    if (sourcePara.trim() === "" && translationPara.trim() === "") {
+      continue;
+    }
+
+    const mappingEntry = {
+      index: i,
+      source: sourcePara,
+      translation: translationPara,
+      sourceLength: sourcePara.length,
+      translationLength: translationPara.length,
+      hasSource: sourcePara.trim() !== "",
+      hasTranslation: translationPara.trim() !== "",
+      isComplete: sourcePara.trim() !== "" && translationPara.trim() !== "",
+      ratio:
+        sourcePara.length > 0 ? translationPara.length / sourcePara.length : 0,
+      // Metadata for processing
+      needsAlignment: sourcePara.trim() !== "" && translationPara.trim() === "",
+      isPartial:
+        (sourcePara.trim() !== "" && translationPara.trim() === "") ||
+        (sourcePara.trim() === "" && translationPara.trim() !== ""),
+    };
+
+    mapping.push(mappingEntry);
+  }
+
+  return mapping;
+}
+
+// Maximum characters per page for DOCX export
+const MAXCHARPERPAGE = 1700; // Adjust this value as needed
+
+/**
+ * Create paginated mapping where each page's combined content doesn't exceed MAXCHARPERPAGE
+ * @param {Array} sourceTranslationMapping - The original source-translation mapping
+ * @param {number} maxCharsPerPage - Maximum characters per page (default: MAXCHARPERPAGE)
+ * @returns {Array} - Array of paginated objects with source, translation, and page metadata
+ */
+function createPaginatedMapping(
+  sourceTranslationMapping,
+  maxCharsPerPage = MAXCHARPERPAGE
+) {
+  const paginatedPages = [];
+  let currentPage = {
+    source: "",
+    translation: "",
+    totalChars: 0,
+    sourceParagraphs: [],
+    translationParagraphs: [],
+    pageNumber: 1,
+    isComplete: true,
+    needsAlignment: false,
+    isPartial: false,
+  };
+
+  for (const mapping of sourceTranslationMapping) {
+    const combinedLength = mapping.sourceLength + mapping.translationLength;
+
+    // Check if adding this mapping would exceed the character limit
+    if (
+      currentPage.totalChars + combinedLength > maxCharsPerPage &&
+      currentPage.totalChars > 0
+    ) {
+      // Current page is full, save it and start a new page
+      paginatedPages.push({
+        ...currentPage,
+        source: currentPage.sourceParagraphs.join(" "), // No inline newlines
+        translation: currentPage.translationParagraphs.join(" "), // No inline newlines
+      });
+
+      // Start new page
+      currentPage = {
+        source: "",
+        translation: "",
+        totalChars: 0,
+        sourceParagraphs: [],
+        translationParagraphs: [],
+        pageNumber: currentPage.pageNumber + 1,
+        isComplete: true,
+        needsAlignment: false,
+        isPartial: false,
+      };
+    }
+
+    // Add mapping to current page
+    currentPage.sourceParagraphs.push(mapping.source);
+    currentPage.translationParagraphs.push(mapping.translation);
+    currentPage.totalChars += combinedLength;
+
+    // Update page metadata
+    currentPage.isComplete = currentPage.isComplete && mapping.isComplete;
+    currentPage.needsAlignment =
+      currentPage.needsAlignment || mapping.needsAlignment;
+    currentPage.isPartial = currentPage.isPartial || mapping.isPartial;
+  }
+
+  // Add the last page if it has content
+  if (currentPage.totalChars > 0) {
+    paginatedPages.push({
+      ...currentPage,
+      source: currentPage.sourceParagraphs.join(" "), // No inline newlines
+      translation: currentPage.translationParagraphs.join(" "), // No inline newlines
+    });
+  }
+
+  return paginatedPages;
 }
 
 /**
@@ -620,6 +753,18 @@ async function createSideBySideDocxTemplate(
       .split(/\n+/)
       .filter((p) => p.trim());
 
+    // Create source-translation mapping for better alignment
+    const sourceTranslationMapping = createSourceTranslationMapping(
+      sourceParagraphs,
+      translationParagraphs
+    );
+
+    // Create paginated mapping to control content per page
+    const paginatedMapping = createPaginatedMapping(
+      sourceTranslationMapping,
+      MAXCHARPERPAGE
+    );
+
     const maxParagraphs = Math.max(
       sourceParagraphs.length,
       translationParagraphs.length
@@ -627,25 +772,30 @@ async function createSideBySideDocxTemplate(
 
     // Create pages array with source/translation pairs (clean format)
     const pages = [];
-    for (let i = 0; i < maxParagraphs; i++) {
-      const sourcePara = sourceParagraphs[i] || "";
-      const translationPara = translationParagraphs[i] || "";
+    paginatedMapping.forEach((page, i) => {
       const pageBreak = i >= 0 ? '<w:br w:type="page"/>' : "";
-      // dont push if source and translation are empty
-      if (sourcePara.trim() === "") {
-        continue;
-      }
-      const pageNumber = i + 1;
+      const pageNumber = page.pageNumber;
+
       pages.push({
-        source: sourcePara,
-        translation: translationPara,
-        isLast: i === maxParagraphs - 1, // Flag to identify last page for template
+        source: page.source,
+        translation: page.translation,
+        isLast: i === paginatedMapping.length - 1,
         pageBreak,
         needsPageBreak: i > 0,
         tibetanPageMarker: pageNumber % 2 === 1 ? "༄༅། །" : "",
         isOddPage: pageNumber % 2 === 1,
+        // Additional metadata from paginated mapping
+        pageNumber: page.pageNumber,
+        totalChars: page.totalChars,
+        sourceParagraphs: page.sourceParagraphs,
+        translationParagraphs: page.translationParagraphs,
+        isComplete: page.isComplete,
+        needsAlignment: page.needsAlignment,
+        isPartial: page.isPartial,
+        charCount: page.totalChars,
+        isWithinLimit: page.totalChars <= MAXCHARPERPAGE,
       });
-    }
+    });
     // Check if template exists
     if (!fs.existsSync(TEMPLATE_PATH)) {
       console.warn(
@@ -667,7 +817,6 @@ async function createSideBySideDocxTemplate(
       doc = new Docxtemplater(zip, {
         paragraphLoop: true,
         linebreaks: true,
-
         nullGetter: () => "", // Return empty string for null values
       });
     } catch (templateError) {
@@ -681,6 +830,16 @@ async function createSideBySideDocxTemplate(
       targetLanguage: targetLanguage,
       totalPages: pages.length,
       pages: pages,
+      paginationInfo: {
+        maxCharsPerPage: MAXCHARPERPAGE,
+        totalOriginalParagraphs: sourceTranslationMapping.length,
+        totalPaginatedPages: paginatedMapping.length,
+        averageCharsPerPage:
+          pages.length > 0
+            ? pages.reduce((sum, page) => sum + page.totalChars, 0) /
+              pages.length
+            : 0,
+      },
     };
 
     sendProgress(progressStreams, progressId, 70, "Rendering template...");
@@ -1048,6 +1207,230 @@ async function createPageViewDocxBuffer(docName, delta) {
   }
 }
 
+/**
+ * Create a fallback side-by-side DOCX template when the main template fails
+ * @param {Array} pages - Array of page objects with source and translation content
+ * @returns {Promise<Buffer>} - The DOCX file as a buffer
+ */
+async function createFallbackSideBySideDocxTemplate(pages) {
+  try {
+    const docxElements = [];
+
+    // Add document title
+    docxElements.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: "Document Export",
+            bold: true,
+            size: 32,
+          }),
+        ],
+        heading: HeadingLevel.HEADING_1,
+        alignment: AlignmentType.CENTER,
+      })
+    );
+
+    // Add some spacing
+    docxElements.push(new Paragraph({ children: [new TextRun({ text: "" })] }));
+
+    // Create table rows
+    const tableRows = [];
+
+    // Add header row
+    tableRows.push(
+      new TableRow({
+        children: [
+          new TableCell({
+            children: [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: "Source",
+                    bold: true,
+                    color: "FFFFFF",
+                    size: 24,
+                  }),
+                ],
+                alignment: AlignmentType.CENTER,
+              }),
+            ],
+            shading: {
+              fill: "0066CC",
+            },
+            width: {
+              size: 5000,
+              type: WidthType.DXA,
+            },
+          }),
+          new TableCell({
+            children: [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: "Translation",
+                    bold: true,
+                    color: "FFFFFF",
+                    size: 24,
+                  }),
+                ],
+                alignment: AlignmentType.CENTER,
+              }),
+            ],
+            shading: {
+              fill: "CC6600",
+            },
+            width: {
+              size: 5000,
+              type: WidthType.DXA,
+            },
+          }),
+        ],
+      })
+    );
+
+    // Add content rows from pages
+    pages.forEach((page, index) => {
+      const sourceContent = page.source || "";
+      const translationContent = page.translation || "";
+
+      tableRows.push(
+        new TableRow({
+          children: [
+            new TableCell({
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: sourceContent || " ",
+                    }),
+                  ],
+                  spacing: {
+                    before: 300,
+                    after: 300,
+                  },
+                  indent: {
+                    left: 150,
+                    right: 150,
+                  },
+                }),
+              ],
+              width: {
+                size: 5000,
+                type: WidthType.DXA,
+              },
+            }),
+            new TableCell({
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: translationContent || " ",
+                    }),
+                  ],
+                  spacing: {
+                    before: 300,
+                    after: 300,
+                  },
+                  indent: {
+                    left: 100,
+                    right: 100,
+                  },
+                }),
+              ],
+              width: {
+                size: 5000,
+                type: WidthType.DXA,
+              },
+            }),
+          ],
+        })
+      );
+
+      // Add page break if needed
+      if (page.needsPageBreak && index < pages.length - 1) {
+        tableRows.push(
+          new TableRow({
+            children: [
+              new TableCell({
+                children: [
+                  new Paragraph({
+                    children: [new TextRun({ text: "", break: 1 })],
+                    pageBreakBefore: true,
+                  }),
+                ],
+                width: {
+                  size: 10000,
+                  type: WidthType.DXA,
+                },
+              }),
+            ],
+          })
+        );
+      }
+    });
+
+    // Create the table
+    const table = new Table({
+      rows: tableRows,
+      width: {
+        size: 10000,
+        type: WidthType.DXA,
+      },
+      layout: "fixed",
+      columnWidths: [5000, 5000],
+      borders: {
+        top: {
+          style: BorderStyle.SINGLE,
+          size: 1,
+          color: "000000",
+        },
+        bottom: {
+          style: BorderStyle.SINGLE,
+          size: 1,
+          color: "000000",
+        },
+        left: {
+          style: BorderStyle.SINGLE,
+          size: 1,
+          color: "000000",
+        },
+        right: {
+          style: BorderStyle.SINGLE,
+          size: 1,
+          color: "000000",
+        },
+        insideHorizontal: {
+          style: BorderStyle.SINGLE,
+          size: 1,
+          color: "CCCCCC",
+        },
+        insideVertical: {
+          style: BorderStyle.SINGLE,
+          size: 1,
+          color: "CCCCCC",
+        },
+      },
+    });
+
+    docxElements.push(table);
+
+    const doc = new Document({
+      sections: [
+        {
+          properties: {},
+          children: docxElements,
+        },
+      ],
+    });
+
+    return await Packer.toBuffer(doc);
+  } catch (error) {
+    console.error("Error creating fallback side-by-side DOCX template:", error);
+    throw error;
+  }
+}
+
 module.exports = {
   createDocxBuffer,
   createSideBySideDocx,
@@ -1056,4 +1439,7 @@ module.exports = {
   createSideBySideDocxTemplate,
   createSourceOnlyDocxTemplate,
   createPageViewDocxBuffer,
+  createFallbackSideBySideDocxTemplate,
+  createSourceTranslationMapping,
+  createPaginatedMapping,
 };
