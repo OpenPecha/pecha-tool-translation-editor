@@ -72,6 +72,12 @@ Before running the application, set up environment variables:
 
 Make sure to configure all required variables in both `.env` files before proceeding.
 
+make sure to migrate the data base with prisma in backend
+
+```prisma
+npx prisma migrate deploy
+```
+
 ### 3. Backend Setup
 
 1. cd backend
