@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { createPortal } from "react-dom";
 import VersionDiff from "./VersionDiff";
 import Quill from "quill";
+import { useAuth } from "@/auth/use-auth-hook";
 const isEnabled = !EDITOR_READ_ONLY;
 
 interface ToolbarProps {
@@ -19,6 +20,7 @@ interface ToolbarProps {
   toolbarId: string;
   range: any;
   addFootnote: () => void;
+  isEditable: boolean; // Add this line
 }
 
 const Toolbar = ({
@@ -28,7 +30,10 @@ const Toolbar = ({
   documentId,
   toolbarId,
   range,
+  isEditable, // Add this line
 }: ToolbarProps) => {
+  const { isAuthenticated } = useAuth();
+
   const versionRef = useRef<HTMLDivElement>(null);
   const [openHistory, setOpenHistory] = useState(false);
   const { getQuill, activeEditor, quillEditors, getElementWithLinenumber } =
@@ -160,8 +165,8 @@ const Toolbar = ({
     <div
       id={toolbarId}
       style={{
-        display: showToolbar ? "flex" : "none",
-        opacity: showToolbar ? 1 : 0,
+        display: showToolbar && isAuthenticated && isEditable ? "flex" : "none", // Add isEditable check
+        opacity: showToolbar && isAuthenticated && isEditable ? 1 : 0, // Add isEditable check
         width: "94vw",
         position: "relative",
         margin: "0 auto",

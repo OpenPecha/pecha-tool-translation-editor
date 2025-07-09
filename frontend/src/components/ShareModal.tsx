@@ -1,32 +1,62 @@
-import React, { useState } from "react";
-import { X, UserPlus, Trash2, Check, AlertCircle } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  X,
+  Users,
+  Globe,
+  Lock,
+  Copy,
+  UserPlus,
+  ChevronDown,
+  Settings,
+  Trash2,
+  CheckCircle,
+  Search,
+  Send,
+  FileText,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  addUserToProjectByEmail,
-  fetchProjectPermissions,
-  removeUserFromProject,
-  updateUserProjectPermission,
-} from "@/api/project";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/auth/use-auth-hook";
-import ExportButton from "./Export";
 import { useTranslate } from "@tolgee/react";
-
-interface User {
-  id: string;
-  username: string;
-  email?: string;
-}
-
-interface ProjectPermission {
-  id: string;
-  userId: string;
-  canRead: boolean;
-  canWrite: boolean;
-  user?: User;
-}
+import ExportButton from "./Export";
+import {
+  getProjectShareInfo,
+  updateProjectShareSettings,
+  addCollaborator,
+  updateCollaboratorAccess,
+  removeCollaborator,
+  searchUsers,
+  type ProjectShareInfo,
+  type Collaborator,
+  type User,
+} from "@/api/project";
 
 interface ShareModalProps {
   projectId: string;
@@ -39,321 +69,580 @@ const ShareModal: React.FC<ShareModalProps> = ({
   projectName,
   onClose,
 }) => {
+  const [activeTab, setActiveTab] = useState<"share" | "export">("share");
   const [email, setEmail] = useState("");
-  const [canWrite, setCanWrite] = useState(false);
+  const [accessLevel, setAccessLevel] = useState<"viewer" | "editor" | "admin">(
+    "viewer"
+  );
+  const [searchResults, setSearchResults] = useState<User[]>([]);
+  const [showUserSearch, setShowUserSearch] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [activeTab, setActiveTab] = useState<"share" | "export">("share");
+  const [copied, setCopied] = useState(false);
+
   const queryClient = useQueryClient();
   const { currentUser } = useAuth();
   const { t } = useTranslate();
-  // Fetch project permissions
-  const { data: permissionsData, isLoading } = useQuery({
-    queryKey: ["projectPermissions", projectId],
-    queryFn: () => fetchProjectPermissions(projectId),
+
+  // Fetch project sharing information
+  const { data: shareInfo, isLoading } = useQuery({
+    queryKey: ["projectShare", projectId],
+    queryFn: () => getProjectShareInfo(projectId),
+    retry: 1,
   });
 
-  const owner = permissionsData?.data?.owner;
-  const permissions: ProjectPermission[] =
-    permissionsData?.data?.permissions || [];
+  // Update sharing settings mutation
+  const updateShareMutation = useMutation({
+    mutationFn: ({
+      isPublic,
+      publicAccess,
+    }: {
+      isPublic: boolean;
+      publicAccess: "none" | "viewer" | "editor";
+    }) => updateProjectShareSettings(projectId, { isPublic, publicAccess }),
+    onSuccess: (data) => {
+      const message = data.data.isPublic
+        ? "Project is now public and accessible via link"
+        : "Project is now private";
+      setSuccess(message);
+      queryClient.invalidateQueries({ queryKey: ["projectShare", projectId] });
+      setTimeout(() => setSuccess(""), 3000);
+    },
+    onError: (error: Error) => {
+      setError(error.message);
+      setTimeout(() => setError(""), 5000);
+    },
+  });
 
-  // Add user mutation
-  const addUserMutation = useMutation({
-    mutationFn: () => addUserToProjectByEmail(projectId, email, canWrite),
-    onSuccess: () => {
-      setSuccess(`User ${email} has been added to the project`);
+  // Add collaborator mutation
+  const addCollaboratorMutation = useMutation({
+    mutationFn: ({
+      email,
+      accessLevel,
+    }: {
+      email: string;
+      accessLevel: "viewer" | "editor" | "admin";
+    }) => addCollaborator(projectId, { email, accessLevel }),
+    onSuccess: (data) => {
+      setSuccess(data.message);
       setEmail("");
-      setCanWrite(false);
-      setError("");
-      // Invalidate permissions query to refresh the list
-      queryClient.invalidateQueries({
-        queryKey: ["projectPermissions", projectId],
-      });
-      // Wait 3 seconds and clear success message
+      setAccessLevel("viewer");
+      setShowUserSearch(false);
+      setSearchResults([]);
+      queryClient.invalidateQueries({ queryKey: ["projectShare", projectId] });
       setTimeout(() => setSuccess(""), 3000);
     },
     onError: (error: Error) => {
-      setError(error.message || "Failed to add user to project");
+      setError(error.message);
+      setTimeout(() => setError(""), 5000);
     },
   });
 
-  // Remove user mutation
-  const removeUserMutation = useMutation({
-    mutationFn: (userId: string) => removeUserFromProject(projectId, userId),
+  // Update collaborator access mutation
+  const updateAccessMutation = useMutation({
+    mutationFn: ({
+      userId,
+      accessLevel,
+    }: {
+      userId: string;
+      accessLevel: "viewer" | "editor" | "admin";
+    }) => updateCollaboratorAccess(projectId, userId, accessLevel),
     onSuccess: () => {
-      setSuccess("User has been removed from the project");
-      // Invalidate permissions query to refresh the list
-      queryClient.invalidateQueries({
-        queryKey: ["projectPermissions", projectId],
-      });
-      // Wait 3 seconds and clear success message
+      setSuccess("Access level updated");
+      queryClient.invalidateQueries({ queryKey: ["projectShare", projectId] });
       setTimeout(() => setSuccess(""), 3000);
     },
     onError: (error: Error) => {
-      setError(error.message || "Failed to remove user from project");
+      setError(error.message);
+      setTimeout(() => setError(""), 5000);
     },
   });
 
-  // Update permission mutation
-  const updatePermissionMutation = useMutation({
-    mutationFn: ({ userId, canWrite }: { userId: string; canWrite: boolean }) =>
-      updateUserProjectPermission(projectId, userId, canWrite),
-    onSuccess: () => {
-      setSuccess("Permission updated successfully");
-      // Invalidate permissions query to refresh the list
-      queryClient.invalidateQueries({
-        queryKey: ["projectPermissions", projectId],
-      });
-      // Wait 3 seconds and clear success message
+  // Remove collaborator mutation
+  const removeCollaboratorMutation = useMutation({
+    mutationFn: (userId: string) => removeCollaborator(projectId, userId),
+    onSuccess: (data) => {
+      setSuccess(data.message);
+      queryClient.invalidateQueries({ queryKey: ["projectShare", projectId] });
       setTimeout(() => setSuccess(""), 3000);
     },
     onError: (error: Error) => {
-      setError(error.message || "Failed to update permission");
+      setError(error.message);
+      setTimeout(() => setError(""), 5000);
     },
   });
 
-  const handleAddUser = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+  // Search users for collaboration
+  const searchUsersMutation = useMutation({
+    mutationFn: (query: string) => searchUsers(query),
+    onSuccess: (data) => {
+      setSearchResults(data.data);
+      setIsSearching(false);
+    },
+    onError: (error: Error) => {
+      setError(error.message);
+      setIsSearching(false);
+      setTimeout(() => setError(""), 5000);
+    },
+  });
 
-    if (!email) {
-      setError("Email is required");
-      return;
+  // Handle email input change with debounced search
+  useEffect(() => {
+    if (email.length > 2) {
+      setIsSearching(true);
+      const timeoutId = setTimeout(() => {
+        searchUsersMutation.mutate(email);
+      }, 300);
+      return () => clearTimeout(timeoutId);
+    } else {
+      setSearchResults([]);
+      setShowUserSearch(false);
     }
+  }, [email]);
 
-    // Basic email validation
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError("Please enter a valid email address");
-      return;
+  // Copy link to clipboard
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setSuccess("Link copied to clipboard!");
+      setTimeout(() => {
+        setCopied(false);
+        setSuccess("");
+      }, 2000);
+    } catch (err) {
+      setError("Failed to copy link to clipboard");
+      setTimeout(() => setError(""), 3000);
     }
-
-    addUserMutation.mutate();
   };
 
-  const handleRemoveUser = (userId: string) => {
-    if (
-      confirm("Are you sure you want to remove this user from the project?")
-    ) {
-      removeUserMutation.mutate(userId);
+  // Handle adding collaborator
+  const handleAddCollaborator = (userEmail: string) => {
+    addCollaboratorMutation.mutate({ email: userEmail, accessLevel });
+  };
+
+  // Handle removing collaborator
+  const handleRemoveCollaborator = (userId: string) => {
+    if (confirm("Are you sure you want to remove this collaborator?")) {
+      removeCollaboratorMutation.mutate(userId);
     }
   };
 
-  const handlePermissionChange = (userId: string, newCanWrite: boolean) => {
-    updatePermissionMutation.mutate({ userId, canWrite: newCanWrite });
+  // Handle access level change
+  const handleAccessLevelChange = (
+    userId: string,
+    newAccessLevel: "viewer" | "editor" | "admin"
+  ) => {
+    updateAccessMutation.mutate({ userId, accessLevel: newAccessLevel });
   };
+
+  // Handle public access toggle
+  const handlePublicToggle = (isPublic: boolean) => {
+    updateShareMutation.mutate({
+      isPublic,
+      publicAccess: isPublic ? "viewer" : "none",
+    });
+  };
+
+  // Handle public access level change
+  const handlePublicAccessChange = (publicAccess: "viewer" | "editor") => {
+    updateShareMutation.mutate({
+      isPublic: true,
+      publicAccess,
+    });
+  };
+
+  const shareData = shareInfo?.data;
+  const collaborators =
+    shareData?.permissions?.filter(
+      (permission) => permission.userId !== shareData?.owner?.id
+    ) || [];
+  const owner = shareData?.owner;
+
+  // Access level display helpers
+  const getAccessLevelLabel = (level: string) => {
+    switch (level) {
+      case "viewer":
+        return "Can view";
+      case "editor":
+        return "Can edit";
+      case "admin":
+        return "Can manage";
+      default:
+        return "Can view";
+    }
+  };
+
+  const getAccessLevelColor = (level: string) => {
+    switch (level) {
+      case "viewer":
+        return "bg-blue-100 text-blue-800";
+      case "editor":
+        return "bg-green-100 text-green-800";
+      case "admin":
+        return "bg-purple-100 text-purple-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="flex items-center justify-center">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <span className="ml-2 text-gray-600">
+              Loading sharing options...
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-lg shadow-lg w-full max-w-md flex flex-col"
+        className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[95vh] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
-          <div className="text-lg font-semibold capitalize">
-            {t("share.shareProject")}
+          <div className="flex items-center gap-3">
+            <Users className="h-5 w-5 text-blue-600" />
+            <h2 className="text-lg font-semibold">Share "{projectName}"</h2>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="h-4 w-4" />
+            <X className="h-5 w-5" />
           </Button>
         </div>
 
-        {/* Tabs */}
-        <div className="border-b">
-          <div className="flex">
-            <button
-              className={`px-6 py-3 text-sm font-medium transition-colors ${
-                activeTab === "share"
-                  ? "border-b-2 border-blue-500 text-blue-600"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-              onClick={() => setActiveTab("share")}
-            >
-              {t("common.share")}
-            </button>
-            <button
-              className={`px-6 py-3 text-sm font-medium transition-colors ${
-                activeTab === "export"
-                  ? "border-b-2 border-blue-500 text-blue-600"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-              onClick={() => setActiveTab("export")}
-            >
-              {t("pecha.export")}
-            </button>
+        {/* Error/Success Messages */}
+        {(error || success) && (
+          <div className="p-4 border-b">
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+            {success && (
+              <Alert className="border-green-200 bg-green-50">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                <AlertDescription className="text-green-800">
+                  {success}
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
-        </div>
+        )}
 
-        <div className="flex-1 overflow-y-auto">
-          {activeTab === "share" ? (
-            <div className="p-4 space-y-4">
-              {/* Add user form */}
-              <form onSubmit={handleAddUser} className="space-y-4">
-                <div>
-                  <Label htmlFor="email" className="text-sm font-medium">
-                    {t("share.addUserByEmail")}
-                  </Label>
-                  <div className="flex gap-2 mt-1">
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="user@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button
-                      type="submit"
-                      disabled={addUserMutation.isPending}
-                      className="whitespace-nowrap"
-                    >
-                      <UserPlus className="h-4 w-4 mr-1" />
-                      {t("common.add")}
-                    </Button>
-                  </div>
-                  <div className="flex items-center gap-2 mt-2">
-                    <input
-                      type="checkbox"
-                      id="canWrite"
-                      checked={canWrite}
-                      onChange={(e) => setCanWrite(e.target.checked)}
-                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <Label htmlFor="canWrite" className="text-sm text-gray-700">
-                      {t("share.canEdit")} (otherwise, read-only access)
-                    </Label>
-                  </div>
-                </div>
+        {/* Tabs */}
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) => setActiveTab(value as any)}
+          className="flex-1 overflow-hidden"
+        >
+          <TabsList className="grid w-full grid-cols-2 mx-4 mt-3">
+            <TabsTrigger value="share">Share</TabsTrigger>
+            <TabsTrigger value="export">Export</TabsTrigger>
+          </TabsList>
 
-                {error && (
-                  <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm flex items-center">
-                    <AlertCircle className="h-4 w-4 mr-2" />
-                    {error}
-                  </div>
-                )}
-
-                {success && (
-                  <div className="bg-green-50 text-green-600 p-3 rounded-md text-sm flex items-center">
-                    <Check className="h-4 w-4 mr-2" />
-                    {success}
-                  </div>
-                )}
-              </form>
-
-              {/* Users list */}
-              <div className="space-y-2">
-                {permissions.filter((p) => p.userId !== currentUser?.id)
-                  .length > 0 && (
-                  <>
-                    <div className="text-sm font-medium text-gray-500">
-                      Collaborators
-                    </div>
-                    {owner && (
-                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-medium">
-                            {owner.username?.charAt(0).toUpperCase() || "U"}
+          {/* Share Tab */}
+          <TabsContent
+            value="share"
+            className="flex-1 overflow-y-auto p-4 space-y-4"
+          >
+            {/* People with Access */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Users className="h-4 w-4" />
+                  People with Access
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {/* Add people section */}
+                {shareData?.isOwner && (
+                  <div className="space-y-3">
+                    <div className="flex gap-2">
+                      <div className="flex-1 relative">
+                        <Input
+                          placeholder="Add people by email..."
+                          value={email}
+                          onChange={(e) => {
+                            setEmail(e.target.value);
+                            setShowUserSearch(true);
+                          }}
+                          onFocus={() => setShowUserSearch(true)}
+                          className="pr-10 text-sm"
+                        />
+                        {isSearching && (
+                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
                           </div>
-                          <div>
-                            <div className="font-medium">
-                              {owner.id === currentUser?.id
-                                ? "Me"
-                                : owner.username}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {owner.email}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-medium">
-                          Owner
-                        </div>
+                        )}
                       </div>
+
+                      <Select
+                        value={accessLevel}
+                        onValueChange={(value) => setAccessLevel(value as any)}
+                      >
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="viewer">Viewer</SelectItem>
+                          <SelectItem value="editor">Editor</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
+                        </SelectContent>
+                      </Select>
+
+                      <Button
+                        onClick={() => handleAddCollaborator(email)}
+                        disabled={!email || addCollaboratorMutation.isPending}
+                        size="sm"
+                      >
+                        <Send className="h-4 w-4" />
+                      </Button>
+                    </div>
+
+                    {/* Search Results */}
+                    {showUserSearch && searchResults.length > 0 && (
+                      <Card className="p-2">
+                        <div className="max-h-28 overflow-y-auto">
+                          {searchResults.map((user) => (
+                            <div
+                              key={user.id}
+                              className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer"
+                              onClick={() => {
+                                setEmail(user.email);
+                                setShowUserSearch(false);
+                              }}
+                            >
+                              <Avatar className="h-6 w-6">
+                                <AvatarImage src={user.picture} />
+                                <AvatarFallback>
+                                  {user.username.slice(0, 2).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">
+                                  {user.username}
+                                </p>
+                                <p className="text-xs text-gray-500 truncate">
+                                  {user.email}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </Card>
                     )}
-                    {permissions
-                      .filter((p) => p.userId !== currentUser?.id)
-                      .map((permission: ProjectPermission) => (
-                        <div
-                          key={permission.id}
-                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center text-gray-700 font-medium">
-                              {permission.user?.username
-                                ?.charAt(0)
-                                .toUpperCase() ?? "U"}
-                            </div>
-                            <div>
-                              <div className="font-medium">
-                                {permission.user?.id === currentUser?.id
-                                  ? "Me"
-                                  : permission.user?.username}
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                {permission.user?.email}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                id={`canWrite-${permission.id}`}
-                                checked={permission.canWrite}
-                                onChange={(e) =>
-                                  handlePermissionChange(
-                                    permission.userId,
-                                    e.target.checked
-                                  )
-                                }
-                                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                              />
-                              <Label
-                                htmlFor={`canWrite-${permission.id}`}
-                                className="text-sm text-gray-700"
-                              >
-                                Can edit
-                              </Label>
-                            </div>
+                  </div>
+                )}
+
+                {/* Owner */}
+                {owner && (
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <Avatar className="h-7 w-7">
+                      <AvatarImage src={owner.picture} />
+                      <AvatarFallback>
+                        {owner.username.slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">{owner.username}</p>
+                      <p className="text-xs text-gray-600">{owner.email}</p>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className="bg-orange-50 text-orange-700 border-orange-200 text-xs"
+                    >
+                      Owner
+                    </Badge>
+                  </div>
+                )}
+
+                {/* Collaborators */}
+                {collaborators.length > 0 && (
+                  <div className="space-y-2">
+                    {collaborators.map((collaborator) => (
+                      <div
+                        key={collaborator.id}
+                        className="flex items-center gap-3 p-3 border rounded-lg"
+                      >
+                        <Avatar className="h-7 w-7">
+                          <AvatarImage src={collaborator.user.picture} />
+                          <AvatarFallback>
+                            {collaborator.user.username
+                              .slice(0, 2)
+                              .toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">
+                            {collaborator.user.username}
+                          </p>
+                          <p className="text-xs text-gray-600">
+                            {collaborator.user.email}
+                          </p>
+                        </div>
+
+                        {shareData?.isOwner ? (
+                          <div className="flex items-center gap-2">
+                            <Select
+                              value={collaborator.accessLevel}
+                              onValueChange={(value) =>
+                                handleAccessLevelChange(
+                                  collaborator.userId,
+                                  value as any
+                                )
+                              }
+                              disabled={updateAccessMutation.isPending}
+                            >
+                              <SelectTrigger className="w-28">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="viewer">Viewer</SelectItem>
+                                <SelectItem value="editor">Editor</SelectItem>
+                                <SelectItem value="admin">Admin</SelectItem>
+                              </SelectContent>
+                            </Select>
                             <Button
                               variant="ghost"
-                              size="icon"
+                              size="sm"
                               onClick={() =>
-                                handleRemoveUser(permission.userId)
+                                handleRemoveCollaborator(collaborator.userId)
                               }
-                              className="hover:bg-red-50"
+                              disabled={removeCollaboratorMutation.isPending}
                             >
                               <Trash2 className="h-4 w-4 text-red-500" />
                             </Button>
                           </div>
-                        </div>
-                      ))}
-                  </>
-                )}
-
-                {permissions.filter((p) => p.userId !== currentUser?.id)
-                  .length === 0 &&
-                  !isLoading && (
-                    <div className="text-center py-8 text-gray-500">
-                      No collaborators yet. Add users by email to collaborate.
-                    </div>
-                  )}
-
-                {isLoading && (
-                  <div className="text-center py-8 text-gray-500">
-                    Loading permissions...
+                        ) : (
+                          <Badge
+                            className={getAccessLevelColor(
+                              collaborator.accessLevel
+                            )}
+                          >
+                            {getAccessLevelLabel(collaborator.accessLevel)}
+                          </Badge>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 )}
-              </div>
-            </div>
-          ) : (
-            <div className="p-6 flex flex-col  h-full">
-              <ExportButton projectId={projectId} projectName={projectName} />
-            </div>
-          )}
-        </div>
+
+                {collaborators.length === 0 && (
+                  <div className="text-center py-6 text-gray-500">
+                    <Users className="h-10 w-10 mx-auto mb-2 text-gray-300" />
+                    <p className="text-sm">No collaborators yet</p>
+                    <p className="text-xs">
+                      Add people by email to collaborate
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            {/* General Access Section */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Globe className="h-4 w-4" />
+                  General Access
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {shareData?.isPublic ? (
+                      <Globe className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <Lock className="h-4 w-4 text-gray-600" />
+                    )}
+                    <div>
+                      <p className="font-medium text-sm">
+                        {shareData?.isPublic
+                          ? "Anyone with the link"
+                          : "Restricted"}
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        {shareData?.isPublic
+                          ? "Public access via link"
+                          : "Invited people only"}
+                      </p>
+                    </div>
+                  </div>
+                  {shareData?.isOwner && (
+                    <Switch
+                      checked={shareData?.isPublic}
+                      onCheckedChange={handlePublicToggle}
+                      disabled={updateShareMutation.isPending}
+                    />
+                  )}
+                </div>
+
+                {shareData?.isPublic && (
+                  <div className="ml-7 space-y-3">
+                    <Select
+                      value={shareData.publicAccess}
+                      onValueChange={(value) =>
+                        handlePublicAccessChange(value as "viewer" | "editor")
+                      }
+                      disabled={
+                        !shareData?.isOwner || updateShareMutation.isPending
+                      }
+                    >
+                      <SelectTrigger className="w-36">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="viewer">Viewer</SelectItem>
+                        <SelectItem value="editor">Editor</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    {shareData.shareableLink && (
+                      <div className="flex gap-2">
+                        <Input
+                          value={shareData.shareableLink}
+                          readOnly
+                          className="flex-1 text-sm"
+                          onClick={(e) => e.currentTarget.select()}
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            copyToClipboard(shareData.shareableLink!)
+                          }
+                          disabled={copied}
+                        >
+                          {copied ? (
+                            <CheckCircle className="h-4 w-4" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Export Tab */}
+          <TabsContent value="export" className="flex-1 p-4">
+            <ExportButton projectId={projectId} projectName={projectName} />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

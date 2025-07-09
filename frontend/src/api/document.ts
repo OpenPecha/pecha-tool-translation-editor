@@ -62,6 +62,22 @@ export const fetchDocument = async (id: string) => {
   }
 };
 
+export const fetchPublicDocument = async (id: string) => {
+  try {
+    const response = await fetch(`${server_url}/documents/public/${id}`, {
+      headers: getHeaders(),
+    });
+    if (response.ok) {
+      const data = await response.json();
+      return data;
+    }
+    throw new Error("Failed to fetch public document");
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
 export const fetchDocumentWithContent = async (id: string) => {
   try {
     const response = await fetch(`${server_url}/documents/${id}/content`, {
@@ -153,8 +169,8 @@ export const deleteDocument = async (id: string) => {
 };
 
 interface UpdateDocumentParams {
-  name: string | undefined;
-  docs_prosemirror_delta: Op[] | undefined;
+  name?: string;
+  docs_prosemirror_delta?: Op[];
 }
 
 /**
@@ -171,7 +187,7 @@ export const fetchDocumentTranslations = async (documentId: string) => {
         headers: getHeaders(),
       }
     );
-
+    console.log("response", response);
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message ?? "Failed to fetch translations");
@@ -182,6 +198,37 @@ export const fetchDocumentTranslations = async (documentId: string) => {
   } catch (error) {
     console.error("Error fetching translations:", error);
     throw error;
+  }
+};
+
+/**
+ * Fetch all translations for a public document
+ * @param documentId The ID of the document to fetch translations for
+ * @returns A promise that resolves to an array of translations
+ */
+export const fetchPublicDocumentTranslations = async (documentId: string) => {
+  try {
+    const response = await fetch(
+      `${server_url}/documents/${documentId}/translations`,
+      {
+        method: "GET",
+        headers: getHeaders(),
+      }
+    );
+
+    if (!response.ok) {
+      // If unauthorized, return empty array instead of throwing error
+      if (response.status === 401 || response.status === 403) {
+        return [];
+      }
+      throw new Error("Failed to fetch translations");
+    }
+
+    const data = await response.json();
+    return data.data || [];
+  } catch (error) {
+    console.error("Error fetching public translations:", error);
+    return []; // Return empty array for public access
   }
 };
 

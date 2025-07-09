@@ -3,6 +3,8 @@ const { authenticate } = require("../middleware/authenticate");
 const router = express.Router();
 const archiver = require("archiver");
 const path = require("path");
+const crypto = require("crypto");
+const { PrismaClient } = require("@prisma/client");
 const {
   createDocxBuffer,
   createSideBySideDocx,
@@ -35,6 +37,8 @@ const {
 } = require("../utils/model");
 const { sendProgress, progressStreams } = require("../utils/progress");
 
+const prisma = new PrismaClient();
+
 // Configuration constants
 const TEXT_CHUNK_LENGTH = 300; // Characters per chunk
 
@@ -61,9 +65,9 @@ router.get("/", authenticate, async (req, res) => {
       status: status !== "all" ? status : undefined,
       name: searchQuery
         ? {
-            contains: searchQuery,
-            mode: "insensitive",
-          }
+          contains: searchQuery,
+          mode: "insensitive",
+        }
         : undefined,
     };
 
@@ -825,8 +829,7 @@ router.get("/:id/export", authenticate, async (req, res) => {
                 __dirname,
                 "..",
                 "uploads",
-                `temp_${rootDoc.name}_${
-                  translation.language
+                `temp_${rootDoc.name}_${translation.language
                 }_${Date.now()}.docx`
               );
 
@@ -1053,5 +1056,459 @@ router.get("/:id/export", authenticate, async (req, res) => {
  */
 
 // Store active progress streams
+
+
+/**
+ * POST /projects/{id}/share
+ * @summary Update project sharing settings
+ * @tags Projects - Sharing
+ * @security BearerAuth
+ * @param {string} id.path.required - Project ID
+ * @param {object} request.body.required - Sharing settings
+ * @param {boolean} request.body.isPublic - Whether project is public
+ * @param {string} request.body.publicAccess - Public access level (none, viewer, editor)
+ * @return {object} 200 - Updated sharing settings
+ * @return {object} 403 - Forbidden - Not project owner
+ * @return {object} 404 - Project not found
+ * @return {object} 500 - Server error
+ */
+router.post("/:id/share", authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isPublic, publicAccess } = req.body;
+
+    console.log('Share request received:', { id, isPublic, publicAccess });
+
+    // Check if project exists
+    const project = await getProject(id);
+    console.log('Project found:', project ? 'Yes' : 'No');
+
+    if (!project) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    // Only owner can update sharing settings
+    if (project.ownerId !== req.user.id) {
+      return res.status(403).json({
+        error: "Not authorized to update sharing settings"
+      });
+    }
+
+    // Generate share link if making public
+    let shareLink = project.shareLink;
+    if (isPublic && !shareLink) {
+      shareLink = crypto.randomBytes(32).toString('hex');
+      console.log('Generated new share link:', shareLink);
+    }
+
+    console.log('Updating project with:', {
+      isPublic: isPublic || false,
+      publicAccess: publicAccess || 'none',
+      shareLink: isPublic ? shareLink : null,
+    });
+
+    // Update project
+    const updatedProject = await prisma.project.update({
+      where: { id },
+      data: {
+        isPublic: isPublic || false,
+        publicAccess: publicAccess || 'none',
+        shareLink: isPublic ? shareLink : null,
+      },
+    });
+
+    console.log('Project updated successfully');
+
+    const baseUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+    const shareableLink = updatedProject.isPublic ?
+      `${baseUrl}/shared/${updatedProject.shareLink}` : null;
+
+    res.json({
+      success: true,
+      data: {
+        ...updatedProject,
+        shareableLink,
+      },
+    });
+  } catch (error) {
+    console.error("Error updating project sharing:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * GET /projects/{id}/share
+ * @summary Get project sharing information
+ * @tags Projects - Sharing
+ * @security BearerAuth
+ * @param {string} id.path.required - Project ID
+ * @return {object} 200 - Sharing information
+ * @return {object} 403 - Forbidden - No access
+ * @return {object} 404 - Project not found
+ * @return {object} 500 - Server error
+ */
+router.get("/:id/share", authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Get project with permissions
+    const project = await getProjectWithPermissions(id);
+    if (!project) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    // Check if user has permission to view sharing settings
+    const hasPermission = project.ownerId === req.user.id ||
+      project.permissions.some(p => p.userId === req.user.id);
+
+    if (!hasPermission) {
+      return res.status(403).json({
+        error: "Not authorized to view sharing settings"
+      });
+    }
+
+    const baseUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+    const shareableLink = project.isPublic ?
+      `${baseUrl}/shared/${project.shareLink}` : null;
+
+    res.json({
+      success: true,
+      data: {
+        id: project.id,
+        name: project.name,
+        isPublic: project.isPublic,
+        publicAccess: project.publicAccess,
+        shareableLink,
+        isOwner: project.ownerId === req.user.id,
+        permissions: project.permissions,
+        owner: project.owner,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching project sharing info:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * GET /projects/shared/{shareLink}
+ * @summary Access project via public share link
+ * @tags Projects - Public Access
+ * @param {string} shareLink.path.required - Share link identifier
+ * @return {object} 200 - Public project data
+ * @return {object} 403 - Project not public
+ * @return {object} 404 - Project not found
+ * @return {object} 500 - Server error
+ */
+router.get("/shared/:shareLink", async (req, res) => {
+  try {
+    const { shareLink } = req.params;
+
+    // Find project by share link
+    const project = await prisma.project.findFirst({
+      where: { shareLink },
+      include: {
+        owner: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
+        roots: {
+          select: {
+            id: true,
+            name: true,
+            identifier: true,
+            language: true,
+            updatedAt: true,
+          },
+        },
+      },
+    });
+
+    if (!project) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    if (!project.isPublic) {
+      return res.status(403).json({
+        error: "This project is not publicly accessible"
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        ...project,
+        isReadOnly: project.publicAccess === 'viewer',
+        canEdit: project.publicAccess === 'editor',
+      },
+    });
+  } catch (error) {
+    console.error("Error accessing shared project:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * POST /projects/{id}/collaborators
+ * @summary Add collaborator to project
+ * @tags Projects - Collaboration
+ * @security BearerAuth
+ * @param {string} id.path.required - Project ID
+ * @param {object} request.body.required - Collaborator data
+ * @param {string} request.body.email - User email
+ * @param {string} request.body.accessLevel - Access level (viewer, editor, admin)
+ * @param {string} request.body.message - Optional invitation message
+ * @return {object} 200 - Collaborator added
+ * @return {object} 403 - Forbidden - Not authorized
+ * @return {object} 404 - User or project not found
+ * @return {object} 500 - Server error
+ */
+router.post("/:id/collaborators", authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { email, accessLevel = 'viewer', message } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    // Validate access level
+    if (!['viewer', 'editor', 'admin'].includes(accessLevel)) {
+      return res.status(400).json({ error: "Invalid access level" });
+    }
+
+    // Check if project exists
+    const project = await getProject(id);
+    if (!project) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    // Check if user has permission to add collaborators
+    const hasPermission = project.ownerId === req.user.id;
+    if (!hasPermission) {
+      return res.status(403).json({
+        error: "Not authorized to add collaborators"
+      });
+    }
+
+    // Find user by email
+    const userToAdd = await getUserByEmail(email);
+    if (!userToAdd) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Check if user is already a collaborator
+    const existingPermission = await prisma.permission.findFirst({
+      where: {
+        projectId: id,
+        userId: userToAdd.id,
+      },
+    });
+
+    if (existingPermission) {
+      // Update existing permission
+      const updatedPermission = await prisma.permission.update({
+        where: { id: existingPermission.id },
+        data: {
+          accessLevel,
+          canWrite: ['editor', 'admin'].includes(accessLevel),
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              email: true,
+            },
+          },
+        },
+      });
+
+      return res.json({
+        success: true,
+        message: "Collaborator access level updated",
+        data: updatedPermission,
+      });
+    }
+
+    // Create new permission
+    const newPermission = await prisma.permission.create({
+      data: {
+        projectId: id,
+        userId: userToAdd.id,
+        accessLevel,
+        canRead: true,
+        canWrite: ['editor', 'admin'].includes(accessLevel),
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Collaborator added successfully",
+      data: newPermission,
+    });
+  } catch (error) {
+    console.error("Error adding collaborator:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * PATCH /projects/{id}/collaborators/{userId}
+ * @summary Update collaborator access level
+ * @tags Projects - Collaboration
+ * @security BearerAuth
+ * @param {string} id.path.required - Project ID
+ * @param {string} userId.path.required - User ID
+ * @param {object} request.body.required - Update data
+ * @param {string} request.body.accessLevel - New access level (viewer, editor, admin)
+ * @return {object} 200 - Access level updated
+ * @return {object} 403 - Forbidden - Not authorized
+ * @return {object} 404 - Permission not found
+ * @return {object} 500 - Server error
+ */
+router.patch("/:id/collaborators/:userId", authenticate, async (req, res) => {
+  try {
+    const { id, userId } = req.params;
+    const { accessLevel } = req.body;
+
+    if (!accessLevel) {
+      return res.status(400).json({ error: "Access level is required" });
+    }
+
+    // Validate access level
+    if (!['viewer', 'editor', 'admin'].includes(accessLevel)) {
+      return res.status(400).json({ error: "Invalid access level" });
+    }
+
+    // Check if project exists
+    const project = await getProject(id);
+    if (!project) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    // Check if user has permission to update collaborators
+    const hasPermission = project.ownerId === req.user.id;
+    if (!hasPermission) {
+      return res.status(403).json({
+        error: "Not authorized to update collaborators"
+      });
+    }
+
+    // Find the permission
+    const permission = await prisma.permission.findFirst({
+      where: {
+        projectId: id,
+        userId,
+      },
+    });
+
+    if (!permission) {
+      return res.status(404).json({ error: "Collaborator not found" });
+    }
+
+    // Update permission
+    const updatedPermission = await prisma.permission.update({
+      where: { id: permission.id },
+      data: {
+        accessLevel,
+        canWrite: ['editor', 'admin'].includes(accessLevel),
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    res.json({
+      success: true,
+      message: "Access level updated",
+      data: updatedPermission,
+    });
+  } catch (error) {
+    console.error("Error updating collaborator:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * DELETE /projects/{id}/collaborators/{userId}
+ * @summary Remove collaborator from project
+ * @tags Projects - Collaboration
+ * @security BearerAuth
+ * @param {string} id.path.required - Project ID
+ * @param {string} userId.path.required - User ID
+ * @return {object} 200 - Collaborator removed
+ * @return {object} 403 - Forbidden - Not authorized
+ * @return {object} 404 - Permission not found
+ * @return {object} 500 - Server error
+ */
+router.delete("/:id/collaborators/:userId", authenticate, async (req, res) => {
+  try {
+    const { id, userId } = req.params;
+
+    // Check if project exists
+    const project = await getProject(id);
+    if (!project) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    // Check if user has permission to remove collaborators
+    const hasPermission = project.ownerId === req.user.id;
+    if (!hasPermission) {
+      return res.status(403).json({
+        error: "Not authorized to remove collaborators"
+      });
+    }
+
+    // Don't allow removing the owner
+    if (userId === project.ownerId) {
+      return res.status(400).json({
+        error: "Cannot remove project owner"
+      });
+    }
+
+    // Find the permission
+    const permission = await prisma.permission.findFirst({
+      where: {
+        projectId: id,
+        userId,
+      },
+    });
+
+    if (!permission) {
+      return res.status(404).json({ error: "Collaborator not found" });
+    }
+
+    // Delete permission
+    await prisma.permission.delete({
+      where: { id: permission.id },
+    });
+
+    res.json({
+      success: true,
+      message: "Collaborator removed",
+    });
+  } catch (error) {
+    console.error("Error removing collaborator:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 module.exports = router;

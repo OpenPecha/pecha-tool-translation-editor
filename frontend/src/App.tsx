@@ -10,6 +10,8 @@ import Navbar from "./components/Dashboard/Navbar";
 import OpenPecha from "./assets/icon.png";
 import TolgeeProvider, { useCurrentLanguage } from "./contexts/TolgeeContext";
 import Documentation from "./documentation/Documentation";
+import PublicDocumentViewer from "./components/PublicDocumentViewer";
+import PublicProjectViewer from "./components/PublicProjectViewer";
 
 const ProjectList = lazy(() => import("./components/Dashboard/ProjectList"));
 const QuillVersionProvider = lazy(() =>
@@ -98,6 +100,15 @@ function AppContent() {
         <Route path="/callback" element={<Callback />} />
 
         <Route
+          path="/documents/public/:id"
+          element={
+            <Suspense fallback={<LoadingFallback />}>
+              <PublicDocumentViewer />
+            </Suspense>
+          }
+        />
+
+        <Route
           path="/documents/:id"
           element={
             <Suspense fallback={<LoadingFallback />}>
@@ -108,6 +119,15 @@ function AppContent() {
           }
         />
         <Route path="/help" element={<Documentation />} />
+
+        <Route
+          path="/shared/:shareLink"
+          element={
+            <Suspense fallback={<LoadingFallback />}>
+              <PublicProjectViewer />
+            </Suspense>
+          }
+        />
 
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

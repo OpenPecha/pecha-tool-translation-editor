@@ -227,6 +227,7 @@ const Editor = ({
           documentId={documentId}
           toolbarId={toolbarId}
           range={currentRange}
+          isEditable={isEditable}
         />,
         document.getElementById("toolbar-container")!
       )}

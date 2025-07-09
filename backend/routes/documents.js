@@ -1,5 +1,5 @@
 const express = require("express");
-const { authenticate } = require("../middleware/authenticate");
+const { authenticate, optionalAuthenticate } = require("../middleware/authenticate");
 const { PrismaClient } = require("@prisma/client");
 const multer = require("multer");
 const { WSSharedDoc } = require("../services");
@@ -17,12 +17,21 @@ const router = express.Router();
 /**
  * Check if a user has permission to access a document
  * @param {Object} document - The document object with rootsProject information
- * @param {string} userId - The ID of the user to check permissions for
+ * @param {string} userId - The ID of the user to check permissions for 
  * @returns {boolean} - Whether the user has permission to access the document
  */
 async function checkDocumentPermission(document, userId) {
   // If the document doesn't exist, no permission
   if (!document) return false;
+
+  // If the document's project is public, everyone has read access
+  if (document.rootsProject && document.rootsProject.isPublic) return true;
+
+  // If no user provided (anonymous), they can only access public documents
+  if (!userId) return false;
+
+  // Check if user is the owner of the document
+  if (document.ownerId === userId) return true;
 
   // Check if user is the owner of the project
   if (document.rootsProject && document.rootsProject.ownerId === userId) {
@@ -40,19 +49,146 @@ async function checkDocumentPermission(document, userId) {
     }
   }
 
+  // Check if user has explicit permission on the document
+  if (document.permissions) {
+    const userPermission = document.permissions.find(
+      (permission) => permission.userId === userId
+    );
+
+    if (userPermission) {
+      return true;
+    }
+  }
+
   // No permission found
   return false;
 }
 
-const upload = multer({
-  storage: multer.memoryStorage(), // Keeps file in memory, not saved on disk
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype !== "text/plain") {
-      return cb(new Error("Only .txt files are allowed"));
+/**
+ * Check if a user has write permission to a document
+ * @param {Object} document - The document object with rootsProject information
+ * @param {string} userId - The ID of the user to check permissions for (can be undefined for anonymous users)
+ * @returns {boolean} - Whether the user has write permission to the document
+ */
+async function checkDocumentWritePermission(document, userId) {
+  // If the document doesn't exist, no permission
+  if (!document) return false;
+
+  // If the document's project is public and allows editing, anyone with a user ID can write
+  if (userId && document.rootsProject && document.rootsProject.isPublic && document.rootsProject.publicAccess === 'editor') {
+    return true;
+  }
+
+  // Anonymous users never have write access
+  if (!userId) return false;
+
+  // Check if user is the owner of the document
+  if (document.ownerId === userId) return true;
+
+  // Check if user is the owner of the project
+  if (document.rootsProject && document.rootsProject.ownerId === userId) {
+    return true;
+  }
+
+  // Check if user has explicit write permission in the project
+  if (document.rootsProject && document.rootsProject.permissions) {
+    const userPermission = document.rootsProject.permissions.find(
+      (permission) => permission.userId === userId && permission.canWrite
+    );
+
+    if (userPermission) {
+      return true;
     }
-    cb(null, true);
+  }
+
+  // Check if user has explicit write permission on the document
+  if (document.permissions) {
+    const userPermission = document.permissions.find(
+      (permission) => permission.userId === userId && permission.canWrite
+    );
+
+    if (userPermission) {
+      return true;
+    }
+  }
+
+  // No write permission found
+  return false;
+}
+
+const upload = multer({
+  storage: multer.memoryStorage(), // Use memory storage to keep files as buffers
+  limits: {
+    fileSize: 500 * 1024 * 1024, // 500MB
   },
+});
+
+/**
+ * GET /documents/public/{id}
+ * @summary Get a public document by ID (no authentication required)
+ * @tags Documents - Public document access
+ * @param {string} id.path.required - Document ID
+ * @return {object} 200 - Document details
+ * @return {object} 403 - Document is not public
+ * @return {object} 404 - Document not found
+ * @return {object} 500 - Server error
+ */
+router.get("/public/:id", optionalAuthenticate, async (req, res) => {
+  try {
+    const document = await prisma.doc.findUnique({
+      where: { id: req.params.id },
+      select: {
+        id: true,
+        name: true,
+        identifier: true,
+        ownerId: true,
+        language: true,
+        isRoot: true,
+        rootId: true,
+        docs_prosemirror_delta: true,
+        translationStatus: true,
+        translationJobId: true,
+        createdAt: true,
+        updatedAt: true,
+        rootProjectId: true,
+        permissions: true,
+        rootsProject: {
+          include: {
+            permissions: true,
+          },
+        },
+      },
+    });
+
+    if (!document) return res.status(404).json({ error: "Document not found" });
+
+    // Check if user has permission to access this document
+    const hasPermission = await checkDocumentPermission(document, req.user?.id);
+
+    if (!hasPermission) {
+      return res.status(403).json({
+        success: false,
+        message: "This document is not publicly accessible",
+      });
+    }
+
+    // Determine access level from project settings
+    const publicAccess = document.rootsProject?.publicAccess || 'viewer';
+    const isReadOnly = publicAccess === 'viewer' || (!req.user || !(await checkDocumentWritePermission(document, req.user.id)));
+
+    // Return document with read-only flag for public access
+    const responseDocument = {
+      ...document,
+      isReadOnly,
+      publicAccess,
+      inheritedFromProject: document.rootsProject?.isPublic || false,
+    };
+
+    res.json(responseDocument);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error retrieving document" });
+  }
 });
 
 /**
@@ -74,19 +210,31 @@ const upload = multer({
 router.post("/", authenticate, upload.single("file"), async (req, res) => {
   try {
     const { identifier, isRoot, rootId, language, name } = req.body;
-    if (!identifier)
-      return res
-        .status(400)
-        .json({ error: "Missing identifier in query params" });
+
+    // Validate required fields
+    if (!identifier) {
+      return res.status(400).json({ error: "Missing identifier in request body" });
+    }
+    if (!name) {
+      return res.status(400).json({ error: "Missing name in request body" });
+    }
+    if (!language) {
+      return res.status(400).json({ error: "Missing language in request body" });
+    }
 
     const doc = new WSSharedDoc(identifier, req.user.id);
     // Update the Y.doc with file content
     const prosemirrorText = doc.getText(identifier);
-    if (req?.file) {
-      const textContent = req.file.buffer.toString("utf-8");
-      if (textContent) {
-        prosemirrorText.delete(0, prosemirrorText.length);
-        prosemirrorText.insert(0, textContent);
+    if (req?.file && req.file.buffer) {
+      try {
+        const textContent = req.file.buffer.toString("utf-8");
+        if (textContent) {
+          prosemirrorText.delete(0, prosemirrorText.length);
+          prosemirrorText.insert(0, textContent);
+        }
+      } catch (error) {
+        console.error("Error processing file content:", error);
+        throw new Error("Invalid file format or encoding");
       }
     }
     const delta = prosemirrorText.toDelta();
@@ -140,10 +288,17 @@ router.post("/content", authenticate, async (req, res) => {
     const { identifier, isRoot, rootId, language, name, content } = req.body;
 
     console.log(identifier, isRoot, rootId, language, name);
-    if (!identifier)
-      return res
-        .status(400)
-        .json({ error: "Missing identifier in query params" });
+
+    // Validate required fields
+    if (!identifier) {
+      return res.status(400).json({ error: "Missing identifier in request body" });
+    }
+    if (!name) {
+      return res.status(400).json({ error: "Missing name in request body" });
+    }
+    if (!language) {
+      return res.status(400).json({ error: "Missing language in request body" });
+    }
 
     const doc = new WSSharedDoc(identifier, req.user.id);
     const prosemirrorText = doc.getText(identifier);
@@ -219,7 +374,10 @@ router.get("/", authenticate, async (req, res) => {
     // Filter for public documents not owned by user
     if (isPublic === "true") {
       whereCondition = {
-        AND: [{ ownerId: { not: req.user.id } }, { isPublic: true }],
+        AND: [
+          { ownerId: { not: req.user.id } },
+          { rootsProject: { isPublic: true } }
+        ],
       };
     } else {
       // Default filter for user's documents
@@ -264,7 +422,6 @@ router.get("/", authenticate, async (req, res) => {
         ownerId: true,
         language: true,
         isRoot: true,
-        isPublic: true,
         translations: {
           select: {
             id: true,
@@ -281,6 +438,14 @@ router.get("/", authenticate, async (req, res) => {
           },
         },
         rootId: true,
+        rootsProject: {
+          select: {
+            id: true,
+            name: true,
+            isPublic: true,
+            publicAccess: true,
+          },
+        },
       },
       orderBy: {
         isRoot: "desc",
@@ -315,7 +480,6 @@ router.get("/:id", authenticate, async (req, res) => {
         language: true,
         isRoot: true,
         rootId: true,
-        isPublic: true,
         docs_prosemirror_delta: true,
         translationStatus: true,
         translationJobId: true,
@@ -333,7 +497,7 @@ router.get("/:id", authenticate, async (req, res) => {
     if (!document) return res.status(404).json({ error: "Document not found" });
 
     // Check if user has permission to access this document
-    const hasPermission = checkDocumentPermission(document, req.user.id);
+    const hasPermission = await checkDocumentPermission(document, req.user.id);
 
     // If document is not public and user doesn't have permission, deny access
     if (!hasPermission) {
@@ -382,7 +546,6 @@ router.get("/:id/content", authenticate, async (req, res) => {
         permissions: true,
         language: true,
         isRoot: true,
-        isPublic: true,
         docs_prosemirror_delta: true,
         rootsProject: {
           include: {
@@ -394,7 +557,7 @@ router.get("/:id/content", authenticate, async (req, res) => {
     if (!document) return res.status(404).json({ error: "Document not found" });
 
     // Check if user has permission to access this document
-    const hasPermission = checkDocumentPermission(document, req.user.id);
+    const hasPermission = await checkDocumentPermission(document, req.user.id);
 
     // If document is not public and user doesn't have permission, deny access
     if (!hasPermission) {
@@ -455,7 +618,7 @@ router.get("/:id/translations", authenticate, async (req, res) => {
     }
 
     // Check if user has permission to access this document
-    const hasPermission = checkDocumentPermission(document, req.user.id);
+    const hasPermission = await checkDocumentPermission(document, req.user.id);
     if (!hasPermission) {
       return res.status(403).json({
         success: false,
@@ -473,7 +636,6 @@ router.get("/:id/translations", authenticate, async (req, res) => {
         name: true,
         language: true,
         ownerId: true,
-        isPublic: true,
         updatedAt: true,
         translationProgress: true,
         translationStatus: true,
@@ -503,56 +665,7 @@ router.get("/:id/translations", authenticate, async (req, res) => {
   }
 });
 
-/**
- * PUT /documents/{id}
- * @summary Update a document
- * @tags Documents - Document management operations
- * @security BearerAuth
- * @param {string} id.path.required - Document ID
- * @param {object} request.body.required - Document update data
- * @param {object} request.body.docs_prosemirror_delta - ProseMirror delta
- * @param {object} request.body.docs_y_doc_state - Y.js document state
- * @return {object} 200 - Updated document
- * @return {object} 403 - Forbidden - No edit access
- * @return {object} 404 - Document not found
- * @return {object} 500 - Server error
- */
-router.put("/:id", authenticate, async (req, res) => {
-  const { docs_prosemirror_delta, docs_y_doc_state, name } = req.body;
-  try {
-    const document = await prisma.doc.findUnique({
-      where: { id: req.params.id },
-      include: {
-        rootsProject: {
-          include: {
-            permissions: true,
-          },
-        },
-      },
-    });
-    if (!document) return res.status(404).json({ error: "Document not found" });
 
-    // Check if user has permission to access this document
-    const hasPermission = checkDocumentPermission(document, req.user.id);
-
-    // If user doesn't have permission, deny access
-    if (!hasPermission) {
-      return res.status(403).json({
-        success: false,
-        message: "You do not have permission to edit this document",
-      });
-    }
-
-    const updatedDocument = await prisma.doc.update({
-      where: { id: document.id },
-      data: { docs_prosemirror_delta, docs_y_doc_state },
-    });
-
-    res.json(updatedDocument);
-  } catch (error) {
-    res.status(500).json({ error: "Error updating document" });
-  }
-});
 /**
  * DELETE /documents/{id}
  * @summary Delete a document
@@ -584,7 +697,7 @@ router.delete("/:id", authenticate, async (req, res) => {
     if (!document) return res.status(404).json({ error: "Document not found" });
 
     // Check if user has permission to access this document
-    const hasPermission = checkDocumentPermission(document, req.user.id);
+    const hasPermission = await checkDocumentPermission(document, req.user.id);
 
     // Check if user is the owner of the document or the root document
     const isOwner = document.ownerId === req.user.id;
@@ -648,7 +761,7 @@ router.post("/:id/permissions", authenticate, async (req, res) => {
     if (!document) return res.status(404).json({ error: "Document not found" });
 
     // Check if user has permission to access this document
-    const hasPermission = checkDocumentPermission(document, req.user.id);
+    const hasPermission = await checkDocumentPermission(document, req.user.id);
 
     // Only allow permission changes by document owner
     if (!hasPermission) {
@@ -723,7 +836,7 @@ router.post("/:id/permissions", authenticate, async (req, res) => {
 // Update document's root relationship and root status
 router.patch("/:id", authenticate, async (req, res) => {
   try {
-    const { rootId, isRoot, translations, identifier, isPublic, name } =
+    const { rootId, isRoot, translations, identifier, name } =
       req.body;
     const documentId = req.params.id;
 
@@ -745,7 +858,7 @@ router.patch("/:id", authenticate, async (req, res) => {
     }
 
     // Check if user has permission to access this document
-    const hasPermission = checkDocumentPermission(document, req.user.id);
+    const hasPermission = await checkDocumentPermission(document, req.user.id);
 
     // If user doesn't have permission, deny access
     if (!hasPermission) {
@@ -836,7 +949,6 @@ router.patch("/:id", authenticate, async (req, res) => {
       identifier: identifier || document.identifier,
       // Update name if provided
       name: name || document.name,
-      isPublic: isPublic ?? document.isPublic,
     };
 
     // Update the document and its translations in a transaction

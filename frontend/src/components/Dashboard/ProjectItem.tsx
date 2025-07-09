@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Delete, FileText, MoreVertical, Users } from "lucide-react";
+import { Delete, FileText, MoreVertical, Users, Share2 } from "lucide-react";
 import DocIcon from "@/assets/doc_icon.png";
 import {
   DropdownMenu,
@@ -21,6 +21,7 @@ interface ProjectItemProps {
   hasPermission?: boolean;
   updateDocument: (e: React.MouseEvent) => void;
   deleteDocument: (e: React.MouseEvent) => void;
+  shareDocument: (e: React.MouseEvent) => void;
   view: "grid" | "list";
   status?: string;
   documentCount?: number;
@@ -37,6 +38,7 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
   hasPermission = false,
   updateDocument,
   deleteDocument,
+  shareDocument,
   view,
   documentCount = 0,
   url,
@@ -93,6 +95,7 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
             hasPermission={hasPermission}
             updateDocument={updateDocument}
             deleteDocument={deleteDocument}
+            shareDocument={shareDocument}
             url={url}
           />
         </div>
@@ -138,6 +141,7 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
             hasPermission={hasPermission}
             updateDocument={updateDocument}
             deleteDocument={deleteDocument}
+            shareDocument={shareDocument}
             url={url}
           />
         </div>
@@ -150,11 +154,13 @@ function ProjectItemDropdownMenu({
   hasPermission,
   updateDocument,
   deleteDocument,
+  shareDocument,
   url,
 }: {
   readonly hasPermission: boolean;
   readonly updateDocument: (e: React.MouseEvent) => void;
   readonly deleteDocument: (e: React.MouseEvent) => void;
+  readonly shareDocument: (e: React.MouseEvent) => void;
   readonly url?: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -206,6 +212,9 @@ function ProjectItemDropdownMenu({
             </DropdownMenuItem>
           </>
         )}
+        <DropdownMenuItem onClick={(e) => handleCloseClick(e, shareDocument)}>
+          <Share2 size={16} /> Share
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={handleOpenInNewTab}>
           <svg
             xmlns="http://www.w3.org/2000/svg"

@@ -34,6 +34,10 @@ model Project {
   permissions Permission[] @relation("ProjectPermissions")
   metadata    Json?
   status      String       @default("active") // active, deleted, archived, draft
+  
+  isPublic    Boolean      @default(false)    // Whether this project is public
+  publicAccess String      @default("none")   // none, viewer, editor
+  shareLink   String?      @unique           // Unique shareable link identifier
 }
 
 model Doc {
@@ -44,7 +48,6 @@ model Doc {
   docs_y_doc_state       Bytes? // Binary data for Yjs document state
   language               String       @default("bo") // Language of the document content
   isRoot                 Boolean      @default(false) // Whether this is a root text
-  isPublic               Boolean      @default(false) // Whether this document is public
   rootId                 String? // ID of the root document if this is a translation
   root                   Doc?         @relation("Translations", fields: [rootId], references: [id], onDelete: Cascade)
   translations           Doc[]        @relation("Translations") // One root can have multiple translations
@@ -78,6 +81,8 @@ model Permission {
   canRead   Boolean @default(true)
   canWrite  Boolean @default(false)
   projectId String?
+  
+  accessLevel String @default("viewer") // viewer, editor, admin
 
   doc     Doc?     @relation(fields: [docId], references: [id], onDelete: Cascade)
   user    User?    @relation(fields: [userId], references: [id], onDelete: Cascade)

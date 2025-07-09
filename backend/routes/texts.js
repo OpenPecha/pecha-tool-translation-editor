@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { PrismaClient } = require("@prisma/client");
-const {authenticate} = require("../middleware/authenticate");
+const { authenticate } = require("../middleware/authenticate");
 const { diff_match_patch } = require("diff-match-patch");
 const Delta = require('quill-delta');
 
@@ -228,11 +228,11 @@ router.get("/version-diff/:versionId", async (req, res) => {
     });
 
 
-    const oldDelta = previousVersion ? new Delta(previousVersion.content?.ops): new Delta();
+    const oldDelta = previousVersion ? new Delta(previousVersion.content?.ops) : new Delta();
     const newDelta = new Delta(currentVersion.content?.ops);
     const diffs1 = markDiff(oldDelta, newDelta);
 
-    const diffs=oldDelta?.compose(new Delta(diffs1));
+    const diffs = oldDelta?.compose(new Delta(diffs1));
     return res.json({
       diffs,
     });

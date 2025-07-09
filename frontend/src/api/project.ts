@@ -388,22 +388,19 @@ export const fetchProjectPermissions = async (projectId: string) => {
 export const searchUserByEmail = async (email: string) => {
   try {
     const response = await fetch(
-      `${server_url}/users/search?email=${encodeURIComponent(email)}`,
+      `${server_url}/users/search?query=${encodeURIComponent(email)}`,
       {
         headers: getHeaders(),
       }
     );
 
     if (!response.ok) {
-      if (response.status === 404) {
-        throw new Error("User not found with this email");
-      }
       throw new Error(`Failed to search user: ${response.statusText}`);
     }
 
     return await response.json();
   } catch (error) {
-    console.error(`Error searching user by email:`, error);
+    console.error("Error searching user:", error);
     throw error;
   }
 };
@@ -443,6 +440,232 @@ export const downloadProjectDocuments = async (
     return blob;
   } catch (error) {
     console.error(`Error downloading project documents ${projectId}:`, error);
+    throw error;
+  }
+};
+
+// =============================================================================
+// GOOGLE DOCS-STYLE SHARING API FUNCTIONS
+// =============================================================================
+
+export interface ShareSettings {
+  isPublic: boolean;
+  publicAccess: "none" | "viewer" | "editor";
+}
+
+export interface CollaboratorData {
+  email: string;
+  accessLevel: "viewer" | "editor" | "admin";
+  message?: string;
+}
+
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  picture?: string;
+}
+
+export interface Collaborator {
+  id: string;
+  userId: string;
+  accessLevel: "viewer" | "editor" | "admin";
+  canRead: boolean;
+  canWrite: boolean;
+  user: User;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProjectShareInfo {
+  id: string;
+  name: string;
+  isPublic: boolean;
+  publicAccess: "none" | "viewer" | "editor";
+  shareableLink: string | null;
+  isOwner: boolean;
+  permissions: Collaborator[];
+  owner: User;
+}
+
+// Get project sharing information
+export const getProjectShareInfo = async (
+  projectId: string
+): Promise<{ success: boolean; data: ProjectShareInfo }> => {
+  try {
+    const response = await fetch(`${server_url}/projects/${projectId}/share`, {
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to get project sharing info: ${response.statusText}`
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error getting project sharing info:", error);
+    throw error;
+  }
+};
+
+// Update project sharing settings
+export const updateProjectShareSettings = async (
+  projectId: string,
+  settings: ShareSettings
+): Promise<{ success: boolean; data: any }> => {
+  try {
+    const response = await fetch(`${server_url}/projects/${projectId}/share`, {
+      method: "POST",
+      headers: {
+        ...getHeaders(),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(settings),
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to update sharing settings: ${response.statusText}`
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error updating sharing settings:", error);
+    throw error;
+  }
+};
+
+// Add collaborator to project
+export const addCollaborator = async (
+  projectId: string,
+  collaboratorData: CollaboratorData
+): Promise<{ success: boolean; data: Collaborator; message: string }> => {
+  try {
+    const response = await fetch(
+      `${server_url}/projects/${projectId}/collaborators`,
+      {
+        method: "POST",
+        headers: {
+          ...getHeaders(),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(collaboratorData),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.error || `Failed to add collaborator: ${response.statusText}`
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error adding collaborator:", error);
+    throw error;
+  }
+};
+
+// Update collaborator access level
+export const updateCollaboratorAccess = async (
+  projectId: string,
+  userId: string,
+  accessLevel: "viewer" | "editor" | "admin"
+): Promise<{ success: boolean; data: Collaborator }> => {
+  try {
+    const response = await fetch(
+      `${server_url}/projects/${projectId}/collaborators/${userId}`,
+      {
+        method: "PATCH",
+        headers: {
+          ...getHeaders(),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ accessLevel }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to update collaborator access: ${response.statusText}`
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error updating collaborator access:", error);
+    throw error;
+  }
+};
+
+// Remove collaborator from project
+export const removeCollaborator = async (
+  projectId: string,
+  userId: string
+): Promise<{ success: boolean; message: string }> => {
+  try {
+    const response = await fetch(
+      `${server_url}/projects/${projectId}/collaborators/${userId}`,
+      {
+        method: "DELETE",
+        headers: getHeaders(),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to remove collaborator: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error removing collaborator:", error);
+    throw error;
+  }
+};
+
+// Search users for collaboration
+export const searchUsers = async (
+  query: string
+): Promise<{ success: boolean; data: User[] }> => {
+  try {
+    const response = await fetch(
+      `${server_url}/users/search?query=${encodeURIComponent(query)}`,
+      {
+        headers: getHeaders(),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to search users: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error searching users:", error);
+    throw error;
+  }
+};
+
+// Access shared project by link
+export const accessSharedProject = async (
+  shareLink: string
+): Promise<{ success: boolean; data: any }> => {
+  try {
+    const response = await fetch(`${server_url}/projects/shared/${shareLink}`);
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to access shared project: ${response.statusText}`
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error accessing shared project:", error);
     throw error;
   }
 };

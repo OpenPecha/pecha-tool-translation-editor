@@ -55,8 +55,8 @@ const authenticate = async (req, res, next) => {
     // First validate the token with Auth0
     await validateAuth0Token(req, res, async () => {
       // Get the user info from the validated token
-      const id=req?.auth?.payload['sub'];
-      if(!id){
+      const id = req?.auth?.payload['sub'];
+      if (!id) {
         return res.status(401).json({ error: "User ID claim missing from token" });
       }
 
@@ -67,8 +67,8 @@ const authenticate = async (req, res, next) => {
       if (!user) {
         // Create user if they don't exist in our database
         const userEmail = req?.auth?.payload["https://pecha-tool/email"];
-        const picture= req?.auth?.payload["https://pecha-tool/picture"];
-        if (!userEmail||!picture) {
+        const picture = req?.auth?.payload["https://pecha-tool/picture"];
+        if (!userEmail || !picture) {
           return res.status(401).json({ error: "Email claim missing from token" });
         }
         const newUser = await prisma.user.create({
@@ -79,21 +79,21 @@ const authenticate = async (req, res, next) => {
             picture
           }
         });
-        
+
         req.user = {
           id: newUser.id,
           email: newUser.email
         };
-        
+
         return next();
       }
-      
+
       // Attach user to request object
       req.user = {
         id: user.id,
         email: user.email
       };
-      
+
       next();
     });
   } catch (error) {
@@ -102,4 +102,76 @@ const authenticate = async (req, res, next) => {
   }
 };
 
-module.exports = {authenticate, auth0VerifyToken};
+/**
+ * Optional authentication middleware - allows requests to proceed with or without authentication
+ * If authenticated, attaches user to req.user; if not authenticated, req.user is undefined
+ */
+const optionalAuthenticate = async (req, res, next) => {
+  try {
+    // Check if Authorization header exists
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      // No token provided, proceed without authentication
+      req.user = undefined;
+      return next();
+    }
+
+    // Try to authenticate with Auth0
+    await validateAuth0Token(req, res, async () => {
+      // Get the user info from the validated token
+      const id = req?.auth?.payload['sub'];
+      if (!id) {
+        // Invalid token, proceed without authentication
+        req.user = undefined;
+        return next();
+      }
+
+      // Find user in database
+      const user = await prisma.user.findUnique({
+        where: { id: id }
+      });
+
+      if (!user) {
+        // Create user if they don't exist in our database
+        const userEmail = req?.auth?.payload["https://pecha-tool/email"];
+        const picture = req?.auth?.payload["https://pecha-tool/picture"];
+        if (!userEmail || !picture) {
+          // Invalid token claims, proceed without authentication
+          req.user = undefined;
+          return next();
+        }
+
+        const newUser = await prisma.user.create({
+          data: {
+            id,
+            email: userEmail,
+            username: userEmail.split("@")[0],
+            picture
+          }
+        });
+
+        req.user = {
+          id: newUser.id,
+          email: newUser.email
+        };
+
+        return next();
+      }
+
+      // Attach user to request object
+      req.user = {
+        id: user.id,
+        email: user.email
+      };
+
+      next();
+    });
+  } catch (error) {
+    // If authentication fails, proceed without authentication
+    console.log("Optional authentication failed, proceeding without auth:", error.message);
+    req.user = undefined;
+    next();
+  }
+};
+
+module.exports = { authenticate, optionalAuthenticate, auth0VerifyToken };
