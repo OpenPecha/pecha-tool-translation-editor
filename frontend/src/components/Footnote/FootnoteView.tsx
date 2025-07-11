@@ -435,53 +435,24 @@ function FootnoteView({
                 {/* Footnote Creation Section */}
                 {isCreatingFootnote && (
                   <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div className="flex items-center mb-2 gap-2">
-                      <AvatarWrapper
-                        imageUrl={currentUser?.picture}
-                        name={currentUser?.name}
-                        size={24}
-                      />
-                      <div className="text-sm font-medium">
-                        {currentUser?.name}
-                      </div>
-                    </div>
-
-                    <div className="text-xs text-gray-600 mb-2">
-                      Selected text: "{selectedText}"
-                    </div>
-
-                    <textarea
+                    <input
+                      type="text"
                       value={newFootnoteContent}
                       onChange={(e) => setNewFootnoteContent(e.target.value)}
-                      className="w-full p-2 text-sm border rounded resize-none"
-                      rows={3}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleCreateFootnote();
+                        } else if (e.key === "Escape") {
+                          e.preventDefault();
+                          handleCancelCreateFootnote();
+                        }
+                      }}
+                      className="w-full p-2 text-sm border rounded"
                       placeholder="Add a footnote..."
                       autoFocus
+                      disabled={createFootnoteMutation.isPending}
                     />
-
-                    <div className="flex justify-end gap-2 mt-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={handleCancelCreateFootnote}
-                        className="text-xs"
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={handleCreateFootnote}
-                        disabled={
-                          !newFootnoteContent.trim() ||
-                          createFootnoteMutation.isPending
-                        }
-                        className="text-xs"
-                      >
-                        {createFootnoteMutation.isPending
-                          ? "Creating..."
-                          : "Create Footnote"}
-                      </Button>
-                    </div>
                   </div>
                 )}
 
@@ -505,32 +476,24 @@ function FootnoteView({
                           onClick={() => handleFootnoteClick(footnote)}
                         >
                           {editingFootnote === footnote.id ? (
-                            <div className="space-y-2">
-                              <textarea
-                                value={editContent}
-                                onChange={(e) => setEditContent(e.target.value)}
-                                className="w-full p-2 text-sm border rounded resize-none"
-                                rows={3}
-                                autoFocus
-                              />
-                              <div className="flex gap-2">
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleSaveEdit(footnote.id)}
-                                  className="text-xs"
-                                >
-                                  Save
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={handleCancelEdit}
-                                  className="text-xs"
-                                >
-                                  Cancel
-                                </Button>
-                              </div>
-                            </div>
+                            <input
+                              type="text"
+                              value={editContent}
+                              onChange={(e) => setEditContent(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  handleSaveEdit(footnote.id);
+                                } else if (e.key === "Escape") {
+                                  e.preventDefault();
+                                  handleCancelEdit();
+                                }
+                              }}
+                              className="w-full p-2 text-sm border rounded"
+                              placeholder="Edit footnote..."
+                              autoFocus
+                              disabled={updateFootnoteMutation.isPending}
+                            />
                           ) : (
                             <div className="text-sm text-foreground">
                               <sup className="text-[8px] text-gray-600 mr-1">
