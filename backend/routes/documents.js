@@ -22,8 +22,8 @@ const router = express.Router();
  */
 async function checkDocumentPermission(document, userId) {
   // If the document doesn't exist, no permission
+  console.log("document :: ", document)
   if (!document) return false;
-
   // If the document's project is public, everyone has read access
   if (document.rootsProject && document.rootsProject.isPublic) return true;
 
@@ -241,6 +241,14 @@ router.post("/", authenticate, upload.single("file"), async (req, res) => {
     const state = Y.encodeStateAsUpdateV2(doc);
 
     const document = await prisma.$transaction(async (tx) => {
+      let rootProjectId = null;
+      if (rootId) {
+        const rootDoc = await prisma.doc.findUnique({
+          where: { id: rootId },
+          select: { rootProjectId: true },
+        });
+        rootProjectId = rootDoc?.rootProjectId;
+      }
       const doc = await tx.doc.create({
         data: {
           id: identifier,
@@ -252,6 +260,7 @@ router.post("/", authenticate, upload.single("file"), async (req, res) => {
           isRoot: isRoot === "true",
           rootId: rootId ?? null,
           language,
+          rootProjectId: rootProjectId,
         },
         select: {
           id: true,
@@ -312,6 +321,14 @@ router.post("/content", authenticate, async (req, res) => {
     const delta = prosemirrorText.toDelta();
     const state = Y.encodeStateAsUpdateV2(doc);
     const document = await prisma.$transaction(async (tx) => {
+      let rootProjectId = null;
+      if (rootId) {
+        const rootDoc = await prisma.doc.findUnique({
+          where: { id: rootId },
+          select: { rootProjectId: true },
+        });
+        rootProjectId = rootDoc?.rootProjectId;
+      }
       const doc = await tx.doc.create({
         data: {
           id: identifier,
@@ -323,6 +340,7 @@ router.post("/content", authenticate, async (req, res) => {
           isRoot: isRoot === "true",
           rootId: rootId ?? null,
           language,
+          rootProjectId: rootProjectId,
         },
         select: {
           id: true,
@@ -534,7 +552,7 @@ router.get("/:id", authenticate, async (req, res) => {
  * @return {object} 404 - Document not found
  * @return {object} 500 - Server error
  */
-router.get("/:id/content", authenticate, async (req, res) => {
+router.get("/:id/content", optionalAuthenticate, async (req, res) => {
   try {
     const document = await prisma.doc.findUnique({
       where: { id: req.params.id },
@@ -594,7 +612,7 @@ router.get("/:id/content", authenticate, async (req, res) => {
  * @return {object} 404 - Document not found
  * @return {object} 500 - Server error
  */
-router.get("/:id/translations", authenticate, async (req, res) => {
+router.get("/:id/translations", optionalAuthenticate, async (req, res) => {
   try {
     const documentId = req.params.id;
 
@@ -618,7 +636,7 @@ router.get("/:id/translations", authenticate, async (req, res) => {
     }
 
     // Check if user has permission to access this document
-    const hasPermission = await checkDocumentPermission(document, req.user.id);
+    const hasPermission = await checkDocumentPermission(document, req.user?.id);
     if (!hasPermission) {
       return res.status(403).json({
         success: false,
