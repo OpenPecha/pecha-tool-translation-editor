@@ -266,7 +266,7 @@ const Editor = ({
               currentRange={currentRange}
             />
           )}
-          <CommentBubble documentId={documentId} />
+          <CommentBubble documentId={documentId} isEditable={isEditable} />
         </div>
         {/* <OverlayLoading isLoading={!isSynced} /> */}
       </div>
