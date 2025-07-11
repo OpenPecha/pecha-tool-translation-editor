@@ -301,11 +301,68 @@ function PublicFootnotes({ documentId }: { documentId: string }) {
     staleTime: 30000,
   });
 
+  const handleFootnoteClick = (footnote: any) => {
+    // Find the footnote span in the editor and highlight it
+    const footnoteSpan = document.querySelector(
+      `span.footnote[data-id="${footnote.threadId}"]`
+    ) as HTMLElement;
+
+    if (footnoteSpan) {
+      // Scroll the footnote span into view
+      footnoteSpan.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "nearest",
+      });
+
+      // Add temporary highlight effect
+      const originalBackground = footnoteSpan.style.backgroundColor;
+      footnoteSpan.style.backgroundColor = "rgba(59, 130, 246, 0.3)";
+      footnoteSpan.style.transition = "background-color 0.3s ease";
+
+      // Remove highlight after 2 seconds
+      setTimeout(() => {
+        footnoteSpan.style.backgroundColor = originalBackground;
+      }, 2000);
+    }
+  };
+
+  // Sort footnotes by their position in the document
+  const getSortedFootnotes = () => {
+    const footnotes = footnotesData || [];
+
+    // Get all footnote spans in the editor
+    const footnoteSpans = document.querySelectorAll("span.footnote[data-id]");
+    const activeThreadIds = new Set<string>();
+    const footnotePositions = new Map<string, number>();
+
+    // Collect all active thread IDs and their positions from the editor
+    footnoteSpans.forEach((span, index) => {
+      const threadId = span.getAttribute("data-id");
+      if (threadId) {
+        activeThreadIds.add(threadId);
+        footnotePositions.set(threadId, index);
+      }
+    });
+
+    // Filter footnotes to only include those that are currently in the editor
+    const activeFootnotes = footnotes.filter((footnote: any) =>
+      activeThreadIds.has(footnote.threadId)
+    );
+
+    // Sort footnotes by their position in the document
+    return activeFootnotes.sort((a: any, b: any) => {
+      const posA = footnotePositions.get(a.threadId) ?? 0;
+      const posB = footnotePositions.get(b.threadId) ?? 0;
+      return posA - posB;
+    });
+  };
+
   if (isLoading) return <Message text="Loading footnotes..." />;
   if (error) return <Message text="Error loading footnotes" error />;
 
-  const footnotes = footnotesData || [];
-  if (!footnotes.length) return <Message text="No footnotes yet" />;
+  const sortedFootnotes = getSortedFootnotes();
+  if (!sortedFootnotes.length) return <Message text="No footnotes yet" />;
 
   return (
     <div className="rounded-lg overflow-hidden">
@@ -320,30 +377,21 @@ function PublicFootnotes({ documentId }: { documentId: string }) {
       </div>
 
       <ScrollArea className="px-4 h-[calc(100vh-200px)] overflow-y-auto">
-        <div className="space-y-4">
-          {footnotes.map((footnote, index) => (
-            <div key={footnote.id} className="border-b pb-4">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+        <div className="space-y-2">
+          {sortedFootnotes.map((footnote, index) => (
+            <div
+              key={footnote.id}
+              className="p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+              onClick={() => handleFootnoteClick(footnote)}
+              title="Click to highlight text in document"
+            >
+              <div className="flex items-start gap-2">
+                <sup className="text-blue-600 font-medium text-sm mt-1">
                   {index + 1}
-                </span>
-                <span className="text-sm font-medium text-gray-600">
-                  {footnote.user?.username || "Unknown User"}
-                </span>
-              </div>
-
-              {footnote.note_on && (
-                <div className="text-xs text-gray-500 mb-2 italic">
-                  Reference: "{footnote.note_on}"
+                </sup>
+                <div className="text-sm text-gray-800 leading-relaxed">
+                  {footnote.content}
                 </div>
-              )}
-
-              <div className="text-sm bg-gray-50 p-3 rounded">
-                {footnote.content}
-              </div>
-
-              <div className="text-xs text-gray-400 mt-2">
-                {new Date(footnote.createdAt).toLocaleDateString()}
               </div>
             </div>
           ))}

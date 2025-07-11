@@ -59,6 +59,7 @@ function DocumentsWrapper() {
                 <SideMenu
                   setSelectedTranslationId={handleSelectTranslation}
                   documentId={id!}
+                  isEditable={isEditable}
                 />
               ) : (
                 <TranslationEditor

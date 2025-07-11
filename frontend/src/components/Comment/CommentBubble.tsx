@@ -43,7 +43,13 @@ interface StyleProps {
   overflowY: "auto";
 }
 
-const CommentBubble = ({ documentId }: { documentId: string }) => {
+const CommentBubble = ({
+  documentId,
+  isEditable = true,
+}: {
+  documentId: string;
+  isEditable?: boolean;
+}) => {
   const bubbleRef = useRef<HTMLDivElement>(null);
   const { isModalOpen, position, commentThread, setIsModalOpen } = useComment();
   const [isSuggestion, setIsSuggestion] = useState(false);
@@ -159,54 +165,56 @@ const CommentBubble = ({ documentId }: { documentId: string }) => {
       className="absolute bg-[#fff]  border border-[#e5e7eb] flex-col  p-[2] rounded-lg "
     >
       <div style={{ padding: "0 4px" }}>
-        <CommentList commentThread={commentThread} />
+        <CommentList commentThread={commentThread} isEditable={isEditable} />
       </div>
 
-      {/* Comment input */}
-      <div className="border-t border-gray-200 p-2 sticky bottom-0 bg-white z-2">
-        <ContentEditableDiv
-          ref={commentInputRef}
-          className="w-full  rounded-[18px] border border-gray-300 focus:outline-none focus:ring-2  px-2 py-1 empty:before:content-[attr(data-placeholder)] cursor-text empty:before:text-gray-500"
-          onChange={(e) => {
-            setIsDisabled(e.target?.textContent === "");
-          }}
-          autoFocus
-          placeholder="Reply..."
-        />
-        {isSuggestion && (
+      {/* Comment input - only show in editable mode */}
+      {isEditable && (
+        <div className="border-t border-gray-200 p-2 sticky bottom-0 bg-white z-2">
           <ContentEditableDiv
-            ref={suggestionInputRef}
-            className="w-full border cursor-text rounded-[18px] px-2 py-1 mt-2 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-500    border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Add a suggestion..."
+            ref={commentInputRef}
+            className="w-full  rounded-[18px] border border-gray-300 focus:outline-none focus:ring-2  px-2 py-1 empty:before:content-[attr(data-placeholder)] cursor-text empty:before:text-gray-500"
+            onChange={(e) => {
+              setIsDisabled(e.target?.textContent === "");
+            }}
+            autoFocus
+            placeholder="Reply..."
           />
-        )}
+          {isSuggestion && (
+            <ContentEditableDiv
+              ref={suggestionInputRef}
+              className="w-full border cursor-text rounded-[18px] px-2 py-1 mt-2 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-500    border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Add a suggestion..."
+            />
+          )}
 
-        {!isDisabled && (
-          <div className="flex justify-between pt-2">
-            <div className="flex items-center my-2 gap-2">
-              <Switch
-                id="isSuggestionCheckbox"
-                checked={isSuggestion}
-                onCheckedChange={() => setIsSuggestion(!isSuggestion)}
-                style={{ margin: 0 }}
-              />
-              <Label
-                htmlFor="isSuggestionCheckbox"
-                style={{ fontSize: "11px", color: "#4b5563" }}
+          {!isDisabled && (
+            <div className="flex justify-between pt-2">
+              <div className="flex items-center my-2 gap-2">
+                <Switch
+                  id="isSuggestionCheckbox"
+                  checked={isSuggestion}
+                  onCheckedChange={() => setIsSuggestion(!isSuggestion)}
+                  style={{ margin: 0 }}
+                />
+                <Label
+                  htmlFor="isSuggestionCheckbox"
+                  style={{ fontSize: "11px", color: "#4b5563" }}
+                >
+                  Suggest
+                </Label>
+              </div>
+              <Button
+                disabled={commentMutation.isPending}
+                onClick={addComment}
+                className="px-4 py-2 rounded-full cursor-pointer bg-blue-500 text-white hover:bg-blue-600"
               >
-                Suggest
-              </Label>
+                {commentMutation.isPending ? "Saving..." : "Reply"}
+              </Button>
             </div>
-            <Button
-              disabled={commentMutation.isPending}
-              onClick={addComment}
-              className="px-4 py-2 rounded-full cursor-pointer bg-blue-500 text-white hover:bg-blue-600"
-            >
-              {commentMutation.isPending ? "Saving..." : "Reply"}
-            </Button>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

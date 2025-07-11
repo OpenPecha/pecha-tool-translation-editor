@@ -248,7 +248,7 @@ const Editor = ({
                 lineHeight: 1.5,
               }}
             />
-            <FootnoteView documentId={documentId} />
+            <FootnoteView documentId={documentId} isEditable={isEditable} />
           </div>
           {createPortal(
             <div className="flex gap-1 items-center">
@@ -275,7 +275,7 @@ const Editor = ({
               currentRange={currentRange}
             />
           )}
-          <CommentBubble documentId={documentId} />
+          <CommentBubble documentId={documentId} isEditable={isEditable} />
         </div>
         {/* <OverlayLoading isLoading={!isSynced} /> */}
       </div>

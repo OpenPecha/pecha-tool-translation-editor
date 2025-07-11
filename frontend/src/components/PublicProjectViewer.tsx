@@ -16,7 +16,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { accessSharedProject } from "@/api/project";
 
@@ -203,84 +202,65 @@ const PublicProjectViewer: React.FC = () => {
             </Card>
           ) : (
             <div className="grid gap-4">
-              {project.roots.map((doc: any) => (
-                <Card
-                  key={doc.id}
-                  className="hover:shadow-md transition-all duration-200 border border-gray-200"
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4 flex-1 min-w-0">
-                        <div className="flex-shrink-0">
-                          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <FileText className="h-5 w-5 text-blue-600" />
+              {project.roots
+                .filter((doc: any) => doc.isRoot)
+                .map((doc: any) => (
+                  <Card
+                    key={doc.id}
+                    className="hover:shadow-md transition-all duration-200 border border-gray-200"
+                  >
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                          <div className="flex-shrink-0">
+                            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                              <FileText className="h-5 w-5 text-blue-600" />
+                            </div>
                           </div>
-                        </div>
 
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-gray-900 truncate text-lg">
-                            {doc.name}
-                          </h3>
-                          <div className="flex items-center gap-4 mt-1 text-sm text-gray-600">
-                            <span className="capitalize">
-                              {doc.language || "Unknown language"}
-                            </span>
-                            <div className="flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              <span>
-                                Updated{" "}
-                                {new Date(doc.updatedAt).toLocaleDateString()}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-gray-900 truncate text-lg">
+                              {doc.name}
+                            </h3>
+                            <div className="flex items-center gap-4 mt-1 text-sm text-gray-600">
+                              <span className="capitalize">
+                                {doc.language || "Unknown language"}
                               </span>
+                              <div className="flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                <span>
+                                  Updated{" "}
+                                  {new Date(doc.updatedAt).toLocaleDateString()}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <Badge variant="outline" className="text-xs">
-                          {accessLevel === "editor" ? "Can Edit" : "View Only"}
-                        </Badge>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <Badge variant="outline" className="text-xs">
+                            {accessLevel === "editor"
+                              ? "Can Edit"
+                              : "View Only"}
+                          </Badge>
 
-                        <Button asChild size="sm">
-                          <Link
-                            to={`/documents/public/${doc.id}`}
-                            className="flex items-center gap-1"
-                          >
-                            <span>Open</span>
-                            <ExternalLink className="h-3 w-3" />
-                          </Link>
-                        </Button>
+                          <Button asChild size="sm">
+                            <Link
+                              to={`/documents/public/${doc.id}`}
+                              className="flex items-center gap-1"
+                            >
+                              <span>Open</span>
+                              <ExternalLink className="h-3 w-3" />
+                            </Link>
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                ))}
             </div>
           )}
         </div>
-
-        {/* Project Owner Info */}
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle className="text-lg">Project Owner</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={project.owner.picture} />
-                <AvatarFallback>
-                  {project.owner.username.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="font-medium text-gray-900">
-                  {project.owner.username}
-                </p>
-                <p className="text-sm text-gray-600">Project Creator</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

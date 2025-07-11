@@ -41,7 +41,13 @@ interface FootnoteEventData {
   };
 }
 
-function FootnoteView({ documentId }: { readonly documentId: string }) {
+function FootnoteView({
+  documentId,
+  isEditable = true,
+}: {
+  readonly documentId: string;
+  readonly isEditable?: boolean;
+}) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingFootnote, setEditingFootnote] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
@@ -331,7 +337,7 @@ function FootnoteView({ documentId }: { readonly documentId: string }) {
                         className="flex-1 cursor-pointer"
                         onClick={() => handleFootnoteClick(footnote)}
                       >
-                        {editingFootnote === footnote.id ? (
+                        {isEditable && editingFootnote === footnote.id ? (
                           <div className="space-y-2">
                             <textarea
                               value={editContent}
@@ -367,7 +373,7 @@ function FootnoteView({ documentId }: { readonly documentId: string }) {
                           </div>
                         )}
                       </div>
-                      {editingFootnote !== footnote.id && (
+                      {isEditable && editingFootnote !== footnote.id && (
                         <div className="flex gap-1 group-hover:opacity-100 transition-opacity">
                           <Button
                             size="sm"

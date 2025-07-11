@@ -1217,6 +1217,7 @@ router.get("/shared/:shareLink", async (req, res) => {
         roots: {
           select: {
             id: true,
+            isRoot: true,
             name: true,
             identifier: true,
             language: true,
