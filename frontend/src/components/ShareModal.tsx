@@ -245,7 +245,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
 
   // Handle removing collaborator
   const handleRemoveCollaborator = (userId: string) => {
-    if (confirm("Are you sure you want to remove this collaborator?")) {
+    if (confirm("Are you sure yowu want to remove this collaborator?")) {
       removeCollaboratorMutation.mutate(userId);
     }
   };
