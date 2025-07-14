@@ -40,6 +40,16 @@ interface Footnote {
   note_on?: string;
 }
 
+interface TemporaryFootnote {
+  id: string;
+  threadId: string;
+  position: number;
+  content: string;
+  selectedText: string;
+  range: QuillRange;
+  isTemporary: true;
+}
+
 interface FootnoteEventData {
   id: string;
   order: number;
@@ -65,10 +75,8 @@ function FootnoteView({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingFootnote, setEditingFootnote] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
-  const [isCreatingFootnote, setIsCreatingFootnote] = useState(false);
-  const [newFootnoteContent, setNewFootnoteContent] = useState("");
-  const [currentRange, setCurrentRange] = useState<QuillRange | null>(null);
-  const [selectedText, setSelectedText] = useState("");
+  const [temporaryFootnote, setTemporaryFootnote] =
+    useState<TemporaryFootnote | null>(null);
   const { getQuill } = useEditor();
   const { currentUser } = useAuth();
   const quill = getQuill(documentId);
@@ -101,14 +109,14 @@ function FootnoteView({
         data.start,
         data.end,
         data.threadId,
-        selectedText
+        temporaryFootnote?.selectedText || ""
       ),
     onSuccess: (createdFootnote) => {
-      if (createdFootnote?.id && currentRange) {
+      if (createdFootnote?.id && temporaryFootnote) {
         // Update the Quill editor to highlight the text
         quill?.formatText(
-          currentRange.index,
-          currentRange.length,
+          temporaryFootnote.range.index,
+          temporaryFootnote.range.length,
           "footnote",
           {
             id: createdFootnote.threadId,
@@ -118,10 +126,7 @@ function FootnoteView({
         );
 
         // Reset creation state
-        setIsCreatingFootnote(false);
-        setNewFootnoteContent("");
-        setCurrentRange(null);
-        setSelectedText("");
+        setTemporaryFootnote(null);
 
         // Invalidate and refetch footnotes
         queryClient.invalidateQueries({
@@ -217,18 +222,21 @@ function FootnoteView({
   };
 
   const handleCreateFootnote = async () => {
-    if (!currentRange || !newFootnoteContent.trim() || !currentUser) {
+    if (
+      !temporaryFootnote ||
+      !temporaryFootnote.content.trim() ||
+      !currentUser
+    ) {
       return;
     }
 
-    const end = currentRange.index + currentRange.length;
-    const threadId = crypto.randomUUID();
+    const end = temporaryFootnote.range.index + temporaryFootnote.range.length;
 
     try {
       await createFootnoteMutation.mutateAsync({
-        content: newFootnoteContent.trim(),
-        threadId,
-        start: currentRange.index,
+        content: temporaryFootnote.content.trim(),
+        threadId: temporaryFootnote.threadId,
+        start: temporaryFootnote.range.index,
         end,
       });
     } catch (error) {
@@ -237,13 +245,41 @@ function FootnoteView({
   };
 
   const handleCancelCreateFootnote = () => {
-    setIsCreatingFootnote(false);
-    setNewFootnoteContent("");
-    setCurrentRange(null);
-    setSelectedText("");
+    // Remove temporary footnote marker from editor
+    if (temporaryFootnote && quill) {
+      quill.formatText(
+        temporaryFootnote.range.index,
+        temporaryFootnote.range.length,
+        "footnote",
+        false,
+        "user"
+      );
+    }
+
+    setTemporaryFootnote(null);
   };
 
   const footnotes: Footnote[] = footnotesData || [];
+
+  // Calculate position for new footnote based on its range index
+  const calculateFootnotePosition = (rangeIndex: number): number => {
+    if (!quill) return 0;
+
+    const footnoteSpans = quill.root.querySelectorAll("span.footnote[data-id]");
+    let position = 0;
+
+    footnoteSpans.forEach((span) => {
+      const blot = Quill.find(span) as any;
+      if (blot) {
+        const spanIndex = quill.getIndex(blot);
+        if (spanIndex < rangeIndex) {
+          position++;
+        }
+      }
+    });
+
+    return position;
+  };
 
   // Get active footnotes from the editor content
   const getActiveFootnotes = (): Footnote[] => {
@@ -297,6 +333,20 @@ function FootnoteView({
 
   // Get active footnotes (already sorted by position)
   const sortedFootnotes = getActiveFootnotes();
+
+  // Combine footnotes with temporary footnote for rendering
+  const getCombinedFootnotes = () => {
+    const combined: (Footnote | TemporaryFootnote)[] = [...sortedFootnotes];
+
+    if (temporaryFootnote) {
+      // Insert temporary footnote at the calculated position
+      combined.splice(temporaryFootnote.position, 0, temporaryFootnote);
+    }
+
+    return combined;
+  };
+
+  const combinedFootnotes = getCombinedFootnotes();
 
   const handleFootnoteClick = (footnote: Footnote) => {
     // Find the footnote span in the editor and scroll to it
@@ -376,9 +426,35 @@ function FootnoteView({
       const range = data.range;
       const text = quill?.getText(range.index, range.length) || "";
 
-      setCurrentRange(range);
-      setSelectedText(text);
-      setIsCreatingFootnote(true);
+      // Calculate position for the temporary footnote
+      const position = calculateFootnotePosition(range.index);
+
+      // Create temporary footnote
+      const tempFootnote: TemporaryFootnote = {
+        id: crypto.randomUUID(),
+        threadId: crypto.randomUUID(),
+        position,
+        content: "",
+        selectedText: text,
+        range,
+        isTemporary: true,
+      };
+
+      // Add temporary footnote marker to the editor to show the number
+      if (quill) {
+        quill.formatText(
+          range.index,
+          range.length,
+          "footnote",
+          {
+            id: tempFootnote.threadId,
+            order: position + 1, // Show the order number
+          },
+          "user"
+        );
+      }
+
+      setTemporaryFootnote(tempFootnote);
       setIsModalOpen(true);
     };
 
@@ -432,102 +508,130 @@ function FootnoteView({
           ) : (
             <ScrollArea className="pr-4">
               <div className="">
-                {/* Footnote Creation Section */}
-                {isCreatingFootnote && (
-                  <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <input
-                      type="text"
-                      value={newFootnoteContent}
-                      onChange={(e) => setNewFootnoteContent(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          handleCreateFootnote();
-                        } else if (e.key === "Escape") {
-                          e.preventDefault();
-                          handleCancelCreateFootnote();
-                        }
-                      }}
-                      className="w-full p-2 text-sm border rounded"
-                      placeholder="Add a footnote..."
-                      autoFocus
-                      disabled={createFootnoteMutation.isPending}
-                    />
-                  </div>
-                )}
-
-                {/* Existing Footnotes */}
-                {sortedFootnotes.length === 0 && !isCreatingFootnote ? (
+                {/* Footnotes with inline creation */}
+                {combinedFootnotes.length === 0 ? (
                   <div className="flex items-center justify-center py-4">
                     <div className="text-sm text-muted-foreground">
                       No footnotes found
                     </div>
                   </div>
                 ) : (
-                  sortedFootnotes.map((footnote: Footnote, index: number) => (
-                    <div
-                      key={footnote.id}
-                      id={documentId + "-" + (index + 1)}
-                      className="rounded-lg px-2 py-1 bg-muted/30 hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div
-                          className="flex-1 cursor-pointer"
-                          onClick={() => handleFootnoteClick(footnote)}
-                        >
-                          {editingFootnote === footnote.id ? (
-                            <input
-                              type="text"
-                              value={editContent}
-                              onChange={(e) => setEditContent(e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") {
-                                  e.preventDefault();
-                                  handleSaveEdit(footnote.id);
-                                } else if (e.key === "Escape") {
-                                  e.preventDefault();
-                                  handleCancelEdit();
+                  combinedFootnotes.map(
+                    (footnote: Footnote | TemporaryFootnote, index: number) => (
+                      <div
+                        key={footnote.id}
+                        id={documentId + "-" + (index + 1)}
+                        className="rounded-lg px-2 py-1 bg-muted/30 hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1">
+                            {"isTemporary" in footnote ? (
+                              // Render temporary footnote input
+                              <div className="text-sm text-foreground">
+                                <sup className="text-[8px] text-gray-600 mr-1">
+                                  {index + 1}
+                                </sup>
+                                <input
+                                  type="text"
+                                  value={footnote.content}
+                                  onChange={(e) =>
+                                    setTemporaryFootnote({
+                                      ...footnote,
+                                      content: e.target.value,
+                                    })
+                                  }
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                      e.preventDefault();
+                                      handleCreateFootnote();
+                                    } else if (e.key === "Escape") {
+                                      e.preventDefault();
+                                      handleCancelCreateFootnote();
+                                    }
+                                  }}
+                                  className="inline bg-transparent border-none outline-none text-sm text-foreground flex-1"
+                                  autoFocus
+                                  disabled={createFootnoteMutation.isPending}
+                                />
+                              </div>
+                            ) : (
+                              // Render existing footnote
+                              <div
+                                className="cursor-pointer"
+                                onClick={() =>
+                                  handleFootnoteClick(footnote as Footnote)
                                 }
-                              }}
-                              className="w-full p-2 text-sm border rounded"
-                              placeholder="Edit footnote..."
-                              autoFocus
-                              disabled={updateFootnoteMutation.isPending}
-                            />
-                          ) : (
-                            <div className="text-sm text-foreground">
-                              <sup className="text-[8px] text-gray-600 mr-1">
-                                {index + 1}
-                              </sup>
-                              {footnote.content}
-                            </div>
-                          )}
-                        </div>
-                        {isEditable && editingFootnote !== footnote.id && (
-                          <div className="flex gap-1 group-hover:opacity-100 transition-opacity">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleEdit(footnote)}
-                              className="h-6 w-6 p-0 hover:bg-gray-100 cursor-pointer"
-                              title="Edit footnote"
-                            >
-                              <Edit2 className="h-3 w-3 text-gray-600" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleDelete(footnote)}
-                              className="h-6 w-6 p-0 hover:bg-gray-100 cursor-pointer"
-                              title="Delete footnote"
-                            >
-                              <Trash2Icon className="h-3 w-3 text-gray-600" />
-                            </Button>
+                              >
+                                {editingFootnote === footnote.id ? (
+                                  <div className="text-sm text-foreground">
+                                    <sup className="text-[8px] text-gray-600 mr-1">
+                                      {index + 1}
+                                    </sup>
+                                    <input
+                                      type="text"
+                                      value={editContent}
+                                      onChange={(e) =>
+                                        setEditContent(e.target.value)
+                                      }
+                                      onKeyDown={(e) => {
+                                        if (e.key === "Enter") {
+                                          e.preventDefault();
+                                          handleSaveEdit(footnote.id);
+                                        } else if (e.key === "Escape") {
+                                          e.preventDefault();
+                                          handleCancelEdit();
+                                        }
+                                      }}
+                                      className="inline bg-transparent border-none outline-none text-sm text-foreground flex-1"
+                                      autoFocus
+                                      disabled={
+                                        updateFootnoteMutation.isPending
+                                      }
+                                    />
+                                  </div>
+                                ) : (
+                                  <div className="text-sm text-foreground">
+                                    <sup className="text-[8px] text-gray-600 mr-1">
+                                      {index + 1}
+                                    </sup>
+                                    {footnote.content}
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
-                        )}
+                          {isEditable &&
+                            !("isTemporary" in footnote) &&
+                            editingFootnote !== footnote.id && (
+                              <div className="flex gap-1 group-hover:opacity-100 transition-opacity">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() =>
+                                    handleEdit(footnote as Footnote)
+                                  }
+                                  className="h-6 w-6 p-0 hover:bg-gray-100 cursor-pointer"
+                                  title="Edit footnote"
+                                >
+                                  <Edit2 className="h-3 w-3 text-gray-600" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() =>
+                                    handleDelete(footnote as Footnote)
+                                  }
+                                  className="h-6 w-6 p-0 hover:bg-gray-100 cursor-pointer"
+                                  title="Delete footnote"
+                                >
+                                  <Trash2Icon className="h-3 w-3 text-gray-600" />
+                                </Button>
+                              </div>
+                            )}
+                        </div>
                       </div>
-                    </div>
-                  ))
+                    )
+                  )
                 )}
               </div>
             </ScrollArea>

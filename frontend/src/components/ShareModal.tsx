@@ -103,8 +103,8 @@ const ShareModal: React.FC<ShareModalProps> = ({
     }) => updateProjectShareSettings(projectId, { isPublic, publicAccess }),
     onSuccess: (data) => {
       const message = data.data.isPublic
-        ? "Project is now public and accessible via link"
-        : "Project is now private";
+        ? "Document is now public and accessible via link"
+        : "Document is now private";
       setSuccess(message);
       queryClient.invalidateQueries({ queryKey: ["projectShare", projectId] });
       setTimeout(() => setSuccess(""), 3000);
@@ -574,7 +574,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
                       </p>
                       <p className="text-xs text-gray-600">
                         {shareData?.isPublic
-                          ? "Public access via link"
+                          ? "Public access to root document"
                           : "Invited people only"}
                       </p>
                     </div>
@@ -609,27 +609,34 @@ const ShareModal: React.FC<ShareModalProps> = ({
                     </Select>
 
                     {shareData.shareableLink && (
-                      <div className="flex gap-2">
-                        <Input
-                          value={shareData.shareableLink}
-                          readOnly
-                          className="flex-1 text-sm"
-                          onClick={(e) => e.currentTarget.select()}
-                        />
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            copyToClipboard(shareData.shareableLink!)
-                          }
-                          disabled={copied}
-                        >
-                          {copied ? (
-                            <CheckCircle className="h-4 w-4" />
-                          ) : (
-                            <Copy className="h-4 w-4" />
-                          )}
-                        </Button>
+                      <div className="space-y-2">
+                        {shareData.rootDocument && (
+                          <div className="text-xs text-gray-600">
+                            <strong>Sharing:</strong> {shareData.rootDocument.name}
+                          </div>
+                        )}
+                        <div className="flex gap-2">
+                          <Input
+                            value={shareData.shareableLink}
+                            readOnly
+                            className="flex-1 text-sm"
+                            onClick={(e) => e.currentTarget.select()}
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              copyToClipboard(shareData.shareableLink!)
+                            }
+                            disabled={copied}
+                          >
+                            {copied ? (
+                              <CheckCircle className="h-4 w-4" />
+                            ) : (
+                              <Copy className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </div>

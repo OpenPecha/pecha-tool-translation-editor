@@ -406,10 +406,9 @@ export const searchUserByEmail = async (email: string) => {
 };
 
 // Download all documents in a project as a zip file
-import { exportStyle } from "@/components/Export";
 export const downloadProjectDocuments = async (
   projectId: string,
-  exportFormat: exportStyle,
+  exportFormat: string,
   documentId?: string,
   progressId?: string
 ) => {
@@ -646,26 +645,6 @@ export const searchUsers = async (
     return await response.json();
   } catch (error) {
     console.error("Error searching users:", error);
-    throw error;
-  }
-};
-
-// Access shared project by link
-export const accessSharedProject = async (
-  shareLink: string
-): Promise<{ success: boolean; data: any }> => {
-  try {
-    const response = await fetch(`${server_url}/projects/shared/${shareLink}`);
-
-    if (!response.ok) {
-      throw new Error(
-        `Failed to access shared project: ${response.statusText}`
-      );
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error accessing shared project:", error);
     throw error;
   }
 };

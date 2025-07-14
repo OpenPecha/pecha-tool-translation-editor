@@ -1079,8 +1079,20 @@ router.post("/:id/share", authenticate, async (req, res) => {
 
     console.log('Share request received:', { id, isPublic, publicAccess });
 
-    // Check if project exists
-    const project = await getProject(id);
+    // Check if project exists and get root documents
+    const project = await prisma.project.findUnique({
+      where: { id },
+      include: {
+        roots: {
+          where: { isRoot: true },
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
     console.log('Project found:', project ? 'Yes' : 'No');
 
     if (!project) {
@@ -1091,6 +1103,13 @@ router.post("/:id/share", authenticate, async (req, res) => {
     if (project.ownerId !== req.user.id) {
       return res.status(403).json({
         error: "Not authorized to update sharing settings"
+      });
+    }
+
+    // Check if project has a root document
+    if (!project.roots || project.roots.length === 0) {
+      return res.status(400).json({
+        error: "Project must have a root document to be shared"
       });
     }
 
@@ -1119,15 +1138,18 @@ router.post("/:id/share", authenticate, async (req, res) => {
 
     console.log('Project updated successfully');
 
+    // Generate direct link to root document instead of project link
     const baseUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+    const rootDocument = project.roots[0]; // Get the first root document
     const shareableLink = updatedProject.isPublic ?
-      `${baseUrl}/shared/${updatedProject.shareLink}` : null;
+      `${baseUrl}/documents/public/${rootDocument.id}` : null;
 
     res.json({
       success: true,
       data: {
         ...updatedProject,
         shareableLink,
+        rootDocument,
       },
     });
   } catch (error) {
@@ -1151,8 +1173,38 @@ router.get("/:id/share", authenticate, async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Get project with permissions
-    const project = await getProjectWithPermissions(id);
+    // Get project with permissions and root documents
+    const project = await prisma.project.findUnique({
+      where: { id },
+      include: {
+        owner: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+          },
+        },
+        permissions: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                email: true,
+              },
+            },
+          },
+        },
+        roots: {
+          where: { isRoot: true },
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
     if (!project) {
       return res.status(404).json({ error: "Project not found" });
     }
@@ -1167,9 +1219,11 @@ router.get("/:id/share", authenticate, async (req, res) => {
       });
     }
 
+    // Generate direct link to root document instead of project link
     const baseUrl = process.env.FRONTEND_URL || "http://localhost:3000";
-    const shareableLink = project.isPublic ?
-      `${baseUrl}/shared/${project.shareLink}` : null;
+    const rootDocument = project.roots && project.roots.length > 0 ? project.roots[0] : null;
+    const shareableLink = project.isPublic && rootDocument ?
+      `${baseUrl}/documents/public/${rootDocument.id}` : null;
 
     res.json({
       success: true,
@@ -1182,6 +1236,7 @@ router.get("/:id/share", authenticate, async (req, res) => {
         isOwner: project.ownerId === req.user.id,
         permissions: project.permissions,
         owner: project.owner,
+        rootDocument,
       },
     });
   } catch (error) {
@@ -1190,66 +1245,7 @@ router.get("/:id/share", authenticate, async (req, res) => {
   }
 });
 
-/**
- * GET /projects/shared/{shareLink}
- * @summary Access project via public share link
- * @tags Projects - Public Access
- * @param {string} shareLink.path.required - Share link identifier
- * @return {object} 200 - Public project data
- * @return {object} 403 - Project not public
- * @return {object} 404 - Project not found
- * @return {object} 500 - Server error
- */
-router.get("/shared/:shareLink", async (req, res) => {
-  try {
-    const { shareLink } = req.params;
 
-    // Find project by share link
-    const project = await prisma.project.findFirst({
-      where: { shareLink },
-      include: {
-        owner: {
-          select: {
-            id: true,
-            username: true,
-          },
-        },
-        roots: {
-          select: {
-            id: true,
-            isRoot: true,
-            name: true,
-            identifier: true,
-            language: true,
-            updatedAt: true,
-          },
-        },
-      },
-    });
-
-    if (!project) {
-      return res.status(404).json({ error: "Project not found" });
-    }
-
-    if (!project.isPublic) {
-      return res.status(403).json({
-        error: "This project is not publicly accessible"
-      });
-    }
-
-    res.json({
-      success: true,
-      data: {
-        ...project,
-        isReadOnly: project.publicAccess === 'viewer',
-        canEdit: project.publicAccess === 'editor',
-      },
-    });
-  } catch (error) {
-    console.error("Error accessing shared project:", error);
-    res.status(500).json({ error: error.message });
-  }
-});
 
 /**
  * POST /projects/{id}/collaborators
