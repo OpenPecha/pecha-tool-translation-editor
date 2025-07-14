@@ -71,15 +71,14 @@ const ShareModal: React.FC<ShareModalProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<"share" | "export">("share");
   const [email, setEmail] = useState("");
-  const [accessLevel, setAccessLevel] = useState<"viewer" | "editor" | "admin">(
-    "viewer"
-  );
+  const [accessLevel, setAccessLevel] = useState<"viewer" | "editor">("viewer");
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [showUserSearch, setShowUserSearch] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [copied, setCopied] = useState(false);
+  const [shouldCopyOnPublic, setShouldCopyOnPublic] = useState(false);
 
   const queryClient = useQueryClient();
   const { currentUser } = useAuth();
@@ -107,10 +106,32 @@ const ShareModal: React.FC<ShareModalProps> = ({
         : "Document is now private";
       setSuccess(message);
       queryClient.invalidateQueries({ queryKey: ["projectShare", projectId] });
+
+      // Auto-copy link when made public
+      if (data.data.isPublic && shouldCopyOnPublic) {
+        // Try to copy from mutation response first
+        if (data.data.shareableLink) {
+          copyToClipboard(data.data.shareableLink);
+        } else {
+          // If not in response, wait for query refetch and copy from there
+          setTimeout(() => {
+            const currentShareData = queryClient.getQueryData([
+              "projectShare",
+              projectId,
+            ]) as { data?: { shareableLink?: string } } | undefined;
+            if (currentShareData?.data?.shareableLink) {
+              copyToClipboard(currentShareData.data.shareableLink);
+            }
+          }, 500);
+        }
+        setShouldCopyOnPublic(false);
+      }
+
       setTimeout(() => setSuccess(""), 3000);
     },
     onError: (error: Error) => {
       setError(error.message);
+      setShouldCopyOnPublic(false);
       setTimeout(() => setError(""), 5000);
     },
   });
@@ -122,7 +143,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
       accessLevel,
     }: {
       email: string;
-      accessLevel: "viewer" | "editor" | "admin";
+      accessLevel: "viewer" | "editor";
     }) => addCollaborator(projectId, { email, accessLevel }),
     onSuccess: (data) => {
       setSuccess(data.message);
@@ -146,7 +167,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
       accessLevel,
     }: {
       userId: string;
-      accessLevel: "viewer" | "editor" | "admin";
+      accessLevel: "viewer" | "editor";
     }) => updateCollaboratorAccess(projectId, userId, accessLevel),
     onSuccess: () => {
       setSuccess("Access level updated");
@@ -232,24 +253,19 @@ const ShareModal: React.FC<ShareModalProps> = ({
   // Handle access level change
   const handleAccessLevelChange = (
     userId: string,
-    newAccessLevel: "viewer" | "editor" | "admin"
+    newAccessLevel: "viewer" | "editor"
   ) => {
     updateAccessMutation.mutate({ userId, accessLevel: newAccessLevel });
   };
 
-  // Handle public access toggle
+  // Handle public access toggle with auto-copy
   const handlePublicToggle = (isPublic: boolean) => {
+    // Set flag to copy link after successful toggle to public
+    setShouldCopyOnPublic(isPublic);
+
     updateShareMutation.mutate({
       isPublic,
       publicAccess: isPublic ? "viewer" : "none",
-    });
-  };
-
-  // Handle public access level change
-  const handlePublicAccessChange = (publicAccess: "viewer" | "editor") => {
-    updateShareMutation.mutate({
-      isPublic: true,
-      publicAccess,
     });
   };
 
@@ -267,8 +283,6 @@ const ShareModal: React.FC<ShareModalProps> = ({
         return "Can view";
       case "editor":
         return "Can edit";
-      case "admin":
-        return "Can manage";
       default:
         return "Can view";
     }
@@ -280,8 +294,6 @@ const ShareModal: React.FC<ShareModalProps> = ({
         return "bg-blue-100 text-blue-800";
       case "editor":
         return "bg-green-100 text-green-800";
-      case "admin":
-        return "bg-purple-100 text-purple-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -308,23 +320,23 @@ const ShareModal: React.FC<ShareModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[95vh] overflow-hidden flex flex-col"
+        className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
-          <div className="flex items-center gap-3">
-            <Users className="h-5 w-5 text-blue-600" />
-            <h2 className="text-lg font-semibold">Share "{projectName}"</h2>
+        <div className="flex items-center justify-between p-3 border-b">
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-blue-600" />
+            <h2 className="text-base font-semibold">Share "{projectName}"</h2>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </Button>
         </div>
 
         {/* Error/Success Messages */}
         {(error || success) && (
-          <div className="p-4 border-b">
+          <div className="p-3 border-b">
             {error && (
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>
@@ -347,7 +359,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
           onValueChange={(value) => setActiveTab(value as any)}
           className="flex-1 overflow-hidden"
         >
-          <TabsList className="grid w-full grid-cols-2 mx-4 mt-3">
+          <TabsList className="grid w-full grid-cols-2 mx-3 mt-2">
             <TabsTrigger value="share">Share</TabsTrigger>
             <TabsTrigger value="export">Export</TabsTrigger>
           </TabsList>
@@ -355,20 +367,20 @@ const ShareModal: React.FC<ShareModalProps> = ({
           {/* Share Tab */}
           <TabsContent
             value="share"
-            className="flex-1 overflow-y-auto p-4 space-y-4"
+            className="flex-1 overflow-y-auto p-3 space-y-3"
           >
             {/* People with Access */}
             <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-base">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-sm">
                   <Users className="h-4 w-4" />
                   People with Access
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-2">
                 {/* Add people section */}
                 {shareData?.isOwner && (
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <div className="flex gap-2">
                       <div className="flex-1 relative">
                         <Input
@@ -379,11 +391,11 @@ const ShareModal: React.FC<ShareModalProps> = ({
                             setShowUserSearch(true);
                           }}
                           onFocus={() => setShowUserSearch(true)}
-                          className="pr-10 text-sm"
+                          className="pr-10 text-sm h-8"
                         />
                         {isSearching && (
-                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                          <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
                           </div>
                         )}
                       </div>
@@ -392,13 +404,12 @@ const ShareModal: React.FC<ShareModalProps> = ({
                         value={accessLevel}
                         onValueChange={(value) => setAccessLevel(value as any)}
                       >
-                        <SelectTrigger className="w-32">
+                        <SelectTrigger className="w-24 h-8 text-xs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="viewer">Viewer</SelectItem>
                           <SelectItem value="editor">Editor</SelectItem>
-                          <SelectItem value="admin">Admin</SelectItem>
                         </SelectContent>
                       </Select>
 
@@ -406,32 +417,33 @@ const ShareModal: React.FC<ShareModalProps> = ({
                         onClick={() => handleAddCollaborator(email)}
                         disabled={!email || addCollaboratorMutation.isPending}
                         size="sm"
+                        className="h-8 w-8 p-0"
                       >
-                        <Send className="h-4 w-4" />
+                        <Send className="h-3 w-3" />
                       </Button>
                     </div>
 
                     {/* Search Results */}
                     {showUserSearch && searchResults.length > 0 && (
-                      <Card className="p-2">
-                        <div className="max-h-28 overflow-y-auto">
+                      <Card className="p-1">
+                        <div className="max-h-20 overflow-y-auto">
                           {searchResults.map((user) => (
                             <div
                               key={user.id}
-                              className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer"
+                              className="flex items-center gap-2 p-1 hover:bg-gray-50 rounded cursor-pointer"
                               onClick={() => {
                                 setEmail(user.email);
                                 setShowUserSearch(false);
                               }}
                             >
-                              <Avatar className="h-6 w-6">
+                              <Avatar className="h-5 w-5">
                                 <AvatarImage src={user.picture} />
-                                <AvatarFallback>
+                                <AvatarFallback className="text-xs">
                                   {user.username.slice(0, 2).toUpperCase()}
                                 </AvatarFallback>
                               </Avatar>
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium truncate">
+                                <p className="text-xs font-medium truncate">
                                   {user.username}
                                 </p>
                                 <p className="text-xs text-gray-500 truncate">
@@ -448,20 +460,24 @@ const ShareModal: React.FC<ShareModalProps> = ({
 
                 {/* Owner */}
                 {owner && (
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <Avatar className="h-7 w-7">
+                  <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                    <Avatar className="h-6 w-6">
                       <AvatarImage src={owner.picture} />
-                      <AvatarFallback>
+                      <AvatarFallback className="text-xs">
                         {owner.username.slice(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">{owner.username}</p>
-                      <p className="text-xs text-gray-600">{owner.email}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-xs truncate">
+                        {owner.username}
+                      </p>
+                      <p className="text-xs text-gray-600 truncate">
+                        {owner.email}
+                      </p>
                     </div>
                     <Badge
                       variant="outline"
-                      className="bg-orange-50 text-orange-700 border-orange-200 text-xs"
+                      className="bg-orange-50 text-orange-700 border-orange-200 text-xs px-2 py-0"
                     >
                       Owner
                     </Badge>
@@ -470,31 +486,31 @@ const ShareModal: React.FC<ShareModalProps> = ({
 
                 {/* Collaborators */}
                 {collaborators.length > 0 && (
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     {collaborators.map((collaborator) => (
                       <div
                         key={collaborator.id}
-                        className="flex items-center gap-3 p-3 border rounded-lg"
+                        className="flex items-center gap-2 p-2 border rounded"
                       >
-                        <Avatar className="h-7 w-7">
+                        <Avatar className="h-6 w-6">
                           <AvatarImage src={collaborator.user.picture} />
-                          <AvatarFallback>
+                          <AvatarFallback className="text-xs">
                             {collaborator.user.username
                               .slice(0, 2)
                               .toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="flex-1">
-                          <p className="font-medium text-sm">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-xs truncate">
                             {collaborator.user.username}
                           </p>
-                          <p className="text-xs text-gray-600">
+                          <p className="text-xs text-gray-600 truncate">
                             {collaborator.user.email}
                           </p>
                         </div>
 
                         {shareData?.isOwner ? (
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
                             <Select
                               value={collaborator.accessLevel}
                               onValueChange={(value) =>
@@ -505,13 +521,12 @@ const ShareModal: React.FC<ShareModalProps> = ({
                               }
                               disabled={updateAccessMutation.isPending}
                             >
-                              <SelectTrigger className="w-28">
+                              <SelectTrigger className="w-20 h-6 text-xs">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="viewer">Viewer</SelectItem>
                                 <SelectItem value="editor">Editor</SelectItem>
-                                <SelectItem value="admin">Admin</SelectItem>
                               </SelectContent>
                             </Select>
                             <Button
@@ -521,15 +536,16 @@ const ShareModal: React.FC<ShareModalProps> = ({
                                 handleRemoveCollaborator(collaborator.userId)
                               }
                               disabled={removeCollaboratorMutation.isPending}
+                              className="h-6 w-6 p-0"
                             >
-                              <Trash2 className="h-4 w-4 text-red-500" />
+                              <Trash2 className="h-3 w-3 text-red-500" />
                             </Button>
                           </div>
                         ) : (
                           <Badge
-                            className={getAccessLevelColor(
+                            className={`${getAccessLevelColor(
                               collaborator.accessLevel
-                            )}
+                            )} text-xs px-2 py-0`}
                           >
                             {getAccessLevelLabel(collaborator.accessLevel)}
                           </Badge>
@@ -540,44 +556,33 @@ const ShareModal: React.FC<ShareModalProps> = ({
                 )}
 
                 {collaborators.length === 0 && (
-                  <div className="text-center py-6 text-gray-500">
-                    <Users className="h-10 w-10 mx-auto mb-2 text-gray-300" />
-                    <p className="text-sm">No collaborators yet</p>
-                    <p className="text-xs">
-                      Add people by email to collaborate
-                    </p>
+                  <div className="text-center py-4 text-gray-500">
+                    <Users className="h-8 w-8 mx-auto mb-1 text-gray-300" />
+                    <p className="text-xs">No collaborators yet</p>
                   </div>
                 )}
               </CardContent>
             </Card>
-            {/* General Access Section */}
+
+            {/* General Access Section - Simplified */}
             <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-base">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-sm">
                   <Globe className="h-4 w-4" />
                   General Access
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     {shareData?.isPublic ? (
                       <Globe className="h-4 w-4 text-green-600" />
                     ) : (
                       <Lock className="h-4 w-4 text-gray-600" />
                     )}
-                    <div>
-                      <p className="font-medium text-sm">
-                        {shareData?.isPublic
-                          ? "Anyone with the link"
-                          : "Restricted"}
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        {shareData?.isPublic
-                          ? "Public access to root document"
-                          : "Invited people only"}
-                      </p>
-                    </div>
+                    <span className="text-sm font-medium">
+                      {shareData?.isPublic ? "Public" : "Private"}
+                    </span>
                   </div>
                   {shareData?.isOwner && (
                     <Switch
@@ -587,66 +592,12 @@ const ShareModal: React.FC<ShareModalProps> = ({
                     />
                   )}
                 </div>
-
-                {shareData?.isPublic && (
-                  <div className="ml-7 space-y-3">
-                    <Select
-                      value={shareData.publicAccess}
-                      onValueChange={(value) =>
-                        handlePublicAccessChange(value as "viewer" | "editor")
-                      }
-                      disabled={
-                        !shareData?.isOwner || updateShareMutation.isPending
-                      }
-                    >
-                      <SelectTrigger className="w-36">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="viewer">Viewer</SelectItem>
-                        <SelectItem value="editor">Editor</SelectItem>
-                      </SelectContent>
-                    </Select>
-
-                    {shareData.shareableLink && (
-                      <div className="space-y-2">
-                        {shareData.rootDocument && (
-                          <div className="text-xs text-gray-600">
-                            <strong>Sharing:</strong> {shareData.rootDocument.name}
-                          </div>
-                        )}
-                        <div className="flex gap-2">
-                          <Input
-                            value={shareData.shareableLink}
-                            readOnly
-                            className="flex-1 text-sm"
-                            onClick={(e) => e.currentTarget.select()}
-                          />
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              copyToClipboard(shareData.shareableLink!)
-                            }
-                            disabled={copied}
-                          >
-                            {copied ? (
-                              <CheckCircle className="h-4 w-4" />
-                            ) : (
-                              <Copy className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
               </CardContent>
             </Card>
           </TabsContent>
 
           {/* Export Tab */}
-          <TabsContent value="export" className="flex-1 p-4">
+          <TabsContent value="export" className="flex-1 p-3">
             <ExportButton projectId={projectId} projectName={projectName} />
           </TabsContent>
         </Tabs>

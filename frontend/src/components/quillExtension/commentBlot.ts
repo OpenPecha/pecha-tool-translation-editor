@@ -8,7 +8,7 @@ class CommentBlot extends Inline {
   static className = "comments";
 
   static create(value) {
-    let node = super.create();
+    const node = super.create();
 
     // Check if this node already has the suggestion
     const existingSuggestionId = node.getAttribute("data-id");
@@ -36,7 +36,7 @@ class CommentBlot extends Inline {
         top = window.innerHeight - bubbleHeight - 10;
       }
 
-      let __data = {
+      const __data = {
         id: value.id,
         position: {
           top: top,
