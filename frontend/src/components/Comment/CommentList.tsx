@@ -8,7 +8,7 @@ import AvatarWrapper from "../ui/custom-avatar";
 import { formatDate } from "@/lib/formatDate";
 import { FaTrash } from "react-icons/fa";
 
-function CommentList({ commentThread }) {
+function CommentList({ commentThread, isEditable = true }) {
   const queryClient = useQueryClient();
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteComment(id),
@@ -41,6 +41,7 @@ function CommentList({ commentThread }) {
           key={comment.id}
           comment={comment}
           deleteMutation={deleteMutation}
+          isEditable={isEditable}
         />
       ))}
     </>
@@ -50,9 +51,11 @@ function CommentList({ commentThread }) {
 function EachComment({
   comment,
   deleteMutation,
+  isEditable = true,
 }: {
   readonly comment: Comment;
   readonly deleteMutation: any;
+  readonly isEditable?: boolean;
 }) {
   const handleDelete = (id: string): void => {
     deleteMutation.mutate(id);
@@ -79,21 +82,23 @@ function EachComment({
                 {formatDate(comment.createdAt)}
               </span>
             </div>
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <button
-                onClick={() => handleDelete(comment.id)}
-                className="bg-transparent border-none text-gray-700 cursor-pointer p-2 rounded-full transition-all duration-200"
-                onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = "#fee2e2";
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.backgroundColor = "transparent";
-                }}
-                disabled={deleteMutation.isPending}
-              >
-                <FaTrash size={10} />
-              </button>
-            </div>
+            {isEditable && (
+              <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                <button
+                  onClick={() => handleDelete(comment.id)}
+                  className="bg-transparent border-none text-gray-700 cursor-pointer p-2 rounded-full transition-all duration-200"
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = "#fee2e2";
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
+                  disabled={deleteMutation.isPending}
+                >
+                  <FaTrash size={10} />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

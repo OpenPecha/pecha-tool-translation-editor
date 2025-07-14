@@ -1,6 +1,6 @@
 const express = require("express");
 const { PrismaClient } = require("@prisma/client");
-const {authenticate} = require("../middleware/authenticate");
+const { authenticate, optionalAuthenticate } = require("../middleware/authenticate");
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -33,7 +33,7 @@ router.get("/", authenticate, async (req, res) => {
 });
 
 // Get comments for a specific document
-router.get("/:docId", authenticate, async (req, res) => {
+router.get("/:docId", optionalAuthenticate, async (req, res) => {
   try {
     const { docId } = req.params;
 
@@ -48,7 +48,7 @@ router.get("/:docId", authenticate, async (req, res) => {
   }
 });
 // Get comments for a specific thread
-router.get("/thread/:threadId", authenticate, async (req, res) => {
+router.get("/thread/:threadId", optionalAuthenticate, async (req, res) => {
   const { threadId } = req.params;
   const comments = await prisma.comment.findMany({
     where: { threadId },

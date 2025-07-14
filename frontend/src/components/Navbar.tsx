@@ -17,7 +17,12 @@ type Project = {
   name: string;
 };
 
-const Navbar = ({ title, project }: { title?: string; project: Project }) => {
+interface NavbarProps {
+  title?: string;
+  project: Project;
+}
+
+const Navbar = ({ title, project }: NavbarProps) => {
   const { login, isAuthenticated } = useAuth();
   const [showPermissionsModal, setShowPermissionsModal] = useState(false);
   const tolgee = useTolgee();

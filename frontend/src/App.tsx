@@ -10,6 +10,7 @@ import Navbar from "./components/Dashboard/Navbar";
 import OpenPecha from "./assets/icon.png";
 import TolgeeProvider, { useCurrentLanguage } from "./contexts/TolgeeContext";
 import Documentation from "./documentation/Documentation";
+import PublicDocumentViewer from "./components/PublicDocumentViewer";
 
 const ProjectList = lazy(() => import("./components/Dashboard/ProjectList"));
 const QuillVersionProvider = lazy(() =>
@@ -96,6 +97,15 @@ function AppContent() {
         />
         <Route path="/login" element={<Login />} />
         <Route path="/callback" element={<Callback />} />
+
+        <Route
+          path="/documents/public/:id"
+          element={
+            <Suspense fallback={<LoadingFallback />}>
+              <PublicDocumentViewer />
+            </Suspense>
+          }
+        />
 
         <Route
           path="/documents/:id"

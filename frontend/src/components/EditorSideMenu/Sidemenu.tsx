@@ -18,9 +18,11 @@ type MenuOption =
 function SideMenu({
   setSelectedTranslationId,
   documentId,
+  isEditable = true,
 }: {
   readonly setSelectedTranslationId: (id: string) => void;
   readonly documentId: string;
+  readonly isEditable?: boolean;
 }) {
   const [currentView, setCurrentView] = useState<MenuOption>("main");
   const reset = () => {
@@ -52,7 +54,7 @@ function SideMenu({
       case "footnotes":
         return (
           <InMenuWrapper onBackClick={reset}>
-            <FootnoteView documentId={documentId} />
+            <FootnoteView documentId={documentId} isEditable={isEditable} />
           </InMenuWrapper>
         );
 

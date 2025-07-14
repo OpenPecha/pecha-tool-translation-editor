@@ -144,3 +144,30 @@ export const deleteFootnote = async (footnoteId: string) => {
     console.error("Error deleting footnote:", error);
   }
 };
+
+/**
+ * Fetch all footnotes for a public document
+ * @param docId The ID of the document to fetch footnotes for
+ * @returns A promise that resolves to an array of footnotes
+ */
+export const fetchPublicFootnotes = async (docId: string) => {
+  try {
+    const response = await fetch(`${server_url}/footnotes/${docId}`, {
+      method: "GET",
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      // If unauthorized, return empty array instead of throwing error
+      if (response.status === 401 || response.status === 403) {
+        return [];
+      }
+      throw new Error("Failed to fetch footnotes");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching public footnotes:", error);
+    return []; // Return empty array for public access
+  }
+};

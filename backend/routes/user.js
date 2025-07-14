@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { PrismaClient } = require("@prisma/client");
-const {authenticate} = require("../middleware/authenticate");
+const { authenticate } = require("../middleware/authenticate");
 const jwt = require("jsonwebtoken");
 
 const prisma = new PrismaClient();
@@ -117,43 +117,45 @@ router.post("/", async (req, res) => {
 
 /**
  * GET /users/search
- * @summary Search for users by email
+ * @summary Search users by email or username
  * @tags Users - User management operations
  * @security BearerAuth
- * @param {string} email.query.required - Email to search for
- * @return {object} 200 - User found
- * @return {object} 400 - Bad request - Email is required
- * @return {object} 404 - User not found
+ * @param {string} query.query.required - Search query (email or username)
+ * @return {object} 200 - Search results
+ * @return {object} 400 - Missing query
  * @return {object} 500 - Server error
  */
 router.get("/search", authenticate, async (req, res) => {
   try {
-    const { email } = req.query;
-    
-    if (!email) {
-      return res.status(400).json({ error: "Email is required for search" });
+    const { query } = req.query;
+
+    if (!query) {
+      return res.status(400).json({ error: "Search query is required" });
     }
-    
-    const user = await prisma.user.findUnique({
-      where: { email },
+
+    // Search users by email or username
+    const users = await prisma.user.findMany({
+      where: {
+        OR: [
+          { email: { contains: query, mode: 'insensitive' } },
+          { username: { contains: query, mode: 'insensitive' } },
+        ],
+      },
       select: {
         id: true,
         username: true,
         email: true,
-        picture: true
-      }
+        picture: true,
+      },
+      take: 10, // Limit results
     });
-    
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-    
+
     res.json({
       success: true,
-      data: user
+      data: users,
     });
   } catch (error) {
-    console.error("Error searching for user:", error);
+    console.error("Error searching users:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -170,7 +172,7 @@ router.get("/search", authenticate, async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const user = await prisma.user.findUnique({
       where: { id },
       select: {
@@ -209,7 +211,7 @@ router.get("/:id", async (req, res) => {
 router.put("/me", authenticate, async (req, res) => {
   try {
     const { username, picture } = req.body;
-    
+
     const updatedUser = await prisma.user.update({
       where: { id: req.user.id },
       data: {
@@ -316,11 +318,11 @@ router.get("/version-diff/:versionId", async (req, res) => {
     });
 
 
-    const oldDelta = previousVersion ? new Delta(previousVersion.content?.ops): new Delta();
+    const oldDelta = previousVersion ? new Delta(previousVersion.content?.ops) : new Delta();
     const newDelta = new Delta(currentVersion.content?.ops);
     const diffs1 = markDiff(oldDelta, newDelta);
 
-    const diffs=oldDelta?.compose(new Delta(diffs1));
+    const diffs = oldDelta?.compose(new Delta(diffs1));
     return res.json({
       diffs,
     });

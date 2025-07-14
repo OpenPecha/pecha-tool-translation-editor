@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   fetchDocument,
   fetchDocumentTranslations,
+  fetchPublicDocument,
   fetchSingleTranslationStatus,
 } from "../api/document";
 import { useAuth } from "@/auth/use-auth-hook";
@@ -33,7 +34,12 @@ interface Document {
   created_at?: string;
   updated_at?: string;
   translations?: Translation[];
+  rootProjectId?: string;
+  translationStatus?: string;
+  translationJobId?: string;
   rootsProject?: {
+    id?: string;
+    name?: string;
     permissions?: Permission[];
   };
 }
@@ -46,7 +52,8 @@ interface UseCurrentDocReturn {
 }
 
 export const useCurrentDoc = (
-  docId: string | undefined
+  docId: string | undefined,
+  isPublic: boolean = false
 ): UseCurrentDocReturn => {
   const { currentUser } = useAuth();
   const [isEditable, setIsEditable] = useState<boolean | undefined>(undefined);
@@ -54,7 +61,13 @@ export const useCurrentDoc = (
     queryKey: [`document-${docId}`],
     queryFn: async () => {
       if (!docId) return null;
-      const doc = await fetchDocument(docId);
+      const doc = isPublic ? await fetchPublicDocument(docId) : await fetchDocument(docId);
+      
+      // For public documents, always set as not editable
+      if (isPublic) {
+        setIsEditable(false);
+      }
+      
       if (doc?.rootsProject?.permissions && !EDITOR_READ_ONLY) {
         doc?.rootsProject.permissions.map((permission: Permission) => {
           if (permission?.userId === currentUser?.id && permission?.canWrite) {

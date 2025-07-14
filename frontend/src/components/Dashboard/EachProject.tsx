@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import EditProjectModal from "./EditProjectModal";
+import ShareModal from "../ShareModal";
 import { useAuth } from "@/auth/use-auth-hook";
 
 import ProjectItem from "./ProjectItem";
@@ -15,6 +16,7 @@ interface EachProjectProps {
 
 export default function EachProject({ project, view }: EachProjectProps) {
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const { currentUser } = useAuth();
   const queryClient = useQueryClient();
 
@@ -84,6 +86,12 @@ export default function EachProject({ project, view }: EachProjectProps) {
     setShowEditModal(true);
   };
 
+  const shareOpen = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowShareModal(true);
+  };
+
   const documentCount =
     (project.roots?.length || 0) +
     (project.roots?.reduce(
@@ -116,6 +124,7 @@ export default function EachProject({ project, view }: EachProjectProps) {
           hasPermission={hasPermission}
           updateDocument={editOpen}
           deleteDocument={handleDelete}
+          shareDocument={shareOpen}
           view={view}
           status={project.status}
           url={url}
@@ -127,6 +136,14 @@ export default function EachProject({ project, view }: EachProjectProps) {
           project={project}
           onClose={() => setShowEditModal(false)}
           onUpdate={(name, identifier) => handleUpdate(name, identifier)}
+        />
+      )}
+
+      {showShareModal && (
+        <ShareModal
+          projectId={project.id}
+          projectName={project.name}
+          onClose={() => setShowShareModal(false)}
         />
       )}
     </>

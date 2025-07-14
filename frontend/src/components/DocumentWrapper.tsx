@@ -27,8 +27,8 @@ function DocumentsWrapper() {
     setSelectedTranslationId(translationId);
   };
   const project = {
-    id: currentDoc?.rootProjectId,
-    name: currentDoc?.rootsProject?.name,
+    id: currentDoc?.rootProjectId || currentDoc?.rootsProject?.id || "",
+    name: currentDoc?.rootsProject?.name || "Project",
   };
   return (
     <EditorProvider>
@@ -59,6 +59,7 @@ function DocumentsWrapper() {
                 <SideMenu
                   setSelectedTranslationId={handleSelectTranslation}
                   documentId={id!}
+                  isEditable={isEditable}
                 />
               ) : (
                 <TranslationEditor

@@ -155,3 +155,30 @@ export const deleteComment = async (commentId: string) => {
     console.error("Error deleting comment:", error);
   }
 };
+
+/**
+ * Fetch all comments for a public document
+ * @param docId The ID of the document to fetch comments for
+ * @returns A promise that resolves to an array of comments
+ */
+export const fetchPublicComments = async (docId: string) => {
+  try {
+    const response = await fetch(`${server_url}/comments/${docId}`, {
+      method: "GET",
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      // If unauthorized, return empty array instead of throwing error
+      if (response.status === 401 || response.status === 403) {
+        return [];
+      }
+      throw new Error("Failed to fetch comments");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching public comments:", error);
+    return []; // Return empty array for public access
+  }
+};

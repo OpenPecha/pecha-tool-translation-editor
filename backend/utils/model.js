@@ -104,8 +104,8 @@ async function createProject(name, identifier, metadata, rootId, userId) {
       metadata,
       roots: rootId
         ? {
-            connect: { id: rootId },
-          }
+          connect: { id: rootId },
+        }
         : undefined,
       permissions: {
         create: {

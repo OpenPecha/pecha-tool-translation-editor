@@ -13,9 +13,9 @@ import { updateContentDocument } from "@/api/document";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import CommentBubble from "./Comment/CommentBubble";
 import { createPortal } from "react-dom";
-import FootnoteInitialize from "./Footnote/FootnoteInitialize";
 import FootnoteView from "./Footnote/FootnoteView";
 import { useTranslate } from "@tolgee/react";
+import emitter from "@/services/eventBus";
 quill_import();
 
 const Editor = ({
@@ -34,7 +34,6 @@ const Editor = ({
     "counter-container" + "-" + Math.random().toString(36).slice(2, 6);
   const [currentRange, setCurrentRange] = useState<Range | null>(null);
   const [showCommentModal, setShowCommentModal] = useState(false);
-  const [showFootNoteModal, setShowFootNoteModal] = useState(false);
   const { registerQuill } = useQuillVersion();
   const {
     registerQuill: registerQuill2,
@@ -214,7 +213,7 @@ const Editor = ({
   }
   function addFootnote() {
     if (!currentRange || currentRange?.length === 0) return;
-    setShowFootNoteModal(true);
+    emitter.emit("createFootnote", { range: currentRange, documentId });
   }
   if (!documentId) return null;
   return (
@@ -227,6 +226,7 @@ const Editor = ({
           documentId={documentId}
           toolbarId={toolbarId}
           range={currentRange}
+          isEditable={isEditable}
         />,
         document.getElementById("toolbar-container")!
       )}
@@ -247,7 +247,7 @@ const Editor = ({
                 lineHeight: 1.5,
               }}
             />
-            <FootnoteView documentId={documentId} />
+            <FootnoteView documentId={documentId} isEditable={isEditable} />
           </div>
           {createPortal(
             <div className="flex gap-1 items-center">
@@ -266,15 +266,7 @@ const Editor = ({
               currentRange={currentRange}
             />
           )}
-
-          {showFootNoteModal && (
-            <FootnoteInitialize
-              documentId={documentId}
-              setShowFootnoteModal={setShowFootNoteModal}
-              currentRange={currentRange}
-            />
-          )}
-          <CommentBubble documentId={documentId} />
+          <CommentBubble documentId={documentId} isEditable={isEditable} />
         </div>
         {/* <OverlayLoading isLoading={!isSynced} /> */}
       </div>
