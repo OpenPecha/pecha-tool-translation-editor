@@ -222,11 +222,13 @@ function FootnoteView({
   };
 
   const handleCreateFootnote = async () => {
-    if (
-      !temporaryFootnote ||
-      !temporaryFootnote.content.trim() ||
-      !currentUser
-    ) {
+    if (!temporaryFootnote || !currentUser) {
+      return;
+    }
+
+    // If content is empty, automatically clean up the temporary footnote
+    if (!temporaryFootnote.content.trim()) {
+      handleCancelCreateFootnote();
       return;
     }
 
@@ -548,6 +550,10 @@ function FootnoteView({
                                       e.preventDefault();
                                       handleCancelCreateFootnote();
                                     }
+                                  }}
+                                  onBlur={() => {
+                                    // Automatically clean up temporary footnote when focus is lost
+                                    handleCancelCreateFootnote();
                                   }}
                                   className="inline bg-transparent border-none outline-none text-sm text-foreground flex-1"
                                   autoFocus
