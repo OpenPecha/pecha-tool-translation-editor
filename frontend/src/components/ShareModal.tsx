@@ -14,6 +14,7 @@ import {
   Search,
   Send,
   FileText,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,6 +65,15 @@ interface ShareModalProps {
   onClose: () => void;
 }
 
+// Helper function to generate shareable link client-side
+const generateShareableLink = (
+  rootDocument: { id: string } | null | undefined
+): string | null => {
+  if (!rootDocument) return null;
+  const baseUrl = window.location.origin;
+  return `${baseUrl}/documents/public/${rootDocument.id}`;
+};
+
 const ShareModal: React.FC<ShareModalProps> = ({
   projectId,
   projectName,
@@ -78,7 +88,6 @@ const ShareModal: React.FC<ShareModalProps> = ({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [copied, setCopied] = useState(false);
-  const [shouldCopyOnPublic, setShouldCopyOnPublic] = useState(false);
 
   const queryClient = useQueryClient();
   const { currentUser } = useAuth();
@@ -106,32 +115,10 @@ const ShareModal: React.FC<ShareModalProps> = ({
         : "Document is now private";
       setSuccess(message);
       queryClient.invalidateQueries({ queryKey: ["projectShare", projectId] });
-
-      // Auto-copy link when made public
-      if (data.data.isPublic && shouldCopyOnPublic) {
-        // Try to copy from mutation response first
-        if (data.data.shareableLink) {
-          copyToClipboard(data.data.shareableLink);
-        } else {
-          // If not in response, wait for query refetch and copy from there
-          setTimeout(() => {
-            const currentShareData = queryClient.getQueryData([
-              "projectShare",
-              projectId,
-            ]) as { data?: { shareableLink?: string } } | undefined;
-            if (currentShareData?.data?.shareableLink) {
-              copyToClipboard(currentShareData.data.shareableLink);
-            }
-          }, 500);
-        }
-        setShouldCopyOnPublic(false);
-      }
-
       setTimeout(() => setSuccess(""), 3000);
     },
     onError: (error: Error) => {
       setError(error.message);
-      setShouldCopyOnPublic(false);
       setTimeout(() => setError(""), 5000);
     },
   });
@@ -258,11 +245,17 @@ const ShareModal: React.FC<ShareModalProps> = ({
     updateAccessMutation.mutate({ userId, accessLevel: newAccessLevel });
   };
 
-  // Handle public access toggle with auto-copy
+  // Handle public access toggle with optimistic UI update
   const handlePublicToggle = (isPublic: boolean) => {
-    // Set flag to copy link after successful toggle to public
-    setShouldCopyOnPublic(isPublic);
+    // Generate and copy link immediately on client side
+    if (isPublic && shareData?.rootDocument) {
+      const clientGeneratedLink = generateShareableLink(shareData.rootDocument);
+      if (clientGeneratedLink) {
+        copyToClipboard(clientGeneratedLink);
+      }
+    }
 
+    // Update backend for data persistence
     updateShareMutation.mutate({
       isPublic,
       publicAccess: isPublic ? "viewer" : "none",
@@ -334,24 +327,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
           </Button>
         </div>
 
-        {/* Error/Success Messages */}
-        {(error || success) && (
-          <div className="p-3 border-b">
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-            {success && (
-              <Alert className="border-green-200 bg-green-50">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <AlertDescription className="text-green-800">
-                  {success}
-                </AlertDescription>
-              </Alert>
-            )}
-          </div>
-        )}
+        {/* Error/Success Messages - Now handled in General Access section */}
 
         {/* Tabs */}
         <Tabs
@@ -564,32 +540,98 @@ const ShareModal: React.FC<ShareModalProps> = ({
               </CardContent>
             </Card>
 
-            {/* General Access Section - Simplified */}
+            {/* General Access Section - Redesigned */}
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-sm">
-                  <Globe className="h-4 w-4" />
-                  General Access
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    {shareData?.isPublic ? (
-                      <Globe className="h-4 w-4 text-green-600" />
-                    ) : (
-                      <Lock className="h-4 w-4 text-gray-600" />
-                    )}
-                    <span className="text-sm font-medium">
-                      {shareData?.isPublic ? "Public" : "Private"}
-                    </span>
-                  </div>
+                  <CardTitle className="flex items-center gap-2 text-sm">
+                    <Globe className="h-4 w-4" />
+                    General Access
+                  </CardTitle>
                   {shareData?.isOwner && (
-                    <Switch
-                      checked={shareData?.isPublic}
-                      onCheckedChange={handlePublicToggle}
+                    <Select
+                      value={shareData?.isPublic ? "public" : "private"}
+                      onValueChange={(value) =>
+                        handlePublicToggle(value === "public")
+                      }
                       disabled={updateShareMutation.isPending}
-                    />
+                    >
+                      <SelectTrigger className="w-32 h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="private">
+                          <div className="flex items-center gap-2">
+                            <Lock className="h-3 w-3" />
+                            Private
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="public">
+                          <div className="flex items-center gap-2">
+                            <Globe className="h-3 w-3" />
+                            Public
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                  {!shareData?.isOwner && (
+                    <Badge variant="outline" className="text-xs">
+                      {shareData?.isPublic ? "Public" : "Private"}
+                    </Badge>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {/* Shareable Link Section */}
+                {shareData?.isPublic && shareData?.rootDocument && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={
+                          generateShareableLink(shareData.rootDocument) || ""
+                        }
+                        readOnly
+                        className="text-xs h-8 bg-gray-50"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const link = generateShareableLink(
+                            shareData.rootDocument
+                          );
+                          if (link) copyToClipboard(link);
+                        }}
+                        className="h-8 w-8 p-0 shrink-0"
+                      >
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Alert Message Area */}
+                <div className="min-h-[32px]">
+                  {(error || success) && (
+                    <div className="text-xs">
+                      {error && (
+                        <Alert variant="destructive" className="py-2">
+                          <AlertTriangle className="h-4 w-4" />
+                          <AlertDescription className="text-xs ml-2">
+                            {error}
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                      {success && (
+                        <Alert className="border-green-200 bg-green-50">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                          <AlertDescription className="text-green-800 text-xs ml-2">
+                            {success}
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                    </div>
                   )}
                 </div>
               </CardContent>
