@@ -485,6 +485,10 @@ export interface ProjectShareInfo {
   isOwner: boolean;
   permissions: Collaborator[];
   owner: User;
+  rootDocument?: {
+    id: string;
+    name: string;
+  };
 }
 
 // Get project sharing information
