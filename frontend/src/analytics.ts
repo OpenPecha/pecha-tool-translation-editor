@@ -61,8 +61,6 @@ export function injectUmami() {
 
 // Function to identify user in Umami
 function identifyUserInUmami(user: UmamiUser) {
-  if (!window.umami?.identify) return;
-
   const userId = user.email || user.id || user.sub;
   if (!userId) return;
 
@@ -76,7 +74,39 @@ function identifyUserInUmami(user: UmamiUser) {
   if (user.role) userProperties.role = user.role;
   if (user.isAdmin !== undefined) userProperties.isAdmin = user.isAdmin;
 
-  // window.umami.identify(userId, userProperties);
+  console.log("🔍 Identifying user in Umami:", userId, userProperties);
+
+  // Try using identify method if available
+  if (window.umami?.identify) {
+    try {
+      window.umami.identify(userId, userProperties);
+      console.log("✅ User identified via umami.identify()");
+    } catch (error) {
+      console.warn("⚠️ umami.identify() failed:", error);
+      // Fallback to tracking a user identification event
+      fallbackUserIdentification(userId, userProperties);
+    }
+  } else {
+    console.log(
+      "ℹ️ umami.identify() not available, using event tracking fallback"
+    );
+    // Fallback to tracking a user identification event
+    fallbackUserIdentification(userId, userProperties);
+  }
+}
+
+// Fallback method to track user identification as a custom event
+function fallbackUserIdentification(
+  userId: string,
+  userProperties: Record<string, string | number | boolean>
+) {
+  if (window.umami?.track) {
+    window.umami.track("user-identified", {
+      user_id: userId,
+      ...userProperties,
+    });
+    console.log("✅ User identified via custom event");
+  }
 }
 
 // Public function to set user for identification

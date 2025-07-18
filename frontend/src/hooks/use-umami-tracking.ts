@@ -42,6 +42,7 @@ export type UmamiEventType =
   // User management events
   | "user-logged-in"
   | "user-logged-out"
+  | "user-identified"
   | "user-role-changed"
   | "user-status-changed"
   | "user-deleted"
@@ -138,6 +139,10 @@ declare global {
     umami?: {
       track: (
         event: string,
+        properties?: Record<string, string | number | boolean | null>
+      ) => void;
+      identify: (
+        userId: string,
         properties?: Record<string, string | number | boolean | null>
       ) => void;
     };
