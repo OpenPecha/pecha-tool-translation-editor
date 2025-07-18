@@ -11,6 +11,7 @@ import OpenPecha from "./assets/icon.png";
 import TolgeeProvider, { useCurrentLanguage } from "./contexts/TolgeeContext";
 import Documentation from "./documentation/Documentation";
 import PublicDocumentViewer from "./components/PublicDocumentViewer";
+import { injectUmami } from "./analytics";
 
 const ProjectList = lazy(() => import("./components/Dashboard/ProjectList"));
 const QuillVersionProvider = lazy(() =>
@@ -18,6 +19,10 @@ const QuillVersionProvider = lazy(() =>
     default: module.QuillVersionProvider,
   }))
 );
+
+if (import.meta.env.VITE_ENVIRONMENT === "production") {
+  injectUmami();
+}
 
 const queryClient = new QueryClient();
 

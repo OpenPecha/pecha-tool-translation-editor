@@ -17,7 +17,7 @@ import {
 
 const apiKey = import.meta.env.VITE_APP_TOLGEE_API_KEY;
 const apiUrl = import.meta.env.VITE_APP_TOLGEE_API_URL;
-const environment = import.meta.env.VITE_ENV;
+const environment = import.meta.env.VITE_ENVIRONMENT;
 const prefix = import.meta.env.VITE_APP_TOLGEE_PREFIX;
 
 // Available languages configuration
