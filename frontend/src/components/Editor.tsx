@@ -16,6 +16,9 @@ import { createPortal } from "react-dom";
 import FootnoteView from "./Footnote/FootnoteView";
 import { useTranslate } from "@tolgee/react";
 import emitter from "@/services/eventBus";
+import { useUmamiTracking } from "@/hooks/use-umami-tracking";
+import { getUserContext } from "@/hooks/use-umami-tracking";
+import { useAuth } from "@/auth/use-auth-hook";
 quill_import();
 
 const Editor = ({
@@ -43,19 +46,45 @@ const Editor = ({
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const quillRef = useRef<Quill | null>(null);
   const { t } = useTranslate();
+  const { currentUser } = useAuth();
+  const { trackDocumentOpened, trackDocumentSaved } = useUmamiTracking();
+
+  // Track document opening
+  useEffect(() => {
+    if (documentId && currentDoc) {
+      // Determine if this is a root document by checking if it has translations
+      const documentType =
+        currentDoc.translations && currentDoc.translations.length > 0
+          ? "root"
+          : "translation";
+      trackDocumentOpened(
+        documentId,
+        documentType,
+        getUserContext(currentUser)
+      );
+    }
+  }, [documentId, currentDoc, trackDocumentOpened, currentUser]);
+
   const updateDocumentMutation = useMutation({
-    mutationFn: (content: any) =>
+    mutationFn: (content: Record<string, unknown>) =>
       updateContentDocument(documentId as string, {
         docs_prosemirror_delta: content.ops,
       }),
     onError: (error) => {
       console.error("Error updating document content:", error);
     },
+    onSuccess: () => {
+      // Track document save
+      if (documentId) {
+        trackDocumentSaved(documentId, "auto", getUserContext(currentUser));
+      }
+    },
   });
+
   const isSynced = !updateDocumentMutation.isPending;
   const queryClient = useQueryClient();
   const debouncedSave = useCallback(
-    (content: any) => {
+    (content: Record<string, unknown>) => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }

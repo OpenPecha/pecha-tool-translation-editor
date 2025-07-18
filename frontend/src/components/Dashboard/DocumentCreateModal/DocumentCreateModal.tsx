@@ -12,14 +12,42 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import PlusIcon from "@/assets/plus.svg";
 import { useTranslate } from "@tolgee/react";
+import { useUmamiTracking } from "@/hooks/use-umami-tracking";
+import { getUserContext } from "@/hooks/use-umami-tracking";
+import { useAuth } from "@/auth/use-auth-hook";
+
 function DocumentCreateModal() {
   const [projectName, setProjectName] = useState("");
   const [open, setOpen] = useState(false);
-  const closeModal = () => setOpen(false);
   const { t } = useTranslate();
+  const { currentUser } = useAuth();
+  const { trackModalOpened, trackModalClosed, trackButtonClicked } =
+    useUmamiTracking();
+
+  const closeModal = () => {
+    setOpen(false);
+    trackModalClosed("project_creation", getUserContext(currentUser));
+  };
+
+  const handleOpenModal = () => {
+    setOpen(true);
+    trackModalOpened("project_creation", getUserContext(currentUser));
+  };
+
+  const handleCreateButtonClick = () => {
+    trackButtonClicked(
+      "create_project",
+      "create-project-trigger",
+      getUserContext(currentUser)
+    );
+    handleOpenModal();
+  };
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger className="cursor-pointer ">
+      <DialogTrigger
+        className="cursor-pointer "
+        onClick={handleCreateButtonClick}
+      >
         <div className="border rounded-lg p-4 flex items-center justify-center hover:border-blue-500 cursor-pointer mb-12 bg-white shadow-sm">
           <div className="flex flex-col items-center justify-center">
             <div className=" p-4 rounded-full flex items-center justify-center  transition-colors">

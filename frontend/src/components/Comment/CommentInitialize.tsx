@@ -9,6 +9,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Switch } from "../ui/switch";
 import AvatarWrapper from "../ui/custom-avatar";
 import ContentEditableDiv from "../ui/contentEditable";
+import { useTranslate } from "@tolgee/react";
+import { useUmamiTracking } from "@/hooks/use-umami-tracking";
+import { getUserContext } from "@/hooks/use-umami-tracking";
 
 function CommentInitialize({
   documentId,
@@ -28,6 +31,8 @@ function CommentInitialize({
   const quill = getQuill(documentId);
   const { currentUser } = useAuth();
   const queryClient = useQueryClient();
+  const { t } = useTranslate();
+  const { trackCommentCreated } = useUmamiTracking();
 
   const currentRangeText = quill?.getText(
     currentRange?.index,
@@ -71,6 +76,18 @@ function CommentInitialize({
       ),
     onSuccess: (createdComment) => {
       if (createdComment?.id) {
+        // Track comment creation
+        trackCommentCreated(
+          createdComment.id,
+          documentId,
+          isSuggestion ? "suggestion" : "comment",
+          {
+            ...getUserContext(currentUser),
+            text_length: currentRangeText?.length || 0,
+            selection_length: currentRange?.length || 0,
+          }
+        );
+
         // Update the Quill editor to highlight the text
         quill?.formatText(
           currentRange!.index,

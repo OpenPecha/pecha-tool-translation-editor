@@ -3,10 +3,32 @@ import { Home, Globe2Icon, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { fetchTools } from "@/api/workspace/tools";
+import { useUmamiTracking } from "@/hooks/use-umami-tracking";
+import { getUserContext } from "@/hooks/use-umami-tracking";
+import { useAuth } from "@/auth/use-auth-hook";
 
 const NavSidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const closeSidebar = () => setIsOpen(false);
+  const { currentUser } = useAuth();
+  const { trackSidebarToggled, trackPageVisit } = useUmamiTracking();
+
+  const closeSidebar = () => {
+    setIsOpen(false);
+    trackSidebarToggled("nav_sidebar", false, getUserContext(currentUser));
+  };
+
+  const openSidebar = () => {
+    setIsOpen(true);
+    trackSidebarToggled("nav_sidebar", true, getUserContext(currentUser));
+  };
+
+  const handleNavItemClick = (toolName: string, toolLink: string) => {
+    trackPageVisit(toolLink, window.location.pathname, {
+      ...getUserContext(currentUser),
+      navigation_type: "nav_sidebar",
+      metadata: { tool_name: toolName },
+    });
+  };
 
   // Close sidebar when pressing escape key
   useEffect(() => {
@@ -56,7 +78,7 @@ const NavSidebar = () => {
     <>
       <button
         className="p-2 rounded-full hover:bg-gray-100 h-fit transition-colors"
-        onClick={() => setIsOpen(true)}
+        onClick={openSidebar}
       >
         <Menu size={20} />
       </button>
@@ -94,6 +116,7 @@ const NavSidebar = () => {
                 href={tool.link}
                 className="flex items-center h-10 px-3 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground"
                 target="_blank"
+                onClick={() => handleNavItemClick(tool.name, tool.link)}
               >
                 {tool.iconComponent ? (
                   <tool.iconComponent className="h-4 w-4 mr-3" />

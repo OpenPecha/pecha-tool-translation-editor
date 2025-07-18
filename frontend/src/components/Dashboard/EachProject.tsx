@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import EditProjectModal from "./EditProjectModal";
 import ShareModal from "../ShareModal";
@@ -8,6 +8,9 @@ import ProjectItem from "./ProjectItem";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Project, deleteProject, updateProject } from "@/api/project";
 import formatTimeAgo from "@/lib/formatTimeAgo";
+
+import { useUmamiTracking } from "@/hooks/use-umami-tracking";
+import { getUserContext } from "@/hooks/use-umami-tracking";
 
 interface EachProjectProps {
   readonly project: Project;
@@ -19,6 +22,12 @@ export default function EachProject({ project, view }: EachProjectProps) {
   const [showShareModal, setShowShareModal] = useState(false);
   const { currentUser } = useAuth();
   const queryClient = useQueryClient();
+  const {
+    trackProjectOpened,
+    trackModalOpened,
+    trackModalClosed,
+    trackProjectShared,
+  } = useUmamiTracking();
 
   const deleteProjectMutation = useMutation({
     mutationFn: (id: string) => deleteProject(id),
@@ -58,6 +67,7 @@ export default function EachProject({ project, view }: EachProjectProps) {
       // Invalidate and refetch projects query
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       setShowEditModal(false);
+      trackModalClosed("project_edit", getUserContext(currentUser));
     },
     onError: (error) => {
       console.error("Error updating project:", error);
@@ -84,27 +94,29 @@ export default function EachProject({ project, view }: EachProjectProps) {
     e.preventDefault();
     e.stopPropagation();
     setShowEditModal(true);
+    trackModalOpened("project_edit", getUserContext(currentUser));
   };
 
   const shareOpen = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setShowShareModal(true);
+    trackModalOpened("project_share", getUserContext(currentUser));
+    trackProjectShared(project.id, "modal_opened", getUserContext(currentUser));
   };
 
-  const documentCount =
-    (project.roots?.length || 0) +
-    (project.roots?.reduce(
-      (count, root) => count + (root.translations?.length ?? 0),
-      0
-    ) ?? 0);
+  const handleProjectClick = () => {
+    trackProjectOpened(project.id, project.name, getUserContext(currentUser));
+  };
+
+  const documentCount = project.roots?.length || 0;
   const url =
     project.roots && project.roots.length > 0
       ? `/documents/${project.roots[0]?.id}`
       : "#";
   return (
     <>
-      <Link to={url} className=" ">
+      <Link to={url} className=" " onClick={handleProjectClick}>
         <ProjectItem
           title={project.name}
           subtitle={

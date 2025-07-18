@@ -2,6 +2,8 @@ import React, { useState, ReactNode, useMemo, useCallback } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { createContext } from "react";
 import { AuthContextType } from "./types";
+import { useUmamiTracking } from "@/hooks/use-umami-tracking";
+import { clearUmamiUser, setUmamiUser } from "@/analytics";
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -27,13 +29,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout: auth0Logout,
     error,
   } = useAuth0();
+
+  const { trackUserLogin, trackUserLogout } = useUmamiTracking();
+
   const logout = useCallback(() => {
+    // Track logout event
+    if (user?.sub) {
+      trackUserLogout(user.sub);
+    }
+
     // If using Auth0, use their logout function
     auth0Logout({
       logoutParams: { returnTo: window.location.origin },
       clientId: import.meta.env.VITE_AUTH0_CLIENT_ID,
     });
-  }, [auth0Logout]);
+  }, [auth0Logout, user, trackUserLogout]);
 
   const getToken = useCallback(async (): Promise<string | null> => {
     // If using Auth0, get token from Auth0
@@ -47,14 +57,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [getAccessTokenSilently]);
 
   // Ensure user object matches the User interface requirements
-  const currentUser: UserType | null = user
-    ? {
-        id: user.sub,
-        email: user.email,
-        name: user.name,
-        picture: user.picture,
-      }
-    : null;
+  const currentUser: UserType | null =
+    user && user.sub && user.email
+      ? {
+          id: user.sub,
+          email: user.email,
+          name: user.name || "",
+          picture: user.picture || "",
+        }
+      : null;
   // Track silent auth attempts to prevent infinite loops
   const [silentAuthAttempted, setSilentAuthAttempted] = useState(false);
 
@@ -87,6 +98,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   );
   // Convert error to string | null to match AuthContextType
   const errorMessage = error ? error.message || "Authentication error" : null;
+
+  // Track successful login
+  React.useEffect(() => {
+    if (isAuthenticated && user) {
+      // Set user for Umami identification
+      setUmamiUser({
+        email: user.email,
+        id: user.id,
+        name: user.name,
+        // Add additional properties if available
+        sub: user?.sub,
+      });
+    } else if (!isAuthenticated) {
+      // Clear user identification when logged out
+      clearUmamiUser();
+    }
+    if (isAuthenticated && user?.sub && !silentAuthAttempted) {
+      trackUserLogin(user.sub);
+      setSilentAuthAttempted(true);
+    }
+  }, [isAuthenticated, user, trackUserLogin, silentAuthAttempted]);
 
   // Use useMemo to prevent unnecessary re-renders
   const contextValue = useMemo(

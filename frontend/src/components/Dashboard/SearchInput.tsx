@@ -4,6 +4,10 @@ import useDebounce from "@/hooks/useDebounce";
 import { MdOutlineSearch } from "react-icons/md";
 import { useSearchStore } from "@/stores/searchStore";
 import { useTranslate } from "@tolgee/react";
+import { useUmamiTracking } from "@/hooks/use-umami-tracking";
+import { getUserContext } from "@/hooks/use-umami-tracking";
+import { useAuth } from "@/auth/use-auth-hook";
+
 /**
  * SearchInput component that provides a search field with debounced input
  * and analytics tracking capabilities.
@@ -11,6 +15,8 @@ import { useTranslate } from "@tolgee/react";
 const SearchInput = () => {
   const { searchQuery, setSearchQuery } = useSearchStore();
   const { t } = useTranslate();
+  const { currentUser } = useAuth();
+  const { trackSearchPerformed } = useUmamiTracking();
   const [inputValue, setInputValue] = useState<string>(searchQuery || "");
 
   const debouncedValue = useDebounce(inputValue?.toLowerCase(), 1000);
@@ -21,7 +27,17 @@ const SearchInput = () => {
 
   useEffect(() => {
     setSearchQuery(debouncedValue);
-  }, [debouncedValue, setSearchQuery]);
+
+    // Track search when query is not empty
+    if (debouncedValue && debouncedValue.trim().length > 0) {
+      trackSearchPerformed(
+        debouncedValue.trim(),
+        0, // We don't have result count here, will be updated later
+        "project_search",
+        getUserContext(currentUser)
+      );
+    }
+  }, [debouncedValue, setSearchQuery, trackSearchPerformed, currentUser]);
   return (
     <div className="flex-grow mx-8 max-w-2xl">
       <div className="relative">
