@@ -283,15 +283,13 @@ const Toolbar = ({
             document.getElementById("diff-portal")!
           )}
       </div>
-      <div className="flex items-center gap-2 h-full">
+      <div className="flex items-center gap-2 h-full animate-pulse">
         {/* <PublishButton quill={quill!} /> */}
-        <div>
-          {synced ? (
-            "🟢"
-          ) : (
-            <span className="text-xs text-gray-500 italic"> saving... </span>
-          )}
-        </div>
+        {synced ? (
+          "🟢"
+        ) : (
+          <span className="text-xs text-gray-500 italic"> saving... </span>
+        )}
       </div>
     </div>
   );
