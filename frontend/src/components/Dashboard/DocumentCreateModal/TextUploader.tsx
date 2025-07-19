@@ -2,6 +2,26 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { QueryObserverResult, useMutation } from "@tanstack/react-query";
 import { createDocument } from "@/api/document";
+import {
+  MAX_FILE_SIZE_BYTES,
+  MAX_FILE_SIZE_DISPLAY,
+  formatFileSize,
+} from "@/utils/Constants";
+
+// File size validation error types
+type FileSizeError = {
+  type: "FILE_TOO_LARGE";
+  message: string;
+  currentSize: number;
+  maxSize: number;
+};
+
+type FileReadError = {
+  type: "FILE_READ_ERROR";
+  message: string;
+};
+
+type ValidationError = FileSizeError | FileReadError;
 
 const TextUploader = ({
   isRoot,
@@ -22,6 +42,8 @@ const TextUploader = ({
 }) => {
   const [file, setFile] = useState<File | null>(null);
   const [fileContent, setFileContent] = useState<string>("");
+  const [validationError, setValidationError] =
+    useState<ValidationError | null>(null);
 
   const uploadMutation = useMutation({
     mutationFn: async (file: File) => {
@@ -53,18 +75,65 @@ const TextUploader = ({
     },
   });
 
+  /**
+   * Validates file size before processing
+   * @param file - File to validate
+   * @returns ValidationError if invalid, null if valid
+   */
+  const validateFileSize = (file: File): ValidationError | null => {
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      return {
+        type: "FILE_TOO_LARGE",
+        message: `File size exceeds the maximum limit of ${MAX_FILE_SIZE_DISPLAY}. Please select a smaller file.`,
+        currentSize: file.size,
+        maxSize: MAX_FILE_SIZE_BYTES,
+      };
+    }
+    return null;
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Clear previous errors
+    setValidationError(null);
+
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
+
+      // Immediate file size validation
+      const sizeValidationError = validateFileSize(selectedFile);
+      if (sizeValidationError) {
+        setValidationError(sizeValidationError);
+        // Clear the file input
+        e.target.value = "";
+        return;
+      }
+
       setFile(selectedFile);
 
       const reader = new FileReader();
       reader.onload = (event) => {
-        setFileContent(event.target?.result as string);
+        try {
+          setFileContent(event.target?.result as string);
+          // Only trigger upload if file size is valid
+          uploadMutation.mutate(selectedFile);
+        } catch (error) {
+          setValidationError({
+            type: "FILE_READ_ERROR",
+            message:
+              "Failed to read file content. Please ensure the file is a valid text file.",
+          });
+          console.error("File reading error:", error);
+        }
       };
-      reader.readAsText(selectedFile);
 
-      uploadMutation.mutate(selectedFile);
+      reader.onerror = () => {
+        setValidationError({
+          type: "FILE_READ_ERROR",
+          message: "Failed to read file. Please try selecting the file again.",
+        });
+      };
+
+      reader.readAsText(selectedFile);
     }
   };
 
@@ -73,14 +142,72 @@ const TextUploader = ({
   const handleReset = () => {
     setFile(null);
     setFileContent("");
+    setValidationError(null);
     uploadMutation.reset(); // Reset mutation state
   };
+
+  // Render validation error with specific styling and messaging
+  const renderValidationError = () => {
+    if (!validationError) return null;
+
+    return (
+      <div className="p-3 rounded-md bg-red-50 text-red-700 border border-red-200 mt-2">
+        <div className="flex items-start">
+          <svg
+            className="flex-shrink-0 w-5 h-5 text-red-400 mt-0.5 mr-2"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fillRule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <div>
+            <h4 className="text-sm font-medium text-red-800">
+              {validationError.type === "FILE_TOO_LARGE"
+                ? "File Too Large"
+                : "File Read Error"}
+            </h4>
+            <p className="mt-1 text-sm text-red-700">
+              {validationError.message}
+            </p>
+            {validationError.type === "FILE_TOO_LARGE" && (
+              <div className="mt-2 text-xs text-red-600">
+                <p>
+                  Current file size:{" "}
+                  <span className="font-medium">
+                    {formatFileSize(validationError.currentSize)}
+                  </span>
+                </p>
+                <p>
+                  Maximum allowed:{" "}
+                  <span className="font-medium">
+                    {formatFileSize(validationError.maxSize)}
+                  </span>
+                </p>
+                <p className="mt-1 font-medium">
+                  💡 Tip: Try compressing your text file or splitting it into
+                  smaller parts.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="mb-2">
       {!file && (
         <div className="flex flex-col gap-2">
           <label htmlFor="text-file" className="text-sm font-medium">
             Upload {isRoot ? "Root" : "Translation"} Text (.txt)
+            <span className="text-xs text-gray-500 ml-2">
+              (Max size: {MAX_FILE_SIZE_DISPLAY})
+            </span>
           </label>
           <Input
             id="text-file"
@@ -93,11 +220,18 @@ const TextUploader = ({
           />
         </div>
       )}
-      {file && (
+
+      {/* Validation Error Display */}
+      {renderValidationError()}
+
+      {file && !validationError && (
         <div className="text-sm py-2">
           <div className="flex justify-between items-center">
             <span>
               Selected file: <span className="font-medium">{file.name}</span>
+              <span className="text-xs text-gray-500 ml-2">
+                ({formatFileSize(file.size)})
+              </span>
             </span>
             <button
               type="button"
@@ -146,9 +280,28 @@ const TextUploader = ({
         </div>
       )}
 
-      {errorMessage && (
-        <div className="p-3 rounded-md bg-red-50 text-red-700 border border-red-200">
-          {errorMessage}
+      {/* Server/Upload Error Display */}
+      {errorMessage && !validationError && (
+        <div className="p-3 rounded-md bg-red-50 text-red-700 border border-red-200 mt-2">
+          <div className="flex items-start">
+            <svg
+              className="flex-shrink-0 w-5 h-5 text-red-400 mt-0.5 mr-2"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <div>
+              <h4 className="text-sm font-medium text-red-800">
+                Upload Failed
+              </h4>
+              <p className="mt-1 text-sm text-red-700">{errorMessage}</p>
+            </div>
+          </div>
         </div>
       )}
     </div>

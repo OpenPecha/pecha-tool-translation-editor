@@ -1,7 +1,7 @@
 const express = require("express");
 const { authenticate, optionalAuthenticate } = require("../middleware/authenticate");
 const { PrismaClient } = require("@prisma/client");
-const multer = require("multer");
+const { handleUploadErrors } = require("../middleware/upload");
 const { WSSharedDoc } = require("../services");
 const Y = require("yjs");
 const Delta = require("quill-delta");
@@ -22,7 +22,6 @@ const router = express.Router();
  */
 async function checkDocumentPermission(document, userId) {
   // If the document doesn't exist, no permission
-  console.log("document :: ", document)
   if (!document) return false;
   // If the document's project is public, everyone has read access
   if (document.rootsProject && document.rootsProject.isPublic) return true;
@@ -116,13 +115,6 @@ async function checkDocumentWritePermission(document, userId) {
   return false;
 }
 
-const upload = multer({
-  storage: multer.memoryStorage(), // Use memory storage to keep files as buffers
-  limits: {
-    fileSize: 500 * 1024 * 1024, // 500MB
-  },
-});
-
 /**
  * GET /documents/public/{id}
  * @summary Get a public document by ID (no authentication required)
@@ -207,7 +199,7 @@ router.get("/public/:id", optionalAuthenticate, async (req, res) => {
  * @return {object} 400 - Bad request
  * @return {object} 500 - Server error
  */
-router.post("/", authenticate, upload.single("file"), async (req, res) => {
+router.post("/", authenticate, handleUploadErrors, async (req, res) => {
   try {
     const { identifier, isRoot, rootId, language, name } = req.body;
 
@@ -220,6 +212,13 @@ router.post("/", authenticate, upload.single("file"), async (req, res) => {
     }
     if (!language) {
       return res.status(400).json({ error: "Missing language in request body" });
+    }
+
+    // Additional file size validation (defense in depth)
+    if (req.file && req.file.size > 1000000) {
+      return res.status(400).json({
+        error: "File size exceeds the maximum limit of 1MB. Please select a smaller file."
+      });
     }
 
     const doc = new WSSharedDoc(identifier, req.user.id);
