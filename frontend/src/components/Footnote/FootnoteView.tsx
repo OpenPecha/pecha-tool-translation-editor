@@ -165,19 +165,21 @@ function FootnoteView({
       queryClient.invalidateQueries({ queryKey: [`footnotes-${documentId}`] });
       // Remove the footnote mark from the editor
       if (quill) {
-        const footnoteSpan = quill.root.querySelector(
+        const footnoteSpanList = quill.root.querySelectorAll(
           `span.footnote[data-id="${footnoteId}"]`
-        ) as HTMLElement;
-        if (footnoteSpan) {
-          const blot = Quill.find(footnoteSpan) as any;
-          if (blot && blot.length) {
-            // Get the index and length of the blot
-            const index = quill.getIndex(blot);
-            const length = blot.length();
+        ) as HTMLElement[];
+        if (footnoteSpanList.length > 0) {
+          footnoteSpanList.forEach((span) => {
+            const blot = Quill.find(span) as any;
+            if (blot && blot.length) {
+              // Get the index and length of the blot
+              const index = quill.getIndex(blot);
+              const length = blot.length();
 
-            // Remove the footnote formatting
-            quill.formatText(index, length, "footnote", false, "user");
-          }
+              // Remove the footnote formatting
+              quill.formatText(index, length, "footnote", false, "user");
+            }
+          });
         }
       }
     },
@@ -316,19 +318,47 @@ function FootnoteView({
 
     // Update counter values on footnote elements
     let currentCounter = 1;
-    let lastOrder: string | null = null;
+    let previousId: string | null = null;
+    let repeatCount = 0;
 
-    footnoteSpans.forEach((span) => {
-      const order = span.getAttribute("data-order");
-      if (order !== lastOrder) {
-        span.setAttribute("data-counter", currentCounter.toString());
-        currentCounter++;
-        lastOrder = order;
+    footnoteSpans.forEach((span, index) => {
+      const id = span.getAttribute("data-id");
+
+      if (id === previousId) {
+        // Same as previous, this is a repeating element
+        repeatCount++;
+        span.setAttribute("data-counter", ""); // Don't show counter for repeating elements
       } else {
-        // Same order as previous, don't show counter
+        // Different from previous ID
+        if (repeatCount > 0) {
+          // We had repeating elements, assign counter to the previous element (last in the sequence)
+          footnoteSpans[index - 1].setAttribute(
+            "data-counter",
+            currentCounter.toString()
+          );
+          currentCounter++;
+          repeatCount = 0;
+        } else if (index > 0) {
+          // Previous was a single element, assign counter to it
+          footnoteSpans[index - 1].setAttribute(
+            "data-counter",
+            currentCounter.toString()
+          );
+          currentCounter++;
+        }
+
+        // Reset for current element (will be processed when we see the next different ID or at the end)
         span.setAttribute("data-counter", "");
       }
+
+      previousId = id;
     });
+
+    // Handle the last element in the array
+    if (footnoteSpans.length > 0) {
+      const lastSpan = footnoteSpans[footnoteSpans.length - 1];
+      lastSpan.setAttribute("data-counter", currentCounter.toString());
+    }
 
     return sortedFootnotes;
   };
@@ -353,36 +383,45 @@ function FootnoteView({
   const handleFootnoteClick = (footnote: Footnote) => {
     // Find the footnote span in the editor and scroll to it
     if (quill) {
-      const footnoteSpan = quill.root.querySelector(
+      const footnoteSpanList = quill.root.querySelectorAll(
         `span.footnote[data-id="${footnote.threadId}"]`
       ) as HTMLElement;
-      if (footnoteSpan) {
+      if (footnoteSpanList?.length > 0) {
         // Scroll the footnote span into view
-        footnoteSpan.scrollIntoView({
+        footnoteSpanList[0].scrollIntoView({
           behavior: "smooth",
           block: "center",
           inline: "nearest",
         });
-        const blot = Quill.find(footnoteSpan) as any;
-        if (blot && blot.length) {
-          // Get the index and length of the blot
-          const index = quill.getIndex(blot);
-          const length = blot.length();
 
-          // Remove the footnote formatting
-          quill.formatText(
-            index,
-            length,
-            "background",
-            "rgba(59, 130, 246, 0.2)",
-            "api"
-          );
+        footnoteSpanList.forEach((footnoteSpan) => {
+          const blot = Quill.find(footnoteSpan) as any;
+          if (blot && blot.length) {
+            // Get the index and length of the blot
+            const index = quill.getIndex(blot);
+            const length = blot.length();
 
-          setTimeout(() => {
-            quill.formatText(index, length, "background", "transparent", "api");
-          }, 2000);
-        }
-        // Add a temporary highlight effect
+            // Remove the footnote formatting
+            quill.formatText(
+              index,
+              length,
+              "background",
+              "rgba(59, 130, 246, 0.2)",
+              "api"
+            );
+
+            setTimeout(() => {
+              quill.formatText(
+                index,
+                length,
+                "background",
+                "transparent",
+                "api"
+              );
+            }, 2000);
+          }
+          // Add a temporary highlight effect
+        });
       }
     }
 
