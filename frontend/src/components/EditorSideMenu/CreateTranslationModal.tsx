@@ -12,7 +12,6 @@ import { useMutation, QueryObserverResult } from "@tanstack/react-query";
 import { generateTranslation } from "@/api/document";
 import SelectLanguage from "../Dashboard/DocumentCreateModal/SelectLanguage";
 import TextUploader from "../Dashboard/DocumentCreateModal/TextUploader";
-
 import { useParams } from "react-router-dom";
 import SegmentationOptions from "./SegmentationOptions";
 import { models, token_limit } from "@/config";
@@ -22,6 +21,8 @@ import {
   UploadMethodTabs,
   TabContentWrapper,
   ErrorDisplay,
+  TextPreview,
+  FormSection,
   type UploadMethod,
 } from "@/components/shared/modals";
 
@@ -39,6 +40,9 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
   const [language, setLanguage] = useState("");
   const [uploadMethod, setUploadMethod] = useState<UploadMethod>("file");
   const [translationId, setTranslationId] = useState<string | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [fileContent, setFileContent] = useState<string>("");
+  const [showPreview, setShowPreview] = useState(false);
   const { t } = useTranslate();
 
   useEffect(() => {
@@ -47,60 +51,107 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
     }
   }, [translationId, onClose]);
 
+  const handleFileLoaded = (file: File, content: string) => {
+    setUploadedFile(file);
+    setFileContent(content);
+    setShowPreview(true);
+  };
+
+  const handleBackToUpload = () => {
+    setShowPreview(false);
+    setUploadedFile(null);
+    setFileContent("");
+  };
+
+  const handlePreviewSuccess = (newTranslationId: string) => {
+    setTranslationId(newTranslationId);
+  };
+
   return (
     <BaseModal
       open={true}
       onOpenChange={(open) => !open && onClose()}
       title={t("translation.createTranslation")}
       variant="fixed"
-      size="md"
+      size="lg"
     >
       <div className="space-y-6">
-        <SelectLanguage
-          selectedLanguage={language}
-          setSelectedLanguage={setLanguage}
-        />
-
-        {language && (
-          <UploadMethodTabs
-            activeMethod={uploadMethod}
-            onMethodChange={setUploadMethod}
-            availableMethods={["file", "ai", "openpecha"]}
-          >
-            <TabContentWrapper value="file">
-              <TextUploader
-                isRoot={false}
-                isPublic={false}
+        {!showPreview ? (
+          <>
+            <FormSection
+              title="Language Selection"
+              description="Choose the target language for your translation"
+            >
+              <SelectLanguage
                 selectedLanguage={language}
-                setRootId={setTranslationId}
-                rootId={rootId}
-                refetchTranslations={refetchTranslations}
+                setSelectedLanguage={setLanguage}
               />
-            </TabContentWrapper>
+            </FormSection>
 
-            <TabContentWrapper value="ai">
-              <AITranslation
-                language={language}
-                onClose={onClose}
-                refetchTranslations={refetchTranslations}
-              />
-            </TabContentWrapper>
+            {language && (
+              <FormSection
+                title="Upload Method"
+                description="Choose how you want to create your translation"
+              >
+                <UploadMethodTabs
+                  activeMethod={uploadMethod}
+                  onMethodChange={setUploadMethod}
+                  availableMethods={["file", "ai", "openpecha"]}
+                >
+                  <TabContentWrapper value="file">
+                    <TextUploader
+                      isRoot={false}
+                      isPublic={false}
+                      selectedLanguage={language}
+                      setRootId={setTranslationId}
+                      rootId={rootId}
+                      refetchTranslations={refetchTranslations}
+                      previewMode={true}
+                      onFileLoaded={handleFileLoaded}
+                    />
+                  </TabContentWrapper>
 
-            <TabContentWrapper value="openpecha">
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
-                  <span className="text-2xl">🚧</span>
-                </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Coming Soon
-                </h3>
-                <p className="text-gray-600 max-w-sm">
-                  OpenPecha integration is currently in development. Please use
-                  file upload or AI generation for now.
-                </p>
-              </div>
-            </TabContentWrapper>
-          </UploadMethodTabs>
+                  <TabContentWrapper value="ai">
+                    <AITranslation
+                      language={language}
+                      onClose={onClose}
+                      refetchTranslations={refetchTranslations}
+                    />
+                  </TabContentWrapper>
+
+                  <TabContentWrapper value="openpecha">
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
+                        <span className="text-2xl">🚧</span>
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">
+                        Coming Soon
+                      </h3>
+                      <p className="text-gray-600 max-w-sm">
+                        OpenPecha integration is currently in development.
+                        Please use file upload or AI generation for now.
+                      </p>
+                    </div>
+                  </TabContentWrapper>
+                </UploadMethodTabs>
+              </FormSection>
+            )}
+          </>
+        ) : (
+          <FormSection
+            title="Translation Preview"
+            description="Review your uploaded content before creating the translation"
+          >
+            <TextPreview
+              file={uploadedFile!}
+              fileContent={fileContent}
+              language={language}
+              rootId={rootId}
+              onCancel={handleBackToUpload}
+              onSuccess={handlePreviewSuccess}
+              refetchTranslations={refetchTranslations}
+            />
+          </FormSection>
         )}
       </div>
     </BaseModal>

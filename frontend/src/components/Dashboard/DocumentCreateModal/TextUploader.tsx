@@ -13,6 +13,8 @@ const TextUploader = ({
   disable,
   rootId,
   refetchTranslations,
+  previewMode = false,
+  onFileLoaded,
 }: {
   isRoot: boolean;
   isPublic: boolean;
@@ -20,7 +22,9 @@ const TextUploader = ({
   setRootId: (id: string) => void;
   disable?: boolean;
   rootId?: string;
-  refetchTranslations?: () => Promise<QueryObserverResult<any, Error>>;
+  refetchTranslations?: () => Promise<QueryObserverResult<unknown, Error>>;
+  previewMode?: boolean;
+  onFileLoaded?: (file: File, content: string) => void;
 }) => {
   const [file, setFile] = useState<File | null>(null);
   const [fileContent, setFileContent] = useState<string>("");
@@ -59,28 +63,37 @@ const TextUploader = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Clear any previous file size errors
     setFileSizeError("");
-    
+
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
-      
+
       // Validate file size
       if (selectedFile.size > MAX_FILE_SIZE) {
         const fileSizeMB = (selectedFile.size / (1024 * 1024)).toFixed(2);
-        setFileSizeError(`File size (${fileSizeMB}MB) exceeds the maximum limit of ${MAX_FILE_SIZE_MB}MB. Please select a smaller file.`);
+        setFileSizeError(
+          `File size (${fileSizeMB}MB) exceeds the maximum limit of ${MAX_FILE_SIZE_MB}MB. Please select a smaller file.`
+        );
         // Reset the file input to allow user to select a different file
         e.target.value = "";
         return;
       }
-      
+
       setFile(selectedFile);
 
       const reader = new FileReader();
       reader.onload = (event) => {
-        setFileContent(event.target?.result as string);
+        const content = event.target?.result as string;
+        setFileContent(content);
+
+        // In preview mode, call the callback instead of uploading
+        if (previewMode && onFileLoaded) {
+          onFileLoaded(selectedFile, content);
+        } else {
+          // Original behavior - upload immediately
+          uploadMutation.mutate(selectedFile);
+        }
       };
       reader.readAsText(selectedFile);
-
-      uploadMutation.mutate(selectedFile);
     }
   };
 
@@ -94,19 +107,22 @@ const TextUploader = ({
   };
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
-  
+
   return (
-    <div className="mb-2">
+    <div className="space-y-4">
       {!file && (
-        <div className="flex flex-col gap-2">
+        <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <label htmlFor="text-file" className="text-sm font-medium">
+            <label
+              htmlFor="text-file"
+              className="text-sm font-medium text-gray-700"
+            >
               Upload {isRoot ? "Root" : "Translation"} Text (.txt)
             </label>
             <div className="flex items-center gap-1 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
@@ -123,7 +139,7 @@ const TextUploader = ({
               disabled={
                 disable || uploadMutation.isPending || uploadMutation.isSuccess
               }
-              className="cursor-pointer"
+              className="cursor-pointer border-gray-300 focus:border-blue-500 focus:ring-blue-500"
             />
             <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
               <Upload className="h-4 w-4 text-gray-400" />
@@ -131,12 +147,13 @@ const TextUploader = ({
           </div>
         </div>
       )}
-      {file && (
-        <div className="text-sm py-2">
-          <div className="flex justify-between items-center">
+
+      {file && !previewMode && (
+        <div className="space-y-3">
+          <div className="flex justify-between items-center p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex items-center gap-2">
               <FileText className="h-4 w-4 text-blue-500" />
-              <span>
+              <span className="text-sm">
                 Selected file: <span className="font-medium">{file.name}</span>
               </span>
               <span className="text-xs text-gray-500">
@@ -146,15 +163,16 @@ const TextUploader = ({
             <button
               type="button"
               onClick={handleReset}
-              className="text-red-600 text-xs underline ml-4 hover:text-red-800"
+              className="text-red-600 text-xs underline hover:text-red-800 transition-colors"
             >
               Remove File
             </button>
           </div>
+
           {uploadMutation.isPending && (
-            <span className="ml-2 text-amber-600 flex items-center">
+            <div className="flex items-center gap-2 text-amber-600 text-sm">
               <svg
-                className="animate-spin -ml-1 mr-2 h-4 w-4 text-amber-600"
+                className="animate-spin h-4 w-4"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -174,16 +192,33 @@ const TextUploader = ({
                 ></path>
               </svg>
               Uploading...
-            </span>
+            </div>
           )}
+
           {uploadMutation.isSuccess && (
-            <div>
-              <span className="ml-2 text-green-600">✓ Uploaded</span>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-green-600 text-sm">
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+                Uploaded successfully
+              </div>
               <textarea
-                className="mt-2 w-full border rounded-md p-2 text-md font-monlam leading-normal "
+                className="w-full border border-gray-300 rounded-lg p-3 text-sm font-monlam leading-relaxed bg-gray-50"
                 rows={10}
                 readOnly
                 value={fileContent}
+                placeholder="File content will appear here..."
               />
             </div>
           )}
@@ -192,16 +227,14 @@ const TextUploader = ({
 
       {/* File size validation error */}
       {fileSizeError && (
-        <div className="mt-2 p-4 rounded-lg bg-red-50 border border-red-200">
+        <div className="p-4 rounded-lg bg-red-50 border border-red-200">
           <div className="flex items-start gap-3">
             <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
             <div className="flex-1">
               <h4 className="text-sm font-medium text-red-800 mb-1">
                 File Size Exceeded
               </h4>
-              <p className="text-sm text-red-700">
-                {fileSizeError}
-              </p>
+              <p className="text-sm text-red-700">{fileSizeError}</p>
             </div>
           </div>
         </div>
@@ -216,9 +249,7 @@ const TextUploader = ({
               <h4 className="text-sm font-medium text-red-800 mb-1">
                 Upload Failed
               </h4>
-              <p className="text-sm text-red-700">
-                {errorMessage}
-              </p>
+              <p className="text-sm text-red-700">{errorMessage}</p>
             </div>
           </div>
         </div>

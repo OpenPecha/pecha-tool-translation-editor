@@ -7,3 +7,4 @@ export {
   type UploadMethod,
 } from "./UploadMethodTabs";
 export { FormSection } from "./FormSection";
+export { TextPreview } from "./TextPreview";
