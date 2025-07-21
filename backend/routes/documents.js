@@ -22,7 +22,6 @@ const router = express.Router();
  */
 async function checkDocumentPermission(document, userId) {
   // If the document doesn't exist, no permission
-  console.log("document :: ", document)
   if (!document) return false;
   // If the document's project is public, everyone has read access
   if (document.rootsProject && document.rootsProject.isPublic) return true;
