@@ -1,4 +1,6 @@
 export const LARGEDOCUMENT_SIZE = 900000; //sync with backend utils.js largeContentCharacterLength
+export const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB in bytes
+export const MAX_FILE_SIZE_MB = 2; // 2MB for display purposes
 
 type LanguageType = {
   code: string;
