@@ -3,10 +3,11 @@ import { fetchPechaBase } from "@/api/pecha";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { DocumentCreateModalFooter, SelectedPechaType } from "./Forms";
+import { useEffect } from "react";
+import { SelectedPechaType } from "./Forms";
+import { ModalFooter } from "@/components/shared/modals";
 
 function PechaView({
   isRoot,
@@ -19,8 +20,6 @@ function PechaView({
   readonly closeModal: () => void;
   readonly handleCreateProject: (rootId: string) => void;
 }) {
-  const [showSuccess, setShowSuccess] = useState(false);
-
   const {
     data: pecha,
     refetch,
@@ -60,8 +59,7 @@ function PechaView({
       console.error("Upload error:", error);
     },
     onSuccess: () => {
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 3000); // Hide success message after 3 seconds
+      // Project creation handled by parent component
     },
   });
 
@@ -127,10 +125,14 @@ function PechaView({
             className="font-monlam resize-none"
             placeholder="Pecha content will appear here..."
           />{" "}
-          <DocumentCreateModalFooter
-            createDoc={handleConfirm}
-            closeModal={closeModal}
-            disable={!selectedPecha?.language || selectedPecha.language === ""}
+          <ModalFooter
+            onConfirm={handleConfirm}
+            onCancel={closeModal}
+            confirmDisabled={
+              !selectedPecha?.language || selectedPecha.language === ""
+            }
+            confirmLoading={uploadMutation.isPending}
+            confirmText="Create Project"
           />
         </div>
       ) : (

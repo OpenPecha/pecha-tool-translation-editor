@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -12,20 +11,24 @@ import {
 import { useMutation, QueryObserverResult } from "@tanstack/react-query";
 import { generateTranslation } from "@/api/document";
 import SelectLanguage from "../Dashboard/DocumentCreateModal/SelectLanguage";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TextUploader from "../Dashboard/DocumentCreateModal/TextUploader";
-import SelectPechas, {
-  PechaType,
-} from "../Dashboard/DocumentCreateModal/SelectPechas";
+
 import { useParams } from "react-router-dom";
 import SegmentationOptions from "./SegmentationOptions";
 import { models, token_limit } from "@/config";
 import { useTranslate } from "@tolgee/react";
+import {
+  BaseModal,
+  UploadMethodTabs,
+  TabContentWrapper,
+  ErrorDisplay,
+  type UploadMethod,
+} from "@/components/shared/modals";
 
 interface CreateTranslationModalProps {
   rootId: string;
   onClose: () => void;
-  refetchTranslations: () => Promise<QueryObserverResult<any, Error>>;
+  refetchTranslations: () => Promise<QueryObserverResult<unknown, Error>>;
 }
 
 const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
@@ -34,93 +37,73 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
   refetchTranslations,
 }) => {
   const [language, setLanguage] = useState("");
-  const [uploadMethod, setUploadMethod] = useState<"file" | "openpecha" | "ai">(
-    "file"
-  );
-  const [selectedRootPecha, setSelectedRootPecha] = useState<string | null>(
-    null
-  );
+  const [uploadMethod, setUploadMethod] = useState<UploadMethod>("file");
   const [translationId, setTranslationId] = useState<string | null>(null);
   const { t } = useTranslate();
+
   useEffect(() => {
     if (translationId) {
       onClose();
     }
   }, [translationId, onClose]);
-  const selectedTabClass = (tab: "file" | "openpecha" | "ai") =>
-    uploadMethod === tab
-      ? " cursor-pointer"
-      : "cursor-pointer text-sm font-medium text-gray-700";
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold">
-            {t("translation.createTranslation")}
-          </h2>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
+    <BaseModal
+      open={true}
+      onOpenChange={(open) => !open && onClose()}
+      title={t("translation.createTranslation")}
+      variant="fixed"
+      size="md"
+    >
+      <div className="space-y-6">
+        <SelectLanguage
+          selectedLanguage={language}
+          setSelectedLanguage={setLanguage}
+        />
 
-        <div className="space-y-4 p-4">
-          <SelectLanguage
-            selectedLanguage={language}
-            setSelectedLanguage={setLanguage}
-          />
+        {language && (
+          <UploadMethodTabs
+            activeMethod={uploadMethod}
+            onMethodChange={setUploadMethod}
+            availableMethods={["file", "ai", "openpecha"]}
+          >
+            <TabContentWrapper value="file">
+              <TextUploader
+                isRoot={false}
+                isPublic={false}
+                selectedLanguage={language}
+                setRootId={setTranslationId}
+                rootId={rootId}
+                refetchTranslations={refetchTranslations}
+              />
+            </TabContentWrapper>
 
-          {language && (
-            <Tabs
-              value={uploadMethod}
-              onValueChange={(v) =>
-                setUploadMethod(v as "file" | "openpecha" | "ai")
-              }
-            >
-              <TabsList className="w-full">
-                <TabsTrigger value="file" className={selectedTabClass("file")}>
-                  File
-                </TabsTrigger>
-                <TabsTrigger value="ai" className={selectedTabClass("ai")}>
-                  AI Generate
-                </TabsTrigger>
-                <TabsTrigger
-                  value="openpecha"
-                  disabled={true}
-                  className={selectedTabClass("openpecha")}
-                >
-                  OpenPecha
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="file" className="pt-2">
-                <TextUploader
-                  isRoot={false}
-                  isPublic={false}
-                  selectedLanguage={language}
-                  setRootId={setTranslationId}
-                  rootId={rootId}
-                  refetchTranslations={refetchTranslations}
-                />
-              </TabsContent>
+            <TabContentWrapper value="ai">
+              <AITranslation
+                language={language}
+                onClose={onClose}
+                refetchTranslations={refetchTranslations}
+              />
+            </TabContentWrapper>
 
-              <TabsContent value="openpecha" className="pt-2">
-                <SelectPechas
-                  selectedPecha={selectedRootPecha}
-                  setSelectedPecha={setSelectedRootPecha}
-                />
-              </TabsContent>
-
-              <TabsContent value="ai" className="pt-2">
-                <AITranslation
-                  language={language}
-                  onClose={onClose}
-                  refetchTranslations={refetchTranslations}
-                />
-              </TabsContent>
-            </Tabs>
-          )}
-        </div>
+            <TabContentWrapper value="openpecha">
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
+                  <span className="text-2xl">🚧</span>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Coming Soon
+                </h3>
+                <p className="text-gray-600 max-w-sm">
+                  OpenPecha integration is currently in development. Please use
+                  file upload or AI generation for now.
+                </p>
+              </div>
+            </TabContentWrapper>
+          </UploadMethodTabs>
+        )}
       </div>
-    </div>
+    </BaseModal>
   );
 };
 
@@ -131,22 +114,21 @@ const AITranslation = ({
 }: {
   language: string;
   onClose: () => void;
-  refetchTranslations: () => Promise<QueryObserverResult<any, Error>>;
+  refetchTranslations: () => Promise<QueryObserverResult<unknown, Error>>;
 }) => {
-  // AI generation related states
   const { id } = useParams();
   const [selectedCredential, setSelectedCredential] = useState<string>(
     models.default
   );
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string>("");
   const [segmentationMethod, setSegmentationMethod] = useState<
     "newline" | "botok"
   >("newline");
+
   const generateTranslationMutation = useMutation({
     mutationFn: generateTranslation,
-    onSuccess: (data) => {
-      // Refresh the document list to show the new translation with progress bar
+    onSuccess: () => {
       setIsGenerating(false);
       refetchTranslations();
       onClose();
@@ -158,11 +140,10 @@ const AITranslation = ({
     },
   });
 
-  // Handle the translation generation
   const handleSendAItranslation = () => {
+    setError(""); // Clear any previous errors
     setIsGenerating(true);
 
-    // Call the mutation with the required parameters
     generateTranslationMutation.mutate({
       rootId: id!,
       language,
@@ -172,19 +153,25 @@ const AITranslation = ({
   };
 
   return (
-    <div className="space-y-4">
-      {/* No credentials warning */}
+    <div className="space-y-6">
+      <ErrorDisplay error={error} />
 
       {/* Provider and model selection */}
-      <div className="space-y-2  gap-2 w-full">
-        <Label htmlFor="credential-select text-sm font-medium text-gray-700">
+      <div className="space-y-3">
+        <Label
+          htmlFor="credential-select"
+          className="text-sm font-medium text-gray-700"
+        >
           Select API Credential
         </Label>
         <Select
           value={selectedCredential}
           onValueChange={setSelectedCredential}
         >
-          <SelectTrigger id="credential-select" className="w-full">
+          <SelectTrigger
+            id="credential-select"
+            className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+          >
             <SelectValue placeholder="Select API credential" />
           </SelectTrigger>
           <SelectContent className="z-[10000]">
@@ -194,37 +181,47 @@ const AITranslation = ({
                 value={model.value}
                 disabled={model.disabled}
               >
-                <>
-                  {model.name}{" "}
+                <div className="flex items-center">
+                  {model.name}
                   {model.disabled && (
-                    <span className="text-red-500">(Coming Soon)</span>
+                    <span className="ml-2 text-xs text-orange-500 bg-orange-100 px-2 py-0.5 rounded-full">
+                      Coming Soon
+                    </span>
                   )}
-                </>
+                </div>
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 flex items-center gap-2">
+          <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
           {token_limit} tokens are allowed. Contact us for more tokens.
         </p>
       </div>
-      {/* mention only 30000 tokens are allowed */}
 
-      {/* Segmentation toggle */}
+      {/* Segmentation options */}
       <SegmentationOptions
         selectedMethod={segmentationMethod}
         onMethodChange={setSegmentationMethod}
       />
 
-      {error && <p className="text-red-500">{error}</p>}
       {/* Generate button */}
-      <Button
-        className="float-right"
-        disabled={isGenerating || !selectedCredential}
-        onClick={handleSendAItranslation}
-      >
-        {isGenerating ? "Generating..." : "Generate Translation"}
-      </Button>
+      <div className="flex justify-end pt-4">
+        <Button
+          onClick={handleSendAItranslation}
+          disabled={isGenerating || !selectedCredential}
+          className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+        >
+          {isGenerating ? (
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Generating...
+            </div>
+          ) : (
+            "Generate Translation"
+          )}
+        </Button>
+      </div>
     </div>
   );
 };
