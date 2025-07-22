@@ -19,6 +19,7 @@ import emitter from "@/services/eventBus";
 import { useUmamiTracking } from "@/hooks/use-umami-tracking";
 import { getUserContext } from "@/hooks/use-umami-tracking";
 import { useAuth } from "@/auth/use-auth-hook";
+import SkeletonLoader from "./SkeletonLoader";
 quill_import();
 
 const Editor = ({
@@ -37,7 +38,7 @@ const Editor = ({
     "counter-container" + "-" + Math.random().toString(36).slice(2, 6);
   const [currentRange, setCurrentRange] = useState<Range | null>(null);
   const [showCommentModal, setShowCommentModal] = useState(false);
-  const { registerQuill } = useQuillVersion();
+  const { registerQuill, transitionPhase } = useQuillVersion();
   const {
     registerQuill: registerQuill2,
     unregisterQuill: unregisterQuill2,
@@ -266,16 +267,28 @@ const Editor = ({
             editorRef={editorRef}
             documentId={documentId}
           />
-          <div className="flex flex-col overflow-y-auto flex-1">
+          <div className="flex flex-col overflow-y-auto flex-1 relative">
             <div
               ref={editorRef}
-              className={`editor-content flex-1 pb-1 w-full overflow-hidden`}
+              className={`editor-content flex-1 pb-1 w-full overflow-hidden transition-opacity duration-200 ${
+                transitionPhase === 'fade-out' ? 'opacity-50' : 
+                transitionPhase === 'skeleton' ? 'opacity-0' :
+                transitionPhase === 'fade-in' ? 'opacity-100' : 'opacity-100'
+              }`}
               style={{
                 fontFamily: "Monlam",
                 fontSize: "1rem",
                 lineHeight: 1.5,
               }}
             />
+            
+            {/* Skeleton Overlay */}
+            {transitionPhase === 'skeleton' && (
+              <div className="absolute inset-0 bg-white z-10 p-4 overflow-y-auto">
+                <SkeletonLoader className="version-skeleton-loader" />
+              </div>
+            )}
+            
             <FootnoteView documentId={documentId} isEditable={isEditable} />
           </div>
           {createPortal(

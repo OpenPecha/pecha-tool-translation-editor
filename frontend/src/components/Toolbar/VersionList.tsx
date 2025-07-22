@@ -1,7 +1,10 @@
 import { useQuillVersion } from "@/contexts/VersionContext";
 import { MdDelete } from "react-icons/md";
 import { SiTicktick } from "react-icons/si";
+import { FaSpinner } from "react-icons/fa";
 import formatTimeAgo from "@/lib/formatTimeAgo";
+
+// Use the Version type from context
 
 interface DeltaOperation {
   insert: string;
@@ -15,13 +18,6 @@ interface DeltaOperation {
 
 interface DeltaContent {
   ops: DeltaOperation[];
-}
-
-interface Version {
-  id: string;
-  label: string;
-  timestamp: string;
-  content: DeltaContent;
 }
 
 function VersionList({ handleViewAll }: { handleViewAll: () => void }) {
@@ -43,7 +39,7 @@ function VersionList({ handleViewAll }: { handleViewAll: () => void }) {
           <p className="text-gray-500">No saved versions yet</p>
         ) : (
           <div className="max-h-60 overflow-y-auto border">
-            {versions.map((version: Version) => (
+            {versions.map((version: any) => (
               <EachVersion key={version.id} version={version} />
             ))}
           </div>
@@ -55,14 +51,24 @@ function VersionList({ handleViewAll }: { handleViewAll: () => void }) {
   );
 }
 
-function EachVersion({ version }: { version: Version }) {
-  const { currentVersionId, loadVersion, deleteVersion } = useQuillVersion();
+function EachVersion({ version }: { version: any }) {
+  const { 
+    currentVersionId, 
+    loadVersion, 
+    deleteVersion, 
+    isLoadingVersion, 
+    loadingVersionId 
+  } = useQuillVersion();
+
+  const isLoading = isLoadingVersion && loadingVersionId === version.id;
+  const isDisabled = isLoadingVersion;
 
   const handleVersionSelect = () => {
     if (version.id === currentVersionId) {
       alert("You need to save the current version first");
       return;
     }
+    if (isDisabled) return;
     loadVersion(version.id);
   };
   return (
@@ -77,10 +83,19 @@ function EachVersion({ version }: { version: Version }) {
         <div className="flex gap-2">
           <button
             onClick={handleVersionSelect}
-            title="Load version"
-            className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm"
+            title={isLoading ? "Loading..." : "Load version"}
+            disabled={isDisabled}
+            className={`px-2 py-1 rounded text-sm transition-colors ${
+              isDisabled
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : "bg-gray-200 hover:bg-gray-300"
+            }`}
           >
-            <SiTicktick />
+            {isLoading ? (
+              <FaSpinner className="animate-spin" />
+            ) : (
+              <SiTicktick />
+            )}
           </button>
           <button
             onClick={() => {
@@ -91,17 +106,22 @@ function EachVersion({ version }: { version: Version }) {
               }
             }}
             title="Delete version"
-            className="px-2 py-1 bg-red-100 rounded hover:bg-red-200 text-sm"
+            disabled={isDisabled}
+            className={`px-2 py-1 rounded text-sm transition-colors ${
+              isDisabled
+                ? "bg-red-50 text-red-300 cursor-not-allowed"
+                : "bg-red-100 hover:bg-red-200"
+            }`}
           >
             <MdDelete />
           </button>
         </div>
       </div>
 
-      <div className="text-xs text-gray-500">
-        {version?.user?.username} {"  "}
-        {formatTimeAgo(version.timestamp)}
-      </div>
+              <div className="text-xs text-gray-500">
+          {version?.user?.username || version?.user?.name || "System"} {"  "}
+          {formatTimeAgo(version.timestamp)}
+        </div>
     </div>
   );
 }
