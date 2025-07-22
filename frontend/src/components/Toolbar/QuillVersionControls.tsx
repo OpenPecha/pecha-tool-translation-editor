@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useQuillVersion } from "../../contexts/VersionContext";
 import { Button } from "../ui/button";
 import VersionList from "./VersionList";
@@ -14,12 +14,22 @@ const VersionControls = ({
     useQuillVersion();
 
   const [snapshotName, setSnapshotName] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleCreateSnapshot = (e) => {
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
+
+  const handleCreateSnapshot = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (snapshotName.trim()) {
       createNamedSnapshot(snapshotName);
       setSnapshotName("");
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
     }
   };
   const handleViewAll = () => {
@@ -31,6 +41,7 @@ const VersionControls = ({
       <div className="mb-4">
         <form onSubmit={handleCreateSnapshot} className="flex gap-2">
           <input
+            ref={inputRef}
             type="text"
             value={snapshotName}
             onChange={(e) => setSnapshotName(e.target.value)}
