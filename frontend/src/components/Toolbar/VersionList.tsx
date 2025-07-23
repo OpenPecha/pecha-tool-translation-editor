@@ -4,6 +4,7 @@ import { SiTicktick } from "react-icons/si";
 import { FaSpinner } from "react-icons/fa";
 import formatTimeAgo from "@/lib/formatTimeAgo";
 
+
 // Use the Version type from context
 
 interface DeltaOperation {
@@ -19,7 +20,6 @@ interface DeltaOperation {
 interface DeltaContent {
   ops: DeltaOperation[];
 }
-
 function VersionList({ handleViewAll }: { handleViewAll: () => void }) {
   const { versions } = useQuillVersion();
 
@@ -59,18 +59,20 @@ function EachVersion({ version }: { version: any }) {
     isLoadingVersion, 
     loadingVersionId 
   } = useQuillVersion();
-
+  
   const isLoading = isLoadingVersion && loadingVersionId === version.id;
   const isDisabled = isLoadingVersion;
+  const isCurrentVersion = version.id === currentVersionId;
 
   const handleVersionSelect = () => {
-    if (version.id === currentVersionId) {
-      alert("You need to save the current version first");
+    if (isCurrentVersion) {
+      alert("This version is already active");
       return;
     }
     if (isDisabled) return;
     loadVersion(version.id);
   };
+  
   return (
     <div
       key={version.id}
@@ -79,29 +81,33 @@ function EachVersion({ version }: { version: any }) {
       }`}
     >
       <div className="flex justify-between">
-        <div className="font-sm">{version.label}</div>
+        <div className={`font-sm flex items-center gap-2 ${
+          isCurrentVersion ? "font-semibold text-blue-600" : ""
+        }`}>
+          {version.label}
+        </div>
         <div className="flex gap-2">
           <button
             onClick={handleVersionSelect}
-            title={isLoading ? "Loading..." : "Load version"}
-            disabled={isDisabled}
+            title={isLoading ? "Loading..." : isCurrentVersion ? "Currently active" : "Load version"}
+            disabled={isDisabled || isCurrentVersion}
             className={`px-2 py-1 rounded text-sm transition-colors ${
-              isDisabled
+              isDisabled || isCurrentVersion
                 ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                 : "bg-gray-200 hover:bg-gray-300"
             }`}
           >
             {isLoading ? (
               <FaSpinner className="animate-spin" />
+            ) : isCurrentVersion ? (
+              <span className="text-blue-500">●</span>
             ) : (
               <SiTicktick />
             )}
           </button>
           <button
             onClick={() => {
-              if (
-                window.confirm("Are you sure you want to delete this version?")
-              ) {
+              if (window.confirm("Are you sure you want to delete this version?")) {
                 deleteVersion(version.id);
               }
             }}
@@ -118,10 +124,10 @@ function EachVersion({ version }: { version: any }) {
         </div>
       </div>
 
-              <div className="text-xs text-gray-500">
-          {version?.user?.username || version?.user?.name || "System"} {"  "}
-          {formatTimeAgo(version.timestamp)}
-        </div>
+      <div className={`text-xs ${isCurrentVersion ? "text-blue-600" : "text-gray-500"}`}>
+        {version?.user?.username || version?.user?.name || "System"} {"  "}
+        {formatTimeAgo(version.timestamp)}
+      </div>
     </div>
   );
 }

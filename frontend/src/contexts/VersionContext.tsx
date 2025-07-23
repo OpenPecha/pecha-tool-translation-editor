@@ -125,13 +125,21 @@ export const QuillVersionProvider = ({
   // Delete version mutation
   const deleteVersionMutation = useMutation({
     mutationFn: (versionId: string) => deleteVersionAPI(versionId),
-    onSuccess: (_, versionId) => {
-      queryClient.setQueryData(["versions", docId], (oldData: Version[] = []) =>
-        oldData.filter((v) => v.id !== versionId)
-      );
-
-      if (versionId === currentVersionId && versions.length > 1) {
-        setCurrentVersionId(versions[versions.length - 2].id);
+    onSuccess: async (_, versionId) => {
+      // Filter out the deleted version
+      const updatedVersions = versions.filter((v) => v.id !== versionId);
+      // Update cache with filtered data
+      queryClient.setQueryData([`versions-${docId}`], () => updatedVersions);
+      // If deleted version was current and there are still versions left
+      if (versionId === currentVersionId && updatedVersions.length > 0) {
+        // Set current to the last remaining version (most recent)
+        const newCurrentVersion = updatedVersions[updatedVersions.length - 1];
+        setCurrentVersionId(newCurrentVersion.id);
+        const version = await fetchVersion(newCurrentVersion.id);
+        // Update editor content
+        if (newCurrentVersion && quillInstance) {
+          quillInstance.setContents(version.content);
+        }
       }
     },
   });
@@ -145,14 +153,9 @@ export const QuillVersionProvider = ({
   const registerQuill = useCallback(
     (quill: Quill) => {
       setQuillInstance(quill);
-
-      if (quill && versions.length > 0) {
-        const latestVersion = versions[versions.length - 1];
-        quill.setContents(latestVersion.content);
-        setCurrentVersionId(latestVersion.id);
-      }
+      
     },
-    [versions]
+    [] 
   );
 
   // Auto-save functionality
