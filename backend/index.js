@@ -68,10 +68,12 @@ const expressJSDocSwagger = require("express-jsdoc-swagger");
 const app = express();
 // const SECRET_KEY = process.env.SECRET_KEY || "super-secret-key";
 
-// const ALLOWED_URLS = process.env.ALLOWED_URLS ? process.env.ALLOWED_URLS.split(",") : ["http://localhost:3000"];
+const ALLOWED_URLS = process.env.ALLOWED_URLS
+  ? process.env.ALLOWED_URLS.split(",")
+  : ["http://localhost:3000"];
 app.use(
   cors({
-    origin: true, // reflects the request origin
+    origin: ALLOWED_URLS, // reflects the request origin
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
