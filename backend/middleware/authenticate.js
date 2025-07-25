@@ -58,8 +58,6 @@ const authenticate = [
   async (req, res, next) => {
     try {
       // Debug logging
-      console.log("req.auth:", req.auth);
-      console.log("req.auth?.payload:", req.auth?.payload);
 
       // Get the user info from the validated token
       const id = req?.auth?.payload?.sub;

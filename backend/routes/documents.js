@@ -1,5 +1,8 @@
 const express = require("express");
-const { authenticate, optionalAuthenticate } = require("../middleware/authenticate");
+const {
+  authenticate,
+  optionalAuthenticate,
+} = require("../middleware/authenticate");
 const { PrismaClient } = require("@prisma/client");
 const multer = require("multer");
 const { WSSharedDoc } = require("../services");
@@ -17,7 +20,7 @@ const router = express.Router();
 /**
  * Check if a user has permission to access a document
  * @param {Object} document - The document object with rootsProject information
- * @param {string} userId - The ID of the user to check permissions for 
+ * @param {string} userId - The ID of the user to check permissions for
  * @returns {boolean} - Whether the user has permission to access the document
  */
 async function checkDocumentPermission(document, userId) {
@@ -74,7 +77,12 @@ async function checkDocumentWritePermission(document, userId) {
   if (!document) return false;
 
   // If the document's project is public and allows editing, anyone with a user ID can write
-  if (userId && document.rootsProject && document.rootsProject.isPublic && document.rootsProject.publicAccess === 'editor') {
+  if (
+    userId &&
+    document.rootsProject &&
+    document.rootsProject.isPublic &&
+    document.rootsProject.publicAccess === "editor"
+  ) {
     return true;
   }
 
@@ -172,8 +180,11 @@ router.get("/public/:id", optionalAuthenticate, async (req, res) => {
     }
 
     // Determine access level from project settings
-    const publicAccess = document.rootsProject?.publicAccess || 'viewer';
-    const isReadOnly = publicAccess === 'viewer' || (!req.user || !(await checkDocumentWritePermission(document, req.user.id)));
+    const publicAccess = document.rootsProject?.publicAccess || "viewer";
+    const isReadOnly =
+      publicAccess === "viewer" ||
+      !req.user ||
+      !(await checkDocumentWritePermission(document, req.user.id));
 
     // Return document with read-only flag for public access
     const responseDocument = {
@@ -212,13 +223,17 @@ router.post("/", authenticate, upload.single("file"), async (req, res) => {
 
     // Validate required fields
     if (!identifier) {
-      return res.status(400).json({ error: "Missing identifier in request body" });
+      return res
+        .status(400)
+        .json({ error: "Missing identifier in request body" });
     }
     if (!name) {
       return res.status(400).json({ error: "Missing name in request body" });
     }
     if (!language) {
-      return res.status(400).json({ error: "Missing language in request body" });
+      return res
+        .status(400)
+        .json({ error: "Missing language in request body" });
     }
 
     const doc = new WSSharedDoc(identifier, req.user.id);
@@ -299,13 +314,17 @@ router.post("/content", authenticate, async (req, res) => {
 
     // Validate required fields
     if (!identifier) {
-      return res.status(400).json({ error: "Missing identifier in request body" });
+      return res
+        .status(400)
+        .json({ error: "Missing identifier in request body" });
     }
     if (!name) {
       return res.status(400).json({ error: "Missing name in request body" });
     }
     if (!language) {
-      return res.status(400).json({ error: "Missing language in request body" });
+      return res
+        .status(400)
+        .json({ error: "Missing language in request body" });
     }
 
     const doc = new WSSharedDoc(identifier, req.user.id);
@@ -393,7 +412,7 @@ router.get("/", authenticate, async (req, res) => {
       whereCondition = {
         AND: [
           { ownerId: { not: req.user.id } },
-          { rootsProject: { isPublic: true } }
+          { rootsProject: { isPublic: true } },
         ],
       };
     } else {
@@ -682,7 +701,6 @@ router.get("/:id/translations", optionalAuthenticate, async (req, res) => {
   }
 });
 
-
 /**
  * DELETE /documents/{id}
  * @summary Delete a document
@@ -853,8 +871,7 @@ router.post("/:id/permissions", authenticate, async (req, res) => {
 // Update document's root relationship and root status
 router.patch("/:id", authenticate, async (req, res) => {
   try {
-    const { rootId, isRoot, translations, identifier, name } =
-      req.body;
+    const { rootId, isRoot, translations, identifier, name } = req.body;
     const documentId = req.params.id;
 
     // Check if the document exists

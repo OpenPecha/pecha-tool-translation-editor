@@ -1,7 +1,5 @@
 const translation_endpoint = process.env.TRANSLATION_WORKER_ENDPOINT;
 
-console.log(`Translation worker endpoint: ${translation_endpoint}`);
-
 // Check if the endpoint is properly configured
 if (!translation_endpoint || translation_endpoint.trim() === "") {
   console.error("Translation worker endpoint is not configured in .env file");
@@ -60,8 +58,6 @@ async function sendTranslationRequest(data) {
       body: JSON.stringify(data),
       timeout: 10000,
     });
-
-    console.log(`Response status: ${response.status} ${response.statusText}`);
 
     // Check if the response is JSON
     const contentType = response.headers.get("content-type");
