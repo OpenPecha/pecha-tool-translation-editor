@@ -38,9 +38,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       trackUserLogout(user.sub);
     }
 
-    // If using Auth0, use their logout function
+    // Clear any stored tokens
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("auth_token");
+    sessionStorage.removeItem("access_token");
+    sessionStorage.removeItem("auth_token");
+
+    // If using Auth0, use their logout function with redirect to /logout
     auth0Logout({
-      logoutParams: { returnTo: window.location.origin },
+      logoutParams: { returnTo: `${window.location.origin}/logout` },
       clientId: import.meta.env.VITE_AUTH0_CLIENT_ID,
     });
   }, [auth0Logout, user, trackUserLogout]);

@@ -5,6 +5,7 @@ import { useAuth } from "./auth/use-auth-hook";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import Callback from "./pages/Callback";
 import Login from "./pages/Login";
+import Logout from "./pages/Logout";
 import DocumentsWrapper from "./components/DocumentWrapper";
 import Navbar from "./components/Dashboard/Navbar";
 import OpenPecha from "./assets/icon.png";
@@ -12,6 +13,7 @@ import TolgeeProvider, { useCurrentLanguage } from "./contexts/TolgeeContext";
 import Documentation from "./documentation/Documentation";
 import PublicDocumentViewer from "./components/PublicDocumentViewer";
 import { injectUmami } from "./analytics";
+import { useTokenExpiration } from "./hooks/useTokenExpiration";
 
 const ProjectList = lazy(() => import("./components/Dashboard/ProjectList"));
 const QuillVersionProvider = lazy(() =>
@@ -28,6 +30,10 @@ const queryClient = new QueryClient();
 
 function Layout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, login, isLoading, getToken } = useAuth();
+
+  // Hook to automatically check token expiration and logout if expired
+  useTokenExpiration();
+
   useEffect(() => {
     if (isAuthenticated) {
       getToken().then((token) => {
@@ -101,6 +107,7 @@ function AppContent() {
           }
         />
         <Route path="/login" element={<Login />} />
+        <Route path="/logout" element={<Logout />} />
         <Route path="/callback" element={<Callback />} />
 
         <Route
