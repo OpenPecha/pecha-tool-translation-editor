@@ -9,7 +9,7 @@ datasource db {
 
 model User {
   id          String          @id @default(uuid())
-  username    String          @unique
+  username    String?
   email       String          @unique
   picture     String?
   documents   Doc[]           @relation("UserDocs") // A user can have multiple documents
@@ -34,10 +34,10 @@ model Project {
   permissions Permission[] @relation("ProjectPermissions")
   metadata    Json?
   status      String       @default("active") // active, deleted, archived, draft
-  
-  isPublic    Boolean      @default(false)    // Whether this project is public
-  publicAccess String      @default("none")   // none, viewer, editor
-  shareLink   String?      @unique           // Unique shareable link identifier
+
+  isPublic     Boolean @default(false) // Whether this project is public
+  publicAccess String  @default("none") // none, viewer, editor
+  shareLink    String? @unique // Unique shareable link identifier
 }
 
 model Doc {
@@ -81,7 +81,7 @@ model Permission {
   canRead   Boolean @default(true)
   canWrite  Boolean @default(false)
   projectId String?
-  
+
   accessLevel String @default("viewer") // viewer, editor, admin
 
   doc     Doc?     @relation(fields: [docId], references: [id], onDelete: Cascade)
