@@ -36,6 +36,9 @@ interface QuillVersionContextType {
   autoSaveEnabled: boolean;
   autoSaveInterval: number;
   isLoading: boolean;
+  isLoadingVersion: boolean;
+  loadingVersionId: string | null;
+  transitionPhase: 'idle' | 'fade-out' | 'skeleton' | 'fade-in';
   registerQuill: (quill: Quill) => void;
   saveVersion: (label?: string) => Promise<Version | null>;
   loadVersion: (versionId: string) => Promise<boolean>;
@@ -79,6 +82,9 @@ export const QuillVersionProvider = ({
   const [autoSaveInterval, setAutoSaveInterval] =
     useState<number>(AUTOSAVE_INTERVAL);
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
+  const [isLoadingVersion, setIsLoadingVersion] = useState<boolean>(false);
+  const [loadingVersionId, setLoadingVersionId] = useState<string | null>(null);
+  const [transitionPhase, setTransitionPhase] = useState<'idle' | 'fade-out' | 'skeleton' | 'fade-in'>('idle');
   // Fetch versions using react-query
   const {
     data: versions = [],
@@ -119,13 +125,21 @@ export const QuillVersionProvider = ({
   // Delete version mutation
   const deleteVersionMutation = useMutation({
     mutationFn: (versionId: string) => deleteVersionAPI(versionId),
-    onSuccess: (_, versionId) => {
-      queryClient.setQueryData(["versions", docId], (oldData: Version[] = []) =>
-        oldData.filter((v) => v.id !== versionId)
-      );
-
-      if (versionId === currentVersionId && versions.length > 1) {
-        setCurrentVersionId(versions[versions.length - 2].id);
+    onSuccess: async (_, versionId) => {
+      // Filter out the deleted version
+      const updatedVersions = versions.filter((v) => v.id !== versionId);
+      // Update cache with filtered data
+      queryClient.setQueryData([`versions-${docId}`], () => updatedVersions);
+      // If deleted version was current and there are still versions left
+      if (versionId === currentVersionId && updatedVersions.length > 0) {
+        // Set current to the last remaining version (most recent)
+        const newCurrentVersion = updatedVersions[updatedVersions.length - 1];
+        setCurrentVersionId(newCurrentVersion.id);
+        const version = await fetchVersion(newCurrentVersion.id);
+        // Update editor content
+        if (newCurrentVersion && quillInstance) {
+          quillInstance.setContents(version.content);
+        }
       }
     },
   });
@@ -139,14 +153,9 @@ export const QuillVersionProvider = ({
   const registerQuill = useCallback(
     (quill: Quill) => {
       setQuillInstance(quill);
-
-      if (quill && versions.length > 0) {
-        const latestVersion = versions[versions.length - 1];
-        quill.setContents(latestVersion.content);
-        setCurrentVersionId(latestVersion.id);
-      }
+      
     },
-    [versions]
+    [] 
   );
 
   // Auto-save functionality
@@ -190,22 +199,57 @@ export const QuillVersionProvider = ({
     [quillInstance, createVersionMutation]
   );
 
-  // Load a specific version (API)
+  // Enhanced version loading with three-phase transition
   const loadVersion = useCallback(
     async (versionId: string): Promise<boolean> => {
-      if (!quillInstance) return false;
+      if (!quillInstance || isLoadingVersion) return false;
 
       try {
-        const version = await fetchVersion(versionId);
+        // Phase 1: Start loading and fade-out
+        setIsLoadingVersion(true);
+        setLoadingVersionId(versionId);
+        setTransitionPhase('fade-out');
+
+        // Wait for fade-out transition
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Phase 2: Show skeleton
+        setTransitionPhase('skeleton');
+
+        // Fetch version content (with minimum skeleton display time)
+        const [version] = await Promise.all([
+          fetchVersion(versionId),
+          new Promise(resolve => setTimeout(resolve, 300)) // Minimum skeleton time
+        ]);
+
+        // Phase 3: Apply content and fade-in
+        setTransitionPhase('fade-in');
         quillInstance.setContents(version.content);
         setCurrentVersionId(versionId);
+
+        // Wait for fade-in transition
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        // Reset to idle state
+        setTransitionPhase('idle');
+        setIsLoadingVersion(false);
+        setLoadingVersionId(null);
+
         return true;
       } catch (error) {
         console.error("Error loading version:", error);
+        
+        // Reset states on error
+        setTransitionPhase('fade-in'); // Fade back to original content
+        await new Promise(resolve => setTimeout(resolve, 300));
+        setTransitionPhase('idle');
+        setIsLoadingVersion(false);
+        setLoadingVersionId(null);
+        
         return false;
       }
     },
-    [quillInstance]
+    [quillInstance, isLoadingVersion]
   );
 
   // Delete a version (API)
@@ -246,6 +290,9 @@ export const QuillVersionProvider = ({
       autoSaveEnabled,
       autoSaveInterval,
       isLoading,
+      isLoadingVersion,
+      loadingVersionId,
+      transitionPhase,
       registerQuill,
       saveVersion,
       loadVersion,
@@ -261,6 +308,9 @@ export const QuillVersionProvider = ({
       autoSaveEnabled,
       autoSaveInterval,
       isLoading,
+      isLoadingVersion,
+      loadingVersionId,
+      transitionPhase,
       registerQuill,
       saveVersion,
       loadVersion,
