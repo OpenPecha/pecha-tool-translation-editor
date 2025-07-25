@@ -11,6 +11,7 @@ import formatTimeAgo from "@/lib/formatTimeAgo";
 
 import { useUmamiTracking } from "@/hooks/use-umami-tracking";
 import { getUserContext } from "@/hooks/use-umami-tracking";
+import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 
 interface EachProjectProps {
   readonly project: Project;
@@ -20,6 +21,7 @@ interface EachProjectProps {
 export default function EachProject({ project, view }: EachProjectProps) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const { currentUser } = useAuth();
   const queryClient = useQueryClient();
   const {
@@ -40,15 +42,14 @@ export default function EachProject({ project, view }: EachProjectProps) {
     },
   });
 
-  const handleDelete = async (e: React.MouseEvent) => {
+  const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const permission = confirm(
-      "Delete this project? This action cannot be undone."
-    );
-    if (permission) {
-      deleteProjectMutation.mutate(project.id);
-    }
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = () => {
+    deleteProjectMutation.mutate(project.id);
   };
 
   type UpdateProjectParams = {
@@ -158,6 +159,16 @@ export default function EachProject({ project, view }: EachProjectProps) {
           onClose={() => setShowShareModal(false)}
         />
       )}
+
+      <ConfirmationModal
+        open={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={confirmDelete}
+        title="Delete Project"
+        message="Are you sure you want to delete this project? This action cannot be undone."
+        confirmText="Delete"
+        loading={deleteProjectMutation.isPending}
+      />
     </>
   );
 }
