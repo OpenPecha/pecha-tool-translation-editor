@@ -208,6 +208,60 @@
   position: relative;
   background-color: transparent;
   line-height: 0;
+}
+
+/* Version Loading Skeleton Styles */
+.skeleton-loader {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-line {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Version transition effects */
+.version-skeleton-loader {
+  font-family: "Monlam", sans-serif;
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-line {
+    animation: none;
+    background: #f0f0f0;
+  }
+  
+  .skeleton-loader {
+    animation: none;
+  }
+  
+  .editor-content {
+    transition: none !important;
+  }
+}
+
+.footnote {
   text-decoration: none;
   cursor: pointer;
   counter-increment: footnote-counter;

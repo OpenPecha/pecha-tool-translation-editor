@@ -196,7 +196,6 @@ router.get("/translations/:rootId", async (req, res) => {
 // Get diff between current and previous version
 router.get("/version-diff/:versionId", async (req, res) => {
   const { versionId } = req.params;
-
   try {
     // Fetch the current version
     const currentVersion = await prisma.version.findUnique({
@@ -210,7 +209,6 @@ router.get("/version-diff/:versionId", async (req, res) => {
     if (!currentVersion) {
       return res.status(404).json({ error: "Version not found" });
     }
-
     // Find the previous version of the same doc based on timestamp
     const previousVersion = await prisma.version.findFirst({
       where: {
@@ -226,12 +224,9 @@ router.get("/version-diff/:versionId", async (req, res) => {
         content: true,
       },
     });
-
-
     const oldDelta = previousVersion ? new Delta(previousVersion.content?.ops) : new Delta();
     const newDelta = new Delta(currentVersion.content?.ops);
     const diffs1 = markDiff(oldDelta, newDelta);
-
     const diffs = oldDelta?.compose(new Delta(diffs1));
     return res.json({
       diffs,
@@ -242,17 +237,16 @@ router.get("/version-diff/:versionId", async (req, res) => {
 });
 
 
-
 function markDiff(oldDelta, newDelta) {
   const diff = oldDelta.diff(newDelta);
-  const finalDiff = { ops: [] };
+  const result = { ops: [] };
 
-  let oldIndex = 0;
+  let oldPos = 0;
 
   for (let op of diff.ops) {
     if (op.insert) {
-      // Style inserted text
-      finalDiff.ops.push({
+      // Insert new content with green styling
+      result.ops.push({
         insert: op.insert,
         attributes: {
           ...(op.attributes || {}),
@@ -261,78 +255,53 @@ function markDiff(oldDelta, newDelta) {
         },
       });
     } else if (op.delete) {
-      // Get deleted text from oldDelta
-      let deletedText = "";
-      while (op.delete > 0 && oldIndex < oldDelta.ops.length) {
-        const oldOp = oldDelta.ops[oldIndex];
-        if (typeof oldOp.insert === "string") {
-          const take = Math.min(op.delete, oldOp.insert.length);
-          deletedText += oldOp.insert.slice(0, take);
-          oldDelta.ops[oldIndex].insert = oldOp.insert.slice(take); // trim taken
-          op.delete -= take;
-          if (oldDelta.ops[oldIndex].insert.length === 0) oldIndex++;
-        } else {
-          oldIndex++;
+      const deletedContent = oldDelta.slice(oldPos, oldPos + op.delete);
+
+      // First, insert the deleted text with styling
+      for (let deletedOp of deletedContent.ops) {
+        if (deletedOp.insert) {
+          result.ops.push({
+            insert: deletedOp.insert,
+            attributes: {
+              ...(deletedOp.attributes || {}),
+              background: "#e8cccc",
+              color: "#370000",
+              strike: true,
+            },
+          });
         }
       }
 
-      finalDiff.ops.push({
-        insert: deletedText,
-        attributes: {
-          background: "#e8cccc",
-          color: "#370000",
-          strike: true,
-        },
+      // Then delete the original text to prevent duplication
+      result.ops.push({
+        delete: op.delete
       });
+
+      oldPos += op.delete;
     } else if (op.retain) {
-      // Preserve retained ops temporarily (will merge below)
-      finalDiff.ops.push({ retain: op.retain, attributes: op.attributes });
-    }
-  }
-
-  // Handle formatting-only changes
-  const formattedDiff = [];
-  const oldOps = oldDelta.ops || [];
-  const newOps = newDelta.ops || [];
-  const len = Math.min(oldOps.length, newOps.length);
-
-  for (let i = 0; i < len; i++) {
-    const oldOp = oldOps[i];
-    const newOp = newOps[i];
-
-    if (oldOp.insert === newOp.insert) {
-      const oldAttrs = oldOp.attributes || {};
-      const newAttrs = newOp.attributes || {};
-
-      if (JSON.stringify(oldAttrs) !== JSON.stringify(newAttrs)) {
-        formattedDiff.push({
-          insert: newOp.insert,
+      // For retained content
+      if (op.attributes) {
+        // There are attribute changes - mark with light blue
+        result.ops.push({
+          retain: op.retain,
           attributes: {
-            background: "#fff3cd",
-            color: "#856404",
-            ...newAttrs,
+            ...op.attributes,
+            background: "#cce8ff",
+            color: "#003366",
           },
         });
       } else {
-        formattedDiff.push(newOp);
+        // No changes - just retain
+        result.ops.push({
+          retain: op.retain,
+        });
       }
-    } else {
-      formattedDiff.push(newOp);
+
+      oldPos += op.retain;
     }
   }
 
-  // Merge step to overwrite unstyled parts with formatted ones
-  const mergedOps = finalDiff.ops.map(op => {
-    if (op.insert && (!op.attributes || Object.keys(op.attributes).length === 0)) {
-      const match = formattedDiff.find(f => f.insert === op.insert);
-      return match || op;
-    }
-    return op;
-  });
-
-  return { ops: mergedOps };
+  return result;
 }
-
-
 
 module.exports = router;
