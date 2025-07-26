@@ -136,13 +136,10 @@ const optionalAuthenticate = async (req, res, next) => {
 
       try {
         // Debug logging
-        console.log("Optional auth - req.auth:", req.auth);
-        console.log("Optional auth - req.auth?.payload:", req.auth?.payload);
 
         // Get the user info from the validated token
         const id = req?.auth?.payload?.sub;
         if (!id) {
-          console.log("Optional auth - No ID found in token payload");
           // Invalid token, proceed without authentication
           req.user = undefined;
           return next();

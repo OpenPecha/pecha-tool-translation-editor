@@ -61,13 +61,15 @@ export const useCurrentDoc = (
     queryKey: [`document-${docId}`],
     queryFn: async () => {
       if (!docId) return null;
-      const doc = isPublic ? await fetchPublicDocument(docId) : await fetchDocument(docId);
-      
+      const doc = isPublic
+        ? await fetchPublicDocument(docId)
+        : await fetchDocument(docId);
+
       // For public documents, always set as not editable
       if (isPublic) {
         setIsEditable(false);
       }
-      
+
       if (doc?.rootsProject?.permissions && !EDITOR_READ_ONLY) {
         doc?.rootsProject.permissions.map((permission: Permission) => {
           if (permission?.userId === currentUser?.id && permission?.canWrite) {
@@ -142,13 +144,27 @@ export const useTranslationStatus = (
       !!translationId &&
       (translationStatus === "pending" ||
         translationStatus === "started" ||
-        translationStatus === "progress"),
+        translationStatus === "progress" ||
+        translationStatus === "failed"),
     refetchInterval: (query) => {
-      // Stop polling if translation is completed or failed
       const status = query.state.data?.translationStatus;
-      if (status === "completed" || status === "failed") {
+      const message = query.state.data?.message;
+
+      // Stop polling only if translation is completed or permanently failed
+      if (status === "completed") {
         return false;
       }
+
+      // Continue polling if status is failed but contains retry information
+      if (status === "failed" && message && message.includes("retry")) {
+        return 5000; // Poll every 5 seconds during retry scenarios
+      }
+
+      // Stop polling for permanent failures (no retry message)
+      if (status === "failed") {
+        return false;
+      }
+
       return 5000; // Poll every 5 seconds for in-progress translations
     },
     refetchOnWindowFocus: false,
