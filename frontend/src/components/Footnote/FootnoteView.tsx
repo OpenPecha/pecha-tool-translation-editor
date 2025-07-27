@@ -23,6 +23,7 @@ import Quill from "quill";
 import { useTranslate } from "@tolgee/react";
 import AvatarWrapper from "../ui/custom-avatar";
 import ContentEditableDiv from "../ui/contentEditable";
+import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 
 interface Footnote {
   id: string;
@@ -77,6 +78,8 @@ function FootnoteView({
   const [editContent, setEditContent] = useState("");
   const [temporaryFootnote, setTemporaryFootnote] =
     useState<TemporaryFootnote | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [footnoteToDelete, setFootnoteToDelete] = useState<Footnote | null>(null);
   const { getQuill } = useEditor();
   const { currentUser } = useAuth();
   const quill = getQuill(documentId);
@@ -163,20 +166,20 @@ function FootnoteView({
     mutationFn: (footnoteId: string) => deleteFootnote(footnoteId),
     onSuccess: (_, footnoteId) => {
       queryClient.invalidateQueries({ queryKey: [`footnotes-${documentId}`] });
-      // Remove the footnote mark from the editor
-      if (quill) {
+      
+      // Find the footnote to get its threadId
+      const deletedFootnote = footnotesData?.find(f => f.id === footnoteId);
+      if (quill && deletedFootnote) {
         const footnoteSpanList = quill.root.querySelectorAll(
-          `span.footnote[data-id="${footnoteId}"]`
+          `span.footnote[data-id="${deletedFootnote.threadId}"]`  // Use threadId instead
         ) as HTMLElement[];
+        
         if (footnoteSpanList.length > 0) {
           footnoteSpanList.forEach((span) => {
             const blot = Quill.find(span) as any;
             if (blot && blot.length) {
-              // Get the index and length of the blot
               const index = quill.getIndex(blot);
               const length = blot.length();
-
-              // Remove the footnote formatting
               quill.formatText(index, length, "footnote", false, "user");
             }
           });
@@ -214,9 +217,14 @@ function FootnoteView({
   };
 
   const handleDelete = async (footnote: Footnote) => {
-    if (window.confirm("Are you sure you want to delete this footnote?")) {
+    setFootnoteToDelete(footnote);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = () => {
+    if (footnoteToDelete) {
       try {
-        await deleteFootnoteMutation.mutateAsync(footnote.threadId);
+       deleteFootnoteMutation.mutate(footnoteToDelete.id);
       } catch (error) {
         console.error("Error deleting footnote:", error);
       }
@@ -511,6 +519,7 @@ function FootnoteView({
   const { t } = useTranslate();
 
   return (
+    <>
     <Accordion
       type="single"
       collapsible
@@ -684,6 +693,20 @@ function FootnoteView({
         </AccordionContent>
       </AccordionItem>
     </Accordion>
+
+    <ConfirmationModal
+      open={showDeleteModal}
+      onClose={() => {
+        setShowDeleteModal(false);
+        setFootnoteToDelete(null);
+      }}
+      onConfirm={confirmDelete}
+      title="Delete Footnote"
+      message="Are you sure you want to delete this footnote? This action cannot be undone."
+      confirmText="Delete"
+      loading={deleteFootnoteMutation.isPending}
+    />
+    </>
   );
 }
 
