@@ -8,63 +8,73 @@ datasource db {
 }
 
 model User {
-  id          String          @id @default(uuid())
-  username    String?
-  email       String          @unique
-  picture     String?
-  documents   Doc[]           @relation("UserDocs") // A user can have multiple documents
-  permissions Permission[] // A user can have multiple permissions
-  comments    Comment[] // A user can have multiple comments
-  createdAt   DateTime        @default(now())
-  project     Project[]
-  version     Version[]
-  apikeys     ApiCredential[]
-  footnotes   Footnote[]
+  id               String            @id @default(uuid())
+  username         String?
+  email            String            @unique
+  picture          String?
+  documents        Doc[]             @relation("UserDocs") // A user can have multiple documents
+  permissions      Permission[] // A user can have multiple permissions
+  comments         Comment[] // A user can have multiple comments
+  createdAt        DateTime          @default(now())
+  project          Project[]
+  version          Version[]
+  apikeys          ApiCredential[]
+  footnotes        Footnote[]
+  versionWorkflows VersionWorkflow[] // A user can have multiple version workflows
 }
 
 model Project {
-  id          String       @id @default(uuid())
-  name        String
-  
-  identifier  String       @unique
-  owner       User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  ownerId     String
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  roots       Doc[]        @relation("Roots")
-  permissions Permission[] @relation("ProjectPermissions")
-  metadata    Json? // Whether this project is public
-  status      String       @default("active") // active, deleted, archived, draft
-  isPublic     Boolean @default(false) // Whether this project is public
-  publicAccess String  @default("none") // none, viewer, editor
-  shareLink    String? @unique // Unique shareable link identifier
+  id   String @id @default(uuid())
+  name String
+
+  identifier   String       @unique
+  owner        User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId      String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  roots        Doc[]        @relation("Roots")
+  permissions  Permission[] @relation("ProjectPermissions")
+  metadata     Json? // Whether this project is public
+  status       String       @default("active") // active, deleted, archived, draft
+  isPublic     Boolean      @default(false) // Whether this project is public
+  publicAccess String       @default("none") // none, viewer, editor
+  shareLink    String?      @unique // Unique shareable link identifier
 }
 
 model Doc {
-  id                     String       @id @default(uuid()) // Unique identifier for the document
-  name                   String       @default("document")
-  identifier             String       @unique // Ensures each document has a unique identifier
-  docs_prosemirror_delta Json? // Nullable array of objects
-  docs_y_doc_state       Bytes? // Binary data for Yjs document state
-  language               String       @default("bo") // Language of the document content
-  isRoot                 Boolean      @default(false) // Whether this is a root text
-  rootId                 String? // ID of the root document if this is a translation
-  root                   Doc?         @relation("Translations", fields: [rootId], references: [id], onDelete: Cascade)
-  translations           Doc[]        @relation("Translations") // One root can have multiple translations
-  createdAt              DateTime     @default(now()) // Timestamp when the document is created
-  updatedAt              DateTime     @updatedAt // Auto-updated timestamp
-  ownerId                String? // Optional owner of the document
-  owner                  User?        @relation("UserDocs", fields: [ownerId], references: [id], onDelete: Cascade)
-  permissions            Permission[] // A document can have multiple permission entries
-  comments               Comment[] // A document can have multiple comments
-  versions               Version[] // A document can have multiple versions
-  footnotes              Footnote[] // A document can have multiple footnotes
-  metadata               Json? // Additional metadata for the document
+  id               String            @id @default(uuid()) // Unique identifier for the document
+  name             String            @default("document")
+  identifier       String            @unique // Ensures each document has a unique identifier
+  content          String? // Nullable array of objects
+  docs_y_doc_state Bytes? // Y.js document state for collaborative editing
+  annotations      Annotation[]
+  language         String            @default("bo") // Language of the document content
+  isRoot           Boolean           @default(false) // Whether this is a root text
+  rootId           String? // ID of the root document if this is a translation
+  root             Doc?              @relation("Translations", fields: [rootId], references: [id], onDelete: Cascade)
+  translations     Doc[]             @relation("Translations") // One root can have multiple translations
+  createdAt        DateTime          @default(now()) // Timestamp when the document is created
+  updatedAt        DateTime          @updatedAt // Auto-updated timestamp
+  ownerId          String? // Optional owner of the document
+  owner            User?             @relation("UserDocs", fields: [ownerId], references: [id], onDelete: Cascade)
+  permissions      Permission[] // A document can have multiple permission entries
+  comments         Comment[] // A document can have multiple comments
+  versions         Version[] // A document can have multiple versions
+  footnotes        Footnote[] // A document can have multiple footnotes
+  metadata         Json? // Additional metadata for the document
+  versionWorkflows VersionWorkflow[] // A document can have multiple version workflows
 
   // Translation tracking fields
   translationStatus   String? // pending, progress, completed, failed
   translationProgress Int?    @default(0) // 0-100 percentage
   translationJobId    String? // ID from the translation worker
+
+  // Version tracking fields
+  currentVersionId   String? // ID of the currently active version
+  latestVersionId    String? // ID of the most recent version
+  versioningStrategy String  @default("auto") // "auto", "manual", "milestone"
+  autoSaveInterval   Int     @default(300) // Auto-save interval in seconds
+  lastContentHash    String? // Hash of last saved content for change detection
 
   rootsProject  Project? @relation("Roots", fields: [rootProjectId], references: [id])
   rootProjectId String?
@@ -72,6 +82,32 @@ model Doc {
   @@index([ownerId])
   @@index([rootId])
   @@index([rootProjectId])
+  @@index([currentVersionId]) // For quick access to current version
+}
+
+model Annotation {
+  id        String   @id @default(uuid())
+  docId     String
+  versionId String?
+  doc       Doc      @relation(fields: [docId], references: [id], onDelete: Cascade)
+  version   Version? @relation(fields: [versionId], references: [id])
+  type      String
+  start     Int
+  end       Int
+  content   Json
+  createdAt DateTime @default(now())
+
+  // Enhanced annotation versioning
+  isActive          Boolean  @default(true) // Whether annotation is active in current version
+  originalVersionId String? // Version where annotation was first created
+  lastModifiedAt    DateTime @default(now()) // When annotation was last modified
+  annotationHash    String? // Hash for detecting changes
+  changeHistory     Json? // Track changes to this annotation across versions
+
+  @@index([docId])
+  @@index([versionId])
+  @@index([docId, isActive]) // For finding active annotations
+  @@index([originalVersionId]) // For tracking annotation origin
 }
 
 model Permission {
@@ -134,14 +170,55 @@ model Footnote {
 }
 
 model Version {
-  id        String   @id @default(uuid()) // Unique identifier
-  doc       Doc      @relation(fields: [docId], references: [id], onDelete: Cascade)
-  docId     String // Document identifier
-  label     String // Version label (e.g., "Auto-save", "Manual Save")
-  timestamp DateTime @default(now()) // When the version was saved
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  content   Json // Quill delta contents stored as JSON
+  id              String    @id @default(uuid())
+  docId           String
+  userId          String?
+  parentVersionId String?
+  label           String    @default("Autosave")
+  isAutosave      Boolean   @default(false)
+  isPublished     Boolean   @default(false)
+  publishedAt     DateTime?
+  content         Json
+  createdAt       DateTime  @default(now())
+
+  // Enhanced versioning fields
+  sequenceNumber Int     @default(0) // For ordering versions chronologically
+  changeType     String  @default("content") // "content", "annotation", "both", "structure"
+  changeSummary  String? // Brief description of what changed
+  changeCount    Int     @default(0) // Number of changes in this version
+  wordCount      Int? // Total word count for this version
+  characterCount Int? // Total character count for this version
+
+  // Diff and comparison fields
+  contentDiff    Json? // Stores the diff from previous version
+  annotationDiff Json? // Stores annotation changes from previous version
+
+  // Version state and metadata
+  isSnapshot     Boolean  @default(false) // Mark important versions as snapshots
+  snapshotReason String? // Why this version was marked as a snapshot
+  tags           String[] @default([]) // Tags for categorizing versions
+
+  // Navigation and branching
+  branchName    String? // Support for branching workflows
+  isMerge       Boolean  @default(false) // Whether this version is a merge
+  mergedFromIds String[] @default([]) // IDs of versions that were merged
+
+  // Performance and caching
+  contentHash    String? // Hash of content for quick comparison
+  lastAccessedAt DateTime? // Track when version was last accessed
+
+  doc           Doc          @relation(fields: [docId], references: [id], onDelete: Cascade)
+  user          User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentVersion Version?     @relation("ParentVersion", fields: [parentVersionId], references: [id])
+  children      Version[]    @relation("ParentVersion")
+  annotations   Annotation[]
+
+  @@index([docId])
+  @@index([userId])
+  @@index([parentVersionId])
+  @@index([docId, sequenceNumber]) // For efficient version listing
+  @@index([docId, isSnapshot]) // For finding snapshot versions
+  @@index([docId, createdAt]) // For chronological ordering
 }
 
 model ApiCredential {
@@ -155,4 +232,52 @@ model ApiCredential {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+}
+
+// New model for tracking version workflows and editing sessions
+model VersionWorkflow {
+  id        String @id @default(uuid())
+  docId     String
+  userId    String
+  sessionId String // Unique session identifier for grouping related changes
+
+  // Workflow state
+  status       String @default("active") // "active", "completed", "abandoned"
+  workflowType String @default("editing") // "editing", "review", "translation", "annotation"
+
+  // Version tracking
+  startVersionId  String? // Version when workflow started
+  endVersionId    String? // Version when workflow ended
+  targetVersionId String? // Intended target version (for merging)
+
+  // Change tracking
+  totalChanges      Int @default(0)
+  contentChanges    Int @default(0)
+  annotationChanges Int @default(0)
+
+  // Session metadata
+  startedAt      DateTime  @default(now())
+  lastActivityAt DateTime  @default(now())
+  completedAt    DateTime?
+  duration       Int? // Duration in seconds
+
+  // Auto-save and checkpoints
+  autoSaveCount   Int       @default(0)
+  checkpointCount Int       @default(0)
+  lastAutoSave    DateTime?
+  lastCheckpoint  DateTime?
+
+  // Collaboration
+  collaborators String[] @default([]) // User IDs of collaborators in this session
+  conflictCount Int      @default(0)
+  mergeCount    Int      @default(0)
+
+  doc  Doc  @relation(fields: [docId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([docId])
+  @@index([userId])
+  @@index([sessionId])
+  @@index([docId, status])
+  @@index([lastActivityAt])
 }

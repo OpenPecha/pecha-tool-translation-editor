@@ -29,7 +29,8 @@ interface Document {
   id: string;
   name: string;
   identifier: string;
-  docs_prosemirror_delta: Record<string, unknown>;
+  content?: string; // Plain text content
+  docs_prosemirror_delta?: Record<string, unknown>; // Legacy field, make optional
   docs_y_doc_state: Uint8Array;
   created_at?: string;
   updated_at?: string;

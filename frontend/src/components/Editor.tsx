@@ -11,6 +11,7 @@ import { useEditor } from "@/contexts/EditorContext";
 import { editor_config, EDITOR_ENTER_ONLY } from "@/utils/editorConfig";
 import { updateContentDocument } from "@/api/document";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useDebouncedSave } from "@/hooks/useDebouncedSave";
 import CommentBubble from "./Comment/CommentBubble";
 import { createPortal } from "react-dom";
 import FootnoteView from "./Footnote/FootnoteView";
@@ -38,6 +39,7 @@ const Editor = ({
     "counter-container" + "-" + Math.random().toString(36).slice(2, 6);
   const [currentRange, setCurrentRange] = useState<Range | null>(null);
   const [showCommentModal, setShowCommentModal] = useState(false);
+  const [isContentLoaded, setIsContentLoaded] = useState(false);
   const { registerQuill, transitionPhase } = useQuillVersion();
   const {
     registerQuill: registerQuill2,
@@ -86,6 +88,31 @@ const Editor = ({
   const queryClient = useQueryClient();
   const debouncedSave = useCallback(
     (content: Record<string, unknown>) => {
+      // Protect against saving empty content
+      if (
+        !content ||
+        !content.ops ||
+        (Array.isArray(content.ops) && content.ops.length === 0)
+      ) {
+        console.log("Skipping save - empty content detected in Quill editor");
+        return;
+      }
+
+      // Check if content is only whitespace/newlines
+      const textContent = content.ops.reduce((text: string, op: any) => {
+        if (typeof op.insert === "string") {
+          return text + op.insert;
+        }
+        return text;
+      }, "");
+
+      if (!textContent.trim()) {
+        console.log(
+          "Skipping save - content is only whitespace in Quill editor"
+        );
+        return;
+      }
+
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
@@ -181,10 +208,18 @@ const Editor = ({
     // Fetch comments when the editor loads
     quill.on("text-change", function (delta, oldDelta, source) {
       if (source === "user") {
-        const currentContent = quill.getLength() > 1 ? quill.getContents() : "";
-        setTimeout(() => {
-          debouncedSave(currentContent);
-        }, 0);
+        const currentContent = quill.getContents();
+        // Only save if content has meaningful text (more than just newlines/whitespace)
+        if (
+          quill.getLength() > 1 &&
+          currentContent &&
+          currentContent.ops &&
+          currentContent.ops.length > 0
+        ) {
+          setTimeout(() => {
+            debouncedSave(currentContent);
+          }, 0);
+        }
       }
     });
     quill.on("selection-change", (range) => {
@@ -209,7 +244,15 @@ const Editor = ({
 
     return () => {
       const currentContent = quill.getContents();
-      updateDocumentMutation.mutate(currentContent);
+      // Only save on unmount if content has meaningful text
+      if (
+        currentContent &&
+        currentContent.ops &&
+        currentContent.ops.length > 0 &&
+        quill.getLength() > 1
+      ) {
+        updateDocumentMutation.mutate(currentContent);
+      }
       unregisterQuill2(editorId);
       queryClient.removeQueries({
         queryKey: [`document-${documentId}`],
@@ -271,9 +314,13 @@ const Editor = ({
             <div
               ref={editorRef}
               className={`editor-content flex-1 pb-1 w-full overflow-hidden transition-opacity duration-200 ${
-                transitionPhase === 'fade-out' ? 'opacity-50' : 
-                transitionPhase === 'skeleton' ? 'opacity-0' :
-                transitionPhase === 'fade-in' ? 'opacity-100' : 'opacity-100'
+                transitionPhase === "fade-out"
+                  ? "opacity-50"
+                  : transitionPhase === "skeleton"
+                  ? "opacity-0"
+                  : transitionPhase === "fade-in"
+                  ? "opacity-100"
+                  : "opacity-100"
               }`}
               style={{
                 fontFamily: "Monlam",
@@ -281,14 +328,14 @@ const Editor = ({
                 lineHeight: 1.5,
               }}
             />
-            
+
             {/* Skeleton Overlay */}
-            {transitionPhase === 'skeleton' && (
+            {transitionPhase === "skeleton" && (
               <div className="absolute inset-0 bg-white z-10 p-4 overflow-y-auto">
                 <SkeletonLoader className="version-skeleton-loader" />
               </div>
             )}
-            
+
             <FootnoteView documentId={documentId} isEditable={isEditable} />
           </div>
           {createPortal(

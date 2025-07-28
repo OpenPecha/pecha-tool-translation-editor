@@ -3,7 +3,7 @@ const router = express.Router();
 const { PrismaClient } = require("@prisma/client");
 const { authenticate } = require("../middleware/authenticate");
 const { diff_match_patch } = require("diff-match-patch");
-const Delta = require('quill-delta');
+const Delta = require("quill-delta");
 
 const prisma = new PrismaClient();
 const dmp = new diff_match_patch();
@@ -20,11 +20,11 @@ router.post("/root", authenticate, async (req, res) => {
 
     const rootDoc = await prisma.doc.create({
       data: {
-        title,
+        name: title,
         identifier: `root-${Date.now()}`,
         language,
         isRoot: true,
-        docs_prosemirror_delta: content ? { content } : null,
+        content: content || null,
         ownerId: req.user.id,
       },
     });
@@ -144,12 +144,12 @@ router.post("/translation", authenticate, async (req, res) => {
 
     const translation = await prisma.doc.create({
       data: {
-        title,
+        name: title,
         identifier: `translation-${Date.now()}`,
         language,
         isRoot: false,
         rootId,
-        docs_prosemirror_delta: content ? { content } : null,
+        content: content || null,
         ownerId: req.user.id,
       },
     });
@@ -224,7 +224,9 @@ router.get("/version-diff/:versionId", async (req, res) => {
         content: true,
       },
     });
-    const oldDelta = previousVersion ? new Delta(previousVersion.content?.ops) : new Delta();
+    const oldDelta = previousVersion
+      ? new Delta(previousVersion.content?.ops)
+      : new Delta();
     const newDelta = new Delta(currentVersion.content?.ops);
     const diffs1 = markDiff(oldDelta, newDelta);
     const diffs = oldDelta?.compose(new Delta(diffs1));
@@ -235,7 +237,6 @@ router.get("/version-diff/:versionId", async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
 
 function markDiff(oldDelta, newDelta) {
   const diff = oldDelta.diff(newDelta);
@@ -274,7 +275,7 @@ function markDiff(oldDelta, newDelta) {
 
       // Then delete the original text to prevent duplication
       result.ops.push({
-        delete: op.delete
+        delete: op.delete,
       });
 
       oldPos += op.delete;

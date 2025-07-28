@@ -173,6 +173,15 @@ interface UpdateDocumentParams {
   docs_prosemirror_delta?: Op[];
 }
 
+interface UpdateContentDocumentParams {
+  content?: string; // Plain text content
+  docs_prosemirror_delta?: Op[]; // Legacy delta format (optional)
+  createSnapshot?: boolean;
+  workflowId?: string;
+  changeSummary?: string;
+  sessionId?: string;
+}
+
 /**
  * Fetch all translations for a document
  * @param documentId The ID of the document to fetch translations for
@@ -294,7 +303,7 @@ export const generateTranslation = async (
 
 export const updateContentDocument = async (
   id: string,
-  data: UpdateDocumentParams
+  data: UpdateContentDocumentParams
 ) => {
   try {
     const response = await fetch(`${server_url}/documents/${id}/content`, {
@@ -307,12 +316,113 @@ export const updateContentDocument = async (
       throw new Error(errorData.error ?? "Failed to update document");
     }
     const updatedData = await response.json();
-    return updatedData.data;
+    return updatedData;
   } catch (error) {
     if (error instanceof Error) {
       throw new Error(error.message);
     }
     throw new Error("Failed to update document");
+  }
+};
+
+/**
+ * Create a manual snapshot of the current document state
+ * @param docId - Document ID
+ * @param label - Snapshot label
+ * @param reason - Reason for creating snapshot
+ * @param tags - Tags for the snapshot
+ */
+export const createDocumentSnapshot = async (
+  docId: string,
+  label?: string,
+  reason?: string,
+  tags: string[] = []
+) => {
+  try {
+    const response = await fetch(`${server_url}/documents/${docId}/snapshot`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify({ label, reason, tags }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error ?? "Failed to create snapshot");
+    }
+
+    return await response.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+    throw new Error("Failed to create snapshot");
+  }
+};
+
+/**
+ * Start a new editing workflow session
+ * @param docId - Document ID
+ * @param workflowType - Type of workflow
+ * @param sessionId - Optional session ID
+ */
+export const startDocumentWorkflow = async (
+  docId: string,
+  workflowType: string = "editing",
+  sessionId?: string
+) => {
+  try {
+    const response = await fetch(
+      `${server_url}/documents/${docId}/workflow/start`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ workflowType, sessionId }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error ?? "Failed to start workflow");
+    }
+
+    return await response.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+    throw new Error("Failed to start workflow");
+  }
+};
+
+/**
+ * Complete an editing workflow session
+ * @param docId - Document ID
+ * @param workflowId - Workflow ID
+ */
+export const completeDocumentWorkflow = async (
+  docId: string,
+  workflowId: string
+) => {
+  try {
+    const response = await fetch(
+      `${server_url}/documents/${docId}/workflow/${workflowId}/complete`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error ?? "Failed to complete workflow");
+    }
+
+    return await response.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+    throw new Error("Failed to complete workflow");
   }
 };
 
@@ -389,5 +499,23 @@ export const fetchSingleTranslationStatus = async (translationId: string) => {
       throw new Error(error.message);
     }
     throw new Error("Failed to fetch translation status");
+  }
+};
+
+export const fixEmptyContent = async () => {
+  try {
+    const response = await fetch(`${server_url}/documents/fix-empty-content`, {
+      method: "POST",
+      headers: getHeaders(),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return data;
+    }
+    throw new Error("Failed to fix empty content");
+  } catch (error) {
+    console.error("Error fixing empty content:", error);
+    throw error;
   }
 };

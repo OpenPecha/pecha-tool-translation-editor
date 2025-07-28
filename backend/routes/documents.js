@@ -13,6 +13,12 @@ const {
   getTranslationStatus,
   getHealthWorker,
 } = require("../apis/translation_worker");
+const {
+  createAutoVersion,
+  getActiveWorkflow,
+  startVersionWorkflow,
+  updateWorkflowActivity,
+} = require("../utils/versioning");
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -152,7 +158,7 @@ router.get("/public/:id", optionalAuthenticate, async (req, res) => {
         language: true,
         isRoot: true,
         rootId: true,
-        docs_prosemirror_delta: true,
+        content: true,
         translationStatus: true,
         translationJobId: true,
         createdAt: true,
@@ -269,8 +275,8 @@ router.post("/", authenticate, upload.single("file"), async (req, res) => {
           identifier,
           name,
           ownerId: req.user.id,
+          content: prosemirrorText.toString(),
           docs_y_doc_state: state,
-          docs_prosemirror_delta: delta,
           isRoot: isRoot === "true",
           rootId: rootId ?? null,
           language,
@@ -287,13 +293,45 @@ router.post("/", authenticate, upload.single("file"), async (req, res) => {
           userId: req.user.id,
           canRead: true,
           canWrite: true,
+          accessLevel: "admin", // Document owner gets admin access
         },
       });
-      await tx.version.create({
+      // Create initial version using enhanced versioning system
+      const initialVersion = await tx.version.create({
         data: {
-          content: { ops: delta },
+          content: prosemirrorText.toString(),
           docId: doc.id,
-          label: "initail Auto-save",
+          userId: req.user.id,
+          label: "Initial version",
+          sequenceNumber: 1,
+          changeType: "creation",
+          changeSummary: "Document created",
+          isSnapshot: true,
+          snapshotReason: "Initial document creation",
+          contentHash: require("crypto")
+            .createHash("sha256")
+            .update(prosemirrorText.toString())
+            .digest("hex"),
+          wordCount: prosemirrorText
+            .toString()
+            .split(/\s+/)
+            .filter((word) => word.length > 0).length,
+          characterCount: prosemirrorText.toString().length,
+        },
+        select: { id: true },
+      });
+
+      // Update document with initial version tracking
+      await tx.doc.update({
+        where: { id: doc.id },
+        data: {
+          currentVersionId: initialVersion.id,
+          latestVersionId: initialVersion.id,
+          lastContentHash: require("crypto")
+            .createHash("sha256")
+            .update(prosemirrorText.toString())
+            .digest("hex"),
+          content: prosemirrorText.toString(),
         },
       });
 
@@ -353,8 +391,8 @@ router.post("/content", authenticate, async (req, res) => {
           identifier,
           name,
           ownerId: req.user.id,
+          content: prosemirrorText.toString(),
           docs_y_doc_state: state,
-          docs_prosemirror_delta: delta,
           isRoot: isRoot === "true",
           rootId: rootId ?? null,
           language,
@@ -371,13 +409,45 @@ router.post("/content", authenticate, async (req, res) => {
           userId: req.user.id,
           canRead: true,
           canWrite: true,
+          accessLevel: "admin", // Document owner gets admin access
         },
       });
-      await tx.version.create({
+      // Create initial version using enhanced versioning system
+      const versionId = await tx.version.create({
         data: {
-          content: { ops: delta },
+          content: prosemirrorText.toString(),
           docId: doc.id,
-          label: "initail Auto-save",
+          userId: req.user.id,
+          label: "Initial version",
+          sequenceNumber: 1,
+          changeType: "creation",
+          changeSummary: "Document created with content",
+          isSnapshot: true,
+          snapshotReason: "Initial document creation",
+          contentHash: require("crypto")
+            .createHash("sha256")
+            .update(prosemirrorText.toString())
+            .digest("hex"),
+          wordCount: prosemirrorText
+            .toString()
+            .split(/\s+/)
+            .filter((word) => word.length > 0).length,
+          characterCount: prosemirrorText.toString().length,
+        },
+        select: { id: true },
+      });
+
+      // Update document with initial version tracking
+      await tx.doc.update({
+        where: { id: doc.id },
+        data: {
+          currentVersionId: versionId.id,
+          latestVersionId: versionId.id,
+          lastContentHash: require("crypto")
+            .createHash("sha256")
+            .update(prosemirrorText.toString())
+            .digest("hex"),
+          content: prosemirrorText.toString(),
         },
       });
 
@@ -516,7 +586,7 @@ router.get("/:id", authenticate, async (req, res) => {
         language: true,
         isRoot: true,
         rootId: true,
-        docs_prosemirror_delta: true,
+        content: true,
         translationStatus: true,
         translationJobId: true,
         createdAt: true,
@@ -582,7 +652,7 @@ router.get("/:id/content", optionalAuthenticate, async (req, res) => {
         permissions: true,
         language: true,
         isRoot: true,
-        docs_prosemirror_delta: true,
+        content: true,
         rootsProject: {
           include: {
             permissions: true,
@@ -824,9 +894,9 @@ router.post("/:id/permissions", authenticate, async (req, res) => {
           data: {
             docId: documentId,
             userId,
-            userEmail: email,
             canRead,
             canWrite,
+            accessLevel: canWrite ? "editor" : "viewer",
           },
         });
       } catch (error) {
@@ -852,9 +922,9 @@ router.post("/:id/permissions", authenticate, async (req, res) => {
             data: {
               docId: translation.id,
               userId,
-              userEmail: email,
               canRead,
               canWrite,
+              accessLevel: canWrite ? "editor" : "viewer",
             },
           });
         }
@@ -1047,34 +1117,55 @@ router.patch("/:id", authenticate, async (req, res) => {
   }
 });
 
-// Update document content
+// Update document content with automatic versioning
 /**
  * PATCH /documents/{id}/content
- * @summary Update document content
+ * @summary Update document content with automatic versioning
  * @tags Documents - Document management operations
  * @security BearerAuth
  * @param {string} id.path.required - Document ID
  * @param {object} request.body.required - Content update data
  * @param {object} request.body.docs_prosemirror_delta - ProseMirror delta
- * @return {object} 200 - Success response with updated document
+ * @param {boolean} request.body.createSnapshot - Whether to create a snapshot version
+ * @param {string} request.body.workflowId - Optional workflow ID for tracking
+ * @param {string} request.body.changeSummary - Optional summary of changes
+ * @return {object} 200 - Success response with updated document and version info
  * @return {object} 403 - Forbidden - No edit access
  * @return {object} 404 - Document not found
  * @return {object} 500 - Server error
  */
 router.patch("/:id/content", authenticate, async (req, res) => {
-  const { docs_prosemirror_delta } = req.body;
+  const {
+    docs_prosemirror_delta,
+    content, // Accept plain text content
+    createSnapshot = false,
+    workflowId,
+    changeSummary,
+    sessionId,
+  } = req.body;
+
   try {
+    // Get document with extended information for versioning
     const document = await prisma.doc.findUnique({
       where: { id: req.params.id },
       select: {
         ownerId: true,
         id: true,
-        docs_prosemirror_delta: true,
         rootProjectId: true,
+        content: true,
+        lastContentHash: true,
+        versioningStrategy: true,
+        autoSaveInterval: true,
+        currentVersionId: true,
+        latestVersionId: true,
       },
     });
-    if (!document) return res.status(404).json({ error: "Document not found" });
 
+    if (!document) {
+      return res.status(404).json({ error: "Document not found" });
+    }
+
+    // Check permissions
     if (document.ownerId !== req.user.id) {
       const permission = await prisma.permission.findFirst({
         where: {
@@ -1083,55 +1174,156 @@ router.patch("/:id/content", authenticate, async (req, res) => {
           canWrite: true,
         },
       });
-      if (!permission) return res.status(403).json({ error: "No edit access" });
+      if (!permission) {
+        return res.status(403).json({ error: "No edit access" });
+      }
     }
 
-    // Approach 1: If we need to merge with existing Y.doc state
-    const ydoc = new Y.Doc({ gc: true });
-
-    // If the document already has Y.doc state, we should first apply that
-    // if (document.docs_y_doc_state) {
-    //   Y.applyUpdateV2(ydoc, document.docs_y_doc_state);
-    // }
-
-    // Get the shared text type from the Y.doc
-    const ytext = ydoc.getText(req.params.id);
-
-    // Convert ProseMirror delta to Y.js compatible operations
-    // This is the critical part that was missing
-    if (docs_prosemirror_delta) {
-      // Process the delta operations to make them compatible with Y.js
-      // You may need a custom conversion function depending on your delta format
-      const yDelta = convertProseMirrorDeltaToYDelta(docs_prosemirror_delta);
-      ytext.applyDelta(yDelta);
+    if (!docs_prosemirror_delta && !content) {
+      return res
+        .status(400)
+        .json({ error: "Missing content or content delta" });
     }
 
-    // Encode the updated Y.doc state
+    // Get or create active workflow
+    let activeWorkflow = null;
+    if (workflowId) {
+      activeWorkflow = await prisma.versionWorkflow.findUnique({
+        where: { id: workflowId },
+      });
+    } else {
+      activeWorkflow = await getActiveWorkflow(document.id, req.user.id);
 
-    const docs_y_doc_state = Y.encodeStateAsUpdateV2(ydoc);
+      // Start new workflow if none exists
+      if (!activeWorkflow) {
+        activeWorkflow = await startVersionWorkflow({
+          docId: document.id,
+          userId: req.user.id,
+          workflowType: "editing",
+          sessionId,
+        });
+      }
+    }
 
-    // Validate the state isn't too small/empty
-    // if (docs_y_doc_state.length < 100) {
-    //   console.log('Y.js state is too small, skipping update');
-    //   return res.status(400).json({ error: "Invalid document state" });
-    // }
+    // Process the content update in a transaction with increased timeout
+    const result = await prisma.$transaction(
+      async (tx) => {
+        // Extract plain text content
+        let plainTextContent = "";
+        if (content) {
+          // Direct plain text content
+          plainTextContent = content;
+        } else if (docs_prosemirror_delta && docs_prosemirror_delta.ops) {
+          // Extract from Delta format (legacy support)
+          plainTextContent = docs_prosemirror_delta.ops.reduce((text, op) => {
+            if (typeof op.insert === "string") {
+              return text + op.insert;
+            }
+            return text;
+          }, "");
+        }
 
-    // Uncomment this to actually update the database
-    const updatedDocument = await prisma.doc.update({
-      where: { id: document.id },
-      data: {
-        docs_prosemirror_delta,
+        // Update document content
+        const updatedDocument = await tx.doc.update({
+          where: { id: document.id },
+          data: {
+            content: plainTextContent,
+            updatedAt: new Date(),
+          },
+          select: {
+            id: true,
+            content: true,
+            updatedAt: true,
+          },
+        });
+
+        // Note: Versioning moved outside transaction to prevent timeout
+        return {
+          document: updatedDocument,
+          workflow: activeWorkflow,
+        };
       },
-      select: {
-        id: true,
-      },
-    });
-    res.json({
+      {
+        timeout: 15000, // Increase timeout to 15 seconds for complex versioning operations
+      }
+    );
+
+    // Handle versioning operations outside main transaction to prevent timeout
+    let versionResult = null;
+    try {
+      // Only create versions for snapshots or if significant changes
+      if (
+        createSnapshot ||
+        changeSummary ||
+        (docs_prosemirror_delta &&
+          docs_prosemirror_delta.annotations &&
+          docs_prosemirror_delta.annotations.length > 0)
+      ) {
+        versionResult = await createAutoVersion({
+          docId: document.id,
+          content: content || docs_prosemirror_delta, // Use plain content or delta
+          userId: req.user.id,
+          changeType: createSnapshot ? "snapshot" : "content",
+          changeSummary:
+            changeSummary ||
+            `Content updated${
+              content
+                ? " (plain text)"
+                : ` with ${
+                    docs_prosemirror_delta.annotations?.length || 0
+                  } annotations`
+            }`,
+          isSnapshot: createSnapshot,
+          workflowId: activeWorkflow?.id,
+          forceCreate: createSnapshot,
+        });
+      }
+    } catch (versionError) {
+      console.warn(
+        "Version creation failed, continuing with content update:",
+        versionError
+      );
+    }
+
+    // Update workflow activity outside main transaction
+    if (activeWorkflow) {
+      try {
+        await updateWorkflowActivity(activeWorkflow.id, {
+          contentChanges: { increment: 1 },
+          totalChanges: { increment: 1 },
+        });
+      } catch (workflowError) {
+        console.warn("Workflow update failed:", workflowError);
+      }
+    }
+
+    // Prepare response
+    const response = {
       success: true,
-    });
+      document: result.document,
+      versionCreated: !!versionResult,
+      workflowId: result.workflow?.id,
+    };
+
+    if (versionResult) {
+      response.version = {
+        id: versionResult.id,
+        label: versionResult.label,
+        sequenceNumber: versionResult.sequenceNumber,
+        isSnapshot: versionResult.isSnapshot,
+        changeCount: versionResult.changeCount,
+        wordCount: versionResult.wordCount,
+        characterCount: versionResult.characterCount,
+      };
+    }
+
+    res.json(response);
   } catch (error) {
     console.error("Error updating document content:", error);
-    res.status(500).json({ error: "Error updating document content" });
+    res.status(500).json({
+      error: "Error updating document content",
+      details: error.message,
+    });
   }
 });
 
@@ -1231,7 +1423,7 @@ router.post("/generate-translation", authenticate, async (req, res) => {
         name: true,
         identifier: true,
         ownerId: true,
-        docs_prosemirror_delta: true,
+        content: true,
         language: true,
       },
     });
@@ -1259,8 +1451,8 @@ router.post("/generate-translation", authenticate, async (req, res) => {
           identifier: translationId,
           name: translationName,
           ownerId: req.user.id,
+          content: prosemirrorText.toString(),
           docs_y_doc_state: state,
-          docs_prosemirror_delta: delta,
           isRoot: false,
           rootId: rootId,
           language,
@@ -1276,6 +1468,7 @@ router.post("/generate-translation", authenticate, async (req, res) => {
           userId: req.user.id,
           canRead: true,
           canWrite: true,
+          accessLevel: "admin", // Document owner gets admin access
         },
       });
 
@@ -1356,6 +1549,129 @@ router.post("/generate-translation", authenticate, async (req, res) => {
 });
 
 /**
+ * POST /documents/fix-empty-content
+ * @summary Fix documents with null/empty content by extracting from Y.js state
+ * @tags Documents - Debug operations
+ * @security BearerAuth
+ * @return {object} 200 - Fix results
+ */
+router.post("/fix-empty-content", authenticate, async (req, res) => {
+  try {
+    const documentsWithoutContent = await prisma.doc.findMany({
+      where: {
+        OR: [{ content: null }, { content: "" }],
+        docs_y_doc_state: { not: null },
+      },
+      select: {
+        id: true,
+        name: true,
+        content: true,
+        docs_y_doc_state: true,
+        docs_prosemirror_delta: true,
+      },
+    });
+
+    console.log(
+      `Found ${documentsWithoutContent.length} documents with empty content`
+    );
+
+    const fixResults = [];
+
+    for (const doc of documentsWithoutContent) {
+      try {
+        let newContent = "";
+
+        // Try to extract from Y.js state first
+        if (doc.docs_y_doc_state) {
+          try {
+            const ydoc = new Y.Doc();
+            Y.applyUpdate(ydoc, doc.docs_y_doc_state);
+            const yText = ydoc.getText(doc.id);
+            newContent = yText.toString();
+          } catch (yError) {
+            console.log(
+              `Failed to extract from Y.js for ${doc.id}:`,
+              yError.message
+            );
+          }
+        }
+
+        // Fallback to prosemirror delta
+        if (!newContent && doc.docs_prosemirror_delta) {
+          try {
+            if (
+              typeof doc.docs_prosemirror_delta === "object" &&
+              doc.docs_prosemirror_delta.ops
+            ) {
+              newContent = doc.docs_prosemirror_delta.ops
+                .map((op) => (typeof op.insert === "string" ? op.insert : ""))
+                .join("");
+            } else if (typeof doc.docs_prosemirror_delta === "string") {
+              const parsed = JSON.parse(doc.docs_prosemirror_delta);
+              if (parsed.ops) {
+                newContent = parsed.ops
+                  .map((op) => (typeof op.insert === "string" ? op.insert : ""))
+                  .join("");
+              }
+            }
+          } catch (deltaError) {
+            console.log(
+              `Failed to extract from delta for ${doc.id}:`,
+              deltaError.message
+            );
+          }
+        }
+
+        if (newContent && newContent.trim()) {
+          await prisma.doc.update({
+            where: { id: doc.id },
+            data: { content: newContent },
+          });
+
+          fixResults.push({
+            id: doc.id,
+            name: doc.name,
+            status: "fixed",
+            contentLength: newContent.length,
+            contentPreview: newContent.substring(0, 100),
+          });
+        } else {
+          fixResults.push({
+            id: doc.id,
+            name: doc.name,
+            status: "no_extractable_content",
+            contentLength: 0,
+          });
+        }
+      } catch (error) {
+        fixResults.push({
+          id: doc.id,
+          name: doc.name,
+          status: "error",
+          error: error.message,
+        });
+      }
+    }
+
+    res.json({
+      message: `Processed ${documentsWithoutContent.length} documents`,
+      results: fixResults,
+      summary: {
+        total: documentsWithoutContent.length,
+        fixed: fixResults.filter((r) => r.status === "fixed").length,
+        noContent: fixResults.filter(
+          (r) => r.status === "no_extractable_content"
+        ).length,
+        errors: fixResults.filter((r) => r.status === "error").length,
+      },
+    });
+  } catch (error) {
+    console.error("Error fixing empty content:", error);
+    res.status(500).json({ error: "Failed to fix empty content" });
+  }
+});
+
+/**
  * POST /documents/translation-webhook/{id}
  * @summary Webhook endpoint for receiving translation results
  * @tags Documents - Document management operations
@@ -1407,8 +1723,8 @@ router.post("/translation-webhook/:id", async (req, res) => {
       let updated = await tx.doc.update({
         where: { id: document_id },
         data: {
+          content: translatedText.toString(),
           docs_y_doc_state: translatedState,
-          docs_prosemirror_delta: translatedDelta,
           translationStatus: status,
           metadata: {
             model_used,
@@ -1511,7 +1827,7 @@ router.get("/:id/translations/status", authenticate, async (req, res) => {
                 data: {
                   translationStatus: "completed",
                   translationProgress: 100,
-                  docs_prosemirror_delta: translatedDelta,
+                  content: translatedText.toString(),
                   docs_y_doc_state: translatedState,
                 },
               });
@@ -1692,7 +2008,7 @@ router.get("/translation/:id/status", authenticate, async (req, res) => {
             data: {
               translationStatus: "completed",
               translationProgress: 100,
-              docs_prosemirror_delta: translatedDelta,
+              content: translatedText.toString(),
               docs_y_doc_state: translatedState,
             },
           });
@@ -1771,6 +2087,412 @@ router.get("/translation/:id/status", authenticate, async (req, res) => {
   } catch (error) {
     console.error("Error fetching translation status:", error);
     res.status(500).json({ error: "Error fetching translation status" });
+  }
+});
+
+/**
+ * @route POST /documents/:id/snapshot
+ * @summary Create a manual snapshot of the current document state
+ * @tags Documents - Document management operations
+ * @security BearerAuth
+ * @param {string} id.path.required - Document ID
+ * @param {object} request.body.required - Snapshot data
+ * @param {string} request.body.label - Snapshot label
+ * @param {string} request.body.reason - Reason for creating snapshot
+ * @param {array} request.body.tags - Tags for the snapshot
+ * @return {object} 201 - Created snapshot version
+ * @return {object} 403 - Forbidden - No access
+ * @return {object} 404 - Document not found
+ * @return {object} 500 - Server error
+ */
+router.post("/:id/snapshot", authenticate, async (req, res) => {
+  try {
+    const { label, reason, tags = [] } = req.body;
+    const docId = req.params.id;
+
+    // Check if document exists and user has access
+    const document = await prisma.doc.findUnique({
+      where: { id: docId },
+      select: {
+        ownerId: true,
+        rootProjectId: true,
+        content: true,
+      },
+    });
+
+    if (!document) {
+      return res.status(404).json({ error: "Document not found" });
+    }
+
+    // Check permissions
+    if (document.ownerId !== req.user.id) {
+      const permission = await prisma.permission.findFirst({
+        where: {
+          projectId: document.rootProjectId,
+          userId: req.user.id,
+          canWrite: true,
+        },
+      });
+      if (!permission) {
+        return res.status(403).json({ error: "No access to create snapshots" });
+      }
+    }
+
+    // Get current content
+    const currentContent =
+      document.docs_prosemirror_delta ||
+      JSON.parse(document.content || '{"ops":[]}');
+
+    // Create snapshot using enhanced versioning
+    const snapshot = await createAutoVersion({
+      docId,
+      content: currentContent,
+      userId: req.user.id,
+      changeType: "snapshot",
+      changeSummary: reason || "Manual snapshot",
+      isSnapshot: true,
+      forceCreate: true,
+    });
+
+    // Update snapshot with custom fields if provided
+    if (label || tags.length > 0) {
+      const updatedSnapshot = await prisma.version.update({
+        where: { id: snapshot.id },
+        data: {
+          ...(label && { label }),
+          ...(tags.length > 0 && { tags }),
+          ...(reason && { snapshotReason: reason }),
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              email: true,
+              picture: true,
+            },
+          },
+        },
+      });
+      return res.status(201).json(updatedSnapshot);
+    }
+
+    res.status(201).json(snapshot);
+  } catch (error) {
+    console.error("Error creating snapshot:", error);
+    res.status(500).json({
+      error: "Error creating snapshot",
+      details: error.message,
+    });
+  }
+});
+
+/**
+ * @route POST /documents/:id/workflow/start
+ * @summary Start a new editing workflow session
+ * @tags Documents - Document management operations
+ * @security BearerAuth
+ * @param {string} id.path.required - Document ID
+ * @param {object} request.body.required - Workflow data
+ * @param {string} request.body.workflowType - Type of workflow (editing, review, translation)
+ * @param {string} request.body.sessionId - Optional session ID
+ * @return {object} 201 - Created workflow
+ * @return {object} 403 - Forbidden - No access
+ * @return {object} 404 - Document not found
+ * @return {object} 500 - Server error
+ */
+router.post("/:id/workflow/start", authenticate, async (req, res) => {
+  try {
+    const { workflowType = "editing", sessionId } = req.body;
+    const docId = req.params.id;
+
+    // Check if document exists and user has access
+    const document = await prisma.doc.findUnique({
+      where: { id: docId },
+      select: {
+        ownerId: true,
+        rootProjectId: true,
+      },
+    });
+
+    if (!document) {
+      return res.status(404).json({ error: "Document not found" });
+    }
+
+    // Check permissions
+    if (document.ownerId !== req.user.id) {
+      const permission = await prisma.permission.findFirst({
+        where: {
+          projectId: document.rootProjectId,
+          userId: req.user.id,
+          canWrite: true,
+        },
+      });
+      if (!permission) {
+        return res.status(403).json({ error: "No access to start workflows" });
+      }
+    }
+
+    // Complete any existing active workflows for this user and document
+    await prisma.versionWorkflow.updateMany({
+      where: {
+        docId,
+        userId: req.user.id,
+        status: "active",
+      },
+      data: {
+        status: "completed",
+        completedAt: new Date(),
+      },
+    });
+
+    // Start new workflow
+    const workflow = await startVersionWorkflow({
+      docId,
+      userId: req.user.id,
+      workflowType,
+      sessionId,
+    });
+
+    res.status(201).json(workflow);
+  } catch (error) {
+    console.error("Error starting workflow:", error);
+    res.status(500).json({
+      error: "Error starting workflow",
+      details: error.message,
+    });
+  }
+});
+
+/**
+ * @route POST /documents/:id/workflow/:workflowId/complete
+ * @summary Complete an editing workflow session
+ * @tags Documents - Document management operations
+ * @security BearerAuth
+ * @param {string} id.path.required - Document ID
+ * @param {string} workflowId.path.required - Workflow ID
+ * @return {object} 200 - Completed workflow
+ * @return {object} 403 - Forbidden - No access
+ * @return {object} 404 - Workflow not found
+ * @return {object} 500 - Server error
+ */
+router.post(
+  "/:id/workflow/:workflowId/complete",
+  authenticate,
+  async (req, res) => {
+    try {
+      const { workflowId } = req.params;
+
+      // Check if workflow exists and belongs to user
+      const workflow = await prisma.versionWorkflow.findUnique({
+        where: { id: workflowId },
+        include: {
+          doc: {
+            select: {
+              ownerId: true,
+              rootProjectId: true,
+            },
+          },
+        },
+      });
+
+      if (!workflow) {
+        return res.status(404).json({ error: "Workflow not found" });
+      }
+
+      if (workflow.userId !== req.user.id) {
+        return res
+          .status(403)
+          .json({ error: "No access to complete this workflow" });
+      }
+
+      // Complete workflow
+      const completedWorkflow = await prisma.versionWorkflow.update({
+        where: { id: workflowId },
+        data: {
+          status: "completed",
+          completedAt: new Date(),
+          duration: Math.floor(
+            (Date.now() - new Date(workflow.startedAt).getTime()) / 1000
+          ),
+        },
+      });
+
+      res.json(completedWorkflow);
+    } catch (error) {
+      console.error("Error completing workflow:", error);
+      res.status(500).json({
+        error: "Error completing workflow",
+        details: error.message,
+      });
+    }
+  }
+);
+
+/**
+ * @route GET /documents/:id/versions
+ * @summary Get version history for a document
+ * @tags Documents - Document management operations
+ * @security BearerAuth
+ * @param {string} id.path.required - Document ID
+ * @param {number} limit.query - Number of versions to return (default: 20)
+ * @param {number} offset.query - Offset for pagination (default: 0)
+ * @param {boolean} includeSnapshots.query - Whether to include snapshots (default: true)
+ * @return {object} 200 - Version history
+ * @return {object} 403 - Forbidden - No access
+ * @return {object} 404 - Document not found
+ * @return {object} 500 - Server error
+ */
+router.get("/:id/versions", authenticate, async (req, res) => {
+  try {
+    const { limit = 20, offset = 0, includeSnapshots = "true" } = req.query;
+    const docId = req.params.id;
+
+    // Check if document exists and user has access
+    const hasAccess = await checkDocumentPermission(
+      await prisma.doc.findUnique({
+        where: { id: docId },
+        include: {
+          rootsProject: {
+            include: {
+              permissions: true,
+            },
+          },
+          permissions: true,
+        },
+      }),
+      req.user?.id
+    );
+
+    if (!hasAccess) {
+      return res.status(403).json({ error: "No access to view versions" });
+    }
+
+    let whereClause = { docId };
+    if (includeSnapshots === "false") {
+      whereClause.isSnapshot = false;
+    }
+
+    const [versions, total] = await Promise.all([
+      prisma.version.findMany({
+        where: whereClause,
+        select: {
+          id: true,
+          label: true,
+          sequenceNumber: true,
+          changeType: true,
+          changeSummary: true,
+          changeCount: true,
+          wordCount: true,
+          characterCount: true,
+          isAutosave: true,
+          isPublished: true,
+          isSnapshot: true,
+          snapshotReason: true,
+          tags: true,
+          createdAt: true,
+          user: {
+            select: {
+              id: true,
+              username: true,
+              email: true,
+              picture: true,
+            },
+          },
+        },
+        orderBy: [{ sequenceNumber: "desc" }, { createdAt: "desc" }],
+        take: parseInt(limit),
+        skip: parseInt(offset),
+      }),
+      prisma.version.count({ where: whereClause }),
+    ]);
+
+    res.json({
+      versions,
+      pagination: {
+        limit: parseInt(limit),
+        offset: parseInt(offset),
+        total,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching versions:", error);
+    res.status(500).json({
+      error: "Error fetching versions",
+      details: error.message,
+    });
+  }
+});
+
+/**
+ * @route GET /documents/:id/workflows
+ * @summary Get workflow history for a document
+ * @tags Documents - Document management operations
+ * @security BearerAuth
+ * @param {string} id.path.required - Document ID
+ * @return {object} 200 - Workflow history
+ * @return {object} 403 - Forbidden - No access
+ * @return {object} 404 - Document not found
+ * @return {object} 500 - Server error
+ */
+router.get("/:id/workflows", authenticate, async (req, res) => {
+  try {
+    const docId = req.params.id;
+
+    // Check if document exists and user has access
+    const hasAccess = await checkDocumentPermission(
+      await prisma.doc.findUnique({
+        where: { id: docId },
+        include: {
+          rootsProject: {
+            include: {
+              permissions: true,
+            },
+          },
+          permissions: true,
+        },
+      }),
+      req.user?.id
+    );
+
+    if (!hasAccess) {
+      return res.status(403).json({ error: "No access to view workflows" });
+    }
+
+    const workflows = await prisma.versionWorkflow.findMany({
+      where: { docId },
+      select: {
+        id: true,
+        sessionId: true,
+        workflowType: true,
+        status: true,
+        totalChanges: true,
+        contentChanges: true,
+        annotationChanges: true,
+        autoSaveCount: true,
+        checkpointCount: true,
+        startedAt: true,
+        completedAt: true,
+        duration: true,
+        user: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            picture: true,
+          },
+        },
+      },
+      orderBy: { startedAt: "desc" },
+    });
+
+    res.json({ workflows });
+  } catch (error) {
+    console.error("Error fetching workflows:", error);
+    res.status(500).json({
+      error: "Error fetching workflows",
+      details: error.message,
+    });
   }
 });
 

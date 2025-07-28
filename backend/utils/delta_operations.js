@@ -211,7 +211,7 @@ async function getDocumentContent(docId) {
       select: {
         id: true,
         identifier: true,
-        docs_prosemirror_delta: true,
+        content: true,
         docs_y_doc_state: true,
       },
     });

@@ -74,14 +74,11 @@ async function updatePermission(existingPermission, canWrite) {
 async function createPermission(id, userToAdd, canWrite) {
   return await prisma.permission.create({
     data: {
-      Project: {
-        connect: { id },
-      },
-      user: {
-        connect: { id: userToAdd.id },
-      },
+      projectId: id,
+      userId: userToAdd.id,
       canRead: true,
       canWrite,
+      accessLevel: canWrite ? "editor" : "viewer",
     },
     include: {
       user: {
@@ -104,18 +101,17 @@ async function createProject(name, identifier, metadata, rootId, userId) {
       metadata,
       roots: rootId
         ? {
-          connect: { id: rootId },
-        }
+            connect: { id: rootId },
+          }
         : undefined,
       permissions: {
         create: {
-          // Now that docId is optional, we don't need to provide it for project-level permissions
-          // Connect to the user instead of using userId directly
-          user: {
-            connect: { id: userId },
-          },
+          // Project-level permission for the owner
+          userId: userId,
+          projectId: undefined, // Will be set automatically by Prisma
           canRead: true,
           canWrite: true,
+          accessLevel: "admin", // Owner gets admin access
         },
       },
     },
