@@ -3,6 +3,9 @@ import { MdDelete } from "react-icons/md";
 import { SiTicktick } from "react-icons/si";
 import { FaSpinner } from "react-icons/fa";
 import formatTimeAgo from "@/lib/formatTimeAgo";
+import { useState } from "react";
+import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
+import { createPortal } from "react-dom";
 
 
 // Use the Version type from context
@@ -20,8 +23,67 @@ interface DeltaOperation {
 interface DeltaContent {
   ops: DeltaOperation[];
 }
+
 function VersionList({ handleViewAll }: { handleViewAll: () => void }) {
-  const { versions } = useQuillVersion();
+  const { versions, deleteVersion } = useQuillVersion();
+  const [deleteModalState, setDeleteModalState] = useState<{
+    isOpen: boolean;
+    versionId: string | null;
+    versionLabel: string | null;
+    isDeleting: boolean;
+    error: string | null;
+  }>({
+    isOpen: false,
+    versionId: null,
+    versionLabel: null,
+    isDeleting: false,
+    error: null,
+  });
+
+  const handleDeleteClick = (versionId: string, versionLabel: string) => {
+    console.log("Delete button clicked for version:", versionLabel);
+    setDeleteModalState({
+      isOpen: true,
+      versionId,
+      versionLabel,
+      isDeleting: false,
+      error: null,
+    });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteModalState.versionId) return;
+
+    setDeleteModalState(prev => ({ ...prev, isDeleting: true, error: null }));
+    
+    try {
+      await deleteVersion(deleteModalState.versionId);
+      setDeleteModalState({
+        isOpen: false,
+        versionId: null,
+        versionLabel: null,
+        isDeleting: false,
+        error: null,
+      });
+    } catch (error) {
+      console.error("Failed to delete version:", error);
+      setDeleteModalState(prev => ({
+        ...prev,
+        isDeleting: false,
+        error: "Failed to delete version. Please try again.",
+      }));
+    }
+  };
+
+  const handleCloseModal = () => {
+    setDeleteModalState({
+      isOpen: false,
+      versionId: null,
+      versionLabel: null,
+      isDeleting: false,
+      error: null,
+    });
+  };
 
   return (
     <>
@@ -40,22 +102,42 @@ function VersionList({ handleViewAll }: { handleViewAll: () => void }) {
         ) : (
           <div className="max-h-60 overflow-y-auto border">
             {versions.map((version: any) => (
-              <EachVersion key={version.id} version={version} />
+              <EachVersion 
+                key={version.id} 
+                version={version} 
+                onDeleteClick={handleDeleteClick}
+                isDeleting={deleteModalState.isDeleting && deleteModalState.versionId === version.id}
+              />
             ))}
           </div>
         )}
       </div>
 
-      {/* Version Diff Modal */}
+      {createPortal(
+        <ConfirmationModal
+          open={deleteModalState.isOpen}
+          onClose={handleCloseModal}
+          onConfirm={deleteModalState.error ? handleCloseModal : handleDeleteConfirm}
+          title={deleteModalState.error ? "Error" : "Delete Version"}
+          message={
+            deleteModalState.error 
+              ? deleteModalState.error
+              : `Are you sure you want to delete the version "${deleteModalState.versionLabel}"? This action cannot be undone.`
+          }
+          confirmText={deleteModalState.error ? "OK" : "Delete"}
+          cancelText={deleteModalState.error ? undefined : "Cancel"}
+          loading={deleteModalState.isDeleting}
+        />,
+        document.getElementById("diff-portal")!
+      )}
     </>
   );
 }
 
-function EachVersion({ version }: { version: any }) {
+function EachVersion({ version, onDeleteClick, isDeleting }: { version: any, onDeleteClick: (versionId: string, versionLabel: string) => void, isDeleting: boolean }) {
   const { 
     currentVersionId, 
     loadVersion, 
-    deleteVersion, 
     isLoadingVersion, 
     loadingVersionId 
   } = useQuillVersion();
@@ -72,7 +154,7 @@ function EachVersion({ version }: { version: any }) {
     if (isDisabled) return;
     loadVersion(version.id);
   };
-  
+
   return (
     <div
       key={version.id}
@@ -88,7 +170,10 @@ function EachVersion({ version }: { version: any }) {
         </div>
         <div className="flex gap-2">
           <button
-            onClick={handleVersionSelect}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleVersionSelect();
+            }}
             title={isLoading ? "Loading..." : isCurrentVersion ? "Currently active" : "Load version"}
             disabled={isDisabled || isCurrentVersion}
             className={`px-2 py-1 rounded text-sm transition-colors ${
@@ -106,20 +191,19 @@ function EachVersion({ version }: { version: any }) {
             )}
           </button>
           <button
-            onClick={() => {
-              if (window.confirm("Are you sure you want to delete this version?")) {
-                deleteVersion(version.id);
-              }
+            onClick={(e) => {
+              e.stopPropagation();
+              onDeleteClick(version.id, version.label);
             }}
             title="Delete version"
-            disabled={isDisabled}
+            disabled={isDisabled || isDeleting}
             className={`px-2 py-1 rounded text-sm transition-colors ${
-              isDisabled
+              isDisabled || isDeleting
                 ? "bg-red-50 text-red-300 cursor-not-allowed"
                 : "bg-red-100 hover:bg-red-200"
             }`}
           >
-            <MdDelete />
+            {isDeleting ? <FaSpinner className="animate-spin" /> : <MdDelete />}
           </button>
         </div>
       </div>
