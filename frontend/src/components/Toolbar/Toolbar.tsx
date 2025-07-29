@@ -48,12 +48,28 @@ const Toolbar = ({
   useEffect(() => {
     const signal = new AbortController();
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        versionRef.current &&
-        !versionRef.current.contains(event.target as Node)
-      ) {
-        setOpenHistory(false);
+      const target = event.target as Node;
+      
+      // Check if click is inside the version dropdown
+      if (versionRef.current && versionRef.current.contains(target)) {
+        return;
       }
+      
+      // Check if click is inside any modal dialog (Radix UI dialogs have this attribute)
+      const dialogContent = (target as Element)?.closest('[data-slot="dialog-content"]');
+      if (dialogContent) {
+        return;
+      }
+      
+      // Check if click is inside the diff-portal container
+      const diffPortal = document.getElementById("diff-portal");
+      if (diffPortal && diffPortal.contains(target)) {
+        return;
+      }
+      
+      // If none of the above, close the dropdown
+      setOpenHistory(false);
+      console.log("clicked outside");
     };
 
     if (openHistory) {
