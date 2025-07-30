@@ -111,7 +111,7 @@ export const QuillVersionProvider = ({
       queryClient.setQueryData(
         [`versions-${docId}`],
         (oldData: Version[] = []) => {
-          const updatedVersions = [...oldData, newVersion];
+          const updatedVersions = [newVersion,...oldData];
           return updatedVersions.length > maxVersions
             ? updatedVersions.slice(-maxVersions)
             : updatedVersions;
