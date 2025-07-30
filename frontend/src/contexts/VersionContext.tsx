@@ -153,9 +153,13 @@ export const QuillVersionProvider = ({
   const registerQuill = useCallback(
     (quill: Quill) => {
       setQuillInstance(quill);
-      
+      if (quill && versions.length > 0) {
+        const latestVersion = versions[versions.length - 1];
+        quill.setContents(latestVersion.content);
+        setCurrentVersionId(latestVersion.id);
+      }
     },
-    [] 
+    [versions]
   );
 
   // Auto-save functionality
