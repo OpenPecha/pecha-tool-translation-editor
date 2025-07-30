@@ -270,11 +270,7 @@ const Editor = ({
           <div className="flex flex-col overflow-y-auto flex-1 relative">
             <div
               ref={editorRef}
-              className={`editor-content flex-1 pb-1 w-full overflow-hidden transition-opacity duration-200 ${
-                transitionPhase === 'fade-out' ? 'opacity-50' : 
-                transitionPhase === 'skeleton' ? 'opacity-0' :
-                transitionPhase === 'fade-in' ? 'opacity-100' : 'opacity-100'
-              }`}
+              className={`editor-content flex-1 pb-1 w-full overflow-hidden`}
               style={{
                 fontFamily: "Monlam",
                 fontSize: "1rem",

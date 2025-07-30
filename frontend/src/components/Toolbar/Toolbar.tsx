@@ -277,7 +277,7 @@ const Toolbar = ({
         {openHistory && (
           <div
             ref={versionRef}
-            className="absolute bg-gray-100 z-10 top-10 right-0"
+            className="absolute bg-gray-100 z-50 top-10 right-0"
           >
             <QuillVersionControls
               openHistory={openHistory}
