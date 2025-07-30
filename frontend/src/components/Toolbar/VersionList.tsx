@@ -139,16 +139,21 @@ function EachVersion({ version, onDeleteClick, isDeleting }: { version: any, onD
     currentVersionId, 
     loadVersion, 
     isLoadingVersion, 
-    loadingVersionId 
+    loadingVersionId,
+    versions  // Add this to get access to all versions
   } = useQuillVersion();
   
   const isLoading = isLoadingVersion && loadingVersionId === version.id;
   const isDisabled = isLoadingVersion;
   const isCurrentVersion = version.id === currentVersionId;
+  
+  // Check if this is the latest version (first in the array since they're sorted by timestamp desc)
+  const isLatestVersion = versions.length > 0 && version.id === versions[0].id;
+  const canDelete = isLatestVersion && !isDisabled && !isDeleting;
 
   const handleVersionSelect = () => {
-    if (isCurrentVersion) {
-      alert("This version is already active");
+    if (version.id === currentVersionId) {
+      alert("You need to save the current version first");
       return;
     }
     if (isDisabled) return;
@@ -193,13 +198,21 @@ function EachVersion({ version, onDeleteClick, isDeleting }: { version: any, onD
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onDeleteClick(version.id, version.label);
+              if (canDelete) {
+                onDeleteClick(version.id, version.label);
+              }
             }}
-            title="Delete version"
-            disabled={isDisabled || isDeleting}
+            title={
+              !isLatestVersion 
+                ? "Only the latest version can be deleted" 
+                : isDeleting 
+                  ? "Deleting..." 
+                  : "Delete version"
+            }
+            disabled={!canDelete}
             className={`px-2 py-1 rounded text-sm transition-colors ${
-              isDisabled || isDeleting
-                ? "bg-red-50 text-red-300 cursor-not-allowed"
+              !canDelete
+                ? "invisible"
                 : "bg-red-100 hover:bg-red-200"
             }`}
           >
