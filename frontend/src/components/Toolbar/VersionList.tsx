@@ -10,20 +10,6 @@ import { createPortal } from "react-dom";
 
 // Use the Version type from context
 
-interface DeltaOperation {
-  insert: string;
-  attributes?: {
-    bold?: boolean;
-    italic?: boolean;
-    color?: string;
-    background?: string;
-  };
-}
-
-interface DeltaContent {
-  ops: DeltaOperation[];
-}
-
 interface EachVersionProps {
   version: any;
   onDeleteClick: (versionId: string, versionLabel: string) => void;
@@ -148,6 +134,7 @@ function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
     isLoadingVersion, 
     loadingVersionId,
     versions,
+    updateCurrentVersion,
   } = useQuillVersion();
   
   const [isSaving, setIsSaving] = useState(false);
@@ -166,12 +153,10 @@ function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
     setSaveError(null);
     
     try {
-      console.log("saving current version", version);
-      // Add artificial delay to test loading state
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      console.log("saving current version", version);
+      await updateCurrentVersion();
+      console.log("Successfully saved current version:", version.label);
     } catch (error) {
+      console.error("Failed to save version:", error);
       setSaveError("Failed to save version");
     } finally {
       setIsSaving(false);
