@@ -1,5 +1,5 @@
 import { useQuillVersion } from "@/contexts/VersionContext";
-import { MdDelete } from "react-icons/md";
+import { MdDelete, MdSave } from "react-icons/md";
 import { SiTicktick } from "react-icons/si";
 import { FaSpinner } from "react-icons/fa";
 import formatTimeAgo from "@/lib/formatTimeAgo";
@@ -22,6 +22,12 @@ interface DeltaOperation {
 
 interface DeltaContent {
   ops: DeltaOperation[];
+}
+
+interface EachVersionProps {
+  version: any;
+  onDeleteClick: (versionId: string, versionLabel: string) => void;
+  isDeleting: boolean;
 }
 
 function VersionList({ handleViewAll }: { handleViewAll: () => void }) {
@@ -134,86 +140,87 @@ function VersionList({ handleViewAll }: { handleViewAll: () => void }) {
   );
 }
 
-function EachVersion({ version, onDeleteClick, isDeleting }: { version: any, onDeleteClick: (versionId: string, versionLabel: string) => void, isDeleting: boolean }) {
+
+function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
   const { 
     currentVersionId, 
     loadVersion, 
     isLoadingVersion, 
     loadingVersionId,
-    versions  // Add this to get access to all versions
+    versions,
   } = useQuillVersion();
   
-  const isLoading = isLoadingVersion && loadingVersionId === version.id;
-  const isDisabled = isLoadingVersion;
-  const isCurrentVersion = version.id === currentVersionId;
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   
-  // Check if this is the latest version (first in the array since they're sorted by timestamp desc)
-  const isLatestVersion = versions.length > 0 && version.id === versions[0].id;
-  const canDelete = isLatestVersion && !isDisabled && !isDeleting;
+  const isLoading = isLoadingVersion && loadingVersionId === version.id;
+  const isCurrentVersion = version.id === currentVersionId;
+  const isLatestVersion = versions[0]?.id === version.id;
+  const canDelete = isLatestVersion && !isLoading && !isSaving && !isDeleting;
 
-  const handleVersionSelect = () => {
-    if (version.id === currentVersionId) {
-      alert("You need to save the current version first");
-      return;
+  const handleSave = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isSaving) return;
+    
+    setIsSaving(true);
+    setSaveError(null);
+    
+    try {
+      console.log("saving current version", version);
+      // Add artificial delay to test loading state
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      console.log("saving current version", version);
+    } catch (error) {
+      setSaveError("Failed to save version");
+    } finally {
+      setIsSaving(false);
     }
-    if (isDisabled) return;
+  };
+
+  const handleLoad = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isLoading) return;
     loadVersion(version.id);
   };
 
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (canDelete) {
+      onDeleteClick(version.id, version.label);
+    }
+  };
+
   return (
-    <div
-      key={version.id}
-      className={`px-2 py-2 flex flex-col  border-b hover:bg-gray-100 ${
-        version.id === currentVersionId ? "bg-blue-100" : ""
-      }`}
-    >
-      <div className="flex justify-between">
-        <div className={`font-sm flex items-center gap-2 ${
-          isCurrentVersion ? "font-semibold text-blue-600" : ""
-        }`}>
+    <div className={`px-2 py-2 border-b hover:bg-gray-100 ${isCurrentVersion ? "bg-blue-100" : ""}`}>
+      <div className="flex justify-between items-center">
+        <div className={isCurrentVersion ? "font-semibold text-blue-600" : ""}>
           {version.label}
         </div>
         <div className="flex gap-2">
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleVersionSelect();
-            }}
-            title={isLoading ? "Loading..." : isCurrentVersion ? "Currently active" : "Load version"}
-            disabled={isDisabled || isCurrentVersion}
-            className={`px-2 py-1 rounded text-sm transition-colors ${
-              isDisabled || isCurrentVersion
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+            onClick={isCurrentVersion ? handleSave : handleLoad}
+            disabled={isLoading || (isSaving && isCurrentVersion)}
+            className={`px-2 py-1 rounded text-sm ${
+              isCurrentVersion 
+                ? "bg-green-100 hover:bg-green-200 text-green-700" 
                 : "bg-gray-200 hover:bg-gray-300"
             }`}
           >
-            {isLoading ? (
+            {(isLoading || isSaving) ? (
               <FaSpinner className="animate-spin" />
             ) : isCurrentVersion ? (
-              <span className="text-blue-500">●</span>
+              <MdSave />
             ) : (
               <SiTicktick />
             )}
           </button>
+          
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (canDelete) {
-                onDeleteClick(version.id, version.label);
-              }
-            }}
-            title={
-              !isLatestVersion 
-                ? "Only the latest version can be deleted" 
-                : isDeleting 
-                  ? "Deleting..." 
-                  : "Delete version"
-            }
+            onClick={handleDelete}
             disabled={!canDelete}
-            className={`px-2 py-1 rounded text-sm transition-colors ${
-              !canDelete
-                ? "invisible"
-                : "bg-red-100 hover:bg-red-200"
+            className={`px-2 py-1 rounded text-sm ${
+              canDelete ? "bg-red-100 hover:bg-red-200" : "invisible"
             }`}
           >
             {isDeleting ? <FaSpinner className="animate-spin" /> : <MdDelete />}
@@ -221,9 +228,11 @@ function EachVersion({ version, onDeleteClick, isDeleting }: { version: any, onD
         </div>
       </div>
 
-      <div className={`text-xs ${isCurrentVersion ? "text-blue-600" : "text-gray-500"}`}>
-        {version?.user?.username || version?.user?.name || "System"} {"  "}
-        {formatTimeAgo(version.timestamp)}
+      <div className={`text-xs mt-1 ${isCurrentVersion ? "text-blue-600" : "text-gray-500"}`}>
+        {version?.user?.username || version?.user?.name || "System"} • {formatTimeAgo(version.timestamp)}
+        {saveError && isCurrentVersion && (
+          <div className="text-red-500 mt-1">{saveError}</div>
+        )}
       </div>
     </div>
   );
