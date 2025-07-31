@@ -46,14 +46,14 @@ function DocumentsWrapper() {
       {/* Main editor container - uses CSS Grid for better layout control */}
       <div className="grid grid-rows-[1fr] h-full">
         <div className="relative flex px-2 w-full overflow-hidden ">
-          {isEditable === undefined ? (
-            <Loader show={isEditable === undefined} />
+          {isEditable === undefined || !currentDoc ? (
+            <Loader show={isEditable === undefined || !currentDoc} />
           ) : (
             <>
               <DocumentEditor
                 docId={id}
                 isEditable={isEditable}
-                currentDoc={currentDoc}
+                currentDoc={currentDoc as NonNullable<typeof currentDoc>}
               />
               {!selectedTranslationId ? (
                 <SideMenu
@@ -116,7 +116,7 @@ function TranslationEditor({
       <DocumentEditor
         docId={selectedTranslationId}
         isEditable={isEditable}
-        currentDoc={currentDoc}
+        currentDoc={currentDoc as NonNullable<typeof currentDoc>}
       />
     </div>
   );

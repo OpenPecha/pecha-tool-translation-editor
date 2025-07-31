@@ -19,6 +19,7 @@ const {
   startVersionWorkflow,
   updateWorkflowActivity,
 } = require("../utils/versioning");
+// Content encoding utilities no longer needed - annotations sent separately
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -592,6 +593,16 @@ router.get("/:id", authenticate, async (req, res) => {
         createdAt: true,
         updatedAt: true,
         rootProjectId: true,
+        annotations: {
+          select: {
+            id: true,
+            type: true,
+            start: true,
+            end: true,
+            content: true,
+            createdAt: true,
+          },
+        },
         rootsProject: {
           include: {
             permissions: true,
@@ -613,16 +624,32 @@ router.get("/:id", authenticate, async (req, res) => {
       });
     }
 
-    // Decode Y.js state (if stored as Uint8Array) and convert to Delta
-    let delta = [];
-    if (document.docs_y_doc_state) {
-      const ydoc = new Y.Doc({ gc: true });
-      // Y.applyUpdate(ydoc, document.docs_y_doc_state);
-      delta = ydoc.getText(document.identifier).toDelta(); // Convert to Quill-compatible Delta
-    } else if (document.docs_prosemirror_delta) {
-      delta = document.docs_prosemirror_delta;
+    // Process annotations and encode content for frontend
+    let processedDocument = { ...document };
+
+    if (document.content && document.annotations) {
+      // Convert database annotations to encoder format
+      const formattedAnnotations = document.annotations.map((annotation) => ({
+        from: annotation.start,
+        to: annotation.end,
+        type: annotation.type,
+      }));
+
+      // Send annotations separately to frontend
+      if (formattedAnnotations.length > 0) {
+        console.log(
+          `📤 Sending ${formattedAnnotations.length} annotations separately to frontend`
+        );
+        processedDocument.annotations = formattedAnnotations;
+        console.log(
+          `📦 Clean content length: ${processedDocument.content.length}, Annotations: ${formattedAnnotations.length}`
+        );
+      } else {
+        processedDocument.annotations = [];
+      }
     }
-    res.json(document);
+
+    res.json(processedDocument);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error retrieving document" });
@@ -673,15 +700,6 @@ router.get("/:id/content", optionalAuthenticate, async (req, res) => {
       });
     }
 
-    // Decode Y.js state (if stored as Uint8Array) and convert to Delta
-    let delta = [];
-    if (document.docs_y_doc_state) {
-      const ydoc = new Y.Doc({ gc: true });
-      // Y.applyUpdate(ydoc, document.docs_y_doc_state);
-      delta = ydoc.getText(document.identifier).toDelta(); // Convert to Quill-compatible Delta
-    } else if (document.docs_prosemirror_delta) {
-      delta = document.docs_prosemirror_delta;
-    }
     res.json(document);
   } catch (error) {
     console.error(error);
@@ -1125,7 +1143,7 @@ router.patch("/:id", authenticate, async (req, res) => {
  * @security BearerAuth
  * @param {string} id.path.required - Document ID
  * @param {object} request.body.required - Content update data
- * @param {object} request.body.docs_prosemirror_delta - ProseMirror delta
+ * @param {string} request.body.content - Plain text content (may be encoded with annotation markers)
  * @param {boolean} request.body.createSnapshot - Whether to create a snapshot version
  * @param {string} request.body.workflowId - Optional workflow ID for tracking
  * @param {string} request.body.changeSummary - Optional summary of changes
@@ -1136,13 +1154,54 @@ router.patch("/:id", authenticate, async (req, res) => {
  */
 router.patch("/:id/content", authenticate, async (req, res) => {
   const {
-    docs_prosemirror_delta,
-    content, // Accept plain text content
+    content, // Plain text content (clean, no annotation markers)
+    annotations = [], // Separate annotations array
     createSnapshot = false,
     workflowId,
     changeSummary,
     sessionId,
   } = req.body;
+
+  console.log("📥 Received content update request:", {
+    docId: req.params.id,
+    contentLength: content?.length || 0,
+    annotationCount: annotations?.length || 0,
+    preview: content ? content.substring(0, 100) + "..." : "no content",
+    annotations: annotations || [], // Show all annotations to debug
+    annotationsDetail:
+      annotations?.map((ann) => ({
+        type: ann?.type,
+        from: ann?.from,
+        to: ann?.to,
+        hasValidProps: !!(
+          ann?.type &&
+          typeof ann?.from === "number" &&
+          typeof ann?.to === "number"
+        ),
+      })) || [],
+  });
+
+  // Early validation of annotations to provide better error messages
+  if (annotations && annotations.length > 0) {
+    const invalidAnnotations = annotations.filter(
+      (ann) =>
+        !ann ||
+        typeof ann.type !== "string" ||
+        typeof ann.from !== "number" ||
+        typeof ann.to !== "number" ||
+        ann.from < 0 ||
+        ann.to <= ann.from
+    );
+
+    if (invalidAnnotations.length > 0) {
+      console.error("❌ Invalid annotations received:", invalidAnnotations);
+      return res.status(400).json({
+        error: "Invalid annotation data",
+        details: `Found ${invalidAnnotations.length} invalid annotations. Annotations must have valid 'type' (string), 'from' (number >= 0), and 'to' (number > from) properties.`,
+        invalidAnnotations: invalidAnnotations,
+      });
+    }
+  }
 
   try {
     // Get document with extended information for versioning
@@ -1179,10 +1238,8 @@ router.patch("/:id/content", authenticate, async (req, res) => {
       }
     }
 
-    if (!docs_prosemirror_delta && !content) {
-      return res
-        .status(400)
-        .json({ error: "Missing content or content delta" });
+    if (!content) {
+      return res.status(400).json({ error: "Missing content" });
     }
 
     // Get or create active workflow
@@ -1208,20 +1265,18 @@ router.patch("/:id/content", authenticate, async (req, res) => {
     // Process the content update in a transaction with increased timeout
     const result = await prisma.$transaction(
       async (tx) => {
-        // Extract plain text content
-        let plainTextContent = "";
-        if (content) {
-          // Direct plain text content
-          plainTextContent = content;
-        } else if (docs_prosemirror_delta && docs_prosemirror_delta.ops) {
-          // Extract from Delta format (legacy support)
-          plainTextContent = docs_prosemirror_delta.ops.reduce((text, op) => {
-            if (typeof op.insert === "string") {
-              return text + op.insert;
-            }
-            return text;
-          }, "");
-        }
+        // Use the plain text content and annotations directly
+        const plainTextContent = content || "";
+        const processedAnnotations = annotations || [];
+
+        console.log(
+          "📄 Processing plain text content with separate annotations:",
+          {
+            contentLength: plainTextContent.length,
+            annotationCount: processedAnnotations.length,
+            annotations: processedAnnotations,
+          }
+        );
 
         // Update document content
         const updatedDocument = await tx.doc.update({
@@ -1236,6 +1291,66 @@ router.patch("/:id/content", authenticate, async (req, res) => {
             updatedAt: true,
           },
         });
+
+        // Always clean up existing annotations first (even if no new ones)
+        console.log("🗑️ Cleaning up existing annotations for document");
+        await tx.annotation.deleteMany({
+          where: { docId: document.id },
+        });
+
+        // Save new annotations if present
+        if (processedAnnotations && processedAnnotations.length > 0) {
+          console.log(
+            `💾 Saving ${processedAnnotations.length} new annotations to database`
+          );
+
+          // Validate and transform annotations
+          const validAnnotations = processedAnnotations
+            .filter((annotation) => {
+              const isValid =
+                annotation &&
+                typeof annotation.type === "string" &&
+                typeof annotation.from === "number" &&
+                typeof annotation.to === "number" &&
+                annotation.from >= 0 &&
+                annotation.to > annotation.from;
+
+              if (!isValid) {
+                console.warn("❌ Invalid annotation filtered out:", annotation);
+              }
+              return isValid;
+            })
+            .map((annotation) => ({
+              docId: document.id,
+              type: annotation.type,
+              start: annotation.from,
+              end: annotation.to,
+              content: {
+                type: annotation.type,
+              },
+            }));
+
+          console.log(
+            `✅ Creating ${validAnnotations.length} valid annotations:`,
+            validAnnotations
+          );
+
+          if (validAnnotations.length > 0) {
+            await tx.annotation.createMany({
+              data: validAnnotations,
+            });
+          } else {
+            console.log("⚠️ No valid annotations to save after filtering");
+          }
+
+          console.log(
+            `✅ Successfully saved ${processedAnnotations.length} annotations`
+          );
+        } else {
+          console.log(
+            "📝 No new annotations to save (all existing annotations cleared)"
+          );
+        }
 
         // Note: Versioning moved outside transaction to prevent timeout
         return {
@@ -1255,24 +1370,16 @@ router.patch("/:id/content", authenticate, async (req, res) => {
       if (
         createSnapshot ||
         changeSummary ||
-        (docs_prosemirror_delta &&
-          docs_prosemirror_delta.annotations &&
-          docs_prosemirror_delta.annotations.length > 0)
+        (annotations && annotations.length > 0)
       ) {
         versionResult = await createAutoVersion({
           docId: document.id,
-          content: content || docs_prosemirror_delta, // Use plain content or delta
+          content: content,
           userId: req.user.id,
           changeType: createSnapshot ? "snapshot" : "content",
           changeSummary:
             changeSummary ||
-            `Content updated${
-              content
-                ? " (plain text)"
-                : ` with ${
-                    docs_prosemirror_delta.annotations?.length || 0
-                  } annotations`
-            }`,
+            `Content updated with ${annotations?.length || 0} annotations`,
           isSnapshot: createSnapshot,
           workflowId: activeWorkflow?.id,
           forceCreate: createSnapshot,
@@ -1478,16 +1585,7 @@ router.post("/generate-translation", authenticate, async (req, res) => {
     // Trigger the translation worker
 
     // Extract content from the root document
-    let content = "";
-    if (
-      rootDoc.docs_prosemirror_delta &&
-      Array.isArray(rootDoc.docs_prosemirror_delta)
-    ) {
-      content = rootDoc.docs_prosemirror_delta
-        .filter((op) => op.insert)
-        .map((op) => op.insert)
-        .join("");
-    }
+    let content = rootDoc.content || "";
 
     // Create the webhook URL for receiving translation results
     const serverUrl =
@@ -1567,7 +1665,6 @@ router.post("/fix-empty-content", authenticate, async (req, res) => {
         name: true,
         content: true,
         docs_y_doc_state: true,
-        docs_prosemirror_delta: true,
       },
     });
 
@@ -1597,30 +1694,6 @@ router.post("/fix-empty-content", authenticate, async (req, res) => {
         }
 
         // Fallback to prosemirror delta
-        if (!newContent && doc.docs_prosemirror_delta) {
-          try {
-            if (
-              typeof doc.docs_prosemirror_delta === "object" &&
-              doc.docs_prosemirror_delta.ops
-            ) {
-              newContent = doc.docs_prosemirror_delta.ops
-                .map((op) => (typeof op.insert === "string" ? op.insert : ""))
-                .join("");
-            } else if (typeof doc.docs_prosemirror_delta === "string") {
-              const parsed = JSON.parse(doc.docs_prosemirror_delta);
-              if (parsed.ops) {
-                newContent = parsed.ops
-                  .map((op) => (typeof op.insert === "string" ? op.insert : ""))
-                  .join("");
-              }
-            }
-          } catch (deltaError) {
-            console.log(
-              `Failed to extract from delta for ${doc.id}:`,
-              deltaError.message
-            );
-          }
-        }
 
         if (newContent && newContent.trim()) {
           await prisma.doc.update({
@@ -2139,9 +2212,7 @@ router.post("/:id/snapshot", authenticate, async (req, res) => {
     }
 
     // Get current content
-    const currentContent =
-      document.docs_prosemirror_delta ||
-      JSON.parse(document.content || '{"ops":[]}');
+    const currentContent = document.content || "";
 
     // Create snapshot using enhanced versioning
     const snapshot = await createAutoVersion({

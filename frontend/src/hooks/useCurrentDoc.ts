@@ -29,8 +29,7 @@ interface Document {
   id: string;
   name: string;
   identifier: string;
-  content?: string; // Plain text content
-  docs_prosemirror_delta?: Record<string, unknown>; // Legacy field, make optional
+  content?: string; // Plain text content (may be encoded with annotation markers)
   docs_y_doc_state: Uint8Array;
   created_at?: string;
   updated_at?: string;
@@ -38,6 +37,15 @@ interface Document {
   rootProjectId?: string;
   translationStatus?: string;
   translationJobId?: string;
+  annotations?: Array<{
+    from: number;
+    to: number;
+    type: string;
+    // Optional database fields
+    id?: string;
+    content?: Record<string, unknown>;
+    createdAt?: string;
+  }>;
   rootsProject?: {
     id?: string;
     name?: string;
@@ -83,7 +91,7 @@ export const useCurrentDoc = (
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
     enabled: !!docId,
-    staleTime: 0,
+    staleTime: Infinity, // Keep data fresh indefinitely - editor works offline-style
   });
   return {
     currentDoc: data,

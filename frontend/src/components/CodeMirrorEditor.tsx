@@ -33,7 +33,7 @@ import {
 
 interface CurrentDocType {
   id: string;
-  docs_prosemirror_delta?: { ops: Array<{ insert: string }> };
+  content?: string; // Plain text content (may be encoded with annotation markers)
   translations?: Array<{ id: string; language: string; name: string }>;
 }
 
@@ -85,7 +85,7 @@ const CodeMirrorEditor = ({
   const updateDocumentMutation = useMutation({
     mutationFn: (content: string) =>
       updateContentDocument(documentId as string, {
-        docs_prosemirror_delta: { ops: [{ insert: content }] },
+        content: content,
       }),
     onError: (error) => {
       console.error("Error updating document content:", error);
@@ -213,27 +213,10 @@ const CodeMirrorEditor = ({
 
   // Initialize content from currentDoc
   useEffect(() => {
-    if (currentDoc?.docs_prosemirror_delta) {
-      // Convert Quill delta to plain text for now
-      // TODO: Implement proper delta to text conversion
-      const content = extractTextFromDelta(currentDoc.docs_prosemirror_delta);
-      setDocumentContent(content);
+    if (currentDoc?.content) {
+      setDocumentContent(currentDoc.content);
     }
-  }, [currentDoc?.docs_prosemirror_delta]);
-
-  // Helper function to extract text from Quill delta
-  const extractTextFromDelta = (delta: any): string => {
-    if (!delta || !delta.ops) return "";
-
-    return delta.ops
-      .map((op: any) => {
-        if (typeof op.insert === "string") {
-          return op.insert;
-        }
-        return "";
-      })
-      .join("");
-  };
+  }, [currentDoc?.content]);
 
   function addComment() {
     if (!currentRange || currentRange?.length === 0) return;

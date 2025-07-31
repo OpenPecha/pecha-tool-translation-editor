@@ -151,7 +151,6 @@ const clients = new Set();
 //         where: { id: docId },
 //         select: {
 //           docs_y_doc_state: true,
-//           docs_prosemirror_delta: true,
 //         },
 //       });
 

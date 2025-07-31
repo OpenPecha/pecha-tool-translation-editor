@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Save,
   CheckCircle,
@@ -21,8 +21,9 @@ import {
 } from "../api/document";
 import { VersionWorkflow } from "../api/version";
 import formatTimeAgo from "../lib/formatTimeAgo";
-import { useDebounce } from "@uidotdev/usehooks";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
+import useDebounce from "@/hooks/useDebounce";
+import { useDebounce as deboucer } from "@uidotdev/usehooks";
 
 interface AutoSaveIndicatorProps {
   docId: string;
@@ -61,28 +62,72 @@ const AutoSaveIndicator: React.FC<AutoSaveIndicatorProps> = ({
   const [isStartingWorkflow, setIsStartingWorkflow] = useState(false);
   const [isCompletingWorkflow, setIsCompletingWorkflow] = useState(false);
   const [isCreatingSnapshot, setIsCreatingSnapshot] = useState(false);
+  // Note: No query client needed - editor works offline-style without refetching
 
-  // Query client for cache invalidation
-  const queryClient = useQueryClient();
-
-  // Update content mutation
+  // Update content mutation - memoized to prevent recreation
   const updateDocumentMutation = useMutation({
-    mutationFn: (content: string) => {
-      console.log(
-        `🔄 Starting save for document ${docId}, content length: ${content.length}`
-      );
-      if (!docId) {
-        throw new Error("Document ID is required for saving");
-      }
-      return updateContentDocument(docId, { content });
-    },
+    mutationFn: useCallback(
+      (params?: { content?: string; annotations?: unknown[] }) => {
+        if (!docId) {
+          throw new Error("Document ID is required for saving");
+        }
+
+        // Use provided content/annotations or fall back to current props
+        const finalContent = params?.content || content || "";
+        const rawAnnotations = (params?.annotations ||
+          annotations ||
+          []) as Array<{
+          from?: number;
+          to?: number;
+          type?: string;
+          start?: number;
+          end?: number;
+        }>;
+
+        // Filter out invalid/phantom annotations before sending
+        const finalAnnotations = rawAnnotations.filter(
+          (ann) =>
+            ann &&
+            ann.type &&
+            typeof ann.from === "number" &&
+            typeof ann.to === "number" &&
+            ann.from >= 0 &&
+            ann.to > ann.from
+        );
+
+        // Log if any annotations were filtered out
+        if (rawAnnotations.length !== finalAnnotations.length) {
+          console.warn(
+            `🚫 Filtered out ${
+              rawAnnotations.length - finalAnnotations.length
+            } invalid annotations`,
+            {
+              raw: rawAnnotations,
+              filtered: finalAnnotations,
+            }
+          );
+        }
+
+        return updateContentDocument(docId, {
+          content: finalContent,
+          annotations: finalAnnotations as Array<{
+            from: number;
+            to: number;
+            type: string;
+          }>,
+        });
+      },
+      [docId] // Only recreate if docId changes
+    ),
     onSuccess: (data) => {
       console.log("✅ Document saved successfully:", data);
       onContentSaved?.();
-      // Invalidate document query to ensure fresh data on next load
-      queryClient.invalidateQueries({
-        queryKey: [`document-${docId}`],
-      });
+      // Reset previous content to current content to prevent duplicate saves
+      if (content) {
+        previousContent.current = content;
+      }
+      // Note: No query invalidation - editor works offline-style with local changes only
+      // Data is only saved to backend, not refetched
     },
     onError: (error) => {
       console.error("❌ Error updating document content:", error);
@@ -94,38 +139,66 @@ const AutoSaveIndicator: React.FC<AutoSaveIndicatorProps> = ({
       });
     },
   });
+  const debouncedsave = deboucer(updateDocumentMutation.mutate, 3000);
 
-  // Debounced content for autosave
+  // Debounced content and annotations for autosave
   const debouncedContent = useDebounce(content, 3000);
+  const debouncedAnnotations = useDebounce(annotations, 3000);
 
-  // Autosave when debounced content changes
+  // Track previous state for debugging
+  const previousContent = useRef<string>("");
+
+  // Immediate save for annotation changes (bypass debouncing)
+  const previousAnnotationCount = useRef<number>(0);
+
+  // Track annotation count for debugging (but don't trigger immediate saves)
   useEffect(() => {
-    if (debouncedContent && debouncedContent.trim() && hasUnsavedChanges) {
-      try {
-        console.log(
-          `💾 Executing autosave - Content length: ${debouncedContent.length}`
-        );
-        updateDocumentMutation.mutate(debouncedContent);
+    const currentAnnotationCount = annotations?.length || 0;
 
-        // Save annotations to localStorage
-        if (annotations && docId) {
-          const annotationsKey = `annotations_${docId}`;
-          localStorage.setItem(annotationsKey, JSON.stringify(annotations));
-          console.log(
-            `📝 Saved ${annotations.length} annotations to localStorage`
-          );
+    console.log("📊 Annotation state changed:", {
+      hasUnsavedChanges,
+      previousCount: previousAnnotationCount.current,
+      currentCount: currentAnnotationCount,
+      willTriggerDebounce:
+        hasUnsavedChanges &&
+        currentAnnotationCount !== previousAnnotationCount.current,
+    });
+
+    previousAnnotationCount.current = currentAnnotationCount;
+  }, [annotations, hasUnsavedChanges]);
+
+  // Autosave when debounced content OR annotations change (respects 3-second inactivity)
+  useEffect(() => {
+    if (hasUnsavedChanges && !updateDocumentMutation.isPending) {
+      const hasContentToSave = debouncedContent && debouncedContent.trim();
+      const hasAnnotationsToSave = debouncedAnnotations;
+
+      // Only trigger save if there's something to save
+      if (hasContentToSave || hasAnnotationsToSave) {
+        try {
+          // Use the latest content and annotations for debounced save
+          const latestContent = content || debouncedContent || "";
+          const latestAnnotations = annotations || debouncedAnnotations || [];
+
+          console.log("💾 Debounced autosave triggered after 3s inactivity:", {
+            contentLength: latestContent.length,
+            annotationCount: latestAnnotations.length,
+            triggeredBy: {
+              content: !!hasContentToSave,
+              annotations: !!hasAnnotationsToSave,
+            },
+          });
+
+          debouncedsave({
+            content: latestContent,
+            annotations: latestAnnotations,
+          });
+        } catch (error) {
+          console.error("❌ Error in autosave useEffect:", error);
         }
-      } catch (error) {
-        console.error("❌ Error in autosave useEffect:", error);
       }
     }
-  }, [
-    debouncedContent,
-    hasUnsavedChanges,
-    updateDocumentMutation,
-    annotations,
-    docId,
-  ]);
+  }, [debouncedContent, debouncedAnnotations, hasUnsavedChanges]); // Trigger on both content and annotation debounce
 
   // Manual save function
   const handleManualSave = useCallback(() => {
@@ -133,18 +206,15 @@ const AutoSaveIndicator: React.FC<AutoSaveIndicatorProps> = ({
       if (content && content.trim()) {
         console.log(
           "🚀 Manual save triggered - Content length:",
-          content.length
+          content.length,
+          "Annotation count:",
+          annotations?.length || 0
         );
-        updateDocumentMutation.mutate(content);
-
-        // Save annotations to localStorage
-        if (annotations && docId) {
-          const annotationsKey = `annotations_${docId}`;
-          localStorage.setItem(annotationsKey, JSON.stringify(annotations));
-          console.log(
-            `📝 Manual save - saved ${annotations.length} annotations`
-          );
-        }
+        // Use the latest content prop directly for manual save
+        debouncedsave({
+          content: content,
+          annotations: annotations,
+        });
       } else {
         console.log(
           "🚀 Manual save triggered - delegating to onManualSave prop"
@@ -154,7 +224,7 @@ const AutoSaveIndicator: React.FC<AutoSaveIndicatorProps> = ({
     } catch (error) {
       console.error("❌ Error in manual save:", error);
     }
-  }, [content, annotations, docId, updateDocumentMutation, onManualSave]);
+  }, [content, annotations, onManualSave]); // Remove updateDocumentMutation from deps
 
   // Determine save status
   const getSaveStatus = (): SaveStatus => {

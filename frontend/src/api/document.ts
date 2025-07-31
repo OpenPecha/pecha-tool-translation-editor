@@ -1,4 +1,3 @@
-import { Op } from "quill";
 import { getHeaders, getHeadersMultipart } from "./utils";
 
 const server_url = import.meta.env.VITE_SERVER_URL;
@@ -170,12 +169,17 @@ export const deleteDocument = async (id: string) => {
 
 interface UpdateDocumentParams {
   name?: string;
-  docs_prosemirror_delta?: Op[];
+}
+
+interface AnnotationRange {
+  from: number;
+  to: number;
+  type: string;
 }
 
 interface UpdateContentDocumentParams {
-  content?: string; // Plain text content
-  docs_prosemirror_delta?: Op[]; // Legacy delta format (optional)
+  content?: string; // Plain text content (clean, no annotation markers)
+  annotations?: AnnotationRange[]; // Separate annotations array
   createSnapshot?: boolean;
   workflowId?: string;
   changeSummary?: string;

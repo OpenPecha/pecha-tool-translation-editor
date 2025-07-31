@@ -202,7 +202,7 @@ async function getFootnoteContent(threadId) {
 /**
  * Get the content of a document
  * @param {string} docId - The document ID
- * @returns {Promise<Array|null>} - The document content as a Delta array or null
+ * @returns {Promise<string|null>} - The document content as plain text or null
  */
 async function getDocumentContent(docId) {
   try {
@@ -218,17 +218,8 @@ async function getDocumentContent(docId) {
 
     if (!document) return null;
 
-    // Get content from ProseMirror delta or Y.js state
-    let delta = null;
-    if (document.docs_prosemirror_delta) {
-      delta = document.docs_prosemirror_delta;
-    } else if (document.docs_y_doc_state) {
-      const ydoc = new Y.Doc({ gc: true });
-      Y.applyUpdate(ydoc, document.docs_y_doc_state);
-      delta = ydoc.getText(document.identifier).toDelta();
-    }
-
-    return delta;
+    // Return plain text content
+    return document.content || "";
   } catch (error) {
     console.error("Error getting document content:", error);
     return null;

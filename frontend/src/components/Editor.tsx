@@ -69,10 +69,17 @@ const Editor = ({
   }, [documentId, currentDoc, trackDocumentOpened, currentUser]);
 
   const updateDocumentMutation = useMutation({
-    mutationFn: (content: Record<string, unknown>) =>
-      updateContentDocument(documentId as string, {
-        docs_prosemirror_delta: content.ops,
-      }),
+    mutationFn: (content: Record<string, unknown>) => {
+      // Convert Quill delta to plain text
+      const ops = content.ops as Array<{ insert: unknown }> | undefined;
+      const textContent =
+        ops
+          ?.map((op) => (typeof op.insert === "string" ? op.insert : ""))
+          .join("") || "";
+      return updateContentDocument(documentId as string, {
+        content: textContent,
+      });
+    },
     onError: (error) => {
       console.error("Error updating document content:", error);
     },
@@ -266,10 +273,11 @@ const Editor = ({
     if (
       quillRef.current &&
       quillRef.current.getText().trim() === "" &&
-      currentDoc?.docs_prosemirror_delta
+      currentDoc?.content
     ) {
       setTimeout(() => {
-        quillRef.current?.setContents(currentDoc.docs_prosemirror_delta);
+        // Convert plain text content to Quill delta format
+        quillRef.current?.setText(currentDoc.content);
       }, 0);
     }
     return () => {
@@ -277,7 +285,7 @@ const Editor = ({
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [currentDoc?.docs_prosemirror_delta]);
+  }, [currentDoc?.content]);
 
   function addComment() {
     if (!currentRange || currentRange?.length === 0) return;

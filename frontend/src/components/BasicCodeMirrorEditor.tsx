@@ -25,8 +25,7 @@ import { useDebounce } from "@uidotdev/usehooks";
 
 interface CurrentDocType {
   id: string;
-  content?: string;
-  docs_prosemirror_delta?: { ops: Array<{ insert: string }> };
+  content?: string; // Plain text content (may be encoded with annotation markers)
 }
 
 interface BasicCodeMirrorEditorProps {
@@ -60,16 +59,6 @@ const BasicCodeMirrorEditor: React.FC<BasicCodeMirrorEditorProps> = ({
     if (currentDoc.content && currentDoc.content.trim()) {
       console.log("✅ Using document content from database");
       return currentDoc.content;
-    } else if (currentDoc.docs_prosemirror_delta) {
-      // Fallback for legacy data
-      const delta = currentDoc.docs_prosemirror_delta;
-      if (delta.ops) {
-        const content = delta.ops
-          .map((op) => (typeof op.insert === "string" ? op.insert : ""))
-          .join("");
-        console.log("📜 Using legacy document delta");
-        return content;
-      }
     }
     return "";
   }, [currentDoc]);
@@ -248,8 +237,6 @@ const BasicCodeMirrorEditor: React.FC<BasicCodeMirrorEditorProps> = ({
       }),
       EditorView.updateListener.of((update) => {
         if (update.docChanged) {
-          const content = update.state.doc.toString();
-
           // Check if this is user input
           const isUserInput = update.transactions.some(
             (tr) =>
@@ -258,14 +245,8 @@ const BasicCodeMirrorEditor: React.FC<BasicCodeMirrorEditorProps> = ({
               tr.isUserEvent("input.paste")
           );
 
-          console.log("🔄 Editor update:", {
-            contentLength: content.length,
-            isUserInput,
-          });
-
           // Only save if this is user input
           if (isUserInput) {
-            console.log("👤 User input detected - triggering save");
             triggerSave(update.view);
           }
         }
