@@ -132,14 +132,7 @@ export const QuillVersionProvider = ({
       queryClient.setQueryData([`versions-${docId}`], () => updatedVersions);
       // If deleted version was current and there are still versions left
       if (versionId === currentVersionId && updatedVersions.length > 0) {
-        // Set current to the last remaining version (most recent)
-        const newCurrentVersion = updatedVersions[updatedVersions.length - 1];
-        setCurrentVersionId(newCurrentVersion.id);
-        const version = await fetchVersion(newCurrentVersion.id);
-        // Update editor content
-        if (newCurrentVersion && quillInstance) {
-          quillInstance.setContents(version.content);
-        }
+        setCurrentVersionId(updatedVersions[0].id);
       }
     },
   });
