@@ -143,7 +143,8 @@ function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
   const isLoading = isLoadingVersion && loadingVersionId === version.id;
   const isCurrentVersion = version.id === currentVersionId;
   const isLatestVersion = versions[0]?.id === version.id;
-  const canDelete = isLatestVersion && !isLoading && !isSaving && !isDeleting;
+  const isSystemVersion = version.user === null;
+  const canDelete = isLatestVersion && !isLoading && !isSaving && !isDeleting && !isSystemVersion;
 
   const handleSave = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -179,37 +180,53 @@ function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
   return (
     <div className={`px-2 py-2 border-b hover:bg-gray-100 ${isCurrentVersion ? "bg-blue-100" : ""}`}>
       <div className="flex justify-between items-center">
-        <div className={isCurrentVersion ? "font-semibold text-blue-600" : ""}>
+        <div className={`flex items-center gap-1 ${isCurrentVersion ? "font-semibold text-blue-600" : ""}`}>
           {version.label}
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={isCurrentVersion ? handleSave : handleLoad}
-            disabled={isLoading || (isSaving && isCurrentVersion)}
-            className={`px-2 py-1 rounded text-sm ${
-              isCurrentVersion 
-                ? "bg-green-100 hover:bg-green-200 text-green-700" 
-                : "bg-gray-200 hover:bg-gray-300"
-            }`}
-          >
-            {(isLoading || isSaving) ? (
-              <FaSpinner className="animate-spin" />
-            ) : isCurrentVersion ? (
-              <MdSave />
-            ) : (
-              <SiTicktick />
-            )}
-          </button>
+        <div className="flex gap-2 justify-end">
+          {/* First button slot: Save (current non-system) or Load (non-current) */}
+          {isCurrentVersion && !isSystemVersion && (
+            <button
+              onClick={handleSave}
+              disabled={isLoading || isSaving}
+              className="px-2 py-1 rounded text-sm bg-green-100 hover:bg-green-200 text-green-700"
+            >
+              {(isLoading || isSaving) ? (
+                <FaSpinner className="animate-spin" />
+              ) : (
+                <MdSave />
+              )}
+            </button>
+          )}
           
-          <button
-            onClick={handleDelete}
-            disabled={!canDelete}
-            className={`px-2 py-1 rounded text-sm ${
-              canDelete ? "bg-red-100 hover:bg-red-200" : "invisible"
-            }`}
-          >
-            {isDeleting ? <FaSpinner className="animate-spin" /> : <MdDelete />}
-          </button>
+          {!isCurrentVersion && (
+            <button
+              onClick={handleLoad}
+              disabled={isLoading}
+              className="px-2 py-1 rounded text-sm bg-gray-200 hover:bg-gray-300"
+            >
+              {isLoading ? (
+                <FaSpinner className="animate-spin" />
+              ) : (
+                <SiTicktick />
+              )}
+            </button>
+          )}
+          
+          {/* Second button slot: Delete (non-system) or invisible placeholder (system) */}
+          {!isSystemVersion ? (
+            <button
+              onClick={handleDelete}
+              disabled={!canDelete}
+              className={`px-2 py-1 rounded text-sm ${
+                canDelete ? "bg-red-100 hover:bg-red-200" : "invisible"
+              }`}
+            >
+              {isDeleting ? <FaSpinner className="animate-spin" /> : <MdDelete />}
+            </button>
+          ) : (
+            <div className="px-2 py-1 w-8"></div>
+          )}
         </div>
       </div>
 

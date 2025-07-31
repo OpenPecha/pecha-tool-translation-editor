@@ -293,7 +293,7 @@ router.post("/", authenticate, upload.single("file"), async (req, res) => {
         data: {
           content: { ops: delta },
           docId: doc.id,
-          label: "initail Auto-save",
+          label: "initial Auto-save",
         },
       });
 
@@ -377,7 +377,7 @@ router.post("/content", authenticate, async (req, res) => {
         data: {
           content: { ops: delta },
           docId: doc.id,
-          label: "initail Auto-save",
+          label: "initial Auto-save",
         },
       });
 

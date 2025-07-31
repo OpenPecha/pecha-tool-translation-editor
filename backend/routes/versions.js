@@ -108,6 +108,13 @@ router.delete("/version/:id", authenticate, async (req, res) => {
       return res.status(404).json({ error: "Version not found" });
     }
 
+    // Prevent deletion of system-generated versions (initial versions)
+    if (!existingVersion.userId) {
+      return res.status(403).json({ 
+        error: "Cannot delete system-generated version" 
+      });
+    }
+
     // Check if this version is currently set as the document's current version
     const document = await prisma.doc.findUnique({
       where: { id: existingVersion.docId },
@@ -151,6 +158,17 @@ router.patch("/version/:id", authenticate, async (req, res) => {
       return res.status(400).json({ error: "Label is required for update" });
     }
 
+    // Check if the version exists and prevent modification of system-generated versions
+    const existingVersion = await prisma.version.findUnique({ where: { id } });
+    if (!existingVersion) {
+      return res.status(404).json({ error: "Version not found" });
+    }
+    if (!existingVersion.userId) {
+      return res.status(403).json({ 
+        error: "Cannot modify system-generated version" 
+      });
+    }
+
     const updatedVersion = await prisma.version.update({
       where: { id },
       data: { label },
@@ -184,6 +202,13 @@ router.put("/version/:id", authenticate, async (req, res) => {
 
     if (!existingVersion) {
       return res.status(404).json({ error: "Version not found" });
+    }
+
+    // Prevent modification of system-generated versions
+    if (!existingVersion.userId) {
+      return res.status(403).json({ 
+        error: "Cannot modify system-generated version" 
+      });
     }
 
     const updatedVersion = await prisma.version.update({
