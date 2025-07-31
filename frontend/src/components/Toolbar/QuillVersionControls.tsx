@@ -50,7 +50,8 @@ const VersionControls = ({
           />
           <Button
             type="submit"
-            className="px-3 py-2 rounded text-xs "
+            id="create-button"
+            className="px-3 py-2 rounded text-xs text-white create-button"
             style={{
               backgroundColor: "#000",
               color: "#fff",
