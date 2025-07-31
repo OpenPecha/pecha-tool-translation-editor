@@ -277,14 +277,14 @@ const Editor = ({
                 lineHeight: 1.5,
               }}
             />
-            
+
             {/* Skeleton Overlay */}
-            {transitionPhase === 'skeleton' && (
+            {transitionPhase === "skeleton" && (
               <div className="absolute inset-0 bg-white z-10 p-4 overflow-y-auto">
                 <SkeletonLoader className="version-skeleton-loader" />
               </div>
             )}
-            
+
             <FootnoteView documentId={documentId} isEditable={isEditable} />
           </div>
           {createPortal(
