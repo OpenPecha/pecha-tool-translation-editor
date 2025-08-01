@@ -114,6 +114,37 @@ export const updateVersion = async (versionId: string, label: string) => {
 };
 
 /**
+ * Update a version's content
+ * @param versionId - Version ID
+ * @param content - New content for the version
+ */
+export const updateVersionContent = async (versionId: string, content: any) => {
+  try {
+    const response = await fetch(
+      `${server_url}/versions/version/${versionId}`,
+      {
+        method: "PUT",
+        headers: {
+          ...getHeaders(),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ content }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to update version content");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error updating version content:", error);
+    throw error;
+  }
+};
+
+/**
  * Delete a version by its ID
  * @param versionId - ID of the version
  */
@@ -150,10 +181,36 @@ export const getVersionDiff = async (versionId: string) => {
     if (!response.ok) {
       throw new Error("Failed to get version diff");
     }
-
     return await response.json();
   } catch (error) {
     console.error("Error getting version diff:", error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch the current version of a document from the database
+ * @param docId - Document ID
+ */
+export const fetchCurrentVersion = async (docId: string) => {
+  try {
+    const response = await fetch(
+      `${server_url}/versions/current/${docId}`,
+      {
+        headers: getHeaders(),
+      }
+    );
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null; // No current version set
+      }
+      throw new Error("Failed to fetch current version");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching current version:", error);
     throw error;
   }
 };

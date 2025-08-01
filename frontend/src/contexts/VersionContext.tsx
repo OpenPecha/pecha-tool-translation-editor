@@ -1,4 +1,4 @@
-import React, {
+import {
   createContext,
   useContext,
   useState,
@@ -13,6 +13,8 @@ import {
   fetchVersions,
   fetchVersion,
   deleteVersion as deleteVersionAPI,
+  updateVersionContent,
+  fetchCurrentVersion,
 } from "../api/version";
 import Quill from "quill";
 import { User } from "@/auth/types";
@@ -41,6 +43,7 @@ interface QuillVersionContextType {
   transitionPhase: 'idle' | 'fade-out' | 'skeleton' | 'fade-in';
   registerQuill: (quill: Quill) => void;
   saveVersion: (label?: string) => Promise<Version | null>;
+  updateCurrentVersion: () => Promise<Version | null>;
   loadVersion: (versionId: string) => Promise<boolean>;
   loadVersions: () => void;
   deleteVersion: (versionId: string) => Promise<void>;
@@ -94,30 +97,49 @@ export const QuillVersionProvider = ({
     queryKey: [`versions-${docId}`],
     enabled: !!docId,
     queryFn: () => fetchVersions(docId!),
-    // onSuccess: (data) => {
-    //   if (data.length > 0 && !currentVersionId) {
-    //     setCurrentVersionId(data[data.length - 1].id);
-    //   }
-    // },
     refetchOnMount: true,
     refetchOnWindowFocus: false,
   });
 
+  // Fetch current version from database to sync with stored currentVersionId
+  const {
+    data: databaseCurrentVersion,
+  } = useQuery({
+    queryKey: [`current-version-${docId}`],
+    enabled: !!docId,
+    queryFn: () => fetchCurrentVersion(docId!),
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+  });
+
+  // Effect to sync currentVersionId with database when data loads
+  useEffect(() => {
+    if (databaseCurrentVersion?.id) {
+      // Always use the database's currentVersionId as the source of truth
+      setCurrentVersionId(databaseCurrentVersion.id);
+    } else if (versions.length > 0) {
+      // Fallback to latest version if no current version is set in database
+      const latestVersion = versions[0]; // versions are ordered by timestamp desc
+      setCurrentVersionId(latestVersion.id);
+    }
+  }, [databaseCurrentVersion, versions]);
+
   // Create version mutation
   const createVersionMutation = useMutation({
     mutationFn: ({ label, content }: { label: string; content: any }) =>
-      createVersion(docId, label, content),
+      createVersion(docId!, label, content),
     onSuccess: (newVersion) => {
       queryClient.setQueryData(
         [`versions-${docId}`],
         (oldData: Version[] = []) => {
-          const updatedVersions = [...oldData, newVersion];
+          const updatedVersions = [newVersion,...oldData];
           return updatedVersions.length > maxVersions
             ? updatedVersions.slice(-maxVersions)
             : updatedVersions;
         }
       );
       queryClient.invalidateQueries({ queryKey: [`versions-${docId}`] });
+      queryClient.invalidateQueries({ queryKey: [`current-version-${docId}`] });
       setCurrentVersionId(newVersion.id);
     },
   });
@@ -127,19 +149,14 @@ export const QuillVersionProvider = ({
     mutationFn: (versionId: string) => deleteVersionAPI(versionId),
     onSuccess: async (_, versionId) => {
       // Filter out the deleted version
-      const updatedVersions = versions.filter((v) => v.id !== versionId);
+      const updatedVersions = versions.filter((v: Version) => v.id !== versionId);
       // Update cache with filtered data
       queryClient.setQueryData([`versions-${docId}`], () => updatedVersions);
+      // Invalidate current version query to sync with backend changes
+      queryClient.invalidateQueries({ queryKey: [`current-version-${docId}`] });
       // If deleted version was current and there are still versions left
       if (versionId === currentVersionId && updatedVersions.length > 0) {
-        // Set current to the last remaining version (most recent)
-        const newCurrentVersion = updatedVersions[updatedVersions.length - 1];
-        setCurrentVersionId(newCurrentVersion.id);
-        const version = await fetchVersion(newCurrentVersion.id);
-        // Update editor content
-        if (newCurrentVersion && quillInstance) {
-          quillInstance.setContents(version.content);
-        }
+        setCurrentVersionId(updatedVersions[0].id);
       }
     },
   });
@@ -147,19 +164,27 @@ export const QuillVersionProvider = ({
   // Load versions from API
   const loadVersions = useCallback(() => {
     refetchVersions();
-  }, []);
+    // Also invalidate current version query to ensure consistency
+    queryClient.invalidateQueries({ queryKey: [`current-version-${docId}`] });
+  }, [refetchVersions, queryClient, docId]);
 
   // Register Quill instance
   const registerQuill = useCallback(
     (quill: Quill) => {
       setQuillInstance(quill);
       if (quill && versions.length > 0) {
-        const latestVersion = versions[versions.length - 1];
-        quill.setContents(latestVersion.content);
-        setCurrentVersionId(latestVersion.id);
+        // Use the current version from database if available, otherwise fall back to latest
+        const targetVersion = databaseCurrentVersion || 
+          versions.find(v => v.id === currentVersionId) || 
+          versions[0]; // versions are ordered by timestamp desc, so [0] is latest
+        
+        if (targetVersion?.content) {
+          quill.setContents(targetVersion.content);
+        }
+        // Don't override currentVersionId here - let the sync effect handle it
       }
     },
-    [versions]
+    [versions, databaseCurrentVersion, currentVersionId]
   );
 
   // Auto-save functionality
@@ -268,6 +293,39 @@ export const QuillVersionProvider = ({
     [deleteVersionMutation]
   );
 
+  // Update current version with latest content from editor
+  const updateCurrentVersion = useCallback(
+    async (): Promise<Version | null> => {
+      if (!quillInstance || !currentVersionId) return null;
+
+      try {
+        const content = quillInstance.getContents();
+        const updatedVersion = await updateVersionContent(currentVersionId, content);
+        
+        // Update the version in the cache
+        queryClient.setQueryData(
+          [`versions-${docId}`],
+          (oldData: Version[] = []) => {
+            return oldData.map(version => 
+              version.id === currentVersionId 
+                ? { ...version, ...updatedVersion, content }
+                : version
+            );
+          }
+        );
+        
+        // Invalidate current version query to ensure sync with backend
+        queryClient.invalidateQueries({ queryKey: [`current-version-${docId}`] });
+        
+        return updatedVersion;
+      } catch (error) {
+        console.error("Error updating current version:", error);
+        throw error;
+      }
+    },
+    [quillInstance, currentVersionId, queryClient, docId]
+  );
+
   // Create a named snapshot
   const createNamedSnapshot = useCallback(
     (name: string): Promise<Version | null> => {
@@ -299,6 +357,7 @@ export const QuillVersionProvider = ({
       transitionPhase,
       registerQuill,
       saveVersion,
+      updateCurrentVersion,
       loadVersion,
       loadVersions,
       deleteVersion,
@@ -317,6 +376,7 @@ export const QuillVersionProvider = ({
       transitionPhase,
       registerQuill,
       saveVersion,
+      updateCurrentVersion,
       loadVersion,
       loadVersions,
       deleteVersion,

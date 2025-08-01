@@ -60,6 +60,8 @@ model Doc {
   versions               Version[] // A document can have multiple versions
   footnotes              Footnote[] // A document can have multiple footnotes
   metadata               Json? // Additional metadata for the document
+  currentVersionId       String? @unique
+  currentVersion         Version? @relation("CurrentVersion", fields: [currentVersionId], references: [id], onDelete: Cascade)
 
   // Translation tracking fields
   translationStatus   String? // pending, progress, completed, failed
@@ -142,6 +144,7 @@ model Version {
   userId    String?
   user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   content   Json // Quill delta contents stored as JSON
+  currentDoc Doc? @relation("CurrentVersion")
 }
 
 model ApiCredential {

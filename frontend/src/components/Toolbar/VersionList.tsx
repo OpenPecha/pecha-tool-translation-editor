@@ -1,5 +1,5 @@
 import { useQuillVersion } from "@/contexts/VersionContext";
-import { MdDelete } from "react-icons/md";
+import { MdDelete, MdSave } from "react-icons/md";
 import { SiTicktick } from "react-icons/si";
 import { FaSpinner } from "react-icons/fa";
 import formatTimeAgo from "@/lib/formatTimeAgo";
@@ -10,18 +10,10 @@ import { createPortal } from "react-dom";
 
 // Use the Version type from context
 
-interface DeltaOperation {
-  insert: string;
-  attributes?: {
-    bold?: boolean;
-    italic?: boolean;
-    color?: string;
-    background?: string;
-  };
-}
-
-interface DeltaContent {
-  ops: DeltaOperation[];
+interface EachVersionProps {
+  version: any;
+  onDeleteClick: (versionId: string, versionLabel: string) => void;
+  isDeleting: boolean;
 }
 
 function VersionList({ handleViewAll }: { handleViewAll: () => void }) {
@@ -134,83 +126,115 @@ function VersionList({ handleViewAll }: { handleViewAll: () => void }) {
   );
 }
 
-function EachVersion({ version, onDeleteClick, isDeleting }: { version: any, onDeleteClick: (versionId: string, versionLabel: string) => void, isDeleting: boolean }) {
+
+function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
   const { 
     currentVersionId, 
     loadVersion, 
     isLoadingVersion, 
-    loadingVersionId 
+    loadingVersionId,
+    versions,
+    updateCurrentVersion,
   } = useQuillVersion();
   
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  
   const isLoading = isLoadingVersion && loadingVersionId === version.id;
-  const isDisabled = isLoadingVersion;
   const isCurrentVersion = version.id === currentVersionId;
+  const isLatestVersion = versions[0]?.id === version.id;
+  const isSystemVersion = version.user === null;
+  const canDelete = isLatestVersion && !isLoading && !isSaving && !isDeleting && !isSystemVersion;
 
-  const handleVersionSelect = () => {
-    if (isCurrentVersion) {
-      alert("This version is already active");
-      return;
+  const handleSave = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isSaving) return;
+    
+    setIsSaving(true);
+    setSaveError(null);
+    
+    try {
+      await updateCurrentVersion();
+      console.log("Successfully saved current version:", version.label);
+    } catch (error) {
+      console.error("Failed to save version:", error);
+      setSaveError("Failed to save version");
+    } finally {
+      setIsSaving(false);
     }
-    if (isDisabled) return;
+  };
+
+  const handleLoad = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isLoading) return;
     loadVersion(version.id);
   };
 
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (canDelete) {
+      onDeleteClick(version.id, version.label);
+    }
+  };
+
   return (
-    <div
-      key={version.id}
-      className={`px-2 py-2 flex flex-col  border-b hover:bg-gray-100 ${
-        version.id === currentVersionId ? "bg-blue-100" : ""
-      }`}
-    >
-      <div className="flex justify-between">
-        <div className={`font-sm flex items-center gap-2 ${
-          isCurrentVersion ? "font-semibold text-blue-600" : ""
-        }`}>
+    <div className={`px-2 py-2 border-b hover:bg-gray-100 ${isCurrentVersion ? "bg-blue-100" : ""}`}>
+      <div className="flex justify-between items-center">
+        <div className={`flex items-center gap-1 ${isCurrentVersion ? "font-semibold text-blue-600" : ""}`}>
           {version.label}
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleVersionSelect();
-            }}
-            title={isLoading ? "Loading..." : isCurrentVersion ? "Currently active" : "Load version"}
-            disabled={isDisabled || isCurrentVersion}
-            className={`px-2 py-1 rounded text-sm transition-colors ${
-              isDisabled || isCurrentVersion
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                : "bg-gray-200 hover:bg-gray-300"
-            }`}
-          >
-            {isLoading ? (
-              <FaSpinner className="animate-spin" />
-            ) : isCurrentVersion ? (
-              <span className="text-blue-500">●</span>
-            ) : (
-              <SiTicktick />
-            )}
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDeleteClick(version.id, version.label);
-            }}
-            title="Delete version"
-            disabled={isDisabled || isDeleting}
-            className={`px-2 py-1 rounded text-sm transition-colors ${
-              isDisabled || isDeleting
-                ? "bg-red-50 text-red-300 cursor-not-allowed"
-                : "bg-red-100 hover:bg-red-200"
-            }`}
-          >
-            {isDeleting ? <FaSpinner className="animate-spin" /> : <MdDelete />}
-          </button>
+        <div className="flex gap-2 justify-end">
+          {/* First button slot: Save (current non-system) or Load (non-current) */}
+          {isCurrentVersion && !isSystemVersion && (
+            <button
+              onClick={handleSave}
+              disabled={isLoading || isSaving}
+              className="px-2 py-1 rounded text-sm bg-green-100 hover:bg-green-200 text-green-700"
+            >
+              {(isLoading || isSaving) ? (
+                <FaSpinner className="animate-spin" />
+              ) : (
+                <MdSave />
+              )}
+            </button>
+          )}
+          
+          {!isCurrentVersion && (
+            <button
+              onClick={handleLoad}
+              disabled={isLoading}
+              className="px-2 py-1 rounded text-sm bg-gray-200 hover:bg-gray-300"
+            >
+              {isLoading ? (
+                <FaSpinner className="animate-spin" />
+              ) : (
+                <SiTicktick />
+              )}
+            </button>
+          )}
+          
+          {/* Second button slot: Delete (non-system) or invisible placeholder (system) */}
+          {!isSystemVersion ? (
+            <button
+              onClick={handleDelete}
+              disabled={!canDelete}
+              className={`px-2 py-1 rounded text-sm ${
+                canDelete ? "bg-red-100 hover:bg-red-200" : "invisible"
+              }`}
+            >
+              {isDeleting ? <FaSpinner className="animate-spin" /> : <MdDelete />}
+            </button>
+          ) : (
+            <div className="px-2 py-1 w-8"></div>
+          )}
         </div>
       </div>
 
-      <div className={`text-xs ${isCurrentVersion ? "text-blue-600" : "text-gray-500"}`}>
-        {version?.user?.username || version?.user?.name || "System"} {"  "}
-        {formatTimeAgo(version.timestamp)}
+      <div className={`text-xs mt-1 ${isCurrentVersion ? "text-blue-600" : "text-gray-500"}`}>
+        {version?.user?.username || version?.user?.name || "System"} • {formatTimeAgo(version.timestamp)}
+        {saveError && isCurrentVersion && (
+          <div className="text-red-500 mt-1">{saveError}</div>
+        )}
       </div>
     </div>
   );
