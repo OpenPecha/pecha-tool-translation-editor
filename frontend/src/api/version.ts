@@ -181,7 +181,6 @@ export const getVersionDiff = async (versionId: string) => {
     if (!response.ok) {
       throw new Error("Failed to get version diff");
     }
-    await new Promise((resolve) => setTimeout(resolve, 3000));
     return await response.json();
   } catch (error) {
     console.error("Error getting version diff:", error);
