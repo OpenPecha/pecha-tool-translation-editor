@@ -25,6 +25,9 @@ interface Version {
   label: string;
   timestamp: string;
   content: DeltaContent;
+  user?: {
+    username: string;
+  };
 }
 
 interface QuillVersionContext {
@@ -50,21 +53,25 @@ function VersionDiff({ onClose }: VersionDiffProps) {
     null
   );
   const [diffData, setDiffData] = useState<DiffResponse | null>(null);
-
-  const formatDate = (isoString: string) => {
-    return new Date(isoString).toLocaleString();
-  };
+  const [isDiffLoading, setIsDiffLoading] = useState<boolean>(false);
+  const [isRestoring, setIsRestoring] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchDiff = async () => {
       if (selectedVersionId) {
+        setIsDiffLoading(true);
         try {
           const diff = await getVersionDiff(selectedVersionId);
           setDiffData(diff);
         } catch (error) {
           setDiffData(null);
           console.error("Error fetching diff:", error);
+        } finally {
+          setIsDiffLoading(false);
         }
+      } else {
+        setDiffData(null);
+        setIsDiffLoading(false);
       }
     };
 
@@ -73,11 +80,14 @@ function VersionDiff({ onClose }: VersionDiffProps) {
 
   const handleRestore = async () => {
     if (selectedVersionId) {
+      setIsRestoring(true);
       try {
         await loadVersion(selectedVersionId);
         onClose();
       } catch (error) {
         console.error("Error restoring version:", error);
+      } finally {
+        setIsRestoring(false);
       }
     }
   };
@@ -102,10 +112,17 @@ function VersionDiff({ onClose }: VersionDiffProps) {
         </button>
         <Button
           onClick={handleRestore}
-          disabled={!selectedVersionId || selectedVersionId === lastVersionId}
+          disabled={!selectedVersionId || selectedVersionId === lastVersionId || isRestoring}
           title="Restore version"
         >
-          Restore
+          {isRestoring ? (
+            <div className="flex items-center">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              Restoring...
+            </div>
+          ) : (
+            "Restore"
+          )}
         </Button>
       </div>
 
@@ -113,7 +130,12 @@ function VersionDiff({ onClose }: VersionDiffProps) {
       <div className="flex h-[calc(100vh-4rem)]">
         {/* Left panel - Diff view */}
         <div className="flex-1 bg-white p-6 overflow-y-auto">
-          {selectedVersionId && diffData ? (
+          {isDiffLoading ? (
+            <div className="flex flex-col items-center justify-center mt-20">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
+              <div className="text-gray-500">Loading version differences...</div>
+            </div>
+          ) : selectedVersionId && diffData ? (
             <DiffViewer diffDelta={diffData.diffs} />
           ) : (
             <div className="text-center text-gray-500 mt-20">
@@ -139,7 +161,12 @@ function VersionDiff({ onClose }: VersionDiffProps) {
                   onClick={() => setSelectedVersionId(version.id)}
                 >
                   <div className="flex justify-between items-start">
-                    <span>{version.label}</span>
+                    <div className="flex items-center">
+                      <span>{version.label}</span>
+                      {isDiffLoading && version.id === selectedVersionId && (
+                        <div className="ml-2 animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      )}
+                    </div>
                     <p className="text-sm text-gray-500">
                       {formatTimeAgo(version.timestamp)}
                     </p>
