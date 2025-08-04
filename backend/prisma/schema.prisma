@@ -67,13 +67,10 @@ model Doc {
   currentVersionId       String? @unique
   currentVersion         Version? @relation("CurrentVersion", fields: [currentVersionId], references: [id])
 
-  // Translation tracking fields
-  translationStatus   String? // pending, progress, completed, failed
-  translationProgress Int?    @default(0) // 0-100 percentage
-  translationJobId    String? // ID from the translation worker
+
 
   rootsProject  Project? @relation("Roots", fields: [rootProjectId], references: [id])
-  rootProjectId String?
+ 
 
   @@index([ownerId])
   @@index([rootId])
