@@ -302,6 +302,7 @@ router.post("/", authenticate, upload.single("file"), async (req, res) => {
 
     res.status(201).json(document);
   } catch (error) {
+    console.error("Error creating document:", error);
     res.status(500).json({ error: "Error creating document: " + error });
   }
 });

@@ -165,7 +165,15 @@ const EmptyDocumentCreator = ({
     mutationFn: async () => {
       const formData = new FormData();
       const timestamp = Date.now();
-      const identifier = `empty-translation-${timestamp}`;
+      const identifier = `empty-translation-${language}-${timestamp}`;
+
+      console.log("Creating empty translation with:", {
+        name: `Empty Translation - ${language}`,
+        identifier,
+        isRoot: "false",
+        language,
+        rootId,
+      });
 
       formData.append("name", `Empty Translation - ${language}`);
       formData.append("identifier", identifier);
@@ -178,6 +186,7 @@ const EmptyDocumentCreator = ({
       return createDocument(formData);
     },
     onSuccess: (response) => {
+      console.log("Empty translation created successfully:", response);
       setIsCreating(false);
       onSuccess(response.id);
       refetchTranslations?.();
