@@ -145,7 +145,6 @@ model Version {
   userId    String?
   doc       Doc      @relation(fields: [docId], references: [id], onDelete: Cascade)
   user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  content   Json // Quill delta contents stored as JSON
   currentDoc Doc? @relation("CurrentVersion")
 }
 
