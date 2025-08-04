@@ -58,12 +58,22 @@ model Doc {
   translationStatus      String?
   comments               Comment[]
   owner                  User?        @relation("UserDocs", fields: [ownerId], references: [id], onDelete: Cascade)
-  root                   Doc?         @relation("Translations", fields: [rootId], references: [id], onDelete: Cascade)
-  translations           Doc[]        @relation("Translations")
-  rootsProject           Project?     @relation("Roots", fields: [rootProjectId], references: [id])
-  footnotes              Footnote[]
-  permissions            Permission[]
-  versions               Version[]
+
+  permissions            Permission[] // A document can have multiple permission entries
+  comments               Comment[] // A document can have multiple comments
+  versions               Version[] // A document can have multiple versions
+  footnotes              Footnote[] // A document can have multiple footnotes
+  metadata               Json? // Additional metadata for the document
+  currentVersionId       String? @unique
+  currentVersion         Version? @relation("CurrentVersion", fields: [currentVersionId], references: [id])
+
+  // Translation tracking fields
+  translationStatus   String? // pending, progress, completed, failed
+  translationProgress Int?    @default(0) // 0-100 percentage
+  translationJobId    String? // ID from the translation worker
+
+  rootsProject  Project? @relation("Roots", fields: [rootProjectId], references: [id])
+  rootProjectId String?
 
   @@index([ownerId])
   @@index([rootId])
@@ -135,6 +145,8 @@ model Version {
   userId    String?
   doc       Doc      @relation(fields: [docId], references: [id], onDelete: Cascade)
   user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   Json // Quill delta contents stored as JSON
+  currentDoc Doc? @relation("CurrentVersion")
 }
 
 model ApiCredential {
