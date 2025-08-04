@@ -199,7 +199,7 @@ function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
             </button>
           )}
           
-          {!isCurrentVersion && (
+          {(!isCurrentVersion || isSystemVersion) && (
             <button
               onClick={handleLoad}
               disabled={isLoading}
