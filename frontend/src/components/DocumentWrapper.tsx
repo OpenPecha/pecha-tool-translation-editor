@@ -132,7 +132,7 @@ function TranslationEditor({
           isEditable={isEditable}
           currentDoc={currentDoc}
         />
-        <TranslationSidebar documentContent={getDocumentText()} />
+        <TranslationSidebar documentId={selectedTranslationId!} />
       </div>
     </div>
   );

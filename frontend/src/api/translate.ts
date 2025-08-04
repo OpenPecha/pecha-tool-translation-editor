@@ -68,7 +68,8 @@ const validateAuthentication = async (): Promise<void> => {
  * Returns a ReadableStream that can be consumed to get real-time translation results
  */
 export const streamTranslation = async (
-  params: StreamTranslationParams
+  params: StreamTranslationParams,
+  abortController?: AbortController
 ): Promise<Response> => {
   try {
     // Validate authentication before making the request
@@ -78,6 +79,7 @@ export const streamTranslation = async (
       method: "POST",
       headers: getHeaders(),
       body: JSON.stringify(params),
+      signal: abortController?.signal,
     });
 
     if (!response.ok) {
@@ -212,7 +214,8 @@ export const consumeTranslationStream = async (
   response: Response,
   onEvent: (event: TranslationStreamEvent) => void,
   onComplete?: () => void,
-  onError?: (error: Error) => void
+  onError?: (error: Error) => void,
+  abortController?: AbortController
 ): Promise<void> => {
   if (!response.body) {
     const error = new Error(
@@ -228,6 +231,12 @@ export const consumeTranslationStream = async (
 
   try {
     while (true) {
+      // Check if the request has been aborted
+      if (abortController?.signal.aborted) {
+        reader.cancel();
+        return; // Exit silently on abort
+      }
+
       const { done, value } = await reader.read();
 
       if (done) {
@@ -290,6 +299,11 @@ export const consumeTranslationStream = async (
       }
     }
   } catch (error) {
+    // Handle abort errors gracefully
+    if (error instanceof Error && error.name === "AbortError") {
+      return; // Exit silently on abort
+    }
+
     const errorObj =
       error instanceof Error
         ? error
@@ -343,7 +357,8 @@ export const performStreamingTranslation = async (
   params: StreamTranslationParams,
   onEvent: (event: TranslationStreamEvent) => void,
   onComplete?: () => void,
-  onError?: (error: Error) => void
+  onError?: (error: Error) => void,
+  abortController?: AbortController
 ): Promise<void> => {
   try {
     // Validate parameters before starting
@@ -355,9 +370,20 @@ export const performStreamingTranslation = async (
       model: params.model_name || "default",
     });
 
-    const response = await streamTranslation(params);
-    await consumeTranslationStream(response, onEvent, onComplete, onError);
+    const response = await streamTranslation(params, abortController);
+    await consumeTranslationStream(
+      response,
+      onEvent,
+      onComplete,
+      onError,
+      abortController
+    );
   } catch (error) {
+    // Handle abort errors gracefully
+    if (error instanceof Error && error.name === "AbortError") {
+      return; // Exit silently on abort
+    }
+
     const errorObj =
       error instanceof Error
         ? error

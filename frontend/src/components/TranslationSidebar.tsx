@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
@@ -25,6 +25,14 @@ import {
   ChevronRight,
   Settings,
   Languages,
+  Copy,
+  Plus,
+  Check,
+  Globe,
+  FileText,
+  Bot,
+  Hash,
+  MessageSquare,
 } from "lucide-react";
 import {
   TARGET_LANGUAGES,
@@ -36,6 +44,7 @@ import {
   performStreamingTranslation,
   TranslationStreamEvent,
 } from "@/api/translate";
+import { useEditor } from "@/contexts/EditorContext";
 
 interface TranslationConfig {
   targetLanguage: TargetLanguage;
@@ -57,7 +66,9 @@ interface TranslationResult {
   };
 }
 
-const TranslationSidebar: React.FC = () => {
+const TranslationSidebar: React.FC<{ documentId: string }> = ({
+  documentId,
+}) => {
   const [config, setConfig] = useState<TranslationConfig>({
     targetLanguage: "english",
     textType: "commentary",
@@ -73,20 +84,16 @@ const TranslationSidebar: React.FC = () => {
   const [translationResults, setTranslationResults] = useState<
     TranslationResult[]
   >([]);
+  const { quillEditors } = useEditor();
+
   const [currentStatus, setCurrentStatus] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [progressPercent, setProgressPercent] = useState<number>(0);
-  const [statusLogs, setStatusLogs] = useState<
-    Array<{
-      timestamp: string;
-      message: string;
-      type: string;
-    }>
-  >([]);
+  const [copiedItems, setCopiedItems] = useState<Set<string>>(new Set());
+
   const abortControllerRef = useRef<AbortController | null>(null);
   const resultAreaRef = useRef<HTMLDivElement>(null);
-
   // Function to get selected text from the DOM (only from main editor)
   const getSelectedText = () => {
     const selection = window.getSelection();
@@ -168,16 +175,6 @@ const TranslationSidebar: React.FC = () => {
   };
 
   // Helper functions for managing translation state
-  const addStatusLog = (event: TranslationStreamEvent) => {
-    setStatusLogs((prev) => [
-      ...prev,
-      {
-        timestamp: event.timestamp,
-        message: event.message || event.type,
-        type: event.type,
-      },
-    ]);
-  };
 
   const updateProgress = (percent: number | null, text: string) => {
     if (percent !== null) {
@@ -208,9 +205,6 @@ const TranslationSidebar: React.FC = () => {
   };
 
   const handleStreamEvent = (event: TranslationStreamEvent) => {
-    console.log("Stream event:", event); // Debug logging
-    addStatusLog(event);
-
     switch (event.type) {
       case "initialization":
         updateProgress(
@@ -301,8 +295,8 @@ const TranslationSidebar: React.FC = () => {
     setTranslationResults([]);
     setCurrentStatus("Initializing...");
     setProgressPercent(0);
-    setStatusLogs([]);
     setError(null);
+    setCopiedItems(new Set()); // Clear any copy feedback
 
     // Create abort controller for this translation
     abortControllerRef.current = new AbortController();
@@ -369,9 +363,16 @@ const TranslationSidebar: React.FC = () => {
           setError(errorMessage);
           setIsTranslating(false);
           setCurrentStatus("Error");
-        }
+        },
+        // Pass the abort controller
+        abortControllerRef.current
       );
     } catch (err) {
+      // Don't show error for aborted requests
+      if (err instanceof Error && err.name === "AbortError") {
+        return;
+      }
+
       setError(err instanceof Error ? err.message : "Translation failed");
       setIsTranslating(false);
       setCurrentStatus("Failed");
@@ -386,8 +387,21 @@ const TranslationSidebar: React.FC = () => {
     setCurrentStatus("Stopped");
   };
 
-  const copyResult = (text: string) => {
+  // Helper function to show copy feedback
+  const showCopyFeedback = (itemId: string) => {
+    setCopiedItems((prev) => new Set(prev).add(itemId));
+    setTimeout(() => {
+      setCopiedItems((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(itemId);
+        return newSet;
+      });
+    }, 2000);
+  };
+
+  const copyResult = (text: string, resultId: string) => {
     navigator.clipboard.writeText(text);
+    showCopyFeedback(resultId);
   };
 
   const copyAllResults = () => {
@@ -395,6 +409,37 @@ const TranslationSidebar: React.FC = () => {
       .map((result) => result.translatedText)
       .join("\n\n---\n\n");
     navigator.clipboard.writeText(allTranslations);
+    showCopyFeedback("copy-all");
+  };
+
+  const appendAllResults = () => {
+    const allTranslations = translationResults
+      .map((result) => result.translatedText)
+      .join("\n\n");
+    const targetEditor = quillEditors.get(documentId);
+    if (targetEditor) {
+      // Get the current content length
+      const currentLength = targetEditor.getLength();
+
+      // Check if there's existing content (Quill always has at least 1 character for the final newline)
+      const hasContent = currentLength > 1;
+
+      // Add spacing if there's existing content
+      const spacing = hasContent ? "\n\n" : "";
+      const contentToInsert =
+        targetEditor.getText() + spacing + allTranslations;
+      targetEditor?.setText(contentToInsert, "user");
+
+      // Focus the editor
+      targetEditor.focus();
+    } else {
+      // Fallback: copy to clipboard if no editor found
+      navigator.clipboard.writeText(allTranslations);
+      showCopyFeedback("append-fallback");
+      alert(
+        "No editor found for this document. Text copied to clipboard instead."
+      );
+    }
   };
 
   return (
@@ -453,395 +498,439 @@ const TranslationSidebar: React.FC = () => {
           )}
         </div>
       ) : (
-        /* Expanded State - Full Sidebar */
+        /* Expanded State - Chat-like Interface */
         <>
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <Button
-                onClick={() => setIsSidebarCollapsed(true)}
-                variant="ghost"
-                size="icon"
-                className="w-8 h-8 rounded-md hover:bg-gray-100 flex-shrink-0 mr-3"
-                title="Collapse Translation Panel"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </Button>
+          {/* Header */}
+          <div className="flex items-center justify-between p-3 border-b border-gray-200">
+            <Button
+              onClick={() => setIsSidebarCollapsed(true)}
+              variant="ghost"
+              size="icon"
+              className="w-6 h-6 rounded-md hover:bg-gray-100"
+              title="Collapse Translation Panel"
+            >
+              <ChevronRight className="w-3 h-3" />
+            </Button>
 
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Live Translation
-                </h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  Select text in the editor and translate it in real-time
-                </p>
-              </div>
+            <h3 className="text-sm font-medium text-gray-900">Translation</h3>
 
-              <Dialog
-                open={isSettingsModalOpen}
-                onOpenChange={setIsSettingsModalOpen}
-              >
-                <DialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="w-8 h-8 rounded-md hover:bg-gray-100 flex-shrink-0"
-                    title="Translation Settings"
-                  >
-                    <Settings className="w-4 h-4" />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Translation Settings</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4 py-4">
-                    {/* Target Language */}
+            <Dialog
+              open={isSettingsModalOpen}
+              onOpenChange={setIsSettingsModalOpen}
+            >
+              <DialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="w-6 h-6 rounded-md hover:bg-gray-100"
+                  title="Translation Settings"
+                >
+                  <Settings className="w-3 h-3" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-2xl">
+                <DialogHeader className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <Settings className="w-4 h-4 text-blue-600" />
+                    </div>
+                    <div>
+                      <DialogTitle className="text-lg font-semibold">
+                        Translation Settings
+                      </DialogTitle>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Configure your translation preferences
+                      </p>
+                    </div>
+                  </div>
+                </DialogHeader>
+
+                <div className="space-y-6 py-4">
+                  {/* Core Settings */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
+                      <Globe className="w-4 h-4 text-gray-600" />
+                      Core Settings
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Target Language */}
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium flex items-center gap-2">
+                          <Languages className="w-3 h-3 text-gray-500" />
+                          Target Language
+                        </Label>
+                        <Select
+                          value={config.targetLanguage}
+                          onValueChange={(value: TargetLanguage) =>
+                            handleConfigChange("targetLanguage", value)
+                          }
+                        >
+                          <SelectTrigger className="h-9">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {TARGET_LANGUAGES.map((lang) => (
+                              <SelectItem key={lang} value={lang}>
+                                {lang.charAt(0).toUpperCase() + lang.slice(1)}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Text Type */}
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium flex items-center gap-2">
+                          <FileText className="w-3 h-3 text-gray-500" />
+                          Content Type
+                        </Label>
+                        <Select
+                          value={config.textType}
+                          onValueChange={(value: TextType) =>
+                            handleConfigChange("textType", value)
+                          }
+                        >
+                          <SelectTrigger className="h-9">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {TEXT_TYPES.map((type) => (
+                              <SelectItem key={type} value={type}>
+                                {type.charAt(0).toUpperCase() + type.slice(1)}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* AI Settings */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
+                      <Bot className="w-4 h-4 text-gray-600" />
+                      AI Configuration
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Model */}
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium flex items-center gap-2">
+                          <Bot className="w-3 h-3 text-gray-500" />
+                          AI Model
+                        </Label>
+                        <Select
+                          value={config.modelName}
+                          onValueChange={(value: ModelName) =>
+                            handleConfigChange("modelName", value)
+                          }
+                        >
+                          <SelectTrigger className="h-9">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {MODEL_NAMES.map((model) => (
+                              <SelectItem key={model} value={model}>
+                                {model.toUpperCase()}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Batch Size */}
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="batch-size"
+                          className="text-sm font-medium flex items-center gap-2"
+                        >
+                          <Hash className="w-3 h-3 text-gray-500" />
+                          Batch Size
+                        </Label>
+                        <Input
+                          id="batch-size"
+                          type="number"
+                          min={1}
+                          max={10}
+                          value={config.batchSize}
+                          onChange={(e) =>
+                            handleConfigChange(
+                              "batchSize",
+                              parseInt(e.target.value) || 1
+                            )
+                          }
+                          className="h-9"
+                        />
+                        <p className="text-xs text-gray-500">
+                          Lines processed per batch (1-10)
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Custom Instructions */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
+                      <MessageSquare className="w-4 h-4 text-gray-600" />
+                      Custom Instructions
+                    </div>
+
                     <div className="space-y-2">
-                      <Label>Target Language</Label>
-                      <Select
-                        value={config.targetLanguage}
-                        onValueChange={(value: TargetLanguage) =>
-                          handleConfigChange("targetLanguage", value)
-                        }
+                      <Label
+                        htmlFor="user-rules"
+                        className="text-sm font-medium flex items-center gap-2"
                       >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {TARGET_LANGUAGES.map((lang) => (
-                            <SelectItem key={lang} value={lang}>
-                              {lang.charAt(0).toUpperCase() + lang.slice(1)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Text Type */}
-                    <div className="space-y-2">
-                      <Label>Text Type</Label>
-                      <Select
-                        value={config.textType}
-                        onValueChange={(value: TextType) =>
-                          handleConfigChange("textType", value)
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {TEXT_TYPES.map((type) => (
-                            <SelectItem key={type} value={type}>
-                              {type.charAt(0).toUpperCase() + type.slice(1)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Model */}
-                    <div className="space-y-2">
-                      <Label>AI Model</Label>
-                      <Select
-                        value={config.modelName}
-                        onValueChange={(value: ModelName) =>
-                          handleConfigChange("modelName", value)
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {MODEL_NAMES.map((model) => (
-                            <SelectItem key={model} value={model}>
-                              {model.toUpperCase()}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Batch Size */}
-                    <div className="space-y-2">
-                      <Label htmlFor="batch-size">Batch Size</Label>
-                      <Input
-                        id="batch-size"
-                        type="number"
-                        min={1}
-                        max={10}
-                        value={config.batchSize}
-                        onChange={(e) =>
-                          handleConfigChange(
-                            "batchSize",
-                            parseInt(e.target.value) || 1
-                          )
-                        }
-                      />
-                    </div>
-
-                    {/* User Rules */}
-                    <div className="space-y-2">
-                      <Label htmlFor="user-rules">
-                        Translation Instructions
+                        <MessageSquare className="w-3 h-3 text-gray-500" />
+                        Translation Guidelines
                       </Label>
                       <Textarea
                         id="user-rules"
-                        placeholder="Additional instructions for translation..."
+                        placeholder="Enter specific instructions for the AI translator (e.g., 'Maintain formal tone', 'Preserve technical terms', etc.)"
                         value={config.userRules}
                         onChange={(e) =>
                           handleConfigChange("userRules", e.target.value)
                         }
-                        className="min-h-[60px] resize-none"
+                        className="min-h-[80px] resize-none"
                       />
+                      <p className="text-xs text-gray-500">
+                        Provide additional context or specific rules for better
+                        translation quality
+                      </p>
                     </div>
                   </div>
-                </DialogContent>
-              </Dialog>
-            </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
 
-          <div className="flex-1 flex flex-col p-4 space-y-4 min-h-0">
-            {/* Selected Text Display */}
-            <div className="space-y-2 flex-shrink-0">
-              <Label>Selected Text for Translation</Label>
-              <div className="min-h-[100px] max-h-[300px] p-3 border rounded-md bg-gray-50 text-sm overflow-y-auto">
-                {selectedText ? (
-                  <pre className="whitespace-pre-wrap font-sans text-gray-800">
-                    {selectedText}
-                  </pre>
-                ) : (
-                  <p className="text-gray-500 italic">
-                    Select text from the editor to translate...
-                  </p>
-                )}
-              </div>
-              {selectedText && (
-                <p className="text-xs text-green-600">
-                  ✓ {getLineCount(selectedText)} line
-                  {getLineCount(selectedText) === 1 ? "" : "s"} selected (
-                  {selectedText.length} characters)
-                </p>
-              )}
-            </div>
-
-            {/* Translation Controls */}
-            <div className="space-y-2 flex-shrink-0">
-              <div className="flex gap-2">
-                <Button
-                  onClick={startTranslation}
-                  disabled={isTranslating || !selectedText.trim()}
-                  className="flex-1"
-                >
-                  {isTranslating ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Translating...
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-4 h-4 mr-2" />
-                      Start Translation
-                    </>
-                  )}
-                </Button>
-                {isTranslating && (
-                  <Button
-                    onClick={stopTranslation}
-                    variant="destructive"
-                    size="icon"
-                  >
-                    <Square className="w-4 h-4" />
-                  </Button>
-                )}
-              </div>
-
-              {/* Status Indicator with Progress Bar */}
-              {currentStatus && (
-                <div className="space-y-2">
-                  <div className="text-xs text-gray-600 text-center py-1">
-                    {currentStatus}
-                  </div>
-                  {isTranslating && (
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
-                        style={{ width: `${progressPercent}%` }}
-                      />
+          {/* Conversation Area */}
+          <div className="flex-1 flex flex-col min-h-0">
+            <div className="flex-1 overflow-y-auto p-3 space-y-3">
+              {/* Error Display */}
+              {error && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <div className="w-4 h-4 text-red-400 mt-0.5">
+                      <svg fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
                     </div>
-                  )}
-                  {isTranslating && (
-                    <div className="text-xs text-gray-500 text-center">
-                      {Math.round(progressPercent)}%
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Error Display */}
-            {error && (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-md space-y-3 flex-shrink-0">
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0">
-                    <svg
-                      className="w-5 h-5 text-red-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="text-sm font-medium text-red-800">
-                      Translation Error
-                    </h4>
-                    <p className="text-sm text-red-600 mt-1">{error}</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => {
-                      setError(null);
-                      startTranslation();
-                    }}
-                    variant="outline"
-                    size="sm"
-                    className="text-red-700 border-red-300 hover:bg-red-50"
-                  >
-                    Retry Translation
-                  </Button>
-                  <Button
-                    onClick={() => setError(null)}
-                    variant="ghost"
-                    size="sm"
-                    className="text-red-600"
-                  >
-                    Dismiss
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Status Logs (when translating) */}
-            {isTranslating && statusLogs.length > 0 && (
-              <Card className="mb-4 flex-shrink-0">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm">
-                    Translation Progress
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="max-h-32 overflow-y-auto">
-                  <div className="space-y-1">
-                    {statusLogs.slice(-5).map((log, index) => (
-                      <div key={index} className="text-xs text-gray-600">
-                        <span className="text-gray-400">
-                          {new Date(log.timestamp).toLocaleTimeString()}
-                        </span>{" "}
-                        - {log.message}
+                    <div className="flex-1">
+                      <p className="text-sm text-red-800 font-medium">Error</p>
+                      <p className="text-sm text-red-600 mt-1">{error}</p>
+                      <div className="flex gap-2 mt-2">
+                        <Button
+                          onClick={() => {
+                            setError(null);
+                            startTranslation();
+                          }}
+                          variant="outline"
+                          size="sm"
+                          className="h-6 text-xs text-red-700 border-red-300 hover:bg-red-50"
+                        >
+                          Retry
+                        </Button>
+                        <Button
+                          onClick={() => setError(null)}
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 text-xs text-red-600"
+                        >
+                          Dismiss
+                        </Button>
                       </div>
-                    ))}
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                </div>
+              )}
 
-            {/* Translation Results */}
-            {(translationResults.length > 0 || isTranslating) && (
-              <Card className="flex-1 flex flex-col min-h-0">
-                <CardHeader className="pb-3 flex-shrink-0">
+              {/* Translation Status */}
+              {isTranslating && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-blue-800">
+                        {currentStatus}
+                      </p>
+                      <div className="w-full bg-blue-200 rounded-full h-1.5 mt-2">
+                        <div
+                          className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                          style={{ width: `${progressPercent}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-blue-600 mt-1">
+                        {Math.round(progressPercent)}%
+                      </p>
+                    </div>
+                    <Button
+                      onClick={stopTranslation}
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 text-blue-600 hover:bg-blue-100"
+                    >
+                      <Square className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Translation Results */}
+              {translationResults.map((result) => (
+                <div
+                  key={result.id}
+                  className="bg-gray-50 rounded-lg p-3 space-y-2"
+                >
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-base">
-                      Translation Results
-                    </CardTitle>
-                    <div className="flex items-center gap-2">
-                      {translationResults.length > 0 && (
-                        <>
-                          <span className="text-xs text-gray-500">
-                            ({translationResults.length} translations)
-                          </span>
-                          <Button
-                            onClick={copyAllResults}
-                            variant="outline"
-                            size="sm"
-                          >
-                            Copy All
-                          </Button>
-                        </>
-                      )}
+                    <span className="text-xs text-gray-500">
+                      {new Date(result.timestamp).toLocaleTimeString()}
+                    </span>
+                    <div className="flex gap-1">
+                      <Button
+                        onClick={() =>
+                          copyResult(result.translatedText, result.id)
+                        }
+                        variant="ghost"
+                        size="sm"
+                        className={`h-6 w-6 p-0 hover:bg-gray-200 transition-colors ${
+                          copiedItems.has(result.id)
+                            ? "bg-green-100 text-green-600"
+                            : ""
+                        }`}
+                        title={copiedItems.has(result.id) ? "Copied!" : "Copy"}
+                      >
+                        {copiedItems.has(result.id) ? (
+                          <Check className="w-3 h-3" />
+                        ) : (
+                          <Copy className="w-3 h-3" />
+                        )}
+                      </Button>
                     </div>
                   </div>
-                </CardHeader>
-                <CardContent className="flex-1 flex flex-col p-0 min-h-0">
-                  <div className="flex-1 overflow-y-auto">
-                    <div ref={resultAreaRef} className="p-4 space-y-4">
-                      {/* Current Status */}
-                      {isTranslating && (
-                        <div className="flex items-center text-blue-600 p-3 bg-blue-50 rounded-md border border-blue-200">
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          <span className="text-sm font-medium">
-                            {currentStatus}
-                          </span>
-                        </div>
-                      )}
+                  <div className="text-sm text-gray-800 leading-relaxed">
+                    <pre className="whitespace-pre-wrap font-sans">
+                      {result.translatedText}
+                    </pre>
+                  </div>
+                </div>
+              ))}
 
-                      {/* Individual Translation Results */}
-                      {translationResults.map((result) => (
-                        <div key={result.id} className="space-y-3">
-                          {/* Translated Text */}
-                          <div className="bg-white rounded-lg p-4 border-2 border-green-200 shadow-sm">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center gap-2">
-                                <h4 className="text-sm font-semibold text-green-700">
-                                  Translation
-                                </h4>
-                              </div>
-                              <Button
-                                onClick={() =>
-                                  copyResult(result.translatedText)
-                                }
-                                variant="outline"
-                                size="sm"
-                                className="h-7 px-3 text-xs border-green-300 hover:bg-green-50"
-                              >
-                                Copy
-                              </Button>
-                            </div>
-                            <div className="text-sm text-gray-800 leading-relaxed">
-                              <pre className="whitespace-pre-wrap font-sans">
-                                {result.translatedText}
-                              </pre>
-                            </div>
-
-                            {/* Metadata */}
-                            <div className="mt-3 pt-2 border-t border-green-100">
-                              <div className="text-xs text-gray-500 text-right">
-                                {new Date(
-                                  result.timestamp
-                                ).toLocaleTimeString()}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-
-                      {/* Empty State */}
-                      {!isTranslating && translationResults.length === 0 && (
-                        <div className="text-center py-8 text-gray-500">
-                          <p className="text-sm">
-                            Translation results will appear here
-                          </p>
-                        </div>
-                      )}
+              {/* Batch Actions */}
+              {translationResults.length > 0 && !isTranslating && (
+                <div className="bg-white border border-gray-200 rounded-lg p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-500">
+                      {translationResults.length} translation
+                      {translationResults.length > 1 ? "s" : ""}
+                    </span>
+                    <div className="flex gap-1">
+                      <Button
+                        onClick={copyAllResults}
+                        variant="outline"
+                        size="sm"
+                        className={`h-6 px-2 text-xs transition-colors ${
+                          copiedItems.has("copy-all")
+                            ? "bg-green-100 text-green-600 border-green-300"
+                            : ""
+                        }`}
+                        title={
+                          copiedItems.has("copy-all") ? "Copied!" : "Copy All"
+                        }
+                      >
+                        {copiedItems.has("copy-all") ? (
+                          <Check className="w-3 h-3 mr-1" />
+                        ) : (
+                          <Copy className="w-3 h-3 mr-1" />
+                        )}
+                        {copiedItems.has("copy-all") ? "Copied!" : "Copy All"}
+                      </Button>
+                      <Button
+                        onClick={appendAllResults}
+                        variant="outline"
+                        size="sm"
+                        className={`h-6 px-2 text-xs transition-colors ${
+                          copiedItems.has("append-fallback")
+                            ? "bg-green-100 text-green-600 border-green-300"
+                            : ""
+                        }`}
+                        title={
+                          copiedItems.has("append-fallback")
+                            ? "Copied to clipboard!"
+                            : "Append to Editor"
+                        }
+                      >
+                        {copiedItems.has("append-fallback") ? (
+                          <Check className="w-3 h-3 mr-1" />
+                        ) : (
+                          <Plus className="w-3 h-3 mr-1" />
+                        )}
+                        {copiedItems.has("append-fallback")
+                          ? "Copied!"
+                          : "Append"}
+                      </Button>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                </div>
+              )}
+
+              {/* Empty State */}
+              {!isTranslating && translationResults.length === 0 && !error && (
+                <div className="flex-1 flex items-center justify-center text-gray-400">
+                  <div className="text-center">
+                    <Languages className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">Select text to translate</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Input Area at Bottom */}
+            <div className="border-t border-gray-200 p-3 space-y-3">
+              {/* Selected Text Preview */}
+              {selectedText && (
+                <div className="bg-gray-50 border border-gray-200 rounded-md p-2">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-gray-500">Selected Text</span>
+                    <span className="text-xs text-gray-400">
+                      {getLineCount(selectedText)} line
+                      {getLineCount(selectedText) === 1 ? "" : "s"}
+                    </span>
+                  </div>
+                  <div className="max-h-16 overflow-y-auto">
+                    <pre className="text-xs text-gray-700 whitespace-pre-wrap font-sans">
+                      {selectedText.length > 200
+                        ? selectedText.substring(0, 200) + "..."
+                        : selectedText}
+                    </pre>
+                  </div>
+                </div>
+              )}
+
+              {/* Translation Button */}
+              <Button
+                onClick={startTranslation}
+                disabled={isTranslating || !selectedText.trim()}
+                className="w-full h-8"
+                size="sm"
+              >
+                {isTranslating ? (
+                  <>
+                    <Loader2 className="w-3 h-3 mr-2 animate-spin" />
+                    Translating...
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-3 h-3 mr-2" />
+                    Translate
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </>
       )}

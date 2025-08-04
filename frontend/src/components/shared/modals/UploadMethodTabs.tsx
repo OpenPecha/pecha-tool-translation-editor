@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { useTranslate } from "@tolgee/react";
 
-export type UploadMethod = "file" | "openpecha" | "ai";
+export type UploadMethod = "empty" | "file" | "openpecha" | "ai";
 
 interface UploadMethodTabsProps {
   activeMethod: UploadMethod;
@@ -24,12 +24,16 @@ export function UploadMethodTabs({
   activeMethod,
   onMethodChange,
   children,
-  availableMethods = ["file", "openpecha", "ai"],
+  availableMethods = ["empty", "file", "openpecha", "ai"],
   className,
 }: UploadMethodTabsProps) {
   const { t } = useTranslate();
 
   const tabConfigs: Record<UploadMethod, TabConfig> = {
+    empty: {
+      value: "empty",
+      label: "Empty Document",
+    },
     file: {
       value: "file",
       label: t("common.file"),
