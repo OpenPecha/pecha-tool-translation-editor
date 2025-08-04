@@ -60,10 +60,8 @@ model Doc {
   owner                  User?        @relation("UserDocs", fields: [ownerId], references: [id], onDelete: Cascade)
 
   permissions            Permission[] // A document can have multiple permission entries
-  comments               Comment[] // A document can have multiple comments
   versions               Version[] // A document can have multiple versions
   footnotes              Footnote[] // A document can have multiple footnotes
-  metadata               Json? // Additional metadata for the document
   currentVersionId       String? @unique
   currentVersion         Version? @relation("CurrentVersion", fields: [currentVersionId], references: [id])
 
