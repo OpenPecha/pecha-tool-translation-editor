@@ -51,19 +51,6 @@ export interface StreamTranslationParams {
 }
 
 /**
- * Validates authentication token before making requests
- */
-const validateAuthentication = async (): Promise<void> => {
-  try {
-    await getAuthToken();
-  } catch (error) {
-    throw new Error(
-      "Authentication required. Please log in to use translation services."
-    );
-  }
-};
-
-/**
  * Starts a streaming translation request
  * Returns a ReadableStream that can be consumed to get real-time translation results
  */
@@ -73,7 +60,6 @@ export const streamTranslation = async (
 ): Promise<Response> => {
   try {
     // Validate authentication before making the request
-    await validateAuthentication();
 
     const response = await fetch(`${server_url}/translate`, {
       method: "POST",
