@@ -419,20 +419,24 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
       .join("\n\n");
     const targetEditor = quillEditors.get(documentId);
     if (targetEditor) {
-      // Get the current content length
-      const currentLength = targetEditor.getLength();
+      // Get the current content and check if it has meaningful content
+      const currentText = targetEditor.getText();
+      const trimmedText = currentText.trim();
+      const hasContent = trimmedText.length > 0;
 
-      // Check if there's existing content (Quill always has at least 1 character for the final newline)
-      const hasContent = currentLength > 1;
+      if (hasContent) {
+        // If there's existing content, append with proper spacing
+        const contentToInsert = currentText + allTranslations;
+        targetEditor.setText(contentToInsert, "user");
+      } else {
+        // If editor is empty (or only whitespace), replace entirely
+        targetEditor.setText(allTranslations, "user");
+      }
 
-      // Add spacing if there's existing content
-      const spacing = hasContent ? "\n\n" : "";
-      const contentToInsert =
-        targetEditor.getText() + spacing + allTranslations;
-      targetEditor?.setText(contentToInsert, "user");
-
-      // Focus the editor
+      // Focus the editor and position cursor at the end
       targetEditor.focus();
+      const finalLength = targetEditor.getLength();
+      targetEditor.setSelection(finalLength - 1, 0);
     } else {
       // Fallback: copy to clipboard if no editor found
       navigator.clipboard.writeText(allTranslations);
