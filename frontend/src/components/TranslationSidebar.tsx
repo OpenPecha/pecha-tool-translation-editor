@@ -33,6 +33,7 @@ import {
   Bot,
   Hash,
   MessageSquare,
+  Trash2,
 } from "lucide-react";
 import {
   TARGET_LANGUAGES,
@@ -442,6 +443,14 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
     }
   };
 
+  const resetTranslations = () => {
+    setTranslationResults([]);
+    setCopiedItems(new Set());
+    setError(null);
+    setCurrentStatus("");
+    setProgressPercent(0);
+  };
+
   return (
     <div
       data-translation-sidebar
@@ -514,194 +523,208 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
 
             <h3 className="text-sm font-medium text-gray-900">Translation</h3>
 
-            <Dialog
-              open={isSettingsModalOpen}
-              onOpenChange={setIsSettingsModalOpen}
-            >
-              <DialogTrigger asChild>
+            <div className="flex items-center gap-1">
+              {translationResults.length > 0 && (
                 <Button
+                  onClick={resetTranslations}
                   variant="ghost"
                   size="icon"
-                  className="w-6 h-6 rounded-md hover:bg-gray-100"
-                  title="Translation Settings"
+                  className="w-6 h-6 rounded-md hover:bg-gray-100 hover:text-red-600"
+                  title="Clear Translation Results"
                 >
-                  <Settings className="w-3 h-3" />
+                  <Trash2 className="w-3 h-3" />
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-2xl">
-                <DialogHeader className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <Settings className="w-4 h-4 text-blue-600" />
-                    </div>
-                    <div>
-                      <DialogTitle className="text-lg font-semibold">
-                        Translation Settings
-                      </DialogTitle>
-                      <p className="text-sm text-gray-500 mt-1">
-                        Configure your translation preferences
-                      </p>
-                    </div>
-                  </div>
-                </DialogHeader>
+              )}
 
-                <div className="space-y-6 py-4">
-                  {/* Core Settings */}
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
-                      <Globe className="w-4 h-4 text-gray-600" />
-                      Core Settings
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      {/* Target Language */}
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium flex items-center gap-2">
-                          <Languages className="w-3 h-3 text-gray-500" />
-                          Target Language
-                        </Label>
-                        <Select
-                          value={config.targetLanguage}
-                          onValueChange={(value: TargetLanguage) =>
-                            handleConfigChange("targetLanguage", value)
-                          }
-                        >
-                          <SelectTrigger className="h-9">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {TARGET_LANGUAGES.map((lang) => (
-                              <SelectItem key={lang} value={lang}>
-                                {lang.charAt(0).toUpperCase() + lang.slice(1)}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+              <Dialog
+                open={isSettingsModalOpen}
+                onOpenChange={setIsSettingsModalOpen}
+              >
+                <DialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="w-6 h-6 rounded-md hover:bg-gray-100"
+                    title="Translation Settings"
+                  >
+                    <Settings className="w-3 h-3" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-2xl">
+                  <DialogHeader className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <Settings className="w-4 h-4 text-blue-600" />
                       </div>
-
-                      {/* Text Type */}
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium flex items-center gap-2">
-                          <FileText className="w-3 h-3 text-gray-500" />
-                          Content Type
-                        </Label>
-                        <Select
-                          value={config.textType}
-                          onValueChange={(value: TextType) =>
-                            handleConfigChange("textType", value)
-                          }
-                        >
-                          <SelectTrigger className="h-9">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {TEXT_TYPES.map((type) => (
-                              <SelectItem key={type} value={type}>
-                                {type.charAt(0).toUpperCase() + type.slice(1)}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                      <div>
+                        <DialogTitle className="text-lg font-semibold">
+                          Translation Settings
+                        </DialogTitle>
+                        <p className="text-sm text-gray-500 mt-1">
+                          Configure your translation preferences
+                        </p>
                       </div>
                     </div>
-                  </div>
+                  </DialogHeader>
 
-                  {/* AI Settings */}
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
-                      <Bot className="w-4 h-4 text-gray-600" />
-                      AI Configuration
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      {/* Model */}
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium flex items-center gap-2">
-                          <Bot className="w-3 h-3 text-gray-500" />
-                          AI Model
-                        </Label>
-                        <Select
-                          value={config.modelName}
-                          onValueChange={(value: ModelName) =>
-                            handleConfigChange("modelName", value)
-                          }
-                        >
-                          <SelectTrigger className="h-9">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {MODEL_NAMES.map((model) => (
-                              <SelectItem key={model} value={model}>
-                                {model.toUpperCase()}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                  <div className="space-y-6 py-4">
+                    {/* Core Settings */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
+                        <Globe className="w-4 h-4 text-gray-600" />
+                        Core Settings
                       </div>
 
-                      {/* Batch Size */}
+                      <div className="grid grid-cols-2 gap-4">
+                        {/* Target Language */}
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium flex items-center gap-2">
+                            <Languages className="w-3 h-3 text-gray-500" />
+                            Target Language
+                          </Label>
+                          <Select
+                            value={config.targetLanguage}
+                            onValueChange={(value: TargetLanguage) =>
+                              handleConfigChange("targetLanguage", value)
+                            }
+                          >
+                            <SelectTrigger className="h-9">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {TARGET_LANGUAGES.map((lang) => (
+                                <SelectItem key={lang} value={lang}>
+                                  {lang.charAt(0).toUpperCase() + lang.slice(1)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Text Type */}
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium flex items-center gap-2">
+                            <FileText className="w-3 h-3 text-gray-500" />
+                            Content Type
+                          </Label>
+                          <Select
+                            value={config.textType}
+                            onValueChange={(value: TextType) =>
+                              handleConfigChange("textType", value)
+                            }
+                          >
+                            <SelectTrigger className="h-9">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {TEXT_TYPES.map((type) => (
+                                <SelectItem key={type} value={type}>
+                                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* AI Settings */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
+                        <Bot className="w-4 h-4 text-gray-600" />
+                        AI Configuration
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        {/* Model */}
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium flex items-center gap-2">
+                            <Bot className="w-3 h-3 text-gray-500" />
+                            AI Model
+                          </Label>
+                          <Select
+                            value={config.modelName}
+                            onValueChange={(value: ModelName) =>
+                              handleConfigChange("modelName", value)
+                            }
+                          >
+                            <SelectTrigger className="h-9">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {MODEL_NAMES.map((model) => (
+                                <SelectItem key={model} value={model}>
+                                  {model.toUpperCase()}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Batch Size */}
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor="batch-size"
+                            className="text-sm font-medium flex items-center gap-2"
+                          >
+                            <Hash className="w-3 h-3 text-gray-500" />
+                            Batch Size
+                          </Label>
+                          <Input
+                            id="batch-size"
+                            type="number"
+                            min={1}
+                            max={10}
+                            value={config.batchSize}
+                            onChange={(e) =>
+                              handleConfigChange(
+                                "batchSize",
+                                parseInt(e.target.value) || 1
+                              )
+                            }
+                            className="h-9"
+                          />
+                          <p className="text-xs text-gray-500">
+                            Lines processed per batch (1-10)
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Custom Instructions */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
+                        <MessageSquare className="w-4 h-4 text-gray-600" />
+                        Custom Instructions
+                      </div>
+
                       <div className="space-y-2">
                         <Label
-                          htmlFor="batch-size"
+                          htmlFor="user-rules"
                           className="text-sm font-medium flex items-center gap-2"
                         >
-                          <Hash className="w-3 h-3 text-gray-500" />
-                          Batch Size
+                          <MessageSquare className="w-3 h-3 text-gray-500" />
+                          Translation Guidelines
                         </Label>
-                        <Input
-                          id="batch-size"
-                          type="number"
-                          min={1}
-                          max={10}
-                          value={config.batchSize}
+                        <Textarea
+                          id="user-rules"
+                          placeholder="Enter specific instructions for the AI translator (e.g., 'Maintain formal tone', 'Preserve technical terms', etc.)"
+                          value={config.userRules}
                           onChange={(e) =>
-                            handleConfigChange(
-                              "batchSize",
-                              parseInt(e.target.value) || 1
-                            )
+                            handleConfigChange("userRules", e.target.value)
                           }
-                          className="h-9"
+                          className="min-h-[80px] resize-none"
                         />
                         <p className="text-xs text-gray-500">
-                          Lines processed per batch (1-10)
+                          Provide additional context or specific rules for
+                          better translation quality
                         </p>
                       </div>
                     </div>
                   </div>
-
-                  {/* Custom Instructions */}
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
-                      <MessageSquare className="w-4 h-4 text-gray-600" />
-                      Custom Instructions
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="user-rules"
-                        className="text-sm font-medium flex items-center gap-2"
-                      >
-                        <MessageSquare className="w-3 h-3 text-gray-500" />
-                        Translation Guidelines
-                      </Label>
-                      <Textarea
-                        id="user-rules"
-                        placeholder="Enter specific instructions for the AI translator (e.g., 'Maintain formal tone', 'Preserve technical terms', etc.)"
-                        value={config.userRules}
-                        onChange={(e) =>
-                          handleConfigChange("userRules", e.target.value)
-                        }
-                        className="min-h-[80px] resize-none"
-                      />
-                      <p className="text-xs text-gray-500">
-                        Provide additional context or specific rules for better
-                        translation quality
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
 
           {/* Conversation Area */}
@@ -812,10 +835,28 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
                       </Button>
                     </div>
                   </div>
-                  <div className="text-sm text-gray-800 leading-relaxed">
-                    <pre className="whitespace-pre-wrap font-sans">
-                      {result.translatedText}
-                    </pre>
+                  <div className="space-y-2">
+                    {/* Source Text (truncated to one line) */}
+                    <div className="border-l-4 border-gray-300 pl-3">
+                      <div className="text-xs text-gray-500 mb-1 font-medium">
+                        Source:
+                      </div>
+                      <div className="text-sm text-gray-600 truncate leading-relaxed">
+                        {result.originalText}
+                      </div>
+                    </div>
+
+                    {/* Translation Text */}
+                    <div className="border-l-4 border-blue-300 pl-3">
+                      <div className="text-xs text-gray-500 mb-1 font-medium">
+                        Translation:
+                      </div>
+                      <div className="text-sm text-gray-800 leading-relaxed">
+                        <pre className="whitespace-pre-wrap font-sans">
+                          {result.translatedText}
+                        </pre>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
