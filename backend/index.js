@@ -18,6 +18,7 @@ const userRoutes = require("./routes/user");
 const projectRoutes = require("./routes/project");
 const footnotesRoutes = require("./routes/footnote");
 const apiCredentialsRoutes = require("./routes/apiCredentials");
+const translateRoutes = require("./routes/translate");
 
 const options = {
   info: {
@@ -111,6 +112,7 @@ app.use("/users", userRoutes);
 app.use("/projects", projectRoutes);
 app.use("/api-credentials", apiCredentialsRoutes);
 app.use("/footnotes", footnotesRoutes);
+app.use("/translate", translateRoutes);
 const clients = new Set();
 // const getYDoc = (docId, userId) =>
 //   map.setIfUndefined(utils.docs, docId, () => {

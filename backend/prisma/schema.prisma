@@ -11,50 +11,54 @@ model User {
   id          String          @id @default(uuid())
   username    String?
   email       String          @unique
-  picture     String?
-  documents   Doc[]           @relation("UserDocs") // A user can have multiple documents
-  permissions Permission[] // A user can have multiple permissions
-  comments    Comment[] // A user can have multiple comments
   createdAt   DateTime        @default(now())
+  picture     String?
+  apikeys     ApiCredential[]
+  comments    Comment[]
+  documents   Doc[]           @relation("UserDocs")
+  footnotes   Footnote[]
+  permissions Permission[]
   project     Project[]
   version     Version[]
-  apikeys     ApiCredential[]
-  footnotes   Footnote[]
 }
 
 model Project {
-  id          String       @id @default(uuid())
-  name        String
-  
-  identifier  String       @unique
-  owner       User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  ownerId     String
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  roots       Doc[]        @relation("Roots")
-  permissions Permission[] @relation("ProjectPermissions")
-  metadata    Json? // Whether this project is public
-  status      String       @default("active") // active, deleted, archived, draft
-  isPublic     Boolean @default(false) // Whether this project is public
-  publicAccess String  @default("none") // none, viewer, editor
-  shareLink    String? @unique // Unique shareable link identifier
+  id           String       @id @default(uuid())
+  name         String
+  identifier   String       @unique
+  ownerId      String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  metadata     Json?
+  status       String       @default("active")
+  isPublic     Boolean      @default(false)
+  publicAccess String       @default("none")
+  shareLink    String?      @unique
+  roots        Doc[]        @relation("Roots")
+  permissions  Permission[] @relation("ProjectPermissions")
+  owner        User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 }
 
 model Doc {
-  id                     String       @id @default(uuid()) // Unique identifier for the document
+  id                     String       @id @default(uuid())
+  identifier             String       @unique
+  docs_prosemirror_delta Json?
+  docs_y_doc_state       Bytes?
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
+  ownerId                String?
+  isRoot                 Boolean      @default(false)
+  language               String       @default("bo")
+  rootId                 String?
+  metadata               Json?
+  rootProjectId          String?
   name                   String       @default("document")
-  identifier             String       @unique // Ensures each document has a unique identifier
-  docs_prosemirror_delta Json? // Nullable array of objects
-  docs_y_doc_state       Bytes? // Binary data for Yjs document state
-  language               String       @default("bo") // Language of the document content
-  isRoot                 Boolean      @default(false) // Whether this is a root text
-  rootId                 String? // ID of the root document if this is a translation
-  root                   Doc?         @relation("Translations", fields: [rootId], references: [id], onDelete: Cascade)
-  translations           Doc[]        @relation("Translations") // One root can have multiple translations
-  createdAt              DateTime     @default(now()) // Timestamp when the document is created
-  updatedAt              DateTime     @updatedAt // Auto-updated timestamp
-  ownerId                String? // Optional owner of the document
+  translationJobId       String?
+  translationProgress    Int?         @default(0)
+  translationStatus      String?
+  comments               Comment[]
   owner                  User?        @relation("UserDocs", fields: [ownerId], references: [id], onDelete: Cascade)
+
   permissions            Permission[] // A document can have multiple permission entries
   comments               Comment[] // A document can have multiple comments
   versions               Version[] // A document can have multiple versions
@@ -77,21 +81,18 @@ model Doc {
 }
 
 model Permission {
-  id        String  @id @default(uuid())
-  docId     String?
-  userId    String?
-  canRead   Boolean @default(true)
-  canWrite  Boolean @default(false)
-  projectId String?
-
-  accessLevel String @default("viewer") // viewer, editor, admin
-
-  doc     Doc?     @relation(fields: [docId], references: [id], onDelete: Cascade)
-  user    User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  Project Project? @relation("ProjectPermissions", fields: [projectId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(uuid())
+  userId      String?
+  canRead     Boolean  @default(true)
+  canWrite    Boolean  @default(false)
+  docId       String?
+  createdAt   DateTime @default(now())
+  projectId   String?
+  updatedAt   DateTime @updatedAt
+  accessLevel String   @default("viewer")
+  doc         Doc?     @relation(fields: [docId], references: [id], onDelete: Cascade)
+  Project     Project? @relation("ProjectPermissions", fields: [projectId], references: [id])
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([docId, userId])
   @@index([docId])
@@ -101,27 +102,26 @@ model Permission {
 
 model Comment {
   id                   String    @id @default(uuid())
-  threadId             String?
   docId                String
   userId               String
   content              String
-  parentComment        Comment?  @relation("parentComment", fields: [parentCommentId], references: [id])
   parentCommentId      String?
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
-  childComments        Comment[] @relation("parentComment")
-  comment_on           String?
   initial_start_offset Int
   initial_end_offset   Int
-  doc                  Doc       @relation(fields: [docId], references: [id], onDelete: Cascade)
-  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   is_suggestion        Boolean   @default(false)
   suggested_text       String?
+  threadId             String?
+  comment_on           String?
+  doc                  Doc       @relation(fields: [docId], references: [id], onDelete: Cascade)
+  parentComment        Comment?  @relation("parentComment", fields: [parentCommentId], references: [id])
+  childComments        Comment[] @relation("parentComment")
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Footnote {
   id                   String   @id @default(uuid())
-  order                Int      @default(0)
   threadId             String?
   docId                String
   userId               String
@@ -131,31 +131,32 @@ model Footnote {
   note_on              String?
   initial_start_offset Int
   initial_end_offset   Int
+  order                Int      @default(0)
   doc                  Doc      @relation(fields: [docId], references: [id], onDelete: Cascade)
   user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Version {
-  id        String   @id @default(uuid()) // Unique identifier
-  doc       Doc      @relation(fields: [docId], references: [id], onDelete: Cascade)
-  docId     String // Document identifier
-  label     String // Version label (e.g., "Auto-save", "Manual Save")
-  timestamp DateTime @default(now()) // When the version was saved
+  id        String   @id @default(uuid())
+  docId     String
+  label     String
+  timestamp DateTime @default(now())
+  content   Json
   userId    String?
+  doc       Doc      @relation(fields: [docId], references: [id], onDelete: Cascade)
   user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   content   Json // Quill delta contents stored as JSON
   currentDoc Doc? @relation("CurrentVersion")
 }
 
 model ApiCredential {
-  id     String @id @default(cuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  provider  String // e.g., "openai", "google", "deepl"
-  apiKeyEnc String // encrypted API key (AES-encrypted or similar)
+  id        String   @id @default(cuid())
+  userId    String
+  provider  String
+  apiKeyEnc String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
