@@ -22,11 +22,6 @@ async function getProjects(whereClause, skip, limit) {
           id: true,
           name: true,
           updatedAt: true,
-          translations: {
-            select: {
-              id: true,
-            },
-          },
         },
       },
     },
@@ -104,8 +99,8 @@ async function createProject(name, identifier, metadata, rootId, userId) {
       metadata,
       roots: rootId
         ? {
-          connect: { id: rootId },
-        }
+            connect: { id: rootId },
+          }
         : undefined,
       permissions: {
         create: {
