@@ -62,14 +62,20 @@ router.get("/", authenticate, async (req, res) => {
           },
         },
       ],
-      status: status !== "all" ? status : undefined,
-      name: searchQuery
-        ? {
-          contains: searchQuery,
-          mode: "insensitive",
-        }
-        : undefined,
     };
+
+    // Only add status filter if not "all"
+    if (status !== "all") {
+      whereClause.status = status;
+    }
+
+    // Only add name filter if searchQuery is provided
+    if (searchQuery) {
+      whereClause.name = {
+        contains: searchQuery,
+        mode: "insensitive",
+      };
+    }
 
     const [projects, totalCount] = await Promise.all([
       getProjects(whereClause, skip, limit),
@@ -829,7 +835,8 @@ router.get("/:id/export", authenticate, async (req, res) => {
                 __dirname,
                 "..",
                 "uploads",
-                `temp_${rootDoc.name}_${translation.language
+                `temp_${rootDoc.name}_${
+                  translation.language
                 }_${Date.now()}.docx`
               );
 
@@ -1057,7 +1064,6 @@ router.get("/:id/export", authenticate, async (req, res) => {
 
 // Store active progress streams
 
-
 /**
  * POST /projects/{id}/share
  * @summary Update project sharing settings
@@ -1077,7 +1083,7 @@ router.post("/:id/share", authenticate, async (req, res) => {
     const { id } = req.params;
     const { isPublic, publicAccess } = req.body;
 
-    console.log('Share request received:', { id, isPublic, publicAccess });
+    console.log("Share request received:", { id, isPublic, publicAccess });
 
     // Check if project exists and get root documents
     const project = await prisma.project.findUnique({
@@ -1093,7 +1099,7 @@ router.post("/:id/share", authenticate, async (req, res) => {
       },
     });
 
-    console.log('Project found:', project ? 'Yes' : 'No');
+    console.log("Project found:", project ? "Yes" : "No");
 
     if (!project) {
       return res.status(404).json({ error: "Project not found" });
@@ -1102,27 +1108,27 @@ router.post("/:id/share", authenticate, async (req, res) => {
     // Only owner can update sharing settings
     if (project.ownerId !== req.user.id) {
       return res.status(403).json({
-        error: "Not authorized to update sharing settings"
+        error: "Not authorized to update sharing settings",
       });
     }
 
     // Check if project has a root document
     if (!project.roots || project.roots.length === 0) {
       return res.status(400).json({
-        error: "Project must have a root document to be shared"
+        error: "Project must have a root document to be shared",
       });
     }
 
     // Generate share link if making public
     let shareLink = project.shareLink;
     if (isPublic && !shareLink) {
-      shareLink = crypto.randomBytes(32).toString('hex');
-      console.log('Generated new share link:', shareLink);
+      shareLink = crypto.randomBytes(32).toString("hex");
+      console.log("Generated new share link:", shareLink);
     }
 
-    console.log('Updating project with:', {
+    console.log("Updating project with:", {
       isPublic: isPublic || false,
-      publicAccess: publicAccess || 'none',
+      publicAccess: publicAccess || "none",
       shareLink: isPublic ? shareLink : null,
     });
 
@@ -1131,18 +1137,19 @@ router.post("/:id/share", authenticate, async (req, res) => {
       where: { id },
       data: {
         isPublic: isPublic || false,
-        publicAccess: publicAccess || 'none',
+        publicAccess: publicAccess || "none",
         shareLink: isPublic ? shareLink : null,
       },
     });
 
-    console.log('Project updated successfully');
+    console.log("Project updated successfully");
 
     // Generate direct link to root document instead of project link
     const baseUrl = process.env.FRONTEND_URL || "http://localhost:3000";
     const rootDocument = project.roots[0]; // Get the first root document
-    const shareableLink = updatedProject.isPublic ?
-      `${baseUrl}/documents/public/${rootDocument.id}` : null;
+    const shareableLink = updatedProject.isPublic
+      ? `${baseUrl}/documents/public/${rootDocument.id}`
+      : null;
 
     res.json({
       success: true,
@@ -1210,20 +1217,24 @@ router.get("/:id/share", authenticate, async (req, res) => {
     }
 
     // Check if user has permission to view sharing settings
-    const hasPermission = project.ownerId === req.user.id ||
-      project.permissions.some(p => p.userId === req.user.id);
+    const hasPermission =
+      project.ownerId === req.user.id ||
+      project.permissions.some((p) => p.userId === req.user.id);
 
     if (!hasPermission) {
       return res.status(403).json({
-        error: "Not authorized to view sharing settings"
+        error: "Not authorized to view sharing settings",
       });
     }
 
     // Generate direct link to root document instead of project link
     const baseUrl = process.env.FRONTEND_URL || "http://localhost:3000";
-    const rootDocument = project.roots && project.roots.length > 0 ? project.roots[0] : null;
-    const shareableLink = project.isPublic && rootDocument ?
-      `${baseUrl}/documents/public/${rootDocument.id}` : null;
+    const rootDocument =
+      project.roots && project.roots.length > 0 ? project.roots[0] : null;
+    const shareableLink =
+      project.isPublic && rootDocument
+        ? `${baseUrl}/documents/public/${rootDocument.id}`
+        : null;
 
     res.json({
       success: true,
@@ -1245,8 +1256,6 @@ router.get("/:id/share", authenticate, async (req, res) => {
   }
 });
 
-
-
 /**
  * POST /projects/{id}/collaborators
  * @summary Add collaborator to project
@@ -1265,14 +1274,14 @@ router.get("/:id/share", authenticate, async (req, res) => {
 router.post("/:id/collaborators", authenticate, async (req, res) => {
   try {
     const { id } = req.params;
-    const { email, accessLevel = 'viewer', message } = req.body;
+    const { email, accessLevel = "viewer", message } = req.body;
 
     if (!email) {
       return res.status(400).json({ error: "Email is required" });
     }
 
     // Validate access level
-    if (!['viewer', 'editor', 'admin'].includes(accessLevel)) {
+    if (!["viewer", "editor", "admin"].includes(accessLevel)) {
       return res.status(400).json({ error: "Invalid access level" });
     }
 
@@ -1286,7 +1295,7 @@ router.post("/:id/collaborators", authenticate, async (req, res) => {
     const hasPermission = project.ownerId === req.user.id;
     if (!hasPermission) {
       return res.status(403).json({
-        error: "Not authorized to add collaborators"
+        error: "Not authorized to add collaborators",
       });
     }
 
@@ -1310,7 +1319,7 @@ router.post("/:id/collaborators", authenticate, async (req, res) => {
         where: { id: existingPermission.id },
         data: {
           accessLevel,
-          canWrite: ['editor', 'admin'].includes(accessLevel),
+          canWrite: ["editor", "admin"].includes(accessLevel),
         },
         include: {
           user: {
@@ -1337,7 +1346,7 @@ router.post("/:id/collaborators", authenticate, async (req, res) => {
         userId: userToAdd.id,
         accessLevel,
         canRead: true,
-        canWrite: ['editor', 'admin'].includes(accessLevel),
+        canWrite: ["editor", "admin"].includes(accessLevel),
       },
       include: {
         user: {
@@ -1385,7 +1394,7 @@ router.patch("/:id/collaborators/:userId", authenticate, async (req, res) => {
     }
 
     // Validate access level
-    if (!['viewer', 'editor', 'admin'].includes(accessLevel)) {
+    if (!["viewer", "editor", "admin"].includes(accessLevel)) {
       return res.status(400).json({ error: "Invalid access level" });
     }
 
@@ -1399,7 +1408,7 @@ router.patch("/:id/collaborators/:userId", authenticate, async (req, res) => {
     const hasPermission = project.ownerId === req.user.id;
     if (!hasPermission) {
       return res.status(403).json({
-        error: "Not authorized to update collaborators"
+        error: "Not authorized to update collaborators",
       });
     }
 
@@ -1420,7 +1429,7 @@ router.patch("/:id/collaborators/:userId", authenticate, async (req, res) => {
       where: { id: permission.id },
       data: {
         accessLevel,
-        canWrite: ['editor', 'admin'].includes(accessLevel),
+        canWrite: ["editor", "admin"].includes(accessLevel),
       },
       include: {
         user: {
@@ -1470,14 +1479,14 @@ router.delete("/:id/collaborators/:userId", authenticate, async (req, res) => {
     const hasPermission = project.ownerId === req.user.id;
     if (!hasPermission) {
       return res.status(403).json({
-        error: "Not authorized to remove collaborators"
+        error: "Not authorized to remove collaborators",
       });
     }
 
     // Don't allow removing the owner
     if (userId === project.ownerId) {
       return res.status(400).json({
-        error: "Cannot remove project owner"
+        error: "Cannot remove project owner",
       });
     }
 
