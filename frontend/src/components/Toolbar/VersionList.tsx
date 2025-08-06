@@ -7,7 +7,6 @@ import { useState } from "react";
 import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 import { createPortal } from "react-dom";
 
-
 // Use the Version type from context
 
 interface EachVersionProps {
@@ -46,8 +45,8 @@ function VersionList({ handleViewAll }: { handleViewAll: () => void }) {
   const handleDeleteConfirm = async () => {
     if (!deleteModalState.versionId) return;
 
-    setDeleteModalState(prev => ({ ...prev, isDeleting: true, error: null }));
-    
+    setDeleteModalState((prev) => ({ ...prev, isDeleting: true, error: null }));
+
     try {
       await deleteVersion(deleteModalState.versionId);
       setDeleteModalState({
@@ -59,7 +58,7 @@ function VersionList({ handleViewAll }: { handleViewAll: () => void }) {
       });
     } catch (error) {
       console.error("Failed to delete version:", error);
-      setDeleteModalState(prev => ({
+      setDeleteModalState((prev) => ({
         ...prev,
         isDeleting: false,
         error: "Failed to delete version. Please try again.",
@@ -94,11 +93,14 @@ function VersionList({ handleViewAll }: { handleViewAll: () => void }) {
         ) : (
           <div className="max-h-60 overflow-y-auto border">
             {versions.map((version: any) => (
-              <EachVersion 
-                key={version.id} 
-                version={version} 
+              <EachVersion
+                key={version.id}
+                version={version}
                 onDeleteClick={handleDeleteClick}
-                isDeleting={deleteModalState.isDeleting && deleteModalState.versionId === version.id}
+                isDeleting={
+                  deleteModalState.isDeleting &&
+                  deleteModalState.versionId === version.id
+                }
               />
             ))}
           </div>
@@ -109,10 +111,12 @@ function VersionList({ handleViewAll }: { handleViewAll: () => void }) {
         <ConfirmationModal
           open={deleteModalState.isOpen}
           onClose={handleCloseModal}
-          onConfirm={deleteModalState.error ? handleCloseModal : handleDeleteConfirm}
+          onConfirm={
+            deleteModalState.error ? handleCloseModal : handleDeleteConfirm
+          }
           title={deleteModalState.error ? "Error" : "Delete Version"}
           message={
-            deleteModalState.error 
+            deleteModalState.error
               ? deleteModalState.error
               : `Are you sure you want to delete the version "${deleteModalState.versionLabel}"? This action cannot be undone.`
           }
@@ -126,33 +130,37 @@ function VersionList({ handleViewAll }: { handleViewAll: () => void }) {
   );
 }
 
-
 function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
-  const { 
-    currentVersionId, 
-    loadVersion, 
-    isLoadingVersion, 
+  const {
+    currentVersionId,
+    loadVersion,
+    isLoadingVersion,
     loadingVersionId,
     versions,
     updateCurrentVersion,
   } = useQuillVersion();
-  
+
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  
+
   const isLoading = isLoadingVersion && loadingVersionId === version.id;
   const isCurrentVersion = version.id === currentVersionId;
   const isLatestVersion = versions[0]?.id === version.id;
   const isSystemVersion = version.user === null;
-  const canDelete = isLatestVersion && !isLoading && !isSaving && !isDeleting && !isSystemVersion;
+  const canDelete =
+    isLatestVersion &&
+    !isLoading &&
+    !isSaving &&
+    !isDeleting &&
+    !isSystemVersion;
 
   const handleSave = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isSaving) return;
-    
+
     setIsSaving(true);
     setSaveError(null);
-    
+
     try {
       await updateCurrentVersion();
       console.log("Successfully saved current version:", version.label);
@@ -178,9 +186,17 @@ function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
   };
 
   return (
-    <div className={`px-2 py-2 border-b hover:bg-gray-100 ${isCurrentVersion ? "bg-blue-100" : ""}`}>
+    <div
+      className={`px-2 py-2 border-b hover:bg-gray-100 ${
+        isCurrentVersion ? "bg-blue-100" : ""
+      }`}
+    >
       <div className="flex justify-between items-center">
-        <div className={`flex items-center gap-1 ${isCurrentVersion ? "font-semibold text-blue-600" : ""}`}>
+        <div
+          className={`flex items-center gap-1 ${
+            isCurrentVersion ? "font-semibold text-blue-600" : ""
+          }`}
+        >
           {version.label}
         </div>
         <div className="flex gap-2 justify-end">
@@ -191,14 +207,14 @@ function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
               disabled={isLoading || isSaving}
               className="px-2 py-1 rounded text-sm bg-green-100 hover:bg-green-200 text-green-700"
             >
-              {(isLoading || isSaving) ? (
+              {isLoading || isSaving ? (
                 <FaSpinner className="animate-spin" />
               ) : (
                 <MdSave />
               )}
             </button>
           )}
-          
+
           {!isCurrentVersion && (
             <button
               onClick={handleLoad}
@@ -212,7 +228,7 @@ function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
               )}
             </button>
           )}
-          
+
           {/* Second button slot: Delete (non-system) or invisible placeholder (system) */}
           {!isSystemVersion ? (
             <button
@@ -222,7 +238,11 @@ function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
                 canDelete ? "bg-red-100 hover:bg-red-200" : "invisible"
               }`}
             >
-              {isDeleting ? <FaSpinner className="animate-spin" /> : <MdDelete />}
+              {isDeleting ? (
+                <FaSpinner className="animate-spin" />
+              ) : (
+                <MdDelete />
+              )}
             </button>
           ) : (
             <div className="px-2 py-1 w-8"></div>
@@ -230,8 +250,13 @@ function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
         </div>
       </div>
 
-      <div className={`text-xs mt-1 ${isCurrentVersion ? "text-blue-600" : "text-gray-500"}`}>
-        {version?.user?.username || version?.user?.name || "System"} • {formatTimeAgo(version.timestamp)}
+      <div
+        className={`text-xs mt-1 ${
+          isCurrentVersion ? "text-blue-600" : "text-gray-500"
+        }`}
+      >
+        {version?.user?.username || version?.user?.name || "System"} •{" "}
+        {formatTimeAgo(version.createdAt)}
         {saveError && isCurrentVersion && (
           <div className="text-red-500 mt-1">{saveError}</div>
         )}

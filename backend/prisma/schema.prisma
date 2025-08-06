@@ -40,35 +40,32 @@ model Project {
 }
 
 model Doc {
-  id                     String       @id @default(uuid())
-  identifier             String       @unique
+  id                     String    @id @default(uuid())
+  identifier             String    @unique
   docs_prosemirror_delta Json?
   docs_y_doc_state       Bytes?
-  createdAt              DateTime     @default(now())
-  updatedAt              DateTime     @updatedAt
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
   ownerId                String?
-  isRoot                 Boolean      @default(false)
-  language               String       @default("bo")
+  isRoot                 Boolean   @default(false)
+  language               String    @default("bo")
   rootId                 String?
   metadata               Json?
   rootProjectId          String?
-  name                   String       @default("document")
+  name                   String    @default("document")
   translationJobId       String?
-  translationProgress    Int?         @default(0)
+  translationProgress    Int?      @default(0)
   translationStatus      String?
   comments               Comment[]
-  owner                  User?        @relation("UserDocs", fields: [ownerId], references: [id], onDelete: Cascade)
+  owner                  User?     @relation("UserDocs", fields: [ownerId], references: [id], onDelete: Cascade)
 
-  permissions            Permission[] // A document can have multiple permission entries
-  versions               Version[] // A document can have multiple versions
-  footnotes              Footnote[] // A document can have multiple footnotes
-  currentVersionId       String? @unique
-  currentVersion         Version? @relation("CurrentVersion", fields: [currentVersionId], references: [id])
+  permissions      Permission[] // A document can have multiple permission entries
+  versions         Version[] // A document can have multiple versions
+  footnotes        Footnote[] // A document can have multiple footnotes
+  currentVersionId String?      @unique
+  currentVersion   Version?     @relation("CurrentVersion", fields: [currentVersionId], references: [id])
 
-
-
-  rootsProject  Project? @relation("Roots", fields: [rootProjectId], references: [id])
- 
+  rootsProject Project? @relation("Roots", fields: [rootProjectId], references: [id])
 
   @@index([ownerId])
   @@index([rootId])
@@ -132,15 +129,16 @@ model Footnote {
 }
 
 model Version {
-  id        String   @id @default(uuid())
-  docId     String
-  label     String
-  timestamp DateTime @default(now())
-  content   Json
-  userId    String?
-  doc       Doc      @relation(fields: [docId], references: [id], onDelete: Cascade)
-  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  currentDoc Doc? @relation("CurrentVersion")
+  id         String   @id @default(uuid())
+  docId      String
+  label      String
+  content    Json
+  userId     String?
+  doc        Doc      @relation(fields: [docId], references: [id], onDelete: Cascade)
+  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currentDoc Doc?     @relation("CurrentVersion")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
 }
 
 model ApiCredential {

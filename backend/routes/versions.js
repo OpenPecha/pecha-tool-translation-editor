@@ -14,8 +14,13 @@ router.get("/:docId", authenticate, async (req, res) => {
     const { docId } = req.params;
     const versions = await prisma.version.findMany({
       where: { docId },
-      select: { label: true, id: true, timestamp: true, user: true },
-      orderBy: { timestamp: "desc" },
+      select: {
+        label: true,
+        id: true,
+        user: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
     });
     res.json(versions);
   } catch (error) {
@@ -76,9 +81,8 @@ router.get("/version/:id", authenticate, async (req, res) => {
     // Update document's currentVersionId to this version
     await prisma.doc.update({
       where: { id: version.docId },
-      data: { currentVersionId: version.id }
+      data: { currentVersionId: version.id },
     });
-    
 
     res.json(version);
   } catch (error) {
@@ -115,16 +119,16 @@ router.delete("/version/:id", authenticate, async (req, res) => {
     // If this version was the current version, update the document to use the most recent remaining version
     if (existingVersion.id === existingVersion.doc?.currentVersionId) {
       const latestVersion = await prisma.version.findFirst({
-        where: { 
+        where: {
           docId: existingVersion.docId,
-          id: { not: existingVersion.id }
+          id: { not: existingVersion.id },
         },
-        orderBy: { createdAt: 'desc' }
+        orderBy: { createdAt: "desc" },
       });
 
       await prisma.doc.update({
         where: { id: existingVersion.docId },
-        data: { currentVersionId: latestVersion?.id || null }
+        data: { currentVersionId: latestVersion?.id || null },
       });
     }
 
@@ -205,7 +209,6 @@ router.put("/version/:id", authenticate, async (req, res) => {
       where: { id },
       data: {
         content,
-        timestamp: new Date(), // Update timestamp when content is updated
       },
       include: { user: true },
     });
@@ -246,7 +249,7 @@ router.get("/current/:docId", authenticate, async (req, res) => {
         .json({ error: "No current version found for this document" });
     }
 
-    res.json({id:document.currentVersionId});
+    res.json({ id: document.currentVersionId });
   } catch (error) {
     console.error("Error fetching current version:", error);
     res.status(500).json({ error: "Internal server error" });

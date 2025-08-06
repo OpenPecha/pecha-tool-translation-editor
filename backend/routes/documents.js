@@ -1065,6 +1065,7 @@ router.patch("/:id", authenticate, async (req, res) => {
 router.patch("/:id/content", authenticate, async (req, res) => {
   const { docs_prosemirror_delta } = req.body;
   try {
+    // First, get the document with its current version
     const document = await prisma.doc.findUnique({
       where: { id: req.params.id },
       select: {
@@ -1072,10 +1073,20 @@ router.patch("/:id/content", authenticate, async (req, res) => {
         id: true,
         docs_prosemirror_delta: true,
         rootProjectId: true,
+        currentVersionId: true,
+        currentVersion: {
+          select: {
+            id: true,
+            content: true,
+            label: true,
+          },
+        },
       },
     });
+
     if (!document) return res.status(404).json({ error: "Document not found" });
 
+    // Check permissions
     if (document.ownerId !== req.user.id) {
       const permission = await prisma.permission.findFirst({
         where: {
@@ -1087,52 +1098,55 @@ router.patch("/:id/content", authenticate, async (req, res) => {
       if (!permission) return res.status(403).json({ error: "No edit access" });
     }
 
-    // Approach 1: If we need to merge with existing Y.doc state
-    const ydoc = new Y.Doc({ gc: true });
+    let currentVersionId = document.currentVersionId;
 
-    // If the document already has Y.doc state, we should first apply that
-    // if (document.docs_y_doc_state) {
-    //   Y.applyUpdateV2(ydoc, document.docs_y_doc_state);
-    // }
+    // If no current version exists, create one
+    if (!currentVersionId) {
+      const newVersion = await prisma.version.create({
+        data: {
+          docId: document.id,
+          label: "Auto-saved version",
+          content: docs_prosemirror_delta || {},
+          userId: req.user.id,
+        },
+      });
 
-    // Get the shared text type from the Y.doc
-    const ytext = ydoc.getText(req.params.id);
+      // Update document to set this as current version
+      await prisma.doc.update({
+        where: { id: document.id },
+        data: {
+          currentVersionId: newVersion.id,
+          docs_prosemirror_delta,
+        },
+      });
 
-    // Convert ProseMirror delta to Y.js compatible operations
-    // This is the critical part that was missing
-    if (docs_prosemirror_delta) {
-      // Process the delta operations to make them compatible with Y.js
-      // You may need a custom conversion function depending on your delta format
-      const yDelta = convertProseMirrorDeltaToYDelta(docs_prosemirror_delta);
-      ytext.applyDelta(yDelta);
+      currentVersionId = newVersion.id;
+    } else {
+      // Update the existing current version
+      await prisma.version.update({
+        where: { id: currentVersionId },
+        data: {
+          content: docs_prosemirror_delta || {},
+        },
+      });
+
+      // Also update the document's prosemirror delta for direct access
+      await prisma.doc.update({
+        where: { id: document.id },
+        data: {
+          docs_prosemirror_delta,
+        },
+      });
     }
 
-    // Encode the updated Y.doc state
-
-    const docs_y_doc_state = Y.encodeStateAsUpdateV2(ydoc);
-
-    // Validate the state isn't too small/empty
-    // if (docs_y_doc_state.length < 100) {
-    //   console.log('Y.js state is too small, skipping update');
-    //   return res.status(400).json({ error: "Invalid document state" });
-    // }
-
-    // Uncomment this to actually update the database
-    const updatedDocument = await prisma.doc.update({
-      where: { id: document.id },
-      data: {
-        docs_prosemirror_delta,
-      },
-      select: {
-        id: true,
-      },
-    });
     res.json({
       success: true,
+      currentVersionId: currentVersionId,
+      message: "Version content updated successfully",
     });
   } catch (error) {
-    console.error("Error updating document content:", error);
-    res.status(500).json({ error: "Error updating document content" });
+    console.error("Error updating version content:", error);
+    res.status(500).json({ error: "Error updating version content" });
   }
 });
 

@@ -23,7 +23,8 @@ interface DeltaContent {
 interface Version {
   id: string;
   label: string;
-  timestamp: string;
+  createdAt: string;
+  updatedAt: string;
   content: DeltaContent;
   user?: {
     username: string;
@@ -112,7 +113,11 @@ function VersionDiff({ onClose }: VersionDiffProps) {
         </button>
         <Button
           onClick={handleRestore}
-          disabled={!selectedVersionId || selectedVersionId === lastVersionId || isRestoring}
+          disabled={
+            !selectedVersionId ||
+            selectedVersionId === lastVersionId ||
+            isRestoring
+          }
           title="Restore version"
         >
           {isRestoring ? (
@@ -133,7 +138,9 @@ function VersionDiff({ onClose }: VersionDiffProps) {
           {isDiffLoading ? (
             <div className="flex flex-col items-center justify-center mt-20">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
-              <div className="text-gray-500">Loading version differences...</div>
+              <div className="text-gray-500">
+                Loading version differences...
+              </div>
             </div>
           ) : selectedVersionId && diffData ? (
             <DiffViewer diffDelta={diffData.diffs} />
@@ -168,7 +175,7 @@ function VersionDiff({ onClose }: VersionDiffProps) {
                       )}
                     </div>
                     <p className="text-sm text-gray-500">
-                      {formatTimeAgo(version.timestamp)}
+                      {formatTimeAgo(version.updatedAt)}
                     </p>
                   </div>
                   <div className="text-sm text-gray-500 self-start capitalize">

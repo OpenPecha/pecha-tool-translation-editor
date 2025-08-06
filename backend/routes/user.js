@@ -25,8 +25,8 @@ router.get("/me", authenticate, async (req, res) => {
         username: true,
         email: true,
         picture: true,
-        createdAt: true
-      }
+        createdAt: true,
+      },
     });
 
     if (!user) {
@@ -35,7 +35,7 @@ router.get("/me", authenticate, async (req, res) => {
 
     res.json({
       success: true,
-      data: user
+      data: user,
     });
   } catch (error) {
     console.error("Error fetching user profile:", error);
@@ -61,13 +61,13 @@ router.post("/", async (req, res) => {
 
     if (!email) {
       return res.status(400).json({
-        error: "Email is required"
+        error: "Email is required",
       });
     }
 
     // Check if user already exists
     let user = await prisma.user.findUnique({
-      where: { email }
+      where: { email },
     });
 
     if (user) {
@@ -76,8 +76,8 @@ router.post("/", async (req, res) => {
         where: { id: user.id },
         data: {
           username: username || user.username,
-          picture: picture || user.picture
-        }
+          picture: picture || user.picture,
+        },
       });
     } else {
       // Create new user
@@ -85,17 +85,15 @@ router.post("/", async (req, res) => {
         data: {
           username: username || email.split("@")[0],
           email,
-          picture
-        }
+          picture,
+        },
       });
     }
 
     // Generate JWT token
-    const token = jwt.sign(
-      { id: user.id, email: user.email },
-      SECRET_KEY,
-      { expiresIn: "7d" }
-    );
+    const token = jwt.sign({ id: user.id, email: user.email }, SECRET_KEY, {
+      expiresIn: "7d",
+    });
 
     res.json({
       success: true,
@@ -104,10 +102,10 @@ router.post("/", async (req, res) => {
           id: user.id,
           username: user.username,
           email: user.email,
-          picture: user.picture
+          picture: user.picture,
         },
-        token
-      }
+        token,
+      },
     });
   } catch (error) {
     console.error("Error creating/updating user:", error);
@@ -137,8 +135,8 @@ router.get("/search", authenticate, async (req, res) => {
     const users = await prisma.user.findMany({
       where: {
         OR: [
-          { email: { contains: query, mode: 'insensitive' } },
-          { username: { contains: query, mode: 'insensitive' } },
+          { email: { contains: query, mode: "insensitive" } },
+          { username: { contains: query, mode: "insensitive" } },
         ],
       },
       select: {
@@ -179,8 +177,8 @@ router.get("/:id", async (req, res) => {
         id: true,
         username: true,
         picture: true,
-        createdAt: true
-      }
+        createdAt: true,
+      },
     });
 
     if (!user) {
@@ -189,7 +187,7 @@ router.get("/:id", async (req, res) => {
 
     res.json({
       success: true,
-      data: user
+      data: user,
     });
   } catch (error) {
     console.error("Error fetching user:", error);
@@ -216,20 +214,20 @@ router.put("/me", authenticate, async (req, res) => {
       where: { id: req.user.id },
       data: {
         username,
-        picture
+        picture,
       },
       select: {
         id: true,
         username: true,
         email: true,
         picture: true,
-        createdAt: true
-      }
+        createdAt: true,
+      },
     });
 
     res.json({
       success: true,
-      data: updatedUser
+      data: updatedUser,
     });
   } catch (error) {
     console.error("Error updating user profile:", error);
@@ -273,8 +271,6 @@ router.get("/translations/:rootId", async (req, res) => {
   }
 });
 
-
-
 /**
  * GET /users/version-diff/{versionId}
  * @summary Get diff between current and previous version
@@ -305,20 +301,18 @@ router.get("/version-diff/:versionId", async (req, res) => {
     const previousVersion = await prisma.version.findFirst({
       where: {
         docId: currentVersion.docId,
-        timestamp: {
-          lt: currentVersion.timestamp,
-        },
       },
       orderBy: {
-        timestamp: "desc",
+        createdAt: "desc",
       },
       select: {
         content: true,
       },
     });
 
-
-    const oldDelta = previousVersion ? new Delta(previousVersion.content?.ops) : new Delta();
+    const oldDelta = previousVersion
+      ? new Delta(previousVersion.content?.ops)
+      : new Delta();
     const newDelta = new Delta(currentVersion.content?.ops);
     const diffs1 = markDiff(oldDelta, newDelta);
 
@@ -331,10 +325,5 @@ router.get("/version-diff/:versionId", async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
-
-
-
-
 
 module.exports = router;
