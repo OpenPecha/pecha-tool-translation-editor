@@ -192,112 +192,222 @@ router.post("/extract/stream", authenticate, async (req, res) => {
           for (const line of lines) {
             if (!line.trim()) continue;
 
-            // Parse Server-Sent Events format from external API
-            let eventData = line;
-
-            // Handle SSE format: "data: ..."
-            if (line.startsWith("data: ")) {
-              eventData = line.substring(6); // Remove "data: " prefix
-
-              // Handle nested SSE format: "data: data: {...}"
-              if (eventData.startsWith("data: ")) {
-                eventData = eventData.substring(6); // Remove second "data: " prefix
-              }
-
-              // Remove carriage return
-              eventData = eventData.replace(/\r$/, "");
+            // Extract event data from SSE format
+            let eventData = "";
+            if (line.trim().startsWith("data: ")) {
+              eventData = line.trim().substring(6).trim();
+            } else if (line.trim().startsWith("data:")) {
+              eventData = line.trim().substring(5).trim();
             }
 
-            // Skip empty data
-            if (!eventData.trim()) continue;
+            if (!eventData) continue;
 
-            try {
-              // Parse the JSON data
-              const data = JSON.parse(eventData);
+            // Handle multiple JSON objects or fragments in eventData
+            if (eventData.startsWith("{") && eventData.endsWith("}")) {
+              try {
+                // Single complete JSON object
+                const data = JSON.parse(eventData);
 
-              // Transform external API events to our structured format
-              if (data.type === "initialization") {
-                // External API initialization - we already sent ours
-                console.log("External Glossary API initialized");
-              } else if (data.type === "planning") {
-                // External API planning - we already sent ours
-                console.log("External Glossary API planned batches");
-              } else if (data.type === "batch_start") {
-                sendEvent({
-                  type: "batch_start",
-                  batch_number: data.batch_number || currentBatch,
-                  progress_percent:
-                    data.progress_percent ||
-                    ((currentBatch - 1) / totalBatches) * 100,
-                  timestamp: new Date().toISOString(),
-                  message: `Processing batch ${
-                    data.batch_number || currentBatch
-                  }...`,
-                });
-              } else if (data.type === "extraction_start") {
-                sendEvent({
-                  type: "extraction_start",
-                  timestamp: new Date().toISOString(),
-                  message: "Extracting glossary terms...",
-                });
-              } else if (data.type === "item_completed") {
-                completedItems++;
-                const progressPercent = (completedItems / items.length) * 100;
+                // Transform external API events to our structured format
+                if (data.type === "initialization") {
+                  // External API initialization - we already sent ours
+                  console.log("External Glossary API initialized");
+                } else if (data.type === "planning") {
+                  // External API planning - we already sent ours
+                  console.log("External Glossary API planned batches");
+                } else if (data.type === "batch_start") {
+                  sendEvent({
+                    type: "batch_start",
+                    batch_number: data.batch_number || currentBatch,
+                    progress_percent:
+                      data.progress_percent ||
+                      ((currentBatch - 1) / totalBatches) * 100,
+                    timestamp: new Date().toISOString(),
+                    message: `Processing batch ${
+                      data.batch_number || currentBatch
+                    }...`,
+                  });
+                } else if (data.type === "extraction_start") {
+                  sendEvent({
+                    type: "extraction_start",
+                    timestamp: new Date().toISOString(),
+                    message: "Extracting glossary terms...",
+                  });
+                } else if (data.type === "item_completed") {
+                  completedItems++;
+                  const progressPercent = (completedItems / items.length) * 100;
 
-                sendEvent({
-                  type: "item_completed",
-                  item_number: completedItems,
-                  total_items: items.length,
-                  progress_percent: progressPercent,
-                  glossary_preview: data.glossary_preview,
-                  timestamp: new Date().toISOString(),
-                  message: `Completed ${completedItems}/${items.length} items`,
-                });
-              } else if (data.type === "batch_completed") {
-                const cumulativeProgress =
-                  (data.batch_number / totalBatches) * 100;
+                  sendEvent({
+                    type: "item_completed",
+                    item_number: completedItems,
+                    total_items: items.length,
+                    progress_percent: progressPercent,
+                    glossary_preview: data.glossary_preview,
+                    timestamp: new Date().toISOString(),
+                    message: `Completed ${completedItems}/${items.length} items`,
+                  });
+                } else if (data.type === "batch_completed") {
+                  const cumulativeProgress =
+                    (data.batch_number / totalBatches) * 100;
 
-                sendEvent({
-                  type: "batch_completed",
-                  batch_number: data.batch_number || currentBatch,
-                  batch_id: data.batch_id || `batch_${currentBatch}`,
-                  batch_results: data.batch_results || [],
-                  cumulative_progress: cumulativeProgress,
-                  processing_time: data.processing_time || "0.0",
-                  timestamp: new Date().toISOString(),
-                  message: `Batch ${
-                    data.batch_number || currentBatch
-                  } completed in ${data.processing_time || "0.0"}s`,
-                });
+                  sendEvent({
+                    type: "batch_completed",
+                    batch_number: data.batch_number || currentBatch,
+                    batch_id: data.batch_id || `batch_${currentBatch}`,
+                    batch_results: data.batch_results || [],
+                    cumulative_progress: cumulativeProgress,
+                    processing_time: data.processing_time || "0.0",
+                    timestamp: new Date().toISOString(),
+                    message: `Batch ${
+                      data.batch_number || currentBatch
+                    } completed in ${data.processing_time || "0.0"}s`,
+                  });
 
-                currentBatch = (data.batch_number || currentBatch) + 1;
-              } else if (data.type === "completion") {
-                sendEvent({
-                  type: "completion",
-                  total_completed:
-                    data.successful_extractions || completedItems,
-                  total_items: data.total_items || items.length,
-                  glossary_terms: data.glossary_terms || [],
-                  timestamp: new Date().toISOString(),
-                  message: "Glossary extraction completed!",
-                });
-              } else if (data.type === "error") {
-                sendEvent({
-                  type: "error",
-                  error: data.error,
-                  details: data.details,
-                  timestamp: new Date().toISOString(),
-                });
-              } else {
-                // Forward any other structured data as-is
-                sendEvent({
-                  ...data,
-                  timestamp: data.timestamp || new Date().toISOString(),
-                });
+                  currentBatch = (data.batch_number || currentBatch) + 1;
+                } else if (data.type === "completion") {
+                  sendEvent({
+                    type: "completion",
+                    total_completed:
+                      data.successful_extractions || completedItems,
+                    total_items: data.total_items || items.length,
+                    glossary_terms: data.glossary_terms || [],
+                    timestamp: new Date().toISOString(),
+                    message: "Glossary extraction completed!",
+                  });
+                } else if (data.type === "error") {
+                  sendEvent({
+                    type: "error",
+                    error: data.error,
+                    details: data.details,
+                    timestamp: new Date().toISOString(),
+                  });
+                } else {
+                  // Forward any other structured data as-is
+                  sendEvent({
+                    ...data,
+                    timestamp: data.timestamp || new Date().toISOString(),
+                  });
+                }
+              } catch (parseError) {
+                console.error(
+                  "Error parsing complete JSON event:",
+                  parseError,
+                  "Raw eventData:",
+                  eventData
+                );
               }
-            } catch (parseError) {
-              // If not JSON, log but don't forward raw content
-              console.log("Non-JSON line from external Glossary API:", line);
+            } else {
+              // Handle partial or malformed JSON using a more robust approach
+              try {
+                // Try to fix common SSE formatting issues
+                let cleanedData = eventData;
+
+                // Remove duplicate "data: " prefixes that sometimes occur
+                if (cleanedData.includes("data: ")) {
+                  cleanedData = cleanedData.replace(/data:\s*/g, "");
+                }
+
+                // Try to parse after cleaning
+                if (cleanedData.startsWith("{")) {
+                  const data = JSON.parse(cleanedData);
+
+                  // Transform external API events to our structured format
+                  if (data.type === "initialization") {
+                    // External API initialization - we already sent ours
+                    console.log("External Glossary API initialized");
+                  } else if (data.type === "planning") {
+                    // External API planning - we already sent ours
+                    console.log("External Glossary API planned batches");
+                  } else if (data.type === "batch_start") {
+                    sendEvent({
+                      type: "batch_start",
+                      batch_number: data.batch_number || currentBatch,
+                      progress_percent:
+                        data.progress_percent ||
+                        ((currentBatch - 1) / totalBatches) * 100,
+                      timestamp: new Date().toISOString(),
+                      message: `Processing batch ${
+                        data.batch_number || currentBatch
+                      }...`,
+                    });
+                  } else if (data.type === "extraction_start") {
+                    sendEvent({
+                      type: "extraction_start",
+                      timestamp: new Date().toISOString(),
+                      message: "Extracting glossary terms...",
+                    });
+                  } else if (data.type === "item_completed") {
+                    completedItems++;
+                    const progressPercent =
+                      (completedItems / items.length) * 100;
+
+                    sendEvent({
+                      type: "item_completed",
+                      item_number: completedItems,
+                      total_items: items.length,
+                      progress_percent: Math.round(progressPercent),
+                      glossary_preview:
+                        data.glossary_preview || "Glossary preview unavailable",
+                      timestamp: new Date().toISOString(),
+                      message: `Completed ${completedItems}/${items.length} items`,
+                    });
+                  } else if (data.type === "batch_completed") {
+                    currentBatch++;
+
+                    sendEvent({
+                      type: "batch_completed",
+                      batch_number: data.batch_number || currentBatch - 1,
+                      batch_id: data.batch_id,
+                      extracted_glossary: data.extracted_glossary || [],
+                      cumulative_progress: Math.round(
+                        (completedItems / items.length) * 100
+                      ),
+                      processing_time:
+                        data.processing_time || "Processing time unknown",
+                      timestamp: new Date().toISOString(),
+                      message: `Batch ${
+                        data.batch_number || currentBatch - 1
+                      } completed`,
+                    });
+                  } else if (data.type === "completion") {
+                    sendEvent({
+                      type: "completion",
+                      total_completed: data.total_completed || completedItems,
+                      total_items: items.length,
+                      complete_glossary: data.complete_glossary || [],
+                      processing_time:
+                        data.processing_time || "Processing time unknown",
+                      timestamp: new Date().toISOString(),
+                      message: "Glossary extraction completed successfully!",
+                    });
+                  } else if (data.type === "error") {
+                    sendEvent({
+                      type: "error",
+                      error: data.error,
+                      details: data.details,
+                      timestamp: new Date().toISOString(),
+                    });
+                  } else {
+                    // Forward any other structured data as-is
+                    sendEvent({
+                      ...data,
+                      timestamp: data.timestamp || new Date().toISOString(),
+                    });
+                  }
+                } else {
+                  console.warn("Skipping non-JSON event data:", eventData);
+                }
+              } catch (parseError) {
+                console.error(
+                  "Error parsing SSE event:",
+                  parseError,
+                  "Raw line:",
+                  line,
+                  "Extracted eventData:",
+                  eventData
+                );
+                // Continue processing other lines
+              }
             }
           }
         }

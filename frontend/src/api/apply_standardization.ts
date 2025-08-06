@@ -149,6 +149,7 @@ export const consumeApplyStandardizationStream = async (
 
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
+  let buffer = "";
 
   try {
     while (true) {
@@ -163,26 +164,123 @@ export const consumeApplyStandardizationStream = async (
         break;
       }
 
-      const chunk = decoder.decode(value);
-      const lines = chunk.split("\n");
+      // Decode chunk and add to buffer
+      buffer += decoder.decode(value, { stream: true });
+
+      // Process complete lines
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || ""; // Keep the last incomplete line in buffer
 
       for (const line of lines) {
-        if (line.startsWith("data: ")) {
+        const trimmedLine = line.trim();
+        if (!trimmedLine) continue;
+
+        // Extract event data from SSE format
+        let eventData = "";
+        if (trimmedLine.startsWith("data: ")) {
+          eventData = trimmedLine.substring(6).trim();
+        } else if (trimmedLine.startsWith("data:")) {
+          eventData = trimmedLine.substring(5).trim();
+        }
+
+        if (!eventData) continue;
+
+        // Handle multiple JSON objects or fragments in eventData
+        if (eventData.startsWith("{") && eventData.endsWith("}")) {
           try {
-            const eventData = JSON.parse(line.substring(6));
-            onEvent(eventData as ApplyStandardizationStreamEvent);
+            // Single complete JSON object
+            const parsedEvent = JSON.parse(
+              eventData
+            ) as ApplyStandardizationStreamEvent;
+
+            // Handle error events immediately
+            if (parsedEvent.type === "error") {
+              const error = new Error(
+                `Standardization error: ${
+                  parsedEvent.message || parsedEvent.error
+                }`
+              );
+              throw error;
+            }
+
+            // Call the event handler with the parsed event
+            onEvent(parsedEvent);
           } catch (parseError) {
-            console.error(
-              "Error parsing SSE event:",
+            console.warn(
+              "Failed to parse complete JSON event:",
+              parseError,
+              "Raw eventData:",
+              eventData
+            );
+          }
+        } else {
+          // Handle partial or malformed JSON using a more robust approach
+          try {
+            // Try to fix common SSE formatting issues
+            let cleanedData = eventData;
+
+            // Remove duplicate "data: " prefixes that sometimes occur
+            if (cleanedData.includes("data: ")) {
+              cleanedData = cleanedData.replace(/data:\s*/g, "");
+            }
+
+            // Try to parse after cleaning
+            if (cleanedData.startsWith("{")) {
+              const parsedEvent = JSON.parse(
+                cleanedData
+              ) as ApplyStandardizationStreamEvent;
+
+              // Handle error events immediately
+              if (parsedEvent.type === "error") {
+                const error = new Error(
+                  `Standardization error: ${
+                    parsedEvent.message || parsedEvent.error
+                  }`
+                );
+                throw error;
+              }
+
+              // Call the event handler with the parsed event
+              onEvent(parsedEvent);
+            } else {
+              console.warn("Skipping non-JSON event data:", eventData);
+            }
+          } catch (parseError) {
+            console.warn(
+              "Failed to parse standardization streaming event:",
               parseError,
               "Raw line:",
-              line
+              line,
+              "Extracted eventData:",
+              eventData
             );
-            // Continue processing other lines
+
+            // Check for authentication errors in raw text
+            if (
+              line.toLowerCase().includes("authentication") ||
+              line.toLowerCase().includes("unauthorized") ||
+              line.toLowerCase().includes("401")
+            ) {
+              const error = new Error(
+                "Authentication error during standardization. Please log in again."
+              );
+              throw error;
+            }
           }
         }
       }
     }
+  } catch (error) {
+    // Handle abort errors gracefully
+    if (error instanceof Error && error.name === "AbortError") {
+      return; // Exit silently on abort
+    }
+
+    const errorObj =
+      error instanceof Error
+        ? error
+        : new Error("Unknown streaming error occurred during standardization");
+    throw errorObj;
   } finally {
     reader.releaseLock();
   }

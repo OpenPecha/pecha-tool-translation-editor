@@ -223,6 +223,7 @@ router.post("/apply/stream", authenticate, async (req, res) => {
       // Process the streaming response
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
+      let buffer = "";
 
       try {
         while (true) {
@@ -232,52 +233,71 @@ router.post("/apply/stream", authenticate, async (req, res) => {
             break;
           }
 
-          const chunk = decoder.decode(value);
-          const lines = chunk.split("\n");
+          // Decode chunk and add to buffer
+          buffer += decoder.decode(value, { stream: true });
+
+          // Process complete lines
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || ""; // Keep the last incomplete line in buffer
 
           for (const line of lines) {
-            if (line.startsWith("data: ")) {
+            const trimmedLine = line.trim();
+            if (!trimmedLine) continue;
+
+            // Extract event data from SSE format
+            let eventData = "";
+            if (trimmedLine.startsWith("data: ")) {
+              eventData = trimmedLine.substring(6).trim();
+            } else if (trimmedLine.startsWith("data:")) {
+              eventData = trimmedLine.substring(5).trim();
+            }
+
+            if (!eventData) continue;
+
+            // Handle multiple JSON objects or fragments in eventData
+            if (eventData.startsWith("{") && eventData.endsWith("}")) {
               try {
-                const eventData = JSON.parse(line.substring(6));
+                // Single complete JSON object
+                const parsedEvent = JSON.parse(eventData);
 
                 // Transform external API events to our internal format
                 let transformedEvent = {
-                  timestamp: eventData.timestamp || new Date().toISOString(),
-                  type: eventData.type,
-                  message: eventData.message,
+                  timestamp: parsedEvent.timestamp || new Date().toISOString(),
+                  type: parsedEvent.type,
+                  message: parsedEvent.message,
                 };
 
                 // Add specific fields based on event type
-                switch (eventData.type) {
+                switch (parsedEvent.type) {
                   case "initialization":
-                    transformedEvent.total_items = eventData.total_items;
+                    transformedEvent.total_items = parsedEvent.total_items;
                     break;
 
                   case "planning":
-                    transformedEvent.total_batches = eventData.total_batches;
-                    transformedEvent.batch_size = eventData.batch_size;
+                    transformedEvent.total_batches = parsedEvent.total_batches;
+                    transformedEvent.batch_size = parsedEvent.batch_size;
                     break;
 
                   case "retranslation_start":
-                    transformedEvent.index = eventData.index;
+                    transformedEvent.index = parsedEvent.index;
                     transformedEvent.status = "processing";
                     break;
 
                   case "retranslation_completed":
                     transformedEvent.status = "item_updated";
-                    transformedEvent.index = eventData.index;
-                    transformedEvent.updated_item = eventData.updated_item;
+                    transformedEvent.index = parsedEvent.index;
+                    transformedEvent.updated_item = parsedEvent.updated_item;
                     break;
 
                   case "completion":
                     transformedEvent.total_completed =
-                      eventData.total_completed || items.length;
+                      parsedEvent.total_completed || items.length;
                     transformedEvent.status = "completed";
                     break;
 
                   case "error":
                     transformedEvent.status = "failed";
-                    transformedEvent.error = eventData.error;
+                    transformedEvent.error = parsedEvent.error;
                     break;
                 }
 
@@ -285,10 +305,83 @@ router.post("/apply/stream", authenticate, async (req, res) => {
                 sendEvent(transformedEvent);
               } catch (parseError) {
                 console.error(
+                  "Error parsing complete JSON event:",
+                  parseError,
+                  "Raw eventData:",
+                  eventData
+                );
+              }
+            } else {
+              // Handle partial or malformed JSON using a more robust approach
+              try {
+                // Try to fix common SSE formatting issues
+                let cleanedData = eventData;
+
+                // Remove duplicate "data: " prefixes that sometimes occur
+                if (cleanedData.includes("data: ")) {
+                  cleanedData = cleanedData.replace(/data:\s*/g, "");
+                }
+
+                // Try to parse after cleaning
+                if (cleanedData.startsWith("{")) {
+                  const parsedEvent = JSON.parse(cleanedData);
+
+                  // Transform external API events to our internal format
+                  let transformedEvent = {
+                    timestamp:
+                      parsedEvent.timestamp || new Date().toISOString(),
+                    type: parsedEvent.type,
+                    message: parsedEvent.message,
+                  };
+
+                  // Add specific fields based on event type
+                  switch (parsedEvent.type) {
+                    case "initialization":
+                      transformedEvent.total_items = parsedEvent.total_items;
+                      break;
+
+                    case "planning":
+                      transformedEvent.total_batches =
+                        parsedEvent.total_batches;
+                      transformedEvent.batch_size = parsedEvent.batch_size;
+                      break;
+
+                    case "retranslation_start":
+                      transformedEvent.index = parsedEvent.index;
+                      transformedEvent.status = "processing";
+                      break;
+
+                    case "retranslation_completed":
+                      transformedEvent.status = "item_updated";
+                      transformedEvent.index = parsedEvent.index;
+                      transformedEvent.updated_item = parsedEvent.updated_item;
+                      break;
+
+                    case "completion":
+                      transformedEvent.total_completed =
+                        parsedEvent.total_completed || items.length;
+                      transformedEvent.status = "completed";
+                      break;
+
+                    case "error":
+                      transformedEvent.status = "failed";
+                      transformedEvent.error = parsedEvent.error;
+                      break;
+                  }
+
+                  // Send the transformed event to the client
+                  sendEvent(transformedEvent);
+                } else {
+                  console.warn("Skipping non-JSON event data:", eventData);
+                }
+              } catch (parseError) {
+                console.error(
                   "Error parsing SSE event:",
                   parseError,
                   "Raw line:",
-                  line
+                  line,
+                  "Extracted eventData:",
+                  eventData
                 );
                 // Continue processing other lines
               }

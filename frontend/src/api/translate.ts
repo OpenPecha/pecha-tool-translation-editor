@@ -1,4 +1,4 @@
-import { getHeaders, getAuthToken } from "./utils";
+import { getHeaders } from "./utils";
 
 const server_url = import.meta.env.VITE_SERVER_URL;
 
@@ -156,7 +156,7 @@ export interface BatchCompletedEvent extends StreamEvent {
   batch_results: Array<{
     original_text: string;
     translated_text: string;
-    metadata?: any;
+    metadata?: Record<string, unknown>;
   }>;
   cumulative_progress: number;
   processing_time: string;
@@ -249,37 +249,84 @@ export const consumeTranslationStream = async (
 
         if (!eventData) continue;
 
-        try {
-          const parsedEvent = JSON.parse(eventData) as TranslationStreamEvent;
+        // Handle multiple JSON objects or fragments in eventData
+        if (eventData.startsWith("{") && eventData.endsWith("}")) {
+          try {
+            // Single complete JSON object
+            const parsedEvent = JSON.parse(eventData) as TranslationStreamEvent;
 
-          // Handle error events immediately
-          if (parsedEvent.type === "error") {
-            const error = new Error(`Translation error: ${parsedEvent.error}`);
-            onError?.(error);
-            return; // Stop processing on error
-          }
+            // Handle error events immediately
+            if (parsedEvent.type === "error") {
+              const error = new Error(
+                `Translation error: ${parsedEvent.error}`
+              );
+              onError?.(error);
+              return; // Stop processing on error
+            }
 
-          // Call the event handler with the parsed event
-          onEvent(parsedEvent);
-        } catch (parseError) {
-          console.warn(
-            "Failed to parse streaming event:",
-            parseError,
-            "Raw line:",
-            line
-          );
-
-          // Check for authentication errors in raw text
-          if (
-            line.toLowerCase().includes("authentication") ||
-            line.toLowerCase().includes("unauthorized") ||
-            line.toLowerCase().includes("401")
-          ) {
-            const error = new Error(
-              "Authentication error during translation. Please log in again."
+            // Call the event handler with the parsed event
+            onEvent(parsedEvent);
+          } catch (parseError) {
+            console.warn(
+              "Failed to parse complete JSON event:",
+              parseError,
+              "Raw eventData:",
+              eventData
             );
-            onError?.(error);
-            return;
+          }
+        } else {
+          // Handle partial or malformed JSON using a more robust approach
+          try {
+            // Try to fix common SSE formatting issues
+            let cleanedData = eventData;
+
+            // Remove duplicate "data: " prefixes that sometimes occur
+            if (cleanedData.includes("data: ")) {
+              cleanedData = cleanedData.replace(/data:\s*/g, "");
+            }
+
+            // Try to parse after cleaning
+            if (cleanedData.startsWith("{")) {
+              const parsedEvent = JSON.parse(
+                cleanedData
+              ) as TranslationStreamEvent;
+
+              // Handle error events immediately
+              if (parsedEvent.type === "error") {
+                const error = new Error(
+                  `Translation error: ${parsedEvent.error}`
+                );
+                onError?.(error);
+                return; // Stop processing on error
+              }
+
+              // Call the event handler with the parsed event
+              onEvent(parsedEvent);
+            } else {
+              console.warn("Skipping non-JSON event data:", eventData);
+            }
+          } catch (parseError) {
+            console.warn(
+              "Failed to parse streaming event:",
+              parseError,
+              "Raw line:",
+              line,
+              "Extracted eventData:",
+              eventData
+            );
+
+            // Check for authentication errors in raw text
+            if (
+              line.toLowerCase().includes("authentication") ||
+              line.toLowerCase().includes("unauthorized") ||
+              line.toLowerCase().includes("401")
+            ) {
+              const error = new Error(
+                "Authentication error during translation. Please log in again."
+              );
+              onError?.(error);
+              return;
+            }
           }
         }
       }

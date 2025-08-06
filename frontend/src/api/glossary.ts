@@ -1,4 +1,4 @@
-import { getHeaders, getAuthToken } from "./utils";
+import { getHeaders } from "./utils";
 
 const server_url = import.meta.env.VITE_SERVER_URL;
 
@@ -239,39 +239,84 @@ export const consumeGlossaryStream = async (
 
         if (!eventData) continue;
 
-        try {
-          const parsedEvent = JSON.parse(eventData) as GlossaryStreamEvent;
+        // Handle multiple JSON objects or fragments in eventData
+        if (eventData.startsWith("{") && eventData.endsWith("}")) {
+          try {
+            // Single complete JSON object
+            const parsedEvent = JSON.parse(eventData) as GlossaryStreamEvent;
 
-          // Handle error events immediately
-          if (parsedEvent.type === "error") {
-            const error = new Error(
-              `Glossary extraction error: ${parsedEvent.error}`
+            // Handle error events immediately
+            if (parsedEvent.type === "error") {
+              const error = new Error(
+                `Glossary extraction error: ${parsedEvent.error}`
+              );
+              onError?.(error);
+              return; // Stop processing on error
+            }
+
+            // Call the event handler with the parsed event
+            onEvent(parsedEvent);
+          } catch (parseError) {
+            console.warn(
+              "Failed to parse complete JSON event:",
+              parseError,
+              "Raw eventData:",
+              eventData
             );
-            onError?.(error);
-            return; // Stop processing on error
           }
+        } else {
+          // Handle partial or malformed JSON using a more robust approach
+          try {
+            // Try to fix common SSE formatting issues
+            let cleanedData = eventData;
 
-          // Call the event handler with the parsed event
-          onEvent(parsedEvent);
-        } catch (parseError) {
-          console.warn(
-            "Failed to parse streaming event:",
-            parseError,
-            "Raw line:",
-            line
-          );
+            // Remove duplicate "data: " prefixes that sometimes occur
+            if (cleanedData.includes("data: ")) {
+              cleanedData = cleanedData.replace(/data:\s*/g, "");
+            }
 
-          // Check for authentication errors in raw text
-          if (
-            line.toLowerCase().includes("authentication") ||
-            line.toLowerCase().includes("unauthorized") ||
-            line.toLowerCase().includes("401")
-          ) {
-            const error = new Error(
-              "Authentication error during glossary extraction. Please log in again."
+            // Try to parse after cleaning
+            if (cleanedData.startsWith("{")) {
+              const parsedEvent = JSON.parse(
+                cleanedData
+              ) as GlossaryStreamEvent;
+
+              // Handle error events immediately
+              if (parsedEvent.type === "error") {
+                const error = new Error(
+                  `Glossary extraction error: ${parsedEvent.error}`
+                );
+                onError?.(error);
+                return; // Stop processing on error
+              }
+
+              // Call the event handler with the parsed event
+              onEvent(parsedEvent);
+            } else {
+              console.warn("Skipping non-JSON event data:", eventData);
+            }
+          } catch (parseError) {
+            console.warn(
+              "Failed to parse streaming event:",
+              parseError,
+              "Raw line:",
+              line,
+              "Extracted eventData:",
+              eventData
             );
-            onError?.(error);
-            return;
+
+            // Check for authentication errors in raw text
+            if (
+              line.toLowerCase().includes("authentication") ||
+              line.toLowerCase().includes("unauthorized") ||
+              line.toLowerCase().includes("401")
+            ) {
+              const error = new Error(
+                "Authentication error during glossary extraction. Please log in again."
+              );
+              onError?.(error);
+              return;
+            }
           }
         }
       }
