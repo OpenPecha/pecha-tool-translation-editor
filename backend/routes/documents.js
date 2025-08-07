@@ -296,12 +296,12 @@ router.post("/", authenticate, upload.single("file"), async (req, res) => {
           label: "initial Auto-save",
         },
       });
-      
+
       await tx.doc.update({
         where: { id: doc.id },
         data: {
-          currentVersionId: version.id
-        }
+          currentVersionId: version.id,
+        },
       });
       return doc;
     });
@@ -1101,7 +1101,7 @@ router.patch("/:id/content", authenticate, async (req, res) => {
           canWrite: true,
         },
       });
-      if (!permission) return res.status(403).json({ error: "No edit access" });     
+      if (!permission) return res.status(403).json({ error: "No edit access" });
     }
 
     await prisma.doc.update({
@@ -1115,7 +1115,7 @@ router.patch("/:id/content", authenticate, async (req, res) => {
     // First, check if this is a system-generated version (initial auto-save)
     const currentVersion = await prisma.version.findUnique({
       where: { id: currentVersionId },
-      select: { userId: true, label: true, content: true }
+      select: { userId: true, label: true, content: true },
     });
 
     let newVersion;
@@ -1129,11 +1129,11 @@ router.patch("/:id/content", authenticate, async (req, res) => {
           data: {
             content: docs_prosemirror_delta || {},
             docId: document.id,
-            label: "Edited Initial Auto-save", 
+            label: "Edited Initial Auto-save",
             userId: req.user.id,
           },
         });
-        
+
         // Update the document's currentVersionId to point to the new version
         await prisma.doc.update({
           where: { id: document.id },
@@ -1141,9 +1141,9 @@ router.patch("/:id/content", authenticate, async (req, res) => {
             currentVersionId: newVersion.id,
           },
         });
-        
+
         currentVersionId = newVersion.id;
-      }else{
+      } else {
         console.log("Content is the same, skipping version creation");
       }
       // If content is the same, don't create a new version - keep using the existing one
@@ -1156,7 +1156,6 @@ router.patch("/:id/content", authenticate, async (req, res) => {
         },
       });
     }
-    
 
     res.json({
       success: true,
@@ -1168,44 +1167,6 @@ router.patch("/:id/content", authenticate, async (req, res) => {
     res.status(500).json({ error: "Error updating version content" });
   }
 });
-
-/**
- * Convert ProseMirror delta format to Y.js delta format
- * You'll need to customize this based on your specific delta format
- */
-function convertProseMirrorDeltaToYDelta(prosemirrorDelta) {
-  // This is a simplified example - your actual conversion will depend on
-  // the specific structure of your ProseMirror delta
-  const yDelta = [];
-
-  // If prosemirrorDelta is an array of operations
-  if (Array.isArray(prosemirrorDelta)) {
-    for (const op of prosemirrorDelta) {
-      if (op.insert) {
-        // Convert insert operations
-        yDelta.push({ insert: op.insert });
-      } else if (op.delete) {
-        // Convert delete operations
-        yDelta.push({ delete: op.delete });
-      } else if (op.retain) {
-        // Convert retain operations
-        yDelta.push({ retain: op.retain });
-      }
-      // Add attributes if they exist
-      if (op.attributes) {
-        const lastOp = yDelta[yDelta.length - 1];
-        if (lastOp) {
-          lastOp.attributes = op.attributes;
-        }
-      }
-    }
-  } else if (typeof prosemirrorDelta === "object") {
-    // If it's a single operation object
-    return [prosemirrorDelta];
-  }
-
-  return yDelta;
-}
 
 // Alternative approach: If you're using prosemirror-y-binding or a similar library
 // You might want to use their built-in conversion functions instead
@@ -1335,8 +1296,6 @@ router.post("/generate-translation", authenticate, async (req, res) => {
       process.env.SERVER_URL || `http://localhost:${process.env.PORT || 9000}`;
     const webhookUrl = `${serverUrl}/documents/translation-webhook/${translationId}`;
 
-    console.log(`Setting up webhook URL: ${webhookUrl}`);
-
     // Prepare translation request data
     const translationData = {
       api_key: apiKey,
@@ -1463,9 +1422,7 @@ router.post("/translation-webhook/:id", async (req, res) => {
       });
       return updated;
     });
-    console.log(
-      `Translation webhook received and processed for document ${document_id}`
-    );
+
     res.status(200).json({ success: true, data });
   } catch (error) {
     console.error("Error processing translation webhook:", error);
