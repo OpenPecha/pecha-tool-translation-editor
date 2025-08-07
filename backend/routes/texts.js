@@ -203,7 +203,7 @@ router.get("/version-diff/:versionId", async (req, res) => {
       select: {
         content: true,
         docId: true,
-        timestamp: true,
+        createdAt: true,
       },
     });
     if (!currentVersion) {
@@ -213,12 +213,12 @@ router.get("/version-diff/:versionId", async (req, res) => {
     const previousVersion = await prisma.version.findFirst({
       where: {
         docId: currentVersion.docId,
-        timestamp: {
-          lt: currentVersion.timestamp,
+        createdAt: {
+          lt: currentVersion.createdAt,
         },
       },
       orderBy: {
-        timestamp: "desc",
+        createdAt: "desc",
       },
       select: {
         content: true,

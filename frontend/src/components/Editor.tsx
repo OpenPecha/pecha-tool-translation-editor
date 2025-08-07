@@ -49,6 +49,7 @@ const Editor = ({
   const { t } = useTranslate();
   const { currentUser } = useAuth();
   const { trackDocumentOpened, trackDocumentSaved } = useUmamiTracking();
+  const [isContentLoaded, setIsContentLoaded] = useState(false);
 
   // Track document opening
   useEffect(() => {
@@ -75,6 +76,9 @@ const Editor = ({
       console.error("Error updating document content:", error);
     },
     onSuccess: () => {
+      // refetch versions
+      queryClient.invalidateQueries({ queryKey: [`versions-${documentId}`] });
+      queryClient.invalidateQueries({ queryKey: [`current-version-${documentId}`] });
       // Track document save
       if (documentId) {
         trackDocumentSaved(documentId, "auto", getUserContext(currentUser));
@@ -227,7 +231,14 @@ const Editor = ({
     ) {
       setTimeout(() => {
         quillRef.current?.setContents(currentDoc.docs_prosemirror_delta);
+        // Set content loaded after a brief delay to ensure rendering is complete
+        setTimeout(() => {
+          setIsContentLoaded(true);
+        }, 100);
       }, 0);
+    } else if (quillRef.current && !currentDoc?.docs_prosemirror_delta) {
+      // If no content to load, mark as loaded
+      setIsContentLoaded(true);
     }
     return () => {
       if (saveTimeoutRef.current) {
@@ -285,7 +296,10 @@ const Editor = ({
               </div>
             )}
 
-            <FootnoteView documentId={documentId} isEditable={isEditable} />
+            {/* Only render FootnoteView after content is loaded */}
+            {isContentLoaded && (
+              <FootnoteView documentId={documentId} isEditable={isEditable} />
+            )}
           </div>
           {createPortal(
             <div className="flex gap-1 items-center">
