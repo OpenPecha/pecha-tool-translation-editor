@@ -182,6 +182,7 @@ function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
            {isCurrentVersion ? 
            <div className="px-2 py-1 w-8">
            </div> : <button
+
               onClick={handleLoad}
               disabled={isLoading}
               className="px-2 py-1 rounded text-sm bg-gray-200 hover:bg-gray-300"
