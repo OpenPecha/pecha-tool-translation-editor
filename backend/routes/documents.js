@@ -1123,11 +1123,11 @@ router.patch("/:id/content", authenticate, async (req, res) => {
     if (!currentVersion?.userId) {
       // Compare new content with current version content
       const currentContent = JSON.stringify(currentVersion.content?.ops);
-      const newContent = JSON.stringify(docs_prosemirror_delta || {});
+      const newContent = JSON.stringify(docs_prosemirror_delta );
       if (currentContent !== newContent) {
         newVersion = await prisma.version.create({
           data: {
-            content: docs_prosemirror_delta || {},
+            content: {ops:docs_prosemirror_delta},
             docId: document.id,
             label: "Edited Initial Auto-save",
             userId: req.user.id,
@@ -1152,7 +1152,7 @@ router.patch("/:id/content", authenticate, async (req, res) => {
       await prisma.version.update({
         where: { id: currentVersionId },
         data: {
-          content: docs_prosemirror_delta || {},
+          content: { ops: docs_prosemirror_delta || {} },
         },
       });
     }
