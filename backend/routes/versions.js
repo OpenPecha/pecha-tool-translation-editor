@@ -19,6 +19,7 @@ router.get("/:docId", authenticate, async (req, res) => {
         id: true,
         user: true,
         createdAt: true,
+        updatedAt: true,
       },
       orderBy: { createdAt: "desc" },
     });
