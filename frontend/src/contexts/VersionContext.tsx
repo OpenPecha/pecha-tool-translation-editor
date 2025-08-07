@@ -41,6 +41,10 @@ interface QuillVersionContextType {
   isLoadingVersion: boolean;
   loadingVersionId: string | null;
   transitionPhase: 'idle' | 'fade-out' | 'skeleton' | 'fade-in';
+  // Version creation mutation states
+  isCreatingVersion: boolean;
+  createVersionError: string | null;
+  createVersionSuccess: boolean;
   registerQuill: (quill: Quill) => void;
   saveVersion: (label?: string) => Promise<Version | null>;
   updateCurrentVersion: () => Promise<Version | null>;
@@ -50,6 +54,7 @@ interface QuillVersionContextType {
   createNamedSnapshot: (name: string) => Promise<Version | null>;
   toggleAutoSave: () => void;
   setAutoSaveInterval: (milliseconds: number) => void;
+  clearVersionCreationState: () => void;
 }
 
 interface QuillVersionProviderProps {
@@ -88,6 +93,10 @@ export const QuillVersionProvider = ({
   const [isLoadingVersion, setIsLoadingVersion] = useState<boolean>(false);
   const [loadingVersionId, setLoadingVersionId] = useState<string | null>(null);
   const [transitionPhase, setTransitionPhase] = useState<'idle' | 'fade-out' | 'skeleton' | 'fade-in'>('idle');
+  
+  // Version creation feedback states
+  const [createVersionSuccess, setCreateVersionSuccess] = useState<boolean>(false);
+  
   // Fetch versions using react-query
   const {
     data: versions = [],
@@ -141,6 +150,18 @@ export const QuillVersionProvider = ({
       queryClient.invalidateQueries({ queryKey: [`versions-${docId}`] });
       queryClient.invalidateQueries({ queryKey: [`current-version-${docId}`] });
       setCurrentVersionId(newVersion.id);
+      
+      // Show success feedback
+      setCreateVersionSuccess(true);
+      
+      // Auto-hide success state after 2 seconds
+      setTimeout(() => {
+        setCreateVersionSuccess(false);
+      }, 2000);
+    },
+    onError: (error) => {
+      console.error("Version creation failed:", error);
+      // Error state is handled by mutation.isError
     },
   });
 
@@ -175,7 +196,7 @@ export const QuillVersionProvider = ({
       if (quill && versions.length > 0) {
         // Use the current version from database if available, otherwise fall back to latest
         const targetVersion = databaseCurrentVersion || 
-          versions.find(v => v.id === currentVersionId) || 
+          versions.find((v: Version) => v.id === currentVersionId) || 
           versions[0]; // versions are ordered by timestamp desc, so [0] is latest
         
         if (targetVersion?.content) {
@@ -344,6 +365,11 @@ export const QuillVersionProvider = ({
     setAutoSaveInterval(milliseconds);
   }, []);
 
+  // Clear version creation state
+  const clearVersionCreationState = useCallback(() => {
+    setCreateVersionSuccess(false);
+  }, []);
+
   // Context value
   const value = useMemo(
     (): QuillVersionContextType => ({
@@ -355,6 +381,10 @@ export const QuillVersionProvider = ({
       isLoadingVersion,
       loadingVersionId,
       transitionPhase,
+      // Version creation mutation states
+      isCreatingVersion: createVersionMutation.isPending,
+      createVersionError: createVersionMutation.error?.message || null,
+      createVersionSuccess,
       registerQuill,
       saveVersion,
       updateCurrentVersion,
@@ -364,6 +394,7 @@ export const QuillVersionProvider = ({
       createNamedSnapshot,
       toggleAutoSave,
       setAutoSaveInterval: setAutoSaveIntervalTime,
+      clearVersionCreationState,
     }),
     [
       versions,
@@ -374,6 +405,9 @@ export const QuillVersionProvider = ({
       isLoadingVersion,
       loadingVersionId,
       transitionPhase,
+      createVersionMutation.isPending,
+      createVersionMutation.error?.message,
+      createVersionSuccess,
       registerQuill,
       saveVersion,
       updateCurrentVersion,
@@ -383,6 +417,7 @@ export const QuillVersionProvider = ({
       createNamedSnapshot,
       toggleAutoSave,
       setAutoSaveIntervalTime,
+      clearVersionCreationState,
     ]
   );
 
