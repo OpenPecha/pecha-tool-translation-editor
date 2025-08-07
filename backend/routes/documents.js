@@ -1094,35 +1094,34 @@ router.patch("/:id/content", authenticate, async (req, res) => {
           canWrite: true,
         },
       });
-      if (!permission) return res.status(403).json({ error: "No edit access" });
+      if (!permission) return res.status(403).json({ error: "No edit access" });     
     }
+
+    await prisma.doc.update({
+      where: { id: document.id },
+      data: {
+        docs_prosemirror_delta,
+      },
+    });
 
     let currentVersionId = document.currentVersionId;
 
-    // If no current version exists, create one
-    // if (!currentVersionId) {
-    //   const newVersion = await prisma.version.create({
-    //     data: {
-    //       docId: document.id,
-    //       label: "Auto-saved version",
-    //       content: docs_prosemirror_delta || {},
-    //       userId: req.user.id,
-    //     },
-    //   });
-
-    //   // Update document to set this as current version
-    //   await prisma.doc.update({
-    //     where: { id: document.id },
-    //     data: {
-    //       currentVersionId: newVersion.id,
-    //       docs_prosemirror_delta,
-    //     },
-    //   });
-
-    //   currentVersionId = newVersion.id;
-    // } else {
-      // Update the existing current version
-     if(currentVersionId){ await prisma.version.update({
+    // Update the existing current version
+    if(currentVersionId){ 
+      // First, check if this is a system-generated version (initial auto-save)
+      const currentVersion = await prisma.version.findUnique({
+        where: { id: currentVersionId },
+        select: { userId: true, label: true }
+      });
+      
+      // Prevent updating system-generated versions (initial auto-save)
+      if (!currentVersion?.userId) {
+        return res.status(403).json({ 
+          error: "Document content updated.Cannot modify system-generated version." 
+        });
+      }
+      
+      await prisma.version.update({
         where: { id: currentVersionId },
         data: {
           content: docs_prosemirror_delta || {},
@@ -1130,12 +1129,7 @@ router.patch("/:id/content", authenticate, async (req, res) => {
       });
     }
       // Also update the document's prosemirror delta for direct access
-      await prisma.doc.update({
-        where: { id: document.id },
-        data: {
-          docs_prosemirror_delta,
-        },
-      });
+   
     // }
 
     res.json({
