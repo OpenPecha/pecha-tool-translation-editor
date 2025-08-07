@@ -50,9 +50,6 @@ router.post("/", authenticate, async (req, res) => {
         userId: req.user.id,
       },
     });
-
-    // Note: currentVersionId field temporarily disabled due to Prisma client sync issues
-    // The most recent version will be determined by timestamp field
     // Update document's currentVersionId to this version
     await prisma.doc.update({
       where: { id: docId },

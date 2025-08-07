@@ -179,7 +179,9 @@ function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
         <div className="flex gap-2 justify-end">
           {/* First button slot: Load (non-current) or invisible placeholder (current) */}
           
-            <button
+           {isCurrentVersion ? 
+           <div className="px-2 py-1 w-8">
+           </div> : <button
               onClick={handleLoad}
               disabled={isLoading}
               className="px-2 py-1 rounded text-sm bg-gray-200 hover:bg-gray-300"
@@ -190,6 +192,7 @@ function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
                 <SiTicktick />
               )}
             </button>
+            }
           
 
           {/* Second button slot: Delete (non-system) or invisible placeholder (system) */}

@@ -289,12 +289,19 @@ router.post("/", authenticate, upload.single("file"), async (req, res) => {
           canWrite: true,
         },
       });
-      await tx.version.create({
+      const version = await tx.version.create({
         data: {
           content: { ops: delta },
           docId: doc.id,
           label: "initial Auto-save",
         },
+      });
+      
+      await tx.doc.update({
+        where: { id: doc.id },
+        data: {
+          currentVersionId: version.id
+        }
       });
       return doc;
     });
@@ -1105,22 +1112,43 @@ router.patch("/:id/content", authenticate, async (req, res) => {
     });
 
     let currentVersionId = document.currentVersionId;
+    // First, check if this is a system-generated version (initial auto-save)
+    const currentVersion = await prisma.version.findUnique({
+      where: { id: currentVersionId },
+      select: { userId: true, label: true, content: true }
+    });
 
-    // Update the existing current version
-    if(currentVersionId){ 
-      // First, check if this is a system-generated version (initial auto-save)
-      const currentVersion = await prisma.version.findUnique({
-        where: { id: currentVersionId },
-        select: { userId: true, label: true }
-      });
-      
-      // Prevent updating system-generated versions (initial auto-save)
-      if (!currentVersion?.userId) {
-        return res.status(403).json({ 
-          error: "Document content updated.Cannot modify system-generated version." 
+    let newVersion;
+    // Prevent updating system-generated versions (initial auto-save), instead create a new version
+    if (!currentVersion?.userId) {
+      // Compare new content with current version content
+      const currentContent = JSON.stringify(currentVersion.content?.ops);
+      const newContent = JSON.stringify(docs_prosemirror_delta || {});
+      if (currentContent !== newContent) {
+        newVersion = await prisma.version.create({
+          data: {
+            content: docs_prosemirror_delta || {},
+            docId: document.id,
+            label: "Edited Initial Auto-save", 
+            userId: req.user.id,
+          },
         });
+        
+        // Update the document's currentVersionId to point to the new version
+        await prisma.doc.update({
+          where: { id: document.id },
+          data: {
+            currentVersionId: newVersion.id,
+          },
+        });
+        
+        currentVersionId = newVersion.id;
+      }else{
+        console.log("Content is the same, skipping version creation");
       }
-      
+      // If content is the same, don't create a new version - keep using the existing one
+    } else {
+      // Update the existing user version
       await prisma.version.update({
         where: { id: currentVersionId },
         data: {
@@ -1128,9 +1156,7 @@ router.patch("/:id/content", authenticate, async (req, res) => {
         },
       });
     }
-      // Also update the document's prosemirror delta for direct access
-   
-    // }
+    
 
     res.json({
       success: true,

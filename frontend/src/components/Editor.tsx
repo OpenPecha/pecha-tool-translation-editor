@@ -76,6 +76,9 @@ const Editor = ({
       console.error("Error updating document content:", error);
     },
     onSuccess: () => {
+      // refetch versions
+      queryClient.invalidateQueries({ queryKey: [`versions-${documentId}`] });
+      queryClient.invalidateQueries({ queryKey: [`current-version-${documentId}`] });
       // Track document save
       if (documentId) {
         trackDocumentSaved(documentId, "auto", getUserContext(currentUser));
