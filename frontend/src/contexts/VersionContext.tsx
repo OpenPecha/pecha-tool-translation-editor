@@ -27,7 +27,7 @@ interface Version {
   content: any;
   label: string;
   createdAt: string;
-  updatedAt: string;
+  timestamp: string;
   userId?: string;
   user?: User;
 }
@@ -40,8 +40,11 @@ interface QuillVersionContextType {
   isLoading: boolean;
   isLoadingVersion: boolean;
   loadingVersionId: string | null;
-  transitionPhase: "idle" | "fade-out" | "skeleton" | "fade-in";
-
+  transitionPhase: 'idle' | 'fade-out' | 'skeleton' | 'fade-in';
+  // Version creation mutation states
+  isCreatingVersion: boolean;
+  createVersionError: string | null;
+  createVersionSuccess: boolean;
   registerQuill: (quill: Quill) => void;
   saveVersion: (label?: string) => Promise<Version | null>;
   updateCurrentVersion: () => Promise<Version | null>;
@@ -89,10 +92,11 @@ export const QuillVersionProvider = ({
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
   const [isLoadingVersion, setIsLoadingVersion] = useState<boolean>(false);
   const [loadingVersionId, setLoadingVersionId] = useState<string | null>(null);
-  const [transitionPhase, setTransitionPhase] = useState<
-    "idle" | "fade-out" | "skeleton" | "fade-in"
-  >("idle");
-
+  const [transitionPhase, setTransitionPhase] = useState<'idle' | 'fade-out' | 'skeleton' | 'fade-in'>('idle');
+  
+  // Version creation feedback states
+  const [createVersionSuccess, setCreateVersionSuccess] = useState<boolean>(false);
+  
   // Fetch versions using react-query
   const {
     data: versions = [],
@@ -107,7 +111,9 @@ export const QuillVersionProvider = ({
   });
 
   // Fetch current version from database to sync with stored currentVersionId
-  const { data: databaseCurrentVersion } = useQuery({
+  const {
+    data: databaseCurrentVersion,
+  } = useQuery({
     queryKey: [`current-version-${docId}`],
     enabled: !!docId,
     queryFn: () => fetchCurrentVersion(docId!),
@@ -135,7 +141,7 @@ export const QuillVersionProvider = ({
       queryClient.setQueryData(
         [`versions-${docId}`],
         (oldData: Version[] = []) => {
-          const updatedVersions = [newVersion, ...oldData];
+          const updatedVersions = [newVersion,...oldData];
           return updatedVersions.length > maxVersions
             ? updatedVersions.slice(-maxVersions)
             : updatedVersions;
@@ -164,9 +170,7 @@ export const QuillVersionProvider = ({
     mutationFn: (versionId: string) => deleteVersionAPI(versionId),
     onSuccess: async (_, versionId) => {
       // Filter out the deleted version
-      const updatedVersions = versions.filter(
-        (v: Version) => v.id !== versionId
-      );
+      const updatedVersions = versions.filter((v: Version) => v.id !== versionId);
       // Update cache with filtered data
       queryClient.setQueryData([`versions-${docId}`], () => updatedVersions);
       // Invalidate current version query to sync with backend changes
@@ -191,12 +195,10 @@ export const QuillVersionProvider = ({
       setQuillInstance(quill);
       if (quill && versions.length > 0) {
         // Use the current version from database if available, otherwise fall back to latest
-        const targetVersion =
-          databaseCurrentVersion ||
-          versions.find((v) => v.id === currentVersionId) ||
-
+        const targetVersion = databaseCurrentVersion || 
+          versions.find((v: Version) => v.id === currentVersionId) || 
           versions[0]; // versions are ordered by timestamp desc, so [0] is latest
-
+        
         if (targetVersion?.content) {
           quill.setContents(targetVersion.content);
         }
@@ -256,44 +258,44 @@ export const QuillVersionProvider = ({
         // Phase 1: Start loading and fade-out
         setIsLoadingVersion(true);
         setLoadingVersionId(versionId);
-        setTransitionPhase("fade-out");
+        setTransitionPhase('fade-out');
 
         // Wait for fade-out transition
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 100));
 
         // Phase 2: Show skeleton
-        setTransitionPhase("skeleton");
+        setTransitionPhase('skeleton');
 
         // Fetch version content (with minimum skeleton display time)
         const [version] = await Promise.all([
           fetchVersion(versionId),
-          new Promise((resolve) => setTimeout(resolve, 300)), // Minimum skeleton time
+          new Promise(resolve => setTimeout(resolve, 300)) // Minimum skeleton time
         ]);
 
         // Phase 3: Apply content and fade-in
-        setTransitionPhase("fade-in");
-        quillInstance.setContents(version.content, "user");
+        setTransitionPhase('fade-in');
+        quillInstance.setContents(version.content);
         setCurrentVersionId(versionId);
 
         // Wait for fade-in transition
-        await new Promise((resolve) => setTimeout(resolve, 300));
+        await new Promise(resolve => setTimeout(resolve, 300));
 
         // Reset to idle state
-        setTransitionPhase("idle");
+        setTransitionPhase('idle');
         setIsLoadingVersion(false);
         setLoadingVersionId(null);
 
         return true;
       } catch (error) {
         console.error("Error loading version:", error);
-
+        
         // Reset states on error
-        setTransitionPhase("fade-in"); // Fade back to original content
-        await new Promise((resolve) => setTimeout(resolve, 300));
-        setTransitionPhase("idle");
+        setTransitionPhase('fade-in'); // Fade back to original content
+        await new Promise(resolve => setTimeout(resolve, 300));
+        setTransitionPhase('idle');
         setIsLoadingVersion(false);
         setLoadingVersionId(null);
-
+        
         return false;
       }
     },
@@ -313,40 +315,37 @@ export const QuillVersionProvider = ({
   );
 
   // Update current version with latest content from editor
-  const updateCurrentVersion =
-    useCallback(async (): Promise<Version | null> => {
+  const updateCurrentVersion = useCallback(
+    async (): Promise<Version | null> => {
       if (!quillInstance || !currentVersionId) return null;
 
       try {
         const content = quillInstance.getContents();
-        const updatedVersion = await updateVersionContent(
-          currentVersionId,
-          content
-        );
-
+        const updatedVersion = await updateVersionContent(currentVersionId, content);
+        
         // Update the version in the cache
         queryClient.setQueryData(
           [`versions-${docId}`],
           (oldData: Version[] = []) => {
-            return oldData.map((version) =>
-              version.id === currentVersionId
+            return oldData.map(version => 
+              version.id === currentVersionId 
                 ? { ...version, ...updatedVersion, content }
                 : version
             );
           }
         );
-
+        
         // Invalidate current version query to ensure sync with backend
-        queryClient.invalidateQueries({
-          queryKey: [`current-version-${docId}`],
-        });
-
+        queryClient.invalidateQueries({ queryKey: [`current-version-${docId}`] });
+        
         return updatedVersion;
       } catch (error) {
         console.error("Error updating current version:", error);
         throw error;
       }
-    }, [quillInstance, currentVersionId, queryClient, docId]);
+    },
+    [quillInstance, currentVersionId, queryClient, docId]
+  );
 
   // Create a named snapshot
   const createNamedSnapshot = useCallback(

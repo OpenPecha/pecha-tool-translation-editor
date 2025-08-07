@@ -14,14 +14,8 @@ router.get("/:docId", authenticate, async (req, res) => {
     const { docId } = req.params;
     const versions = await prisma.version.findMany({
       where: { docId },
-      select: {
-        label: true,
-        id: true,
-        user: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-      orderBy: { createdAt: "desc" },
+      select: { label: true, id: true, timestamp: true, user: true },
+      orderBy: { timestamp: "desc" },
     });
     res.json(versions);
   } catch (error) {
@@ -51,11 +45,9 @@ router.post("/", authenticate, async (req, res) => {
         userId: req.user.id,
       },
     });
-    // Update document's currentVersionId to this version
-    await prisma.doc.update({
-      where: { id: docId },
-      data: { currentVersionId: newVersion.id },
-    });
+
+    // Note: currentVersionId field temporarily disabled due to Prisma client sync issues
+    // The most recent version will be determined by timestamp field
 
     res.status(201).json(newVersion);
   } catch (error) {
@@ -81,11 +73,9 @@ router.get("/version/:id", authenticate, async (req, res) => {
     if (!version) {
       return res.status(404).json({ error: "Version not found" });
     }
-    // Update document's currentVersionId to this version
-    await prisma.doc.update({
-      where: { id: version.docId },
-      data: { currentVersionId: version.id },
-    });
+
+    // Note: currentVersionId tracking temporarily disabled due to Prisma client sync issues
+    // Version loading will work without explicit currentVersionId tracking
 
     res.json(version);
   } catch (error) {
@@ -119,21 +109,8 @@ router.delete("/version/:id", authenticate, async (req, res) => {
     // Delete the version - currentVersionId tracking temporarily disabled
     await prisma.version.delete({ where: { id } });
 
-    // If this version was the current version, update the document to use the most recent remaining version
-    if (existingVersion.id === existingVersion.doc?.currentVersionId) {
-      const latestVersion = await prisma.version.findFirst({
-        where: {
-          docId: existingVersion.docId,
-          id: { not: existingVersion.id },
-        },
-        orderBy: { createdAt: "desc" },
-      });
-
-      await prisma.doc.update({
-        where: { id: existingVersion.docId },
-        data: { currentVersionId: latestVersion?.id || null },
-      });
-    }
+    // Note: currentVersionId management temporarily disabled due to Prisma client sync issues
+    // The most recent version will be determined by timestamp when needed
 
     res.json({ message: "Version deleted successfully" });
   } catch (error) {
@@ -212,6 +189,7 @@ router.put("/version/:id", authenticate, async (req, res) => {
       where: { id },
       data: {
         content,
+        timestamp: new Date(), // Update timestamp when content is updated
       },
       include: { user: true },
     });
@@ -239,20 +217,30 @@ router.get("/current/:docId", authenticate, async (req, res) => {
       where: { id: docId },
       select: {
         id: true,
-        currentVersionId: true,
+        versions: {
+          orderBy: {
+            timestamp: "desc",
+          },
+          take: 1,
+          include: {
+            user: true,
+          },
+        },
       },
     });
 
     if (!document) {
       return res.status(404).json({ error: "Document not found" });
     }
-    if (!document.currentVersionId) {
+
+    const currentVersion = document.versions[0]; // Most recent version
+    if (!currentVersion) {
       return res
         .status(404)
         .json({ error: "No current version found for this document" });
     }
 
-    res.json({ id: document.currentVersionId });
+    res.json(currentVersion);
   } catch (error) {
     console.error("Error fetching current version:", error);
     res.status(500).json({ error: "Internal server error" });

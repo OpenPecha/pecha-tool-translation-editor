@@ -19,9 +19,6 @@ const projectRoutes = require("./routes/project");
 const footnotesRoutes = require("./routes/footnote");
 const apiCredentialsRoutes = require("./routes/apiCredentials");
 const translateRoutes = require("./routes/translate");
-const glossaryRoutes = require("./routes/glossary");
-const standardizeRoutes = require("./routes/standardize");
-const applyStandardizationRoutes = require("./routes/apply_standardization");
 
 const options = {
   info: {
@@ -116,9 +113,6 @@ app.use("/projects", projectRoutes);
 app.use("/api-credentials", apiCredentialsRoutes);
 app.use("/footnotes", footnotesRoutes);
 app.use("/translate", translateRoutes);
-app.use("/glossary", glossaryRoutes);
-app.use("/standardize", standardizeRoutes);
-app.use("/standardize", applyStandardizationRoutes);
 const clients = new Set();
 // const getYDoc = (docId, userId) =>
 //   map.setIfUndefined(utils.docs, docId, () => {
