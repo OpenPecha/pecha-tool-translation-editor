@@ -296,7 +296,6 @@ router.post("/", authenticate, upload.single("file"), async (req, res) => {
           label: "initial Auto-save",
         },
       });
-
       return doc;
     });
 
@@ -1101,35 +1100,35 @@ router.patch("/:id/content", authenticate, async (req, res) => {
     let currentVersionId = document.currentVersionId;
 
     // If no current version exists, create one
-    if (!currentVersionId) {
-      const newVersion = await prisma.version.create({
-        data: {
-          docId: document.id,
-          label: "Auto-saved version",
-          content: docs_prosemirror_delta || {},
-          userId: req.user.id,
-        },
-      });
+    // if (!currentVersionId) {
+    //   const newVersion = await prisma.version.create({
+    //     data: {
+    //       docId: document.id,
+    //       label: "Auto-saved version",
+    //       content: docs_prosemirror_delta || {},
+    //       userId: req.user.id,
+    //     },
+    //   });
 
-      // Update document to set this as current version
-      await prisma.doc.update({
-        where: { id: document.id },
-        data: {
-          currentVersionId: newVersion.id,
-          docs_prosemirror_delta,
-        },
-      });
+    //   // Update document to set this as current version
+    //   await prisma.doc.update({
+    //     where: { id: document.id },
+    //     data: {
+    //       currentVersionId: newVersion.id,
+    //       docs_prosemirror_delta,
+    //     },
+    //   });
 
-      currentVersionId = newVersion.id;
-    } else {
+    //   currentVersionId = newVersion.id;
+    // } else {
       // Update the existing current version
-      await prisma.version.update({
+     if(currentVersionId){ await prisma.version.update({
         where: { id: currentVersionId },
         data: {
           content: docs_prosemirror_delta || {},
         },
       });
-
+    }
       // Also update the document's prosemirror delta for direct access
       await prisma.doc.update({
         where: { id: document.id },
@@ -1137,7 +1136,7 @@ router.patch("/:id/content", authenticate, async (req, res) => {
           docs_prosemirror_delta,
         },
       });
-    }
+    // }
 
     res.json({
       success: true,

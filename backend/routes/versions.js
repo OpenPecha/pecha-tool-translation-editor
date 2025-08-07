@@ -53,6 +53,11 @@ router.post("/", authenticate, async (req, res) => {
 
     // Note: currentVersionId field temporarily disabled due to Prisma client sync issues
     // The most recent version will be determined by timestamp field
+    // Update document's currentVersionId to this version
+    await prisma.doc.update({
+      where: { id: docId },
+      data: { currentVersionId: newVersion.id },
+    });
 
     res.status(201).json(newVersion);
   } catch (error) {

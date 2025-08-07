@@ -1,5 +1,5 @@
 import { useQuillVersion } from "@/contexts/VersionContext";
-import { MdDelete, MdSave } from "react-icons/md";
+import { MdDelete } from "react-icons/md";
 import { SiTicktick } from "react-icons/si";
 import { FaSpinner } from "react-icons/fa";
 import formatTimeAgo from "@/lib/formatTimeAgo";
@@ -137,11 +137,7 @@ function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
     isLoadingVersion,
     loadingVersionId,
     versions,
-    updateCurrentVersion,
   } = useQuillVersion();
-
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
 
   const isLoading = isLoadingVersion && loadingVersionId === version.id;
   const isCurrentVersion = version.id === currentVersionId;
@@ -150,27 +146,8 @@ function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
   const canDelete =
     isLatestVersion &&
     !isLoading &&
-    !isSaving &&
     !isDeleting &&
     !isSystemVersion;
-
-  const handleSave = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (isSaving) return;
-
-    setIsSaving(true);
-    setSaveError(null);
-
-    try {
-      await updateCurrentVersion();
-      console.log("Successfully saved current version:", version.label);
-    } catch (error) {
-      console.error("Failed to save version:", error);
-      setSaveError("Failed to save version");
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   const handleLoad = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -200,22 +177,8 @@ function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
           {version.label}
         </div>
         <div className="flex gap-2 justify-end">
-          {/* First button slot: Save (current non-system) or Load (non-current) */}
-          {isCurrentVersion && !isSystemVersion && (
-            <button
-              onClick={handleSave}
-              disabled={isLoading || isSaving}
-              className="px-2 py-1 rounded text-sm bg-green-100 hover:bg-green-200 text-green-700"
-            >
-              {isLoading || isSaving ? (
-                <FaSpinner className="animate-spin" />
-              ) : (
-                <MdSave />
-              )}
-            </button>
-          )}
-
-          {!isCurrentVersion && (
+          {/* First button slot: Load (non-current) or invisible placeholder (current) */}
+          {!isCurrentVersion ? (
             <button
               onClick={handleLoad}
               disabled={isLoading}
@@ -227,6 +190,8 @@ function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
                 <SiTicktick />
               )}
             </button>
+          ) : (
+            <div className="px-2 py-1 w-8"></div>
           )}
 
           {/* Second button slot: Delete (non-system) or invisible placeholder (system) */}
@@ -257,9 +222,6 @@ function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
       >
         {version?.user?.username || version?.user?.name || "System"} •{" "}
         {formatTimeAgo(version.createdAt)}
-        {saveError && isCurrentVersion && (
-          <div className="text-red-500 mt-1">{saveError}</div>
-        )}
       </div>
     </div>
   );
