@@ -10,7 +10,7 @@ const VersionControls = ({
   openHistory: boolean;
   setShowVersionDiff: (show: boolean) => void;
 }) => {
-  const { autoSaveEnabled, saveVersion, createNamedSnapshot, toggleAutoSave } =
+  const { createNamedSnapshot } =
     useQuillVersion();
 
   const [snapshotName, setSnapshotName] = useState("");

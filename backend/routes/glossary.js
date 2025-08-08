@@ -4,76 +4,85 @@ const { authenticate } = require("../middleware/authenticate");
 const router = express.Router();
 
 /**
- * @typedef {object} TranslationRequest
- * @property {array<string>} texts.required - Array of texts to translate
- * @property {string} target_language.required - Target language for translation - enum:english,french,tibetan,portuguese,chinese
- * @property {string} text_type - Type of text being translated - enum:mantra,sutra,commentary,philosophical treatises
- * @property {string} model_name - AI model to use for translation - enum:claude,claude-haiku,claude-opus,gemini-pro
- * @property {number} batch_size - Number of texts to process in each batch (1-10)
- * @property {string} user_rules - Additional instructions for translation
+ * @typedef {object} GlossaryItem
+ * @property {string} original_text.required - Original text content
+ * @property {string} translated_text.required - Translated text content
+ * @property {object} metadata - Additional metadata for the text pair
  */
 
 /**
- * POST /translate
- * @summary Stream real-time translation using external translation API
- * @tags Translation - Translation services
+ * @typedef {object} GlossaryExtractionRequest
+ * @property {array<GlossaryItem>} items.required - Array of text pairs for glossary extraction
+ * @property {string} model_name - AI model to use for extraction - enum:claude,claude-haiku,claude-opus,gemini-pro
+ * @property {number} batch_size - Number of items to process in each batch (1-10)
+ */
+
+/**
+ * POST /glossary/extract/stream
+ * @summary Stream real-time glossary extraction using external API
+ * @tags Glossary - Glossary extraction services
  * @security BearerAuth
- * @param {TranslationRequest} request.body.required - Translation request parameters
- * @return {object} 200 - Streaming translation response with real-time translated chunks
+ * @param {GlossaryExtractionRequest} request.body.required - Glossary extraction request parameters
+ * @return {object} 200 - Streaming glossary extraction response with real-time results
  * @return {object} 400 - Bad request - Invalid parameters or missing required fields
  * @return {object} 401 - Unauthorized - Authentication required
- * @return {object} 403 - Forbidden - Access denied to translation services
- * @return {object} 500 - Server error - Translation service unavailable or internal error
- * @example request - Example translation request
+ * @return {object} 403 - Forbidden - Access denied to glossary services
+ * @return {object} 500 - Server error - Glossary service unavailable or internal error
+ * @example request - Example glossary extraction request
  * {
- *   "texts": [
- *     "ཁོང་གིས་ཨོ་གླིང་ནང་གནས་སྡོད་བྱེད་མཁན་གྱི་བོད་རིགས་མང་ཆེ་ཤོས་ཤིག་སིཌ་ཎེའི་བྱང་ཕྱོགས་མཚོ་འགྲམ་གྱི་མེག་ཀེ་ལར་ནང་གནས་སྡོད་བྱེད་ཀྱི་ཡོད་པ་ནི་ང་ཚོ་སྤོབས་པ་སྐྱེས་འོས་པ་ཞིག་ཡིན། ང་ཚོ་སྤྱི་ཚོགས་འདི་འདྲ་ཡག་པོ་ཞིག་དང་ལྷན་དུ་མཉམ་གནས་བྱེད་རྒྱུ་བྱུང་བ་ནི་ཧ་ཅང་སྐལ་བ་བཟང་པོ་ཡིན། ༸གོང་ས་རྒྱལ་བ་རིན་པོ་ཆེ་མཆོག་དགུང་གྲངས་ ༩༠ ཕེབས་པའི་༸སྐུའི་འཁྲུངས་སྐར་ནི་དགའ་ཚོར་སྐྱེས་འོས་པའི་དུས་ཚིགས་ཁྱད་པར་ཅན་ཞིག་ཡིན་ལ།  དུས་ཚིགས་འདི་ནི་ལྷག་པར་དུ་འཛམ་གླིང་སྤྱི་དང་བཙན་བྱོལ་དུ་གནས་པའི་བོད་མི་རྣམས་ལ་ཆོས་ཕྱོགས་ཀྱི་ཐོག་ནས་གལ་ཆེན་ཆགས་ཡོད། དམིགས་བསལ་གྱིས་༸གོང་ས་རྒྱལ་བ་རིན་པོ་ཆེ་མཆོག་ནས་དགའ་ལྡན་ཕོ་བྲང་དང་སྐུའི་ཡང་སྲིད་རྒྱུན་མཐུད་ཕེབས་ངེས་པའི་གསལ་བསྒྲགས་བསྐྱངས་ཡོད་པར་བརྟེན། "
+ *   "items": [
+ *     {
+ *       "original_text": "བདེ་བར་གཤེགས་པ་དང་བྱང་ཆུབ་སེམས་དཔའ་རྣམས་ལ་ཕྱག་འཚལ་ལོ།",
+ *       "translated_text": "Homage to the Tathagatas and Bodhisattvas.",
+ *       "metadata": {
+ *         "context": "opening salutation",
+ *         "text_type": "sutra"
+ *       }
+ *     },
+ *     {
+ *       "original_text": "དེ་ནས་བཅོམ་ལྡན་འདས་ཀྱིས་བྱང་ཆུབ་སེམས་དཔའ་སེམས་དཔའ་ཆེན་པོ་འཇམ་དཔལ་གཞོན་ནུར་གྱུར་པ་ལ་འདི་སྐད་ཅེས་བཀའ་སྩལ་ཏོ།",
+ *       "translated_text": "Then the Bhagavan spoke these words to the bodhisattva mahāsattva Mañjuśrī Kumārabhūta:",
+ *       "metadata": {
+ *         "context": "dialogue introduction",
+ *         "speaker": "Buddha"
+ *       }
+ *     }
  *   ],
- *   "target_language": "english",
- *   "text_type": "commentary",
  *   "model_name": "claude",
- *   "batch_size": 2,
- *   "user_rules": "do translation normally"
+ *   "batch_size": 5
  * }
  * @example response - Example streaming response chunks
- * "He found that the majority of Tibetans living in Australia"
- * " live in Meckler on the north coast of Sydney, which is something we can be proud of."
- * " We are very fortunate to be able to coexist with such a good society."
- * " His Holiness the Dalai Lama's 90th birthday is a special occasion that should bring joy."
- * " This occasion is particularly significant from a religious perspective for Tibetans around the world and in exile."
- * " In particular, His Holiness the Dalai Lama has made a declaration regarding the continuation of the Ganden Phodrang and his reincarnation."
+ * {"type":"initialization","total_items":2,"timestamp":"2024-01-01T00:00:00.000Z","message":"Starting glossary extraction of 2 items..."}
+ * {"type":"extraction_start","timestamp":"2024-01-01T00:00:01.000Z","message":"Extracting glossary terms..."}
+ * {"type":"item_completed","item_number":1,"total_items":2,"progress_percent":50,"glossary_preview":"བདེ་བར་གཤེགས་པ་ - Tathagata","timestamp":"2024-01-01T00:00:02.000Z"}
  */
-// Streaming translation endpoint
-router.post("/", authenticate, async (req, res) => {
+// Streaming glossary extraction endpoint
+router.post("/extract/stream", authenticate, async (req, res) => {
   try {
-    const {
-      texts,
-      target_language,
-      text_type = "mantra",
-      model_name = "claude",
-      batch_size = 2,
-      user_rules = "do translation normally",
-    } = req.body;
+    const { items, model_name = "claude", batch_size = 5 } = req.body;
 
     // Validate required fields
-    if (!texts || !Array.isArray(texts) || texts.length === 0) {
+    if (!items || !Array.isArray(items) || items.length === 0) {
       return res
         .status(400)
-        .json({ error: "texts array is required and cannot be empty" });
+        .json({ error: "items array is required and cannot be empty" });
     }
 
-    if (!target_language) {
-      return res.status(400).json({ error: "target_language is required" });
+    // Validate items structure
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (!item.original_text || !item.translated_text) {
+        return res.status(400).json({
+          error: `Item at index ${i} is missing required fields: original_text and translated_text are required`,
+        });
+      }
     }
 
     // Prepare the request payload for the external API
     const requestPayload = {
-      texts,
-      target_language,
-      text_type,
+      items,
       model_name,
       batch_size,
-      user_rules,
     };
 
     // Set response headers for streaming
@@ -92,13 +101,13 @@ router.post("/", authenticate, async (req, res) => {
     // Send initialization event
     sendEvent({
       type: "initialization",
-      total_texts: texts.length,
+      total_items: items.length,
       timestamp: new Date().toISOString(),
-      message: `Starting translation of ${texts.length} texts...`,
+      message: `Starting glossary extraction of ${items.length} items...`,
     });
 
     // Calculate estimated batches
-    const totalBatches = Math.ceil(texts.length / batch_size);
+    const totalBatches = Math.ceil(items.length / batch_size);
     sendEvent({
       type: "planning",
       total_batches: totalBatches,
@@ -109,11 +118,11 @@ router.post("/", authenticate, async (req, res) => {
 
     // Make the streaming request to the external API with timeout
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 second timeout for glossary extraction
 
     try {
       const response = await fetch(
-        process.env.TRANSLATE_API_URL + "/translate/stream",
+        process.env.TRANSLATE_API_URL + "/glossary/extract/stream",
         {
           method: "POST",
           headers: {
@@ -128,7 +137,7 @@ router.post("/", authenticate, async (req, res) => {
 
       if (!response.ok) {
         console.error(
-          "External API error:",
+          "External Glossary API error:",
           response.status,
           response.statusText
         );
@@ -136,7 +145,7 @@ router.post("/", authenticate, async (req, res) => {
 
         sendEvent({
           type: "error",
-          error: `External translation API error: ${response.statusText}`,
+          error: `External glossary API error: ${response.statusText}`,
           details: errorText,
           timestamp: new Date().toISOString(),
         });
@@ -148,7 +157,7 @@ router.post("/", authenticate, async (req, res) => {
       if (!response.body) {
         sendEvent({
           type: "error",
-          error: "No response body received from translation API",
+          error: "No response body received from glossary API",
           timestamp: new Date().toISOString(),
         });
 
@@ -160,7 +169,7 @@ router.post("/", authenticate, async (req, res) => {
       const decoder = new TextDecoder();
 
       let buffer = "";
-      let completedTexts = 0;
+      let completedItems = 0;
       let currentBatch = 1;
       const batchResults = [];
 
@@ -202,10 +211,10 @@ router.post("/", authenticate, async (req, res) => {
                 // Transform external API events to our structured format
                 if (data.type === "initialization") {
                   // External API initialization - we already sent ours
-                  console.log("External API initialized");
+                  console.log("External Glossary API initialized");
                 } else if (data.type === "planning") {
                   // External API planning - we already sent ours
-                  console.log("External API planned batches");
+                  console.log("External Glossary API planned batches");
                 } else if (data.type === "batch_start") {
                   sendEvent({
                     type: "batch_start",
@@ -218,24 +227,24 @@ router.post("/", authenticate, async (req, res) => {
                       data.batch_number || currentBatch
                     }...`,
                   });
-                } else if (data.type === "translation_start") {
+                } else if (data.type === "extraction_start") {
                   sendEvent({
-                    type: "translation_start",
+                    type: "extraction_start",
                     timestamp: new Date().toISOString(),
-                    message: "Translating...",
+                    message: "Extracting glossary terms...",
                   });
-                } else if (data.type === "text_completed") {
-                  completedTexts++;
-                  const progressPercent = (completedTexts / texts.length) * 100;
+                } else if (data.type === "item_completed") {
+                  completedItems++;
+                  const progressPercent = (completedItems / items.length) * 100;
 
                   sendEvent({
-                    type: "text_completed",
-                    text_number: completedTexts,
-                    total_texts: texts.length,
+                    type: "item_completed",
+                    item_number: completedItems,
+                    total_items: items.length,
                     progress_percent: progressPercent,
-                    translation_preview: data.translation_preview,
+                    glossary_preview: data.glossary_preview,
                     timestamp: new Date().toISOString(),
-                    message: `Completed ${completedTexts}/${texts.length} texts`,
+                    message: `Completed ${completedItems}/${items.length} items`,
                   });
                 } else if (data.type === "batch_completed") {
                   const cumulativeProgress =
@@ -259,10 +268,11 @@ router.post("/", authenticate, async (req, res) => {
                   sendEvent({
                     type: "completion",
                     total_completed:
-                      data.successful_translations || completedTexts,
-                    total_texts: data.total_texts || texts.length,
+                      data.successful_extractions || completedItems,
+                    total_items: data.total_items || items.length,
+                    glossary_terms: data.glossary_terms || [],
                     timestamp: new Date().toISOString(),
-                    message: "Translation completed!",
+                    message: "Glossary extraction completed!",
                   });
                 } else if (data.type === "error") {
                   sendEvent({
@@ -304,10 +314,10 @@ router.post("/", authenticate, async (req, res) => {
                   // Transform external API events to our structured format
                   if (data.type === "initialization") {
                     // External API initialization - we already sent ours
-                    console.log("External API initialized");
+                    console.log("External Glossary API initialized");
                   } else if (data.type === "planning") {
                     // External API planning - we already sent ours
-                    console.log("External API planned batches");
+                    console.log("External Glossary API planned batches");
                   } else if (data.type === "batch_start") {
                     sendEvent({
                       type: "batch_start",
@@ -320,23 +330,37 @@ router.post("/", authenticate, async (req, res) => {
                         data.batch_number || currentBatch
                       }...`,
                     });
-                  } else if (data.type === "translation_start") {
+                  } else if (data.type === "extraction_start") {
                     sendEvent({
-                      type: "translation_start",
+                      type: "extraction_start",
                       timestamp: new Date().toISOString(),
-                      message: data.message || "Starting translation...",
+                      message: "Extracting glossary terms...",
+                    });
+                  } else if (data.type === "item_completed") {
+                    completedItems++;
+                    const progressPercent =
+                      (completedItems / items.length) * 100;
+
+                    sendEvent({
+                      type: "item_completed",
+                      item_number: completedItems,
+                      total_items: items.length,
+                      progress_percent: Math.round(progressPercent),
+                      glossary_preview:
+                        data.glossary_preview || "Glossary preview unavailable",
+                      timestamp: new Date().toISOString(),
+                      message: `Completed ${completedItems}/${items.length} items`,
                     });
                   } else if (data.type === "batch_completed") {
                     currentBatch++;
-                    completedTexts += data.batch_results?.length || 0;
 
                     sendEvent({
                       type: "batch_completed",
                       batch_number: data.batch_number || currentBatch - 1,
                       batch_id: data.batch_id,
-                      batch_results: data.batch_results || [],
+                      extracted_glossary: data.extracted_glossary || [],
                       cumulative_progress: Math.round(
-                        (completedTexts / texts.length) * 100
+                        (completedItems / items.length) * 100
                       ),
                       processing_time:
                         data.processing_time || "Processing time unknown",
@@ -348,12 +372,13 @@ router.post("/", authenticate, async (req, res) => {
                   } else if (data.type === "completion") {
                     sendEvent({
                       type: "completion",
-                      total_completed: data.total_completed || completedTexts,
-                      total_texts: texts.length,
+                      total_completed: data.total_completed || completedItems,
+                      total_items: items.length,
+                      complete_glossary: data.complete_glossary || [],
                       processing_time:
                         data.processing_time || "Processing time unknown",
                       timestamp: new Date().toISOString(),
-                      message: "Translation completed successfully!",
+                      message: "Glossary extraction completed successfully!",
                     });
                   } else if (data.type === "error") {
                     sendEvent({
@@ -390,20 +415,20 @@ router.post("/", authenticate, async (req, res) => {
         // Send final completion if not already sent
         sendEvent({
           type: "completion",
-          total_completed: completedTexts,
-          total_texts: texts.length,
+          total_completed: completedItems,
+          total_items: items.length,
           timestamp: new Date().toISOString(),
-          message: "Translation stream completed!",
+          message: "Glossary extraction stream completed!",
         });
 
         // End the response
         res.end();
       } catch (streamError) {
-        console.error("Error reading stream:", streamError);
+        console.error("Error reading glossary stream:", streamError);
 
         sendEvent({
           type: "error",
-          error: "Error processing translation stream",
+          error: "Error processing glossary extraction stream",
           details: streamError.message,
           timestamp: new Date().toISOString(),
         });
@@ -414,15 +439,15 @@ router.post("/", authenticate, async (req, res) => {
       }
     } catch (fetchError) {
       clearTimeout(timeoutId);
-      console.error("Error connecting to translation API:", fetchError);
+      console.error("Error connecting to glossary API:", fetchError);
 
-      let errorMessage = "Translation service unavailable";
-      let errorDetails = "Unable to connect to the external translation API";
+      let errorMessage = "Glossary service unavailable";
+      let errorDetails = "Unable to connect to the external glossary API";
 
       if (fetchError.name === "AbortError") {
-        errorMessage = "Translation API request timed out";
+        errorMessage = "Glossary API request timed out";
         errorDetails =
-          "The external translation service did not respond within 60 seconds";
+          "The external glossary service did not respond within 120 seconds";
       }
 
       sendEvent({
@@ -435,14 +460,14 @@ router.post("/", authenticate, async (req, res) => {
       res.end();
     }
   } catch (error) {
-    console.error("Error in streaming translation:", error);
+    console.error("Error in streaming glossary extraction:", error);
 
     if (!res.headersSent) {
       res.setHeader("Content-Type", "text/event-stream");
       res.write(
         `data: ${JSON.stringify({
           type: "error",
-          error: "Internal server error during translation",
+          error: "Internal server error during glossary extraction",
           details: error.message,
           timestamp: new Date().toISOString(),
         })}\n\n`

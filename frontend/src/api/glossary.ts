@@ -2,18 +2,7 @@ import { getHeaders } from "./utils";
 
 const server_url = import.meta.env.VITE_SERVER_URL;
 
-// Streaming translation interfaces and functions
-export type TargetLanguage =
-  | "english"
-  | "french"
-  | "tibetan"
-  | "portuguese"
-  | "chinese";
-export type TextType =
-  | "mantra"
-  | "sutra"
-  | "commentary"
-  | "philosophical treatises";
+// Glossary extraction interfaces and functions
 export type ModelName =
   | "claude"
   | "claude-haiku"
@@ -21,19 +10,6 @@ export type ModelName =
   | "gemini-pro";
 
 // Constants for easy access to enum values
-export const TARGET_LANGUAGES: TargetLanguage[] = [
-  "english",
-  "french",
-  "tibetan",
-  "portuguese",
-  "chinese",
-];
-export const TEXT_TYPES: TextType[] = [
-  "mantra",
-  "sutra",
-  "commentary",
-  "philosophical treatises",
-];
 export const MODEL_NAMES: ModelName[] = [
   "claude",
   "claude-haiku",
@@ -41,27 +17,28 @@ export const MODEL_NAMES: ModelName[] = [
   "gemini-pro",
 ];
 
-export interface StreamTranslationParams {
-  texts: string[];
-  target_language: TargetLanguage;
-  text_type?: TextType;
+export interface GlossaryItem {
+  original_text: string;
+  translated_text: string;
+  metadata?: Record<string, any>;
+}
+
+export interface StreamGlossaryExtractionParams {
+  items: GlossaryItem[];
   model_name?: ModelName;
   batch_size?: number;
-  user_rules?: string;
 }
 
 /**
- * Starts a streaming translation request
- * Returns a ReadableStream that can be consumed to get real-time translation results
+ * Starts a streaming glossary extraction request
+ * Returns a ReadableStream that can be consumed to get real-time extraction results
  */
-export const streamTranslation = async (
-  params: StreamTranslationParams,
+export const streamGlossaryExtraction = async (
+  params: StreamGlossaryExtractionParams,
   abortController?: AbortController
 ): Promise<Response> => {
   try {
-    // Validate authentication before making the request
-
-    const response = await fetch(`${server_url}/translate`, {
+    const response = await fetch(`${server_url}/glossary/extract/stream`, {
       method: "POST",
       headers: getHeaders(),
       body: JSON.stringify(params),
@@ -74,31 +51,31 @@ export const streamTranslation = async (
         throw new Error("Authentication failed. Please log in again.");
       } else if (response.status === 403) {
         throw new Error(
-          "Access denied. You don't have permission to use translation services."
+          "Access denied. You don't have permission to use glossary services."
         );
       } else if (response.status === 400) {
         try {
           const errorData = await response.json();
           throw new Error(
-            errorData.error ?? "Invalid translation request parameters."
+            errorData.error ?? "Invalid glossary extraction request parameters."
           );
         } catch {
-          throw new Error("Invalid translation request parameters.");
+          throw new Error("Invalid glossary extraction request parameters.");
         }
       } else if (response.status >= 500) {
         throw new Error(
-          "Translation service is temporarily unavailable. Please try again later."
+          "Glossary service is temporarily unavailable. Please try again later."
         );
       } else {
         try {
           const errorData = await response.json();
           throw new Error(
             errorData.error ??
-              `Translation request failed with status ${response.status}`
+              `Glossary extraction request failed with status ${response.status}`
           );
         } catch {
           throw new Error(
-            `Translation request failed with status ${response.status}`
+            `Glossary extraction request failed with status ${response.status}`
           );
         }
       }
@@ -109,7 +86,7 @@ export const streamTranslation = async (
     if (error instanceof Error) {
       throw error;
     }
-    throw new Error("Failed to start translation stream");
+    throw new Error("Failed to start glossary extraction stream");
   }
 };
 
@@ -122,7 +99,7 @@ export interface StreamEvent {
 
 export interface InitializationEvent extends StreamEvent {
   type: "initialization";
-  total_texts: number;
+  total_items: number;
 }
 
 export interface PlanningEvent extends StreamEvent {
@@ -137,16 +114,16 @@ export interface BatchStartEvent extends StreamEvent {
   progress_percent: number;
 }
 
-export interface TranslationStartEvent extends StreamEvent {
-  type: "translation_start";
+export interface ExtractionStartEvent extends StreamEvent {
+  type: "extraction_start";
 }
 
-export interface TextCompletedEvent extends StreamEvent {
-  type: "text_completed";
-  text_number: number;
-  total_texts: number;
+export interface ItemCompletedEvent extends StreamEvent {
+  type: "item_completed";
+  item_number: number;
+  total_items: number;
   progress_percent: number;
-  translation_preview?: string;
+  glossary_preview?: string;
 }
 
 export interface BatchCompletedEvent extends StreamEvent {
@@ -156,7 +133,13 @@ export interface BatchCompletedEvent extends StreamEvent {
   batch_results: Array<{
     original_text: string;
     translated_text: string;
-    metadata?: Record<string, unknown>;
+    glossary_terms: Array<{
+      original: string;
+      translated: string;
+      definition?: string;
+      context?: string;
+    }>;
+    metadata?: any;
   }>;
   cumulative_progress: number;
   processing_time: string;
@@ -165,7 +148,14 @@ export interface BatchCompletedEvent extends StreamEvent {
 export interface CompletionEvent extends StreamEvent {
   type: "completion";
   total_completed: number;
-  total_texts: number;
+  total_items: number;
+  glossary_terms?: Array<{
+    original: string;
+    translated: string;
+    definition?: string;
+    context?: string;
+    frequency?: number;
+  }>;
 }
 
 export interface ErrorEvent extends StreamEvent {
@@ -179,33 +169,33 @@ export interface RawContentEvent extends StreamEvent {
   content: string;
 }
 
-export type TranslationStreamEvent =
+export type GlossaryStreamEvent =
   | InitializationEvent
   | PlanningEvent
   | BatchStartEvent
-  | TranslationStartEvent
-  | TextCompletedEvent
+  | ExtractionStartEvent
+  | ItemCompletedEvent
   | BatchCompletedEvent
   | CompletionEvent
   | ErrorEvent
   | RawContentEvent;
 
 /**
- * Helper function to consume a streaming translation response with structured events
+ * Helper function to consume a streaming glossary extraction response with structured events
  * Calls onEvent for each structured event received
  * Calls onComplete when the stream is finished
  * Calls onError if an error occurs
  */
-export const consumeTranslationStream = async (
+export const consumeGlossaryStream = async (
   response: Response,
-  onEvent: (event: TranslationStreamEvent) => void,
+  onEvent: (event: GlossaryStreamEvent) => void,
   onComplete?: () => void,
   onError?: (error: Error) => void,
   abortController?: AbortController
 ): Promise<void> => {
   if (!response.body) {
     const error = new Error(
-      "No response body available for streaming. The translation service may be unavailable."
+      "No response body available for streaming. The glossary service may be unavailable."
     );
     onError?.(error);
     throw error;
@@ -253,12 +243,12 @@ export const consumeTranslationStream = async (
         if (eventData.startsWith("{") && eventData.endsWith("}")) {
           try {
             // Single complete JSON object
-            const parsedEvent = JSON.parse(eventData) as TranslationStreamEvent;
+            const parsedEvent = JSON.parse(eventData) as GlossaryStreamEvent;
 
             // Handle error events immediately
             if (parsedEvent.type === "error") {
               const error = new Error(
-                `Translation error: ${parsedEvent.error}`
+                `Glossary extraction error: ${parsedEvent.error}`
               );
               onError?.(error);
               return; // Stop processing on error
@@ -289,12 +279,12 @@ export const consumeTranslationStream = async (
             if (cleanedData.startsWith("{")) {
               const parsedEvent = JSON.parse(
                 cleanedData
-              ) as TranslationStreamEvent;
+              ) as GlossaryStreamEvent;
 
               // Handle error events immediately
               if (parsedEvent.type === "error") {
                 const error = new Error(
-                  `Translation error: ${parsedEvent.error}`
+                  `Glossary extraction error: ${parsedEvent.error}`
                 );
                 onError?.(error);
                 return; // Stop processing on error
@@ -322,7 +312,7 @@ export const consumeTranslationStream = async (
               line.toLowerCase().includes("401")
             ) {
               const error = new Error(
-                "Authentication error during translation. Please log in again."
+                "Authentication error during glossary extraction. Please log in again."
               );
               onError?.(error);
               return;
@@ -340,7 +330,9 @@ export const consumeTranslationStream = async (
     const errorObj =
       error instanceof Error
         ? error
-        : new Error("Unknown streaming error occurred during translation");
+        : new Error(
+            "Unknown streaming error occurred during glossary extraction"
+          );
     onError?.(errorObj);
     throw errorObj;
   } finally {
@@ -349,27 +341,31 @@ export const consumeTranslationStream = async (
 };
 
 /**
- * Validates translation parameters
+ * Validates glossary extraction parameters
  */
-const validateTranslationParams = (params: StreamTranslationParams): void => {
+const validateGlossaryParams = (
+  params: StreamGlossaryExtractionParams
+): void => {
   if (
-    !params.texts ||
-    !Array.isArray(params.texts) ||
-    params.texts.length === 0
+    !params.items ||
+    !Array.isArray(params.items) ||
+    params.items.length === 0
   ) {
-    throw new Error("At least one text is required for translation");
+    throw new Error("At least one item is required for glossary extraction");
   }
 
-  if (!params.target_language || params.target_language.trim() === "") {
-    throw new Error("Target language is required for translation");
-  }
-
-  // Check for empty texts
-  const hasEmptyTexts = params.texts.some(
-    (text) => !text || text.trim() === ""
+  // Check for empty texts in items
+  const hasInvalidItems = params.items.some(
+    (item) =>
+      !item.original_text ||
+      !item.translated_text ||
+      item.original_text.trim() === "" ||
+      item.translated_text.trim() === ""
   );
-  if (hasEmptyTexts) {
-    throw new Error("All texts must be non-empty for translation");
+  if (hasInvalidItems) {
+    throw new Error(
+      "All items must have non-empty original_text and translated_text for glossary extraction"
+    );
   }
 
   // Validate batch_size if provided
@@ -382,29 +378,28 @@ const validateTranslationParams = (params: StreamTranslationParams): void => {
 };
 
 /**
- * Complete streaming translation function that handles the entire process
- * This is a higher-level function that combines streamTranslation and consumeTranslationStream
+ * Complete streaming glossary extraction function that handles the entire process
+ * This is a higher-level function that combines streamGlossaryExtraction and consumeGlossaryStream
  * Includes parameter validation and comprehensive error handling
  */
-export const performStreamingTranslation = async (
-  params: StreamTranslationParams,
-  onEvent: (event: TranslationStreamEvent) => void,
+export const performStreamingGlossaryExtraction = async (
+  params: StreamGlossaryExtractionParams,
+  onEvent: (event: GlossaryStreamEvent) => void,
   onComplete?: () => void,
   onError?: (error: Error) => void,
   abortController?: AbortController
 ): Promise<void> => {
   try {
     // Validate parameters before starting
-    validateTranslationParams(params);
+    validateGlossaryParams(params);
 
-    console.log("Starting streaming translation:", {
-      textCount: params.texts.length,
-      targetLanguage: params.target_language,
+    console.log("Starting streaming glossary extraction:", {
+      itemCount: params.items.length,
       model: params.model_name || "default",
     });
 
-    const response = await streamTranslation(params, abortController);
-    await consumeTranslationStream(
+    const response = await streamGlossaryExtraction(params, abortController);
+    await consumeGlossaryStream(
       response,
       onEvent,
       onComplete,
@@ -420,9 +415,9 @@ export const performStreamingTranslation = async (
     const errorObj =
       error instanceof Error
         ? error
-        : new Error("Translation failed unexpectedly");
+        : new Error("Glossary extraction failed unexpectedly");
 
-    console.error("Translation error:", errorObj.message);
+    console.error("Glossary extraction error:", errorObj.message);
     onError?.(errorObj);
     throw errorObj;
   }
@@ -430,15 +425,15 @@ export const performStreamingTranslation = async (
 
 /**
  * Legacy function for backward compatibility - converts events to chunks
- * @deprecated Use performStreamingTranslation with event handlers instead
+ * @deprecated Use performStreamingGlossaryExtraction with event handlers instead
  */
-export const performStreamingTranslationLegacy = async (
-  params: StreamTranslationParams,
+export const performStreamingGlossaryExtractionLegacy = async (
+  params: StreamGlossaryExtractionParams,
   onChunk: (chunk: string) => void,
   onComplete?: () => void,
   onError?: (error: Error) => void
 ): Promise<void> => {
-  await performStreamingTranslation(
+  await performStreamingGlossaryExtraction(
     params,
     (event) => {
       // Convert events back to chunk format for legacy compatibility

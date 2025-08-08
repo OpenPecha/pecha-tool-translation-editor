@@ -1,0 +1,283 @@
+import React from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Settings,
+  Globe,
+  Languages,
+  FileText,
+  Bot,
+  Hash,
+  MessageSquare,
+  BookOpen,
+  Lightbulb,
+} from "lucide-react";
+
+import {
+  TARGET_LANGUAGES,
+  TEXT_TYPES,
+  MODEL_NAMES,
+  TargetLanguage,
+  TextType,
+  ModelName,
+} from "@/api/translate";
+
+interface TranslationConfig {
+  targetLanguage: TargetLanguage;
+  textType: TextType;
+  modelName: ModelName;
+  batchSize: number;
+  userRules: string;
+  extractGlossary: boolean;
+}
+
+interface SettingsModalProps {
+  config: TranslationConfig;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfigChange: <K extends keyof TranslationConfig>(
+    key: K,
+    value: TranslationConfig[K]
+  ) => void;
+}
+
+const SettingsModal: React.FC<SettingsModalProps> = ({
+  config,
+  isOpen,
+  onOpenChange,
+  onConfigChange,
+}) => {
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="w-6 h-6 rounded-md hover:bg-gray-100"
+          title="Translation Settings"
+        >
+          <Settings className="w-3 h-3" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-2xl">
+        <DialogHeader className="space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+              <Settings className="w-4 h-4 text-blue-600" />
+            </div>
+            <div>
+              <DialogTitle className="text-lg font-semibold">
+                Translation Settings
+              </DialogTitle>
+              <p className="text-sm text-gray-500 mt-1">
+                Configure your translation preferences
+              </p>
+            </div>
+          </div>
+        </DialogHeader>
+
+        <div className="space-y-6 py-4">
+          {/* Core Settings */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
+              <Globe className="w-4 h-4 text-gray-600" />
+              Core Settings
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              {/* Target Language */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium flex items-center gap-2">
+                  <Languages className="w-3 h-3 text-gray-500" />
+                  Target Language
+                </Label>
+                <Select
+                  value={config.targetLanguage}
+                  onValueChange={(value: TargetLanguage) =>
+                    onConfigChange("targetLanguage", value)
+                  }
+                >
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TARGET_LANGUAGES.map((lang) => (
+                      <SelectItem key={lang} value={lang}>
+                        {lang.charAt(0).toUpperCase() + lang.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Text Type */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium flex items-center gap-2">
+                  <FileText className="w-3 h-3 text-gray-500" />
+                  Content Type
+                </Label>
+                <Select
+                  value={config.textType}
+                  onValueChange={(value: TextType) =>
+                    onConfigChange("textType", value)
+                  }
+                >
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TEXT_TYPES.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type.charAt(0).toUpperCase() + type.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          {/* AI Settings */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
+              <Bot className="w-4 h-4 text-gray-600" />
+              AI Configuration
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              {/* Model */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium flex items-center gap-2">
+                  <Bot className="w-3 h-3 text-gray-500" />
+                  AI Model
+                </Label>
+                <Select
+                  value={config.modelName}
+                  onValueChange={(value: ModelName) =>
+                    onConfigChange("modelName", value)
+                  }
+                >
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MODEL_NAMES.map((model) => (
+                      <SelectItem key={model} value={model}>
+                        {model.toUpperCase()}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Batch Size */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="batch-size"
+                  className="text-sm font-medium flex items-center gap-2"
+                >
+                  <Hash className="w-3 h-3 text-gray-500" />
+                  Batch Size
+                </Label>
+                <Input
+                  id="batch-size"
+                  type="number"
+                  min={1}
+                  max={10}
+                  value={config.batchSize}
+                  onChange={(e) =>
+                    onConfigChange("batchSize", parseInt(e.target.value) || 1)
+                  }
+                  className="h-9"
+                />
+                <p className="text-xs text-gray-500">
+                  Lines processed per batch (1-10)
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Custom Instructions */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
+              <MessageSquare className="w-4 h-4 text-gray-600" />
+              Custom Instructions
+            </div>
+
+            <div className="space-y-2">
+              <Label
+                htmlFor="user-rules"
+                className="text-sm font-medium flex items-center gap-2"
+              >
+                <MessageSquare className="w-3 h-3 text-gray-500" />
+                Translation Guidelines
+              </Label>
+              <Textarea
+                id="user-rules"
+                placeholder="Enter specific instructions for the AI translator (e.g., 'Maintain formal tone', 'Preserve technical terms', etc.)"
+                value={config.userRules}
+                onChange={(e) => onConfigChange("userRules", e.target.value)}
+                className="min-h-[80px] resize-none"
+              />
+              <p className="text-xs text-gray-500">
+                Provide additional context or specific rules for better
+                translation quality
+              </p>
+            </div>
+          </div>
+
+          {/* Glossary Settings */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
+              <BookOpen className="w-4 h-4 text-gray-600" />
+              Glossary Extraction
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-medium flex items-center gap-2">
+                    <Lightbulb className="w-3 h-3 text-gray-500" />
+                    Auto-extract Glossary
+                  </Label>
+                  <p className="text-xs text-gray-500">
+                    Automatically extract key terms after translation
+                  </p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={config.extractGlossary}
+                    onChange={(e) =>
+                      onConfigChange("extractGlossary", e.target.checked)
+                    }
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default SettingsModal;
