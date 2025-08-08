@@ -1112,6 +1112,13 @@ router.patch("/:id/content", authenticate, async (req, res) => {
     });
 
     let currentVersionId = document.currentVersionId;
+    if(currentVersionId === null){
+      const currentVersion = await prisma.version.findFirst({
+        where: { userId: null},
+        orderBy: { createdAt: "desc" },
+      });
+      currentVersionId = currentVersion.id;
+    }
     // First, check if this is a system-generated version (initial auto-save)
     const currentVersion = await prisma.version.findUnique({
       where: { id: currentVersionId },
