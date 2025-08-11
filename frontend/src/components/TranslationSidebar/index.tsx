@@ -94,11 +94,14 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
     modelName: "claude",
     batchSize: 2,
     userRules: "do translation normally",
-    extractGlossary: true,
+    extractGlossary: false,
   });
 
   const [selectedText, setSelectedText] = useState<string>("");
-  const [selectedTextLineNumbers, setSelectedTextLineNumbers] = useState<Record<string, { from: number; to: number }> | null>(null);
+  const [selectedTextLineNumbers, setSelectedTextLineNumbers] = useState<Record<
+    string,
+    { from: number; to: number }
+  > | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const [isTranslating, setIsTranslating] = useState(false);
@@ -117,7 +120,6 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
   // Glossary extraction state
   const [glossaryTerms, setGlossaryTerms] = useState<GlossaryTerm[]>([]);
   const [isExtractingGlossary, setIsExtractingGlossary] = useState(false);
-  const [, setGlossaryStatus] = useState<string>("");
 
   const glossaryAbortControllerRef = useRef<AbortController | null>(null);
 
@@ -161,7 +163,7 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
   // Function to get selected text from the DOM (only from main editor)
   const getSelectedText = () => {
     const selection = window.getSelection();
-    if (selection && selection.toString().trim()) {
+    if (selection?.toString().trim()) {
       // Check if selection is from the main editor (not from sidebar or other elements)
       const range = selection.getRangeAt(0);
       const container = range.commonAncestorContainer;
@@ -195,17 +197,17 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
   useEffect(() => {
     const handleSelectionChange = () => {
       const text = getSelectedText();
+      if (!text || text.length === 0) {
+        return;
+      }
       setSelectedText(text);
-      
+
       // Get line number information for the selected text
       if (text) {
         const lineNumbers = getSelectionLineNumbers();
         setSelectedTextLineNumbers(lineNumbers);
-        
+
         // Console log the line numbers in the requested format
-        if (lineNumbers) {
-          console.log("Selected text line numbers:", JSON.stringify(lineNumbers, null, 2));
-        }
       } else {
         setSelectedTextLineNumbers(null);
       }
@@ -563,7 +565,6 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
     });
 
     setIsExtractingGlossary(true);
-    setGlossaryStatus("Preparing glossary extraction...");
     setGlossaryTerms([]);
 
     // Create abort controller for glossary extraction
@@ -601,7 +602,6 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
         () => {
           console.log("Glossary extraction completed!");
           setIsExtractingGlossary(false);
-          setGlossaryStatus("Glossary extraction completed!");
 
           // Start standardization analysis after glossary extraction completes
           // We need to delay this to ensure glossary terms state has updated
@@ -613,7 +613,6 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
         (error: Error) => {
           console.error("Glossary extraction error:", error);
           setIsExtractingGlossary(false);
-          setGlossaryStatus(`Glossary error: ${error.message}`);
           // Show error in UI for debugging
           setError(`Glossary extraction failed: ${error.message}`);
         },
@@ -630,7 +629,6 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
       console.error("Glossary extraction error:", err);
       setIsExtractingGlossary(false);
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
-      setGlossaryStatus(`Glossary extraction failed: ${errorMessage}`);
       // Show error in UI for debugging
       setError(`Glossary extraction failed: ${errorMessage}`);
     }
@@ -641,19 +639,12 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
 
     switch (event.type) {
       case "initialization":
-        setGlossaryStatus(
-          `Starting glossary extraction of ${event.total_items} items...`
-        );
         break;
 
       case "planning":
-        setGlossaryStatus(
-          `Created ${event.total_batches} batches for glossary extraction`
-        );
         break;
 
       case "glossary_extraction_start":
-        setGlossaryStatus("Extracting glossary terms...");
         break;
 
       case "glossary_batch_completed":
@@ -668,13 +659,11 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
           }));
           console.log("Adding glossary terms:", convertedTerms);
           setGlossaryTerms((prev) => [...prev, ...convertedTerms]);
-          setGlossaryStatus(`Extracted ${event.terms.length} terms from batch`);
         }
         break;
 
       case "completion":
         console.log("Glossary completion event:", event);
-        setGlossaryStatus("Glossary extraction completed!");
         setIsExtractingGlossary(false); // Stop loading indicator
         if (event.glossary_terms && event.glossary_terms.length > 0) {
           // Convert the API response format to our interface
@@ -700,7 +689,6 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
 
       case "error":
         console.error("Glossary extraction error:", event.error);
-        setGlossaryStatus(`Error: ${event.error}`);
         setError(`Glossary extraction error: ${event.error}`);
         setIsExtractingGlossary(false); // Stop loading indicator on error
         break;
@@ -981,7 +969,6 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
     setExpandedItems(new Set());
     setGlossaryTerms([]);
     setIsExtractingGlossary(false);
-    setGlossaryStatus("");
     setInconsistentTerms({});
     setIsAnalyzingStandardization(false);
     setStandardizationStatus("");
