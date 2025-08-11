@@ -33,6 +33,7 @@ interface GlossaryTerm {
 
 interface TranslationControlsProps {
   selectedText: string;
+  selectedTextLineNumbers: Record<string, { from: number; to: number }> | null;
   translationResults: TranslationResult[];
   isTranslating: boolean;
   isExtractingGlossary: boolean;
@@ -56,6 +57,7 @@ interface TranslationControlsProps {
 
 const TranslationControls: React.FC<TranslationControlsProps> = ({
   selectedText,
+  selectedTextLineNumbers,
   translationResults,
   isTranslating,
   isExtractingGlossary,
@@ -110,12 +112,14 @@ const TranslationControls: React.FC<TranslationControlsProps> = ({
             </button>
           </div>
           {!isSelectedTextCollapsed && (
-            <div className="max-h-16 overflow-y-auto">
-              <pre className="text-xs text-gray-700 whitespace-pre-wrap font-sans">
-                {selectedText.length > 200
-                  ? selectedText.substring(0, 200) + "..."
-                  : selectedText}
-              </pre>
+            <div className="space-y-2">
+              <div className="max-h-16 overflow-y-auto">
+                <pre className="text-xs text-gray-700 whitespace-pre-wrap font-sans">
+                  {selectedText.length > 200
+                    ? selectedText.substring(0, 200) + "..."
+                    : selectedText}
+                </pre>
+              </div>
             </div>
           )}
         </div>

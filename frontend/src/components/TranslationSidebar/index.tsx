@@ -98,13 +98,14 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
   });
 
   const [selectedText, setSelectedText] = useState<string>("");
+  const [selectedTextLineNumbers, setSelectedTextLineNumbers] = useState<Record<string, { from: number; to: number }> | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const [isTranslating, setIsTranslating] = useState(false);
   const [translationResults, setTranslationResults] = useState<
     TranslationResult[]
   >([]);
-  const { quillEditors } = useEditor();
+  const { quillEditors, getSelectionLineNumbers } = useEditor();
 
   const [currentStatus, setCurrentStatus] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
@@ -195,6 +196,19 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
     const handleSelectionChange = () => {
       const text = getSelectedText();
       setSelectedText(text);
+      
+      // Get line number information for the selected text
+      if (text) {
+        const lineNumbers = getSelectionLineNumbers();
+        setSelectedTextLineNumbers(lineNumbers);
+        
+        // Console log the line numbers in the requested format
+        if (lineNumbers) {
+          console.log("Selected text line numbers:", JSON.stringify(lineNumbers, null, 2));
+        }
+      } else {
+        setSelectedTextLineNumbers(null);
+      }
     };
 
     // Add event listener for selection changes
@@ -206,7 +220,7 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
     return () => {
       document.removeEventListener("selectionchange", handleSelectionChange);
     };
-  }, []);
+  }, [getSelectionLineNumbers]);
 
   // Auto-scroll to bottom of results
   useEffect(() => {
@@ -1210,6 +1224,7 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
               {/* Input Area at Bottom */}
               <TranslationControls
                 selectedText={selectedText}
+                selectedTextLineNumbers={selectedTextLineNumbers}
                 translationResults={translationResults}
                 isTranslating={isTranslating}
                 isExtractingGlossary={isExtractingGlossary}
