@@ -10,6 +10,7 @@ import {
   BookOpen,
   AlertTriangle,
 } from "lucide-react";
+import { useEditor } from "@/contexts/EditorContext";
 
 
 interface TranslationResult {
@@ -74,6 +75,7 @@ const TranslationControls: React.FC<TranslationControlsProps> = ({
   onStartGlossaryAndInconsistencyAnalysis,
   onStartStandardizationAnalysis,
 }) => {
+  const { activeQuill } = useEditor();
 
   // Helper function to extract start and end line numbers from selectedTextLineNumbers
   const getLineRange = (lineNumbers: Record<string, { from: number; to: number }> | null): { startLine: number; endLine: number } | null => {
@@ -112,6 +114,39 @@ const TranslationControls: React.FC<TranslationControlsProps> = ({
     };
   };
 
+  // Function to scroll to the selected text in the editor
+  const scrollToSelectedText = () => {
+    if (!selectedTextLineNumbers) return;
+    
+    const quill = activeQuill;
+    if (!quill) return;
+
+    const lineRange = getLineRange(selectedTextLineNumbers);
+    if (!lineRange) return;
+
+    // Get the editor container and line numbers container
+    const editorElement = quill.root;
+    const editorContainer = editorElement.closest(".editor-container");
+    if (!editorContainer) return;
+
+    const lineNumbersContainer = editorContainer.querySelector(".line-numbers");
+    if (!lineNumbersContainer) return;
+
+    // Find the line number element for the start line
+    const targetLineElement = lineNumbersContainer.querySelector(
+      `.line-number[id$="-line-${lineRange.startLine}"]`
+    ) as HTMLElement;
+    
+    if (!targetLineElement) return;
+
+    // Get the top position of the line and scroll to it
+    const lineTop = parseFloat(targetLineElement.style.top);
+    editorElement.scrollTo({
+      top: lineTop,
+      behavior: "smooth",
+    });
+  };
+
   const lineRange = getLineRange(selectedTextLineNumbers);
   const truncatedPreview = createTruncatedPreview(selectedText, lineRange);
   const { displayText: tooltipText } = formatTooltipText(selectedText);
@@ -132,6 +167,7 @@ const TranslationControls: React.FC<TranslationControlsProps> = ({
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
+                    scrollToSelectedText();
                   }}
                   onMouseDown={(e) => {
                     e.preventDefault(); // Prevent selection change on mouse down
