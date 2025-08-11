@@ -299,6 +299,12 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({
       const lineStart = currentIndex;
       const lineEnd = currentIndex + lineText.length;
 
+      // Skip empty lines (similar to getLineNumber logic)
+      if (!lineText.trim()) {
+        currentIndex = lineEnd + 1; // +1 for the newline character
+        continue; // Don't increment currentLineNumber for empty lines
+      }
+
       // Check if this line intersects with our selection
       if (lineStart < selectionEnd && lineEnd >= selectionStart) {
         // Calculate the intersection
