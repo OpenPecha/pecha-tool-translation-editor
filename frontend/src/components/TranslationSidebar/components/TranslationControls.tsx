@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Loader2,
   Play,
@@ -8,9 +9,9 @@ import {
   Check,
   BookOpen,
   AlertTriangle,
-  ChevronDown,
-  ChevronUp,
 } from "lucide-react";
+import { useEditor } from "@/contexts/EditorContext";
+
 
 interface TranslationResult {
   id: string;
@@ -33,6 +34,7 @@ interface GlossaryTerm {
 
 interface TranslationControlsProps {
   selectedText: string;
+  selectedTextLineNumbers: Record<string, { from: number; to: number }> | null;
   translationResults: TranslationResult[];
   isTranslating: boolean;
   isExtractingGlossary: boolean;
@@ -56,6 +58,7 @@ interface TranslationControlsProps {
 
 const TranslationControls: React.FC<TranslationControlsProps> = ({
   selectedText,
+  selectedTextLineNumbers,
   translationResults,
   isTranslating,
   isExtractingGlossary,
@@ -72,52 +75,116 @@ const TranslationControls: React.FC<TranslationControlsProps> = ({
   onStartGlossaryAndInconsistencyAnalysis,
   onStartStandardizationAnalysis,
 }) => {
-  const [isSelectedTextCollapsed, setIsSelectedTextCollapsed] = useState(true);
+  const { activeQuill } = useEditor();
 
-  const getLineCount = (text: string) => {
-    return text.split("\n").filter((line) => line.trim().length > 0).length;
+  // Helper function to extract start and end line numbers from selectedTextLineNumbers
+  const getLineRange = (lineNumbers: Record<string, { from: number; to: number }> | null): { startLine: number; endLine: number } | null => {
+    if (!lineNumbers) return null;
+    
+    const lineNums = Object.keys(lineNumbers).map(Number).sort((a, b) => a - b);
+    if (lineNums.length === 0) return null;
+    
+    return {
+      startLine: lineNums[0],
+      endLine: lineNums[lineNums.length - 1]
+    };
   };
+
+  // Helper function to create truncated preview text
+  const createTruncatedPreview = (text: string, lineRange: { startLine: number; endLine: number } | null): string => {
+    if (!text || !lineRange) return "";
+    
+    const words = text.trim().split(/\s+/);
+    const firstWords = words.slice(0, 4).join(" "); // Get first 4 words
+    const lineRangeText = lineRange.startLine === lineRange.endLine 
+      ? `(${lineRange.startLine})` 
+      : `(${lineRange.startLine}-${lineRange.endLine})`;
+    
+    if (words.length > 4) {
+      return `${firstWords}...${lineRangeText}`;
+    } else {
+      return `${firstWords}${lineRangeText}`;
+    }
+  };
+
+  // Helper function to format text for tooltip (shows all text, scrollable)
+  const formatTooltipText = (text: string): { displayText: string } => {
+    return { 
+      displayText: text
+    };
+  };
+
+  // Function to scroll to the selected text in the editor
+  const scrollToSelectedText = () => {
+    if (!selectedTextLineNumbers) return;
+    
+    const quill = activeQuill;
+    if (!quill) return;
+
+    const lineRange = getLineRange(selectedTextLineNumbers);
+    if (!lineRange) return;
+
+    // Get the editor container and line numbers container
+    const editorElement = quill.root;
+    const editorContainer = editorElement.closest(".editor-container");
+    if (!editorContainer) return;
+
+    const lineNumbersContainer = editorContainer.querySelector(".line-numbers");
+    if (!lineNumbersContainer) return;
+
+    // Find the line number element for the start line
+    const targetLineElement = lineNumbersContainer.querySelector(
+      `.line-number[id$="-line-${lineRange.startLine}"]`
+    ) as HTMLElement;
+    
+    if (!targetLineElement) return;
+
+    // Get the top position of the line and scroll to it
+    const lineTop = parseFloat(targetLineElement.style.top);
+    editorElement.scrollTo({
+      top: lineTop,
+      behavior: "smooth",
+    });
+  };
+
+  const lineRange = getLineRange(selectedTextLineNumbers);
+  const truncatedPreview = createTruncatedPreview(selectedText, lineRange);
+  const { displayText: tooltipText } = formatTooltipText(selectedText);
 
   return (
     <div className="border-t border-gray-200 p-3 space-y-3">
       {/* Selected Text Preview */}
       {selectedText && (
         <div className="bg-gray-50 border border-gray-200 rounded-md p-2">
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">Selected Text</span>
-              <span className="text-xs text-gray-400">
-                {getLineCount(selectedText)} line
-                {getLineCount(selectedText) === 1 ? "" : "s"}
-              </span>
-            </div>
-            <button
-              onClick={() =>
-                setIsSelectedTextCollapsed(!isSelectedTextCollapsed)
-              }
-              className="p-1 hover:bg-gray-200 rounded transition-colors"
-              title={
-                isSelectedTextCollapsed
-                  ? "Show selected text"
-                  : "Hide selected text"
-              }
-            >
-              {isSelectedTextCollapsed ? (
-                <ChevronDown className="w-3 h-3 text-gray-500" />
-              ) : (
-                <ChevronUp className="w-3 h-3 text-gray-500" />
-              )}
-            </button>
-          </div>
-          {!isSelectedTextCollapsed && (
-            <div className="max-h-16 overflow-y-auto">
-              <pre className="text-xs text-gray-700 whitespace-pre-wrap font-sans">
-                {selectedText.length > 200
-                  ? selectedText.substring(0, 200) + "..."
-                  : selectedText}
-              </pre>
-            </div>
-          )}
+        
+
+          {/* Truncated Preview with Tooltip */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div 
+                  className="text-xs text-gray-700 font-mono cursor-pointer hover:bg-gray-100 p-1 rounded transition-colors" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    scrollToSelectedText();
+                  }}
+                  onMouseDown={(e) => {
+                    e.preventDefault(); // Prevent selection change on mouse down
+                  }}
+                >
+                  {truncatedPreview}
+                </div>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-md max-h-32 p-3 bg-white border border-gray-200 shadow-lg text-xs overflow-hidden">
+                <div className="relative max-h-24 overflow-y-auto">
+                  <pre className="whitespace-pre-wrap font-mono leading-relaxed text-gray-700">
+                    {tooltipText}
+                  </pre>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       )}
 
