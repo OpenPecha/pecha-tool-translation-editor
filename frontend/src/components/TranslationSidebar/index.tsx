@@ -387,14 +387,13 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
       setError("Please select text to translate");
       return;
     }
+    resetTranslations();
 
     setIsTranslating(true);
-    setTranslationResults([]);
     setCurrentStatus("Initializing...");
     setProgressPercent(0);
     setError(null);
     setCopiedItems(new Set()); // Clear any copy feedback
-
     // Create abort controller for this translation
     abortControllerRef.current = new AbortController();
 
