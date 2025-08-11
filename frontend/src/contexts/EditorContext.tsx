@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useRef, useState } from "react";
+import React, { createContext, useContext, useState } from "react";
 import Quill from "quill";
 
 interface EditorContextType {
@@ -42,7 +42,6 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({
   const [quillEditors, setQuillEditors] = useState<Map<string, Quill>>(
     new Map()
   );
-  const lastClickY = useRef<number | null>(null);
   const registerQuill = (id: string, quill: Quill) => {
     setQuillEditors((prev) => {
       const next = new Map(prev);
@@ -52,7 +51,7 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({
 
     // Set up focus tracking
     setActiveEditor(id);
-    quill.on("selection-change", (range, oldRange, source) => {
+    quill.on("selection-change", (range) => {
       if (range) {
         setActiveEditor(id);
         setActiveQuill(quill);
@@ -209,7 +208,7 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({
     if (!editorContainer) return null;
 
     // Find the corresponding Quill instance
-    for (const [id, quill] of quillEditors) {
+    for (const [, quill] of quillEditors) {
       if (quill.root.closest(".editor-container") === editorContainer) {
         targetQuill = quill;
         break;
@@ -232,8 +231,8 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({
 
     if (lineNumberElements.length === 0) return null;
 
-    // Split the selected text into lines
-    const selectedLines = selectedText.split('\n');
+    // Split the selected text into lines (for future use if needed)
+    // const selectedLines = selectedText.split('\n');
     const result: Record<string, { from: number; to: number }> = {};
 
     // Get the start and end positions of the selection in the DOM
