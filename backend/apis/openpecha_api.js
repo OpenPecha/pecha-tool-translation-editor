@@ -1,35 +1,96 @@
 const API_ENDPOINT = process.env.OPENPECHA_ENDPOINT;
 const WORKSPACE_ENDPOINT = process.env.WORKSPACE_ENDPOINT;
 
-//filterBy: commentary_of, version_of, translation_of
-async function getPechaList(type) {
-  let body = {
-    filter: {
-      field: "type",
-      operator: "==",
-      value: type === "pecha" ? "root" : type,
-    },
-    page: 1,
-    limit: 20,
-  };
-
-  const response = await fetch(`${API_ENDPOINT}/metadata/filter/`, {
-    method: "POST",
+/**
+ * Step 1: Fetch list of root expressions (title + id)
+ * GET /metadata?type=root
+ */
+async function getExpressions(type) {
+  const response = await fetch(`${API_ENDPOINT}/metadata?type=${type}`, {
     headers: {
       accept: "application/json",
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(body),
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch pecha list: ${response.statusText}`);
+    throw new Error(`Failed to fetch root expressions: ${response.statusText}`);
   }
 
   const data = await response.json();
   return data;
 }
 
+/**
+ * Step 2: Fetch metadata of selected expression
+ * GET /metadata/{expression_id}
+ */
+async function getExpression(expressionId) {
+  const response = await fetch(`${API_ENDPOINT}/metadata/${expressionId}`, {
+    headers: {
+      accept: "application/json",
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch expression metadata: ${response.statusText}`
+    );
+  }
+
+  const data = await response.json();
+  return data;
+}
+
+/**
+ * Step 3: Get list of available manifestations for an expression
+ * GET /metadata/{expression_id}/manifestations
+ */
+async function getExpressionManifestations(expressionId) {
+  const response = await fetch(
+    `${API_ENDPOINT}/metadata/${expressionId}/manifestations`,
+    {
+      headers: {
+        accept: "application/json",
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch expression manifestations: ${response.statusText}`
+    );
+  }
+
+  const data = await response.json();
+  return data;
+}
+
+/**
+ * Step 4: Fetch serialized text for translation
+ * GET /text?id=<manifestation_id>
+ */
+async function getManifestationText(manifestationId) {
+  const response = await fetch(`${API_ENDPOINT}/text/${manifestationId}`, {
+    headers: {
+      accept: "application/json",
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch manifestation text: ${response.statusText}`
+    );
+  }
+
+  const data = await response.json();
+  return data;
+}
+
+// Legacy functions for backward compatibility
 async function getPechaLanguages() {
   const response = await fetch(`${API_ENDPOINT}/languages/`);
   if (!response.ok) {
@@ -48,23 +109,14 @@ async function getPechaCategories() {
   return data;
 }
 
-async function getPechaBase(pechaId) {
-  const response = await fetch(`${WORKSPACE_ENDPOINT}/pecha/${pechaId}/bases`, {
-    headers: {
-      accept: "application/json",
-      "Content-Type": "application/json",
-    },
-  });
-  if (!response.ok) {
-    throw new Error(`Failed to fetch pecha base info: ${response.statusText}`);
-  }
-  const data = await response.json();
-  return data;
-}
-
 module.exports = {
-  getPechaList,
+  // New API flow functions
+  getExpressions,
+  getExpression,
+  getExpressionManifestations,
+  getManifestationText,
+
+  // Legacy functions for backward compatibility
   getPechaLanguages,
-  getPechaBase,
   getPechaCategories,
 };
