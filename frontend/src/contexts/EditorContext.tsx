@@ -16,6 +16,7 @@ interface EditorContextType {
     line_number: number
   ) => HTMLElement | null;
   getSelectionLineNumbers: () => Record<string, { from: number; to: number }> | null;
+  scrollToLineNumber: (line_number: number, quill?: Quill | null) => boolean;
 }
 
 const EditorContext = createContext<EditorContextType>({
@@ -30,6 +31,7 @@ const EditorContext = createContext<EditorContextType>({
   getLineNumber: () => null,
   getElementWithLinenumber: () => null,
   getSelectionLineNumbers: () => null,
+  scrollToLineNumber: () => false,
 });
 
 export const useEditor = () => useContext(EditorContext);
@@ -328,6 +330,107 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({
     return Object.keys(result).length > 0 ? result : null;
   };
 
+  const scrollToLineNumber = (line_number: number, quill?: Quill | null): boolean => {
+    // If specific quill provided, only scroll that one
+    if (quill) {
+      return scrollSingleEditor(quill, line_number);
+    }
+
+    // Otherwise scroll all editors
+    let success = false;
+    quillEditors.forEach((editor) => {
+      if (scrollSingleEditor(editor, line_number)) {
+        success = true;
+      }
+    });
+    return success;
+  };
+
+  // Helper function to scroll a single editor
+  const scrollSingleEditor = (quill: Quill, line_number: number): boolean => {
+    const editorElement = quill.root;
+    const editorContainer = editorElement.closest(".editor-container");
+    if (!editorContainer) return false;
+
+    const lineNumbersContainer = editorContainer.querySelector(".line-numbers");
+    if (!lineNumbersContainer) return false;
+
+    // Find the line number element for the target line
+    const targetLineElement = lineNumbersContainer.querySelector(
+      `.line-number[id$="-line-${line_number}"]`
+    ) as HTMLElement;
+    
+    if (!targetLineElement) return false;
+
+    // Get the top position of the line and scroll to it
+    const lineTop = parseFloat(targetLineElement.style.top);
+    editorElement.scrollTo({
+      top: lineTop - 50, // Add small offset for better visibility
+      behavior: "smooth",
+    });
+
+    // Add visual feedback - highlight and blink the line number
+    highlightLineNumber(targetLineElement);
+
+    return true;
+  };
+
+  // Helper function to add visual feedback to the line number
+  const highlightLineNumber = (lineElement: HTMLElement) => {
+    const spanElement = lineElement.querySelector("span");
+    if (!spanElement) return;
+
+    // Remove any existing highlight classes
+    spanElement.classList.remove("line-highlight", "line-blink");
+    
+    // Store original styles
+    const originalBackgroundColor = spanElement.style.backgroundColor;
+    const originalColor = spanElement.style.color;
+    const originalTransition = spanElement.style.transition;
+
+    // Apply initial highlight
+    spanElement.style.transition = "all 0.2s ease-in-out";
+    spanElement.style.backgroundColor = "#3b82f6"; // Blue background
+    spanElement.style.color = "#ffffff"; // White text
+    spanElement.style.transform = "scale(1.1)";
+    spanElement.style.borderRadius = "4px";
+    spanElement.style.padding = "2px 4px";
+    spanElement.style.fontWeight = "bold";
+
+    // Create blinking effect
+    let blinkCount = 0;
+    const maxBlinks = 3;
+    const blinkInterval = setInterval(() => {
+      if (blinkCount >= maxBlinks) {
+        clearInterval(blinkInterval);
+        // Fade back to original state
+        spanElement.style.transition = "all 0.3s ease-out";
+        spanElement.style.backgroundColor = originalBackgroundColor;
+        spanElement.style.color = originalColor;
+        spanElement.style.transform = "scale(1)";
+        spanElement.style.borderRadius = "";
+        spanElement.style.padding = "";
+        spanElement.style.fontWeight = "";
+        
+        // Clean up after animation
+        setTimeout(() => {
+          spanElement.style.transition = originalTransition;
+        }, 300);
+        return;
+      }
+
+      // Toggle between highlight and slightly dimmed
+      if (blinkCount % 2 === 0) {
+        spanElement.style.backgroundColor = "#1d4ed8"; // Darker blue
+        spanElement.style.transform = "scale(1.05)";
+      } else {
+        spanElement.style.backgroundColor = "#3b82f6"; // Original blue
+        spanElement.style.transform = "scale(1.1)";
+      }
+      blinkCount++;
+    }, 200);
+  };
+
   return (
     <EditorContext.Provider
       value={{
@@ -342,6 +445,7 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({
         getLineNumber,
         getElementWithLinenumber,
         getSelectionLineNumbers,
+        scrollToLineNumber,
       }}
     >
       {children}
