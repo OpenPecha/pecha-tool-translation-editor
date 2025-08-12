@@ -99,6 +99,7 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
   });
 
   const [selectedText, setSelectedText] = useState<string>("");
+  const [activeSelectedEditor, setActiveSelectedEditor] = useState<string | null>(null);
   const [selectedTextLineNumbers, setSelectedTextLineNumbers] = useState<Record<
     string,
     { from: number; to: number }
@@ -109,7 +110,7 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
   const [translationResults, setTranslationResults] = useState<
     TranslationResult[]
   >([]);
-  const { quillEditors, getSelectionLineNumbers } = useEditor();
+  const { quillEditors, getSelectionLineNumbers, activeEditor } = useEditor();
 
   const [currentStatus, setCurrentStatus] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
@@ -205,6 +206,7 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
         return;
       }
       setSelectedText(text);
+      setActiveSelectedEditor(activeEditor);
 
       // Get line number information for the selected text
       if (text) {
@@ -1267,6 +1269,7 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
               {/* Input Area at Bottom */}
               <TranslationControls
                 selectedText={selectedText}
+                activeSelectedEditor={activeSelectedEditor}
                 selectedTextLineNumbers={selectedTextLineNumbers}
                 translationResults={translationResults}
                 isTranslating={isTranslating}
