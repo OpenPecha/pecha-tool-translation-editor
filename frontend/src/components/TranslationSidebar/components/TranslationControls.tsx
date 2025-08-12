@@ -34,6 +34,7 @@ interface GlossaryTerm {
 
 interface TranslationControlsProps {
   selectedText: string;
+  activeSelectedEditor: string | null;
   selectedTextLineNumbers: Record<string, { from: number; to: number }> | null;
   translationResults: TranslationResult[];
   isTranslating: boolean;
@@ -58,6 +59,7 @@ interface TranslationControlsProps {
 
 const TranslationControls: React.FC<TranslationControlsProps> = ({
   selectedText,
+  activeSelectedEditor,
   selectedTextLineNumbers,
   translationResults,
   isTranslating,
@@ -75,7 +77,7 @@ const TranslationControls: React.FC<TranslationControlsProps> = ({
   onStartGlossaryAndInconsistencyAnalysis,
   onStartStandardizationAnalysis,
 }) => {
-  const { activeQuill } = useEditor();
+  const { getQuill } = useEditor();
 
   // Helper function to extract start and end line numbers from selectedTextLineNumbers
   const getLineRange = (lineNumbers: Record<string, { from: number; to: number }> | null): { startLine: number; endLine: number } | null => {
@@ -116,9 +118,9 @@ const TranslationControls: React.FC<TranslationControlsProps> = ({
 
   // Function to scroll to the selected text in the editor
   const scrollToSelectedText = () => {
-    if (!selectedTextLineNumbers) return;
+    if (!selectedTextLineNumbers || !activeSelectedEditor) return;
     
-    const quill = activeQuill;
+    const quill = getQuill(activeSelectedEditor);
     if (!quill) return;
 
     const lineRange = getLineRange(selectedTextLineNumbers);
