@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Copy, Check, ChevronDown, ChevronUp } from "lucide-react";
+import DiffText from "./DiffText";
 
 interface TranslationResult {
   id: string;
@@ -111,58 +112,64 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
               <div className="text-xs text-gray-500 mb-1 font-medium flex items-center gap-2">
                 Translation:
                 {result.isUpdated && (
-                  <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
                     Updated
                   </span>
                 )}
               </div>
 
-              {/* Show old translation (strikethrough) if updated */}
-              {result.isUpdated && result.previousTranslatedText && (
-                <div className="text-sm text-gray-500 leading-relaxed mb-2">
-                  <div className="whitespace-pre-wrap font-sans line-through opacity-75">
-                    {expandedItems.has(index)
-                      ? result.previousTranslatedText
+              {/* Show translation with diff highlighting if updated, otherwise show regular translation */}
+              <div className="text-sm leading-relaxed text-gray-800">
+                {result.isUpdated && result.previousTranslatedText ? (
+                  // Show diff highlighting for updated translations
+                  <DiffText
+                    oldText={expandedItems.has(index) 
+                      ? result.previousTranslatedText 
                       : truncateText(result.previousTranslatedText)}
+                    newText={expandedItems.has(index) 
+                      ? result.translatedText 
+                      : truncateText(result.translatedText)}
+                    truncated={!expandedItems.has(index) && 
+                      (result.previousTranslatedText.length > TRUNCATE_LENGTH || 
+                       result.translatedText.length > TRUNCATE_LENGTH)}
+                  />
+                ) : (
+                  // Show regular translation for non-updated results
+                  <div className="whitespace-pre-wrap font-sans">
+                    {expandedItems.has(index)
+                      ? result.translatedText
+                      : truncateText(result.translatedText)}
                   </div>
-                </div>
-              )}
-
-              {/* Show new translation (green if updated) */}
-              <div
-                className={`text-sm leading-relaxed ${
-                  result.isUpdated
-                    ? "text-green-800 bg-green-50 p-2 rounded"
-                    : "text-gray-800"
-                }`}
-              >
-                <div className="whitespace-pre-wrap font-sans">
-                  {expandedItems.has(index)
-                    ? result.translatedText
-                    : truncateText(result.translatedText)}
-                </div>
+                )}
               </div>
 
-              {shouldShowExpandButton(result.translatedText) && (
-                <Button
-                  onClick={() => onToggleItemExpansion(index)}
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 px-2 mt-1 text-xs text-gray-500 hover:text-gray-700"
-                >
-                  {expandedItems.has(index) ? (
-                    <>
-                      <ChevronUp className="w-3 h-3 mr-1" />
-                      Show less
-                    </>
-                  ) : (
-                    <>
-                      <ChevronDown className="w-3 h-3 mr-1" />
-                      Show more
-                    </>
-                  )}
-                </Button>
-              )}
+              {/* Show expand button based on the longer of the two texts */}
+              {(() => {
+                const textToCheck = result.isUpdated && result.previousTranslatedText
+                  ? Math.max(result.previousTranslatedText.length, result.translatedText.length) > TRUNCATE_LENGTH
+                  : shouldShowExpandButton(result.translatedText);
+                
+                return textToCheck && (
+                  <Button
+                    onClick={() => onToggleItemExpansion(index)}
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 mt-1 text-xs text-gray-500 hover:text-gray-700"
+                  >
+                    {expandedItems.has(index) ? (
+                      <>
+                        <ChevronUp className="w-3 h-3 mr-1" />
+                        Show less
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="w-3 h-3 mr-1" />
+                        Show more
+                      </>
+                    )}
+                  </Button>
+                );
+              })()}
             </div>
           </div>
         </div>
