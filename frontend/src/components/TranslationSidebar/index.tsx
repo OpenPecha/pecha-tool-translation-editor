@@ -53,6 +53,7 @@ interface TranslationResult {
   };
   previousTranslatedText?: string;
   isUpdated?: boolean;
+  lineNumbers?: Record<string, { from: number; to: number }> | null;
 }
 
 interface GlossaryTerm {
@@ -159,6 +160,9 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
   const resultAreaRef = useRef<HTMLDivElement>(null);
   const translationListRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Track the current segment index for line number mapping
+  const currentSegmentIndexRef = useRef<number>(0);
 
   // Function to get selected text from the DOM (only from main editor)
   const getSelectedText = () => {
@@ -297,7 +301,7 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
     setCurrentStatus("Error");
   };
 
-  const handleStreamEvent = (event: TranslationStreamEvent) => {
+  const handleStreamEvent = (event: TranslationStreamEvent, segmentLineMappings?: Array<Record<string, { from: number; to: number }> | null>) => {
     switch (event.type) {
       case "initialization":
         updateProgress(
@@ -345,16 +349,26 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
         if (event.batch_results && event.batch_results.length > 0) {
           console.log("Adding batch results:", event.batch_results);
 
-          const newResults = event.batch_results.map((result, index) => ({
-            id: `${event.batch_id}-${index}-${Date.now()}`,
-            originalText: result.original_text || "",
-            translatedText: result.translated_text || "",
-            timestamp: event.timestamp,
-            metadata: {
-              batch_id: event.batch_id,
-              ...result.metadata,
-            },
-          }));
+          const newResults = event.batch_results.map((result, batchIndex) => {
+            // Get the segment-specific line numbers using the current segment index
+            const segmentIndex = currentSegmentIndexRef.current + batchIndex;
+            const segmentLineNumbers = segmentLineMappings && segmentLineMappings[segmentIndex] || null;
+
+            return {
+              id: `${event.batch_id}-${batchIndex}-${Date.now()}`,
+              originalText: result.original_text || "",
+              translatedText: result.translated_text || "",
+              timestamp: event.timestamp,
+              metadata: {
+                batch_id: event.batch_id,
+                ...result.metadata,
+              },
+              lineNumbers: segmentLineNumbers, // Store the segment-specific line numbers
+            };
+          });
+
+          // Update the segment index counter for the next batch
+          currentSegmentIndexRef.current += event.batch_results.length;
 
           setTranslationResults((prev) => {
             const updatedResults = [...prev, ...newResults];
@@ -382,12 +396,50 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
     }
   };
 
+  // Helper function to create segment-specific line number mappings
+  const createSegmentLineMapping = (
+    selectedText: string, 
+    capturedLineNumbers: Record<string, { from: number; to: number }> | null
+  ): Array<Record<string, { from: number; to: number }> | null> => {
+    if (!capturedLineNumbers) return [];
+
+    const textLines = selectedText
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+
+    const lineNumberEntries = Object.entries(capturedLineNumbers);
+    const segmentMappings: Array<Record<string, { from: number; to: number }> | null> = [];
+
+    // Map each text segment to its corresponding line number
+    for (let i = 0; i < textLines.length; i++) {
+      if (i < lineNumberEntries.length) {
+        // Create a mapping for this specific segment with its corresponding line
+        const [lineKey, range] = lineNumberEntries[i];
+        segmentMappings.push({
+          [lineKey]: range
+        });
+      } else {
+        // If we have more segments than line mappings, use null
+        segmentMappings.push(null);
+      }
+    }
+
+    return segmentMappings;
+  };
+
   const startTranslation = async () => {
     if (!selectedText.trim()) {
       setError("Please select text to translate");
       return;
     }
     resetTranslations();
+
+    // Reset segment index counter
+    currentSegmentIndexRef.current = 0;
+
+    // Capture current line numbers before translation starts
+    const capturedLineNumbers = selectedTextLineNumbers;
 
     setIsTranslating(true);
     setCurrentStatus("Initializing...");
@@ -403,6 +455,9 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
         .split("\n")
         .map((line) => line.trim())
         .filter((line) => line.length > 0);
+
+      // Create segment-specific line number mappings
+      const segmentLineMappings = createSegmentLineMapping(selectedText, capturedLineNumbers);
 
       // Validate that we have text to translate
       if (textLines.length === 0) {
@@ -425,7 +480,7 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
         // onEvent - handle structured events
         (event: TranslationStreamEvent) => {
           if (!abortControllerRef.current?.signal.aborted) {
-            handleStreamEvent(event);
+            handleStreamEvent(event, segmentLineMappings);
           }
         },
         // onComplete
@@ -925,6 +980,8 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
                 translatedText: event.updated_item.translated_text, // Set new translation
                 originalText: event.updated_item.original_text,
                 isUpdated: true, // Mark as updated for visual indicator
+                // Keep the original line numbers when updating
+                lineNumbers: currentResult.lineNumbers,
               };
             }
             return updatedResults;
@@ -1132,7 +1189,6 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
                     expandedItems={expandedItems}
                     onCopyResult={copyResult}
                     onToggleItemExpansion={toggleItemExpansion}
-                    selectedTextLineNumbers={selectedTextLineNumbers}
                   />
                 </div>
 

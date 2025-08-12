@@ -17,6 +17,7 @@ interface TranslationResult {
   };
   previousTranslatedText?: string;
   isUpdated?: boolean;
+  lineNumbers?: Record<string, { from: number; to: number }> | null;
 }
 
 interface TranslationResultsProps {
@@ -25,7 +26,6 @@ interface TranslationResultsProps {
   expandedItems: Set<number>;
   onCopyResult: (text: string, resultId: string) => void;
   onToggleItemExpansion: (index: number) => void;
-  selectedTextLineNumbers?: Record<string, { from: number; to: number }> | null;
 }
 
 const TRUNCATE_LENGTH = 150;
@@ -36,7 +36,6 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
   expandedItems,
   onCopyResult,
   onToggleItemExpansion,
-  selectedTextLineNumbers,
 }) => {
 
   const { scrollToLineNumber } = useEditor();
@@ -52,17 +51,15 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
     return text.length > TRUNCATE_LENGTH;
   };
 
-  const formatLineNumbers = (resultIndex: number): string => {
-    if (!selectedTextLineNumbers) return "";
+  const formatLineNumbers = (result: TranslationResult): string => {
+    if (!result.lineNumbers) return "";
     
-    const lineRanges = Object.entries(selectedTextLineNumbers);
+    const lineRanges = Object.entries(result.lineNumbers);
     if (lineRanges.length === 0) return "";
     
-    // Get the line range for this specific translation result index
-    // If the index is out of bounds, use the first available range
-    const rangeIndex = Math.min(resultIndex, lineRanges.length - 1);
-    const [lineKey, range] = lineRanges[rangeIndex];
-    const lineNumber = parseInt(lineKey) 
+    // Use the first line range from this specific result
+    const [lineKey, range] = lineRanges[0];
+    const lineNumber = parseInt(lineKey);
     return `Line: ${lineNumber}(${range.from}-${range.to})`;
   };
 
@@ -93,22 +90,21 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
             </span>
             <div className="flex items-center gap-2">
               {/* Line Numbers Display */}
-              {formatLineNumbers(index) && (
+              {formatLineNumbers(result) && (
                 <span 
                   className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded cursor-pointer hover:bg-gray-200 hover:text-blue-600 transition-colors"
                   onClick={() => {
-                    if (!selectedTextLineNumbers) return;
-                    const lineRanges = Object.entries(selectedTextLineNumbers);
+                    if (!result.lineNumbers) return;
+                    const lineRanges = Object.entries(result.lineNumbers);
                     if (lineRanges.length > 0) {
-                      const rangeIndex = Math.min(index, lineRanges.length - 1);
-                      const [lineKey] = lineRanges[rangeIndex];
+                      const [lineKey] = lineRanges[0];
                       const lineNumber = parseInt(lineKey);
                       scrollToLineNumber(lineNumber); 
                     }
                   }}
                   title="Click to scroll to this line in the editor"
                 >
-                  {formatLineNumbers(index)}
+                  {formatLineNumbers(result)}
                 </span>
               )}
               <Button
