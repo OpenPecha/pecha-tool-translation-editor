@@ -1132,6 +1132,7 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
                     expandedItems={expandedItems}
                     onCopyResult={copyResult}
                     onToggleItemExpansion={toggleItemExpansion}
+                    selectedTextLineNumbers={selectedTextLineNumbers}
                   />
                 </div>
 

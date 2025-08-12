@@ -2,6 +2,8 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Copy, Check, ChevronDown, ChevronUp } from "lucide-react";
 import DiffText from "./DiffText";
+import { useEditor } from "@/contexts/EditorContext";
+import { diffWords } from "diff";
 
 interface TranslationResult {
   id: string;
@@ -23,6 +25,7 @@ interface TranslationResultsProps {
   expandedItems: Set<number>;
   onCopyResult: (text: string, resultId: string) => void;
   onToggleItemExpansion: (index: number) => void;
+  selectedTextLineNumbers?: Record<string, { from: number; to: number }> | null;
 }
 
 const TRUNCATE_LENGTH = 150;
@@ -33,7 +36,10 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
   expandedItems,
   onCopyResult,
   onToggleItemExpansion,
+  selectedTextLineNumbers,
 }) => {
+
+  const { scrollToLineNumber } = useEditor();
   const truncateText = (
     text: string,
     maxLength: number = TRUNCATE_LENGTH
@@ -46,6 +52,37 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
     return text.length > TRUNCATE_LENGTH;
   };
 
+  const formatLineNumbers = (resultIndex: number): string => {
+    if (!selectedTextLineNumbers) return "";
+    
+    const lineRanges = Object.entries(selectedTextLineNumbers);
+    if (lineRanges.length === 0) return "";
+    
+    // Get the line range for this specific translation result index
+    // If the index is out of bounds, use the first available range
+    const rangeIndex = Math.min(resultIndex, lineRanges.length - 1);
+    const [lineKey, range] = lineRanges[rangeIndex];
+    const lineNumber = parseInt(lineKey) 
+    return `Line: ${lineNumber}(${range.from}-${range.to})`;
+  };
+
+  const countChanges = (oldText: string, newText: string): { additions: number; deletions: number } => {
+    const differences = diffWords(oldText, newText);
+    let additions = 0;
+    let deletions = 0;
+    
+    differences.forEach(part => {
+      if (part.added) {
+        additions++;
+      } else if (part.removed) {
+        deletions++;
+      }
+    });
+    
+    return { additions, deletions };
+  };
+
+
   return (
     <div className="space-y-4">
       {translationResults.map((result, index) => (
@@ -54,7 +91,26 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
             <span className="text-xs text-gray-500">
               {new Date(result.timestamp).toLocaleTimeString()}
             </span>
-            <div className="flex gap-1">
+            <div className="flex items-center gap-2">
+              {/* Line Numbers Display */}
+              {formatLineNumbers(index) && (
+                <span 
+                  className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded cursor-pointer hover:bg-gray-200 hover:text-blue-600 transition-colors"
+                  onClick={() => {
+                    if (!selectedTextLineNumbers) return;
+                    const lineRanges = Object.entries(selectedTextLineNumbers);
+                    if (lineRanges.length > 0) {
+                      const rangeIndex = Math.min(index, lineRanges.length - 1);
+                      const [lineKey] = lineRanges[rangeIndex];
+                      const lineNumber = parseInt(lineKey);
+                      scrollToLineNumber(lineNumber); 
+                    }
+                  }}
+                  title="Click to scroll to this line in the editor"
+                >
+                  {formatLineNumbers(index)}
+                </span>
+              )}
               <Button
                 onClick={() => onCopyResult(result.translatedText, result.id)}
                 variant="ghost"
@@ -77,45 +133,76 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
           <div className="space-y-2">
             {/* Source Text */}
             <div className="border-l-4 border-gray-300 pl-3">
-              <div className="text-xs text-gray-500 mb-1 font-medium flex items-center gap-2">
-                Source:
+              <div className="text-xs text-gray-500 mb-1 font-medium flex items-center justify-between">
+                <span>Source:</span>
+                {shouldShowExpandButton(result.originalText) && (
+                  <Button
+                    onClick={() => onToggleItemExpansion(index)}
+                    variant="ghost"
+                    size="sm"
+                    className="h-5 w-5 p-0 text-gray-400 hover:text-gray-600"
+                  >
+                    {expandedItems.has(index) ? (
+                      <ChevronUp className="w-3 h-3" />
+                    ) : (
+                      <ChevronDown className="w-3 h-3" />
+                    )}
+                  </Button>
+                )}
               </div>
               <div className="text-sm text-gray-600 leading-relaxed">
                 {expandedItems.has(index)
                   ? result.originalText
                   : truncateText(result.originalText)}
               </div>
-              {shouldShowExpandButton(result.originalText) && (
-                <Button
-                  onClick={() => onToggleItemExpansion(index)}
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 px-2 mt-1 text-xs text-gray-500 hover:text-gray-700"
-                >
-                  {expandedItems.has(index) ? (
-                    <>
-                      <ChevronUp className="w-3 h-3 mr-1" />
-                      Show less
-                    </>
-                  ) : (
-                    <>
-                      <ChevronDown className="w-3 h-3 mr-1" />
-                      Show more
-                    </>
-                  )}
-                </Button>
-              )}
             </div>
 
             {/* Translation Text */}
             <div className="border-l-4 border-blue-300 pl-3">
-              <div className="text-xs text-gray-500 mb-1 font-medium flex items-center gap-2">
-                Translation:
-                {result.isUpdated && (
-                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
-                    Updated
-                  </span>
-                )}
+              <div className="text-xs text-gray-500 mb-1 font-medium flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span>Translation:</span>
+                  {result.isUpdated && result.previousTranslatedText && (() => {
+                    const changes = countChanges(result.previousTranslatedText, result.translatedText);
+                    return (
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                          Updated
+                        </span>
+                        {changes.additions > 0 && (
+                          <span className="text-xs bg-green-100 text-green-800 px-1.5 py-0.5 rounded font-medium">
+                            +{changes.additions}
+                          </span>
+                        )}
+                        {changes.deletions > 0 && (
+                          <span className="text-xs bg-red-100 text-red-800 px-1.5 py-0.5 rounded font-medium">
+                            -{changes.deletions}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+                {(() => {
+                  const textToCheck = result.isUpdated && result.previousTranslatedText
+                    ? Math.max(result.previousTranslatedText.length, result.translatedText.length) > TRUNCATE_LENGTH
+                    : shouldShowExpandButton(result.translatedText);
+                  
+                  return textToCheck && (
+                    <Button
+                      onClick={() => onToggleItemExpansion(index)}
+                      variant="ghost"
+                      size="sm"
+                      className="h-5 w-5 p-0 text-gray-400 hover:text-gray-600"
+                    >
+                      {expandedItems.has(index) ? (
+                        <ChevronUp className="w-3 h-3" />
+                      ) : (
+                        <ChevronDown className="w-3 h-3" />
+                      )}
+                    </Button>
+                  );
+                })()}
               </div>
 
               {/* Show translation with diff highlighting if updated, otherwise show regular translation */}
@@ -142,34 +229,6 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
                   </div>
                 )}
               </div>
-
-              {/* Show expand button based on the longer of the two texts */}
-              {(() => {
-                const textToCheck = result.isUpdated && result.previousTranslatedText
-                  ? Math.max(result.previousTranslatedText.length, result.translatedText.length) > TRUNCATE_LENGTH
-                  : shouldShowExpandButton(result.translatedText);
-                
-                return textToCheck && (
-                  <Button
-                    onClick={() => onToggleItemExpansion(index)}
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 px-2 mt-1 text-xs text-gray-500 hover:text-gray-700"
-                  >
-                    {expandedItems.has(index) ? (
-                      <>
-                        <ChevronUp className="w-3 h-3 mr-1" />
-                        Show less
-                      </>
-                    ) : (
-                      <>
-                        <ChevronDown className="w-3 h-3 mr-1" />
-                        Show more
-                      </>
-                    )}
-                  </Button>
-                );
-              })()}
             </div>
           </div>
         </div>
