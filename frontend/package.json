@@ -46,6 +46,7 @@
     "react-i18next": "^15.5.3",
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.2.0",
+    "react-split": "^2.0.14",
     "shadcn": "^2.4.0-canary.17",
     "socket.io-client": "^4.2.0",
     "tailwind-merge": "^3.0.2",

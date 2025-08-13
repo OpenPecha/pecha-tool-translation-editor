@@ -198,6 +198,51 @@ body {
   background: #555;
 }
 
+/* React Split Styles */
+.gutter {
+  background-color: #e5e7eb;
+  background-repeat: no-repeat;
+  background-position: 50%;
+  border: 1px solid #d1d5db;
+  transition: background-color 0.2s ease;
+}
+
+.gutter:hover {
+  background-color: #d1d5db;
+}
+
+.gutter.gutter-horizontal {
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+YMAxmAo5hKyBBiAJJBKUhNQrjJu5EyAwAAFNQFDIWKqE8AAAAASUVORK5CYII=');
+  cursor: col-resize;
+}
+
+.gutter.gutter-vertical {
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAFCAYAAABFwYEkAAAAIklEQVQoU2M4c+YMAxpgVFSdIhLUPJxhHKKKGVQAq0HVNwoAAI8kBhJm0SfUAAAAAElFTkSuQmCC');
+  cursor: row-resize;
+}
+
+.split {
+  display: flex;
+}
+
+.split.split-horizontal {
+  flex-direction: row;
+}
+
+.split.split-vertical {
+  flex-direction: column;
+}
+
+/* Ensure close button appears above splitter gutters */
+.gutter {
+  z-index: 1;
+}
+
+/* Button should always be above gutters */
+button[aria-label="Close translation view"] {
+  z-index: 9999 !important;
+}
+
 
 
 

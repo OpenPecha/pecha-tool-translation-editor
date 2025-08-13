@@ -12,6 +12,7 @@ import { IoIosArrowForward } from "react-icons/io";
 import { fetchTranslationStatusByJobId } from "@/api/document";
 import { useQuery } from "@tanstack/react-query";
 import TranslationSidebar from "./TranslationSidebar";
+import Split from "react-split";
 
 export type { Translation } from "@/hooks/useCurrentDoc";
 
@@ -23,6 +24,7 @@ function DocumentsWrapper() {
   const [selectedTranslationId, setSelectedTranslationId] = useState<
     string | null
   >(null);
+  const [splitPosition, setSplitPosition] = useState<number>(40);
   // Handle translation selection with proper cleanup
   const handleSelectTranslation = (translationId: string | null) => {
     setSelectedTranslationId(translationId);
@@ -51,23 +53,80 @@ function DocumentsWrapper() {
             <Loader show={isEditable === undefined} />
           ) : (
             <>
-              <DocumentEditor
-                docId={id}
-                isEditable={isEditable}
-                currentDoc={currentDoc}
-              />
               {!selectedTranslationId ? (
-                <SideMenu
-                  setSelectedTranslationId={handleSelectTranslation}
-                  documentId={id!}
-                  isEditable={isEditable}
-                />
+                <>
+                  <DocumentEditor
+                    docId={id}
+                    isEditable={isEditable}
+                    currentDoc={currentDoc}
+                  />
+                  <SideMenu
+                    setSelectedTranslationId={handleSelectTranslation}
+                    documentId={id!}
+                    isEditable={isEditable}
+                  />
+                </>
               ) : (
-                <TranslationEditor
-                  selectedTranslationId={selectedTranslationId}
-                  isEditable={isEditable}
-                  handleSelectTranslation={handleSelectTranslation}
-                />
+                <div className="relative h-full w-full group">
+                  {/* Close button positioned dynamically in the middle of the gutter */}
+                  <button
+                    className="absolute bg-white border-2 border-gray-300 z-[9999] cursor-pointer rounded-full p-2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-700 text-xl opacity-0 group-hover:opacity-100 duration-200 shadow-lg hover:shadow-xl hover:border-gray-400"
+                    style={{ left: `${splitPosition}%` }}
+                    onClick={() => handleSelectTranslation(null)}
+                    aria-label="Close translation view"
+                    title="Close translation view"
+                    type="button"
+                  >
+                    <IoIosArrowForward />
+                  </button>
+                  
+                  <Split
+                    sizes={[splitPosition, 100 - splitPosition]}
+                    minSize={[300, 400]}
+                    expandToMin={false}
+                    gutterSize={8}
+                    gutterAlign="center"
+                    snapOffset={30}
+                    dragInterval={1}
+                    direction="horizontal"
+                    cursor="col-resize"
+                    className="h-full flex w-full"
+                    gutterStyle={() => ({
+                      backgroundColor: '#e5e7eb',
+                      border: '1px solid #d1d5db',
+                      cursor: 'col-resize',
+                      position: 'relative',
+                    })}
+                    onDragStart={() => {
+                      document.body.style.cursor = 'col-resize';
+                    }}
+                    onDragEnd={(sizes) => {
+                      document.body.style.cursor = '';
+                      setSplitPosition(sizes[0]);
+                    }}
+                    onDrag={(sizes) => {
+                      setSplitPosition(sizes[0]);
+                    }}
+                  >
+                    {/* Root Editor */}
+                    <div className="h-full overflow-hidden">
+                      <DocumentEditor
+                        docId={id}
+                        isEditable={isEditable}
+                        currentDoc={currentDoc}
+                      />
+                    </div>
+                    
+                    {/* Translation Editor + Sidebar */}
+                    <div className="h-full overflow-hidden">
+                      <TranslationEditor
+                        selectedTranslationId={selectedTranslationId}
+                        isEditable={isEditable}
+                        handleSelectTranslation={handleSelectTranslation}
+                      />
+                    </div>
+                  </Split>
+                </div>
               )}
             </>
           )}
@@ -111,27 +170,18 @@ function TranslationEditor({
   };
 
   return (
-    <div className="flex-1 relative w-full flex group">
-      <div className="relative h-full">
-        {/* Vertical Line (hidden by default, shows on hover) */}
-        <div className="absolute left-1/2 top-0 h-full w-px bg-gray-300 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-        {/* Arrow (hidden by default, shows on hover) */}
-        <button
-          className="absolute bg-white border z-[99] cursor-pointer rounded-full p-2 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-700 text-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-          onClick={() => handleSelectTranslation(null)}
-          aria-label="Close translation view"
-          title="Close translation view"
-          type="button"
-        >
-          <IoIosArrowForward />
-        </button>
-      </div>
-      <div className="flex-1 flex">
+    <div className="h-full flex w-full">
+      {/* Translation Editor */}
+      <div className="flex-1 h-full overflow-hidden">
         <DocumentEditor
           docId={selectedTranslationId}
           isEditable={isEditable}
           currentDoc={currentDoc}
         />
+      </div>
+      
+      {/* Translation Sidebar */}
+      <div className="h-full overflow-hidden">
         <TranslationSidebar documentId={selectedTranslationId!} />
       </div>
     </div>
