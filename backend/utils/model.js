@@ -23,6 +23,9 @@ async function getProjects(whereClause, skip, limit) {
           name: true,
           updatedAt: true,
         },
+        orderBy: {
+          createdAt: "asc",
+        },
       },
     },
     skip,
