@@ -109,22 +109,18 @@ function DocumentsWrapper() {
                     }}
                   >
                     {/* Root Editor */}
-                    <div className="h-full overflow-hidden">
                       <DocumentEditor
                         docId={id}
                         isEditable={isEditable}
                         currentDoc={currentDoc}
                       />
-                    </div>
                     
                     {/* Translation Editor + Sidebar */}
-                    <div className="h-full overflow-hidden">
                       <TranslationEditor
                         selectedTranslationId={selectedTranslationId}
                         isEditable={isEditable}
                         handleSelectTranslation={handleSelectTranslation}
                       />
-                    </div>
                   </Split>
                 </div>
               )}
@@ -172,7 +168,7 @@ function TranslationEditor({
   return (
     <div className="h-full flex w-full">
       {/* Translation Editor */}
-      <div className="flex-1 h-full overflow-hidden">
+      <div className="flex-1 h-full translation-editor-container">
         <DocumentEditor
           docId={selectedTranslationId}
           isEditable={isEditable}
@@ -180,8 +176,8 @@ function TranslationEditor({
         />
       </div>
       
-      {/* Translation Sidebar */}
-      <div className="h-full overflow-hidden">
+      {/* Translation Sidebar - Sticky */}
+      <div className="h-full overflow-y-auto sticky top-0">
         <TranslationSidebar documentId={selectedTranslationId!} />
       </div>
     </div>

@@ -16,8 +16,7 @@ import { createPortal } from "react-dom";
 import FootnoteView from "./Footnote/FootnoteView";
 import { useTranslate } from "@tolgee/react";
 import emitter from "@/services/eventBus";
-import { useUmamiTracking } from "@/hooks/use-umami-tracking";
-import { getUserContext } from "@/hooks/use-umami-tracking";
+import { useUmamiTracking, getUserContext } from "@/hooks/use-umami-tracking";
 import { useAuth } from "@/auth/use-auth-hook";
 import SkeletonLoader from "./SkeletonLoader";
 quill_import();
@@ -271,17 +270,17 @@ const Editor = ({
         />,
         document.getElementById("toolbar-container")!
       )}
-      <div className="relative w-full flex flex-1 ">
+      <div className="relative w-full flex flex-1 h-full ">
         <TableOfContent documentId={documentId} />
         <div className="editor-container w-full flex flex-1  relative max-w-6xl mx-auto  ">
           <LineNumberVirtualized
             editorRef={editorRef}
             documentId={documentId}
           />
-          <div className="flex flex-col overflow-y-auto flex-1 relative">
+          <div className="flex flex-col flex-1 relative overflow-hidden">
             <div
               ref={editorRef}
-              className={`editor-content flex-1 pb-1 w-full overflow-hidden`}
+              className={`editor-content flex-1 pb-1 w-full overflow-y-auto`}
               style={{
                 fontFamily: "Monlam",
                 fontSize: "1rem",
@@ -298,7 +297,9 @@ const Editor = ({
 
             {/* Only render FootnoteView after content is loaded */}
             {isContentLoaded && (
-              <FootnoteView documentId={documentId} isEditable={isEditable} />
+              <div className="footnote-view-container">
+                <FootnoteView documentId={documentId} isEditable={isEditable} />
+              </div>
             )}
           </div>
           {createPortal(
