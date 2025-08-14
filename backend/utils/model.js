@@ -181,12 +181,15 @@ async function deleteProject(id) {
 }
 
 async function getProjectWithDocuments(id, userId) {
-  return await prisma.project.findUnique({
+  const project = await prisma.project.findUnique({
     where: { id },
     include: {
       roots: {
         include: {
-          translations: true,
+          comments: true,
+          footnotes: true,
+          versions: true,
+          permissions: true,
         },
       },
       permissions: {
@@ -194,6 +197,23 @@ async function getProjectWithDocuments(id, userId) {
       },
     },
   });
+
+  // Get translations for each root document separately
+  if (project && project.roots) {
+    for (let root of project.roots) {
+      root.translations = await prisma.doc.findMany({
+        where: { rootId: root.id },
+        include: {
+          comments: true,
+          footnotes: true,
+          versions: true,
+          permissions: true,
+        },
+      });
+    }
+  }
+
+  return project;
 }
 module.exports = {
   createProject,
