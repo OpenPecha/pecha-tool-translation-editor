@@ -208,6 +208,7 @@ export function overwriteAllTranslations(
   // Overwrite only the specific lines with translation results
   // Note: lineNumber refers to logical line numbers (counting only non-empty content)
   let linesOverwritten = 0;
+  let lastInsertedLineIndex = -1; // Track the last line where we inserted content
   
   lineTranslations.forEach((translatedText, logicalLineNumber) => {
     // Map logical line number to actual array index
@@ -222,11 +223,12 @@ export function overwriteAllTranslations(
         const flattenedText = flattenTranslation(translatedText);
         targetLines[arrayIndex] = flattenedText;
         linesOverwritten++;
+        lastInsertedLineIndex = arrayIndex;
       } else {
         console.warn(`Logical line ${logicalLineNumber} maps to a blank line (index ${arrayIndex}), skipping overwrite to preserve blank line`);
       }
     } else {
-      // For empty editor or when we need to extend beyond current content
+      // Line number is higher than existing content - need to extend the editor
       if (isEditorEmpty) {
         // In empty editor, we can safely add content at the logical line position
         // Extend targetLines if necessary to accommodate the translation
@@ -242,9 +244,34 @@ export function overwriteAllTranslations(
           const flattenedText = flattenTranslation(translatedText);
           targetLines[targetIndex] = flattenedText;
           linesOverwritten++;
+          lastInsertedLineIndex = targetIndex;
         }
       } else {
-        console.warn(`Logical line number ${logicalLineNumber} could not be mapped to array index in non-empty editor`);
+        // For non-empty editor, we need to extend with placeholders to reach the target logical line
+        // First, count how many logical lines we currently have
+        const currentLogicalLines = createLogicalLineToIndexMapping(targetLines).size;
+        
+        // If the target logical line number is higher than what we have, extend the editor
+        if (logicalLineNumber > currentLogicalLines) {
+          // Add placeholders until we can accommodate the target logical line
+          while (createLogicalLineToIndexMapping(targetLines).size < logicalLineNumber) {
+            targetLines.push(placeholder);
+            if (placeholder !== '') {
+              placeholdersAdded++;
+            }
+          }
+          
+          // Now try to map the logical line number again
+          const newArrayIndex = getArrayIndexForLogicalLine(logicalLineNumber, targetLines);
+          if (newArrayIndex >= 0 && newArrayIndex < targetLines.length) {
+            const flattenedText = flattenTranslation(translatedText);
+            targetLines[newArrayIndex] = flattenedText;
+            linesOverwritten++;
+            lastInsertedLineIndex = newArrayIndex;
+          }
+        } else {
+          console.warn(`Logical line number ${logicalLineNumber} could not be mapped to array index in non-empty editor`);
+        }
       }
     }
   });
@@ -253,10 +280,28 @@ export function overwriteAllTranslations(
   const newContent = targetLines.join('\n');
   targetEditor.setText(newContent, "user");
 
-  // Focus the editor and position cursor at the end
+  // Focus the editor and position cursor at the end of the inserted translation
   targetEditor.focus();
-  const finalLength = targetEditor.getLength();
-  targetEditor.setSelection(finalLength - 1, 0);
+  
+  if (lastInsertedLineIndex >= 0 && lastInsertedLineIndex < targetLines.length) {
+    // Calculate the cursor position at the end of the inserted line
+    let cursorPosition = 0;
+    
+    // Add the length of all lines before the inserted line (including newlines)
+    for (let i = 0; i < lastInsertedLineIndex; i++) {
+      cursorPosition += targetLines[i].length + 1; // +1 for the newline character
+    }
+    
+    // Add the length of the inserted line itself
+    cursorPosition += targetLines[lastInsertedLineIndex].length;
+    
+    // Set cursor at the end of the inserted translation
+    targetEditor.setSelection(cursorPosition, 0);
+  } else {
+    // Fallback: position cursor at the end of the document
+    const finalLength = targetEditor.getLength();
+    targetEditor.setSelection(finalLength - 1, 0);
+  }
 
   const baseMessage = `Successfully overwritten ${linesOverwritten} line${linesOverwritten === 1 ? '' : 's'}`;
   const placeholderMessage = placeholdersAdded > 0 
