@@ -24,6 +24,7 @@ import {
   ApplyStandardizationStreamEvent,
 } from "@/api/apply_standardization";
 import { useEditor } from "@/contexts/EditorContext";
+import { overwriteAllTranslations, validateTranslationResults } from "@/services/editor";
 
 // Import components
 import GlossaryDisplay from "./components/GlossaryDisplay";
@@ -596,6 +597,45 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
       alert(
         "No editor found for this document. Text copied to clipboard instead."
       );
+    }
+  };
+
+  const overwriteAllResults = () => {
+    const targetEditor = quillEditors.get(documentId);
+    if (!targetEditor) {
+      // Fallback: copy to clipboard if no editor found
+      const allTranslations = translationResults
+        .map((result) => result.translatedText)
+        .join("\n\n");
+      navigator.clipboard.writeText(allTranslations);
+      showCopyFeedback("overwrite-feedback");
+      alert(
+        "No editor found for this document. Text copied to clipboard instead."
+      );
+      return;
+    }
+
+    // Validate translation results have line number mappings
+    if (!validateTranslationResults(translationResults)) {
+      showCopyFeedback("overwrite-feedback");
+      alert(
+        "Cannot overwrite: No line number mapping found for translation results. Please try again after running translation on selected lines."
+      );
+      return;
+    }
+
+    // Use the utility function to perform the overwrite with emoji placeholders by default
+    const result = overwriteAllTranslations(targetEditor, translationResults, {
+      placeholderType: 'emoji'
+    });
+    
+    if (result.success) {
+      // Show success feedback
+      showCopyFeedback("overwrite-feedback");
+      console.log(result.message);
+    } else {
+      // Show error
+      alert(result.message);
     }
   };
 
@@ -1283,7 +1323,7 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
                 inconsistentTerms={inconsistentTerms}
                 onStartTranslation={startTranslation}
                 onCopyAllResults={copyAllResults}
-                onAppendAllResults={appendAllResults}
+                onOverwriteAllResults={overwriteAllResults}
                 onStartGlossaryAndInconsistencyAnalysis={
                   startGlossaryAndInconsistencyAnalysis
                 }

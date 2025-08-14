@@ -52,7 +52,7 @@ interface TranslationControlsProps {
   inconsistentTerms: Record<string, unknown>;
   onStartTranslation: () => void;
   onCopyAllResults: () => void;
-  onAppendAllResults: () => void;
+  onOverwriteAllResults: () => void;
   onStartGlossaryAndInconsistencyAnalysis: () => void;
   onStartStandardizationAnalysis: () => void;
 }
@@ -73,7 +73,7 @@ const TranslationControls: React.FC<TranslationControlsProps> = ({
   inconsistentTerms,
   onStartTranslation,
   onCopyAllResults,
-  onAppendAllResults,
+  onOverwriteAllResults,
   onStartGlossaryAndInconsistencyAnalysis,
   onStartStandardizationAnalysis,
 }) => {
@@ -261,26 +261,26 @@ const TranslationControls: React.FC<TranslationControlsProps> = ({
                   {copiedItems.has("copy-all") ? "Copied!" : "Copy All"}
                 </Button>
                 <Button
-                  onClick={onAppendAllResults}
+                  onClick={onOverwriteAllResults}
                   variant="outline"
                   size="sm"
                   className={`h-6 px-2 text-xs transition-colors ${
-                    copiedItems.has("append-fallback")
+                    copiedItems.has("overwrite-feedback")
                       ? "bg-green-100 text-green-600 border-green-300"
                       : ""
                   }`}
                   title={
-                    copiedItems.has("append-fallback")
-                      ? "Copied to clipboard!"
-                      : "Append to Editor"
+                    copiedItems.has("overwrite-feedback")
+                      ? "Overwritten!"
+                      : "Overwrite at specific line numbers"
                   }
                 >
-                  {copiedItems.has("append-fallback") ? (
+                  {copiedItems.has("overwrite-feedback") ? (
                     <Check className="w-3 h-3 mr-1" />
                   ) : (
                     <Plus className="w-3 h-3 mr-1" />
                   )}
-                  {copiedItems.has("append-fallback") ? "Copied!" : "Append"}
+                  {copiedItems.has("overwrite-feedback") ? "Overwritten!" : "Overwrite All"}
                 </Button>
               </div>
             </div>
