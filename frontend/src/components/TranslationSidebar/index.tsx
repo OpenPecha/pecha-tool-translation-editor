@@ -1050,10 +1050,11 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
     applyStandardizationAbortControllerRef.current = new AbortController();
 
     try {
-      // Convert translation results to standardization items
-      const items = translationResults.map((result) => ({
+      // Convert translation results to standardization items using current text (edited or original)
+      const currentResults = getCurrentTranslationResults();
+      const items = currentResults.map((result) => ({
         original_text: result.originalText,
-        translated_text: result.translatedText,
+        translated_text: result.translatedText, // This now includes edited text
         glossary: glossaryTerms.map((term) => ({
           source_term: term.source_term,
           translated_term: term.translated_term,

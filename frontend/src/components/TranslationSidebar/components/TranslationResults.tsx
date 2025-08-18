@@ -211,11 +211,26 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
               <div className="text-xs text-gray-500 mb-1 font-medium flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span>Translation:</span>
-                  {editedTexts[result.id] && (
-                    <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">
-                      Edited
-                    </span>
-                  )}
+                  {editedTexts[result.id] && (() => {
+                    const changes = countChanges(result.translatedText, editedTexts[result.id]);
+                    return (
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">
+                          Edited
+                        </span>
+                        {changes.additions > 0 && (
+                          <span className="text-xs bg-green-100 text-green-800 px-1.5 py-0.5 rounded font-medium">
+                            +{changes.additions}
+                          </span>
+                        )}
+                        {changes.deletions > 0 && (
+                          <span className="text-xs bg-red-100 text-red-800 px-1.5 py-0.5 rounded font-medium">
+                            -{changes.deletions}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })()}
                   {result.isUpdated && result.previousTranslatedText && (() => {
                     const changes = countChanges(result.previousTranslatedText, result.translatedText);
                     return (
@@ -291,6 +306,45 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
                         Cancel
                       </Button>
                     </div>
+                  </div>
+                ) : editedTexts[result.id] ? (
+                  // Show diff highlighting for manually edited translations - clickable
+                  <div 
+                    onClick={() => {
+                      if (editingId === null || editingId === result.id) {
+                        onStartEditing(result);
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if ((e.key === 'Enter' || e.key === ' ') && (editingId === null || editingId === result.id)) {
+                        e.preventDefault();
+                        onStartEditing(result);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={editingId === null || editingId === result.id ? 0 : -1}
+                    className={`rounded p-1 -m-1 transition-colors ${
+                      editingId === null || editingId === result.id 
+                        ? 'cursor-pointer hover:bg-gray-50' 
+                        : 'cursor-not-allowed opacity-50'
+                    }`}
+                    title={
+                      editingId === null || editingId === result.id 
+                        ? "Click to edit translation" 
+                        : "Another translation is being edited"
+                    }
+                  >
+                    <DiffText
+                      oldText={expandedItems.has(index) 
+                        ? result.translatedText 
+                        : truncateText(result.translatedText)}
+                      newText={expandedItems.has(index) 
+                        ? editedTexts[result.id] 
+                        : truncateText(editedTexts[result.id])}
+                      truncated={!expandedItems.has(index) && 
+                        (result.translatedText.length > TRUNCATE_LENGTH || 
+                         editedTexts[result.id].length > TRUNCATE_LENGTH)}
+                    />
                   </div>
                 ) : result.isUpdated && result.previousTranslatedText ? (
                   // Show diff highlighting for updated translations - clickable

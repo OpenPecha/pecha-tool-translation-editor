@@ -45,6 +45,10 @@ function flattenTranslation(text: string): string {
     .join(' ');
 }
 
+
+const LINE_PLACEHOLDER= '↩'
+
+
 /**
  * Gets the appropriate placeholder text based on options
  * @param options - Configuration options for placeholder behavior
@@ -57,13 +61,13 @@ function getPlaceholder(options: OverwriteOptions = {}): string {
   
   switch (placeholderType) {
     case 'emoji':
-      return '😃';
+      return LINE_PLACEHOLDER;
     case 'invisible':
       return '\u00A0'; // Non-breaking space
     case 'none':
       return '';
     default:
-      return '😃';
+      return LINE_PLACEHOLDER;
   }
 }
 

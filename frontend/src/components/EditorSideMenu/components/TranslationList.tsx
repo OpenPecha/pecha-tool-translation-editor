@@ -9,12 +9,10 @@ interface TranslationListProps {
       translationProgress?: number;
     }
   >;
-  setSelectedTranslationId: (id: string) => void;
 }
 
 const TranslationList: React.FC<TranslationListProps> = ({
   translations,
-  setSelectedTranslationId,
 }) => {
   if (translations.length === 0) {
     return (
@@ -28,7 +26,6 @@ const TranslationList: React.FC<TranslationListProps> = ({
         <TranslationItem
           key={translation.id}
           translation={translation}
-          setSelectedTranslationId={setSelectedTranslationId}
         />
       ))}
     </>

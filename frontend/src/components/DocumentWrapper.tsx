@@ -12,6 +12,7 @@ import { IoIosArrowForward } from "react-icons/io";
 import { fetchTranslationStatusByJobId } from "@/api/document";
 import { useQuery } from "@tanstack/react-query";
 import TranslationSidebar from "./TranslationSidebar";
+import { useTranslationSidebarParams } from "@/hooks/useQueryParams";
 import Split from "react-split";
 
 export type { Translation } from "@/hooks/useCurrentDoc";
@@ -21,10 +22,9 @@ function DocumentsWrapper() {
   useDevToolsStatus();
 
   const { currentDoc, isEditable } = useCurrentDoc(id);
-  const [selectedTranslationId, setSelectedTranslationId] = useState<
-    string | null
-  >(null);
+  const { selectedTranslationId, setSelectedTranslationId, clearSelectedTranslationId } = useTranslationSidebarParams();
   const [splitPosition, setSplitPosition] = useState<number>(40);
+  
   // Handle translation selection with proper cleanup
   const handleSelectTranslation = (translationId: string | null) => {
     setSelectedTranslationId(translationId);
@@ -61,7 +61,6 @@ function DocumentsWrapper() {
                     currentDoc={currentDoc}
                   />
                   <SideMenu
-                    setSelectedTranslationId={handleSelectTranslation}
                     documentId={id!}
                     isEditable={isEditable}
                   />
@@ -72,7 +71,7 @@ function DocumentsWrapper() {
                   <button
                     className="absolute bg-white border-2 border-gray-300 z-[9999] cursor-pointer rounded-full p-2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-700 text-xl opacity-0 group-hover:opacity-100 duration-200 shadow-lg hover:shadow-xl hover:border-gray-400"
                     style={{ left: `${splitPosition}%` }}
-                    onClick={() => handleSelectTranslation(null)}
+                    onClick={() => clearSelectedTranslationId()}
                     aria-label="Close translation view"
                     title="Close translation view"
                     type="button"

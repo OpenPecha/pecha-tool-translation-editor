@@ -12,6 +12,7 @@ import { EditorProvider } from "@/contexts/EditorContext";
 import { CommentProvider } from "@/contexts/CommentContext";
 import { FootNoteProvider } from "@/contexts/FootNoteContext";
 import { useCurrentDoc } from "@/hooks/useCurrentDoc";
+import { useTranslationSidebarParams } from "@/hooks/useQueryParams";
 import { createPortal } from "react-dom";
 import { IoIosArrowForward } from "react-icons/io";
 
@@ -42,17 +43,15 @@ const PublicDocumentViewer: React.FC<PublicDocumentViewerProps> = ({
   const { isAuthenticated } = useAuth();
   const documentId = propDocumentId || paramDocumentId;
 
-  // State for selected translation
-  const [selectedTranslationId, setSelectedTranslationId] = useState<
-    string | null
-  >(null);
+  // Use URL parameters for selected translation
+  const { selectedTranslationId, setSelectedTranslationId, clearSelectedTranslationId } = useTranslationSidebarParams();
 
   // Handle translation selection
   const handleSelectTranslation = useCallback(
     (translationId: string | null) => {
       setSelectedTranslationId(translationId);
     },
-    []
+    [setSelectedTranslationId]
   );
 
   // Fetch public document

@@ -10,22 +10,22 @@ import { deleteDocument, updateDocument } from "@/api/document";
 import { useParams } from "react-router-dom";
 import { FaSpinner } from "react-icons/fa";
 import { useTranslationStatus } from "@/hooks/useCurrentDoc";
+import { useTranslationSidebarParams } from "@/hooks/useQueryParams";
 
 interface TranslationItemProps {
   translation: Translation & {
     translationStatus?: string;
     translationProgress?: number;
   };
-  setSelectedTranslationId: (id: string) => void;
 }
 
 const TranslationItem: React.FC<TranslationItemProps> = ({
   translation,
-  setSelectedTranslationId,
 }) => {
   const queryClient = useQueryClient();
   const { id } = useParams();
   const rootId = id as string;
+  const { setSelectedTranslationId } = useTranslationSidebarParams();
 
   // Use individual translation status hook
   const { statusData } = useTranslationStatus(

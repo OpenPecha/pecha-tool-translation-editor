@@ -1,11 +1,9 @@
 import React, { useState } from "react";
-import { Settings, Languages, MessageSquare, FileText } from "lucide-react";
+import { Settings, Languages } from "lucide-react";
 import SelectTranslation from "./SelectTranslation";
 import { Button } from "@/components/ui/button";
 import { IoIosArrowForward } from "react-icons/io";
-import Comments from "./Comments";
 import SettingsPanel from "./Settings";
-import FootnoteView from "../Footnote/FootnoteView";
 
 type MenuOption =
   | "translations"
@@ -16,11 +14,9 @@ type MenuOption =
   | "footnotes";
 
 function SideMenu({
-  setSelectedTranslationId,
   documentId,
   isEditable = true,
 }: {
-  readonly setSelectedTranslationId: (id: string) => void;
   readonly documentId: string;
   readonly isEditable?: boolean;
 }) {
@@ -34,9 +30,7 @@ function SideMenu({
       case "translations":
         return (
           <InMenuWrapper onBackClick={reset}>
-            <SelectTranslation
-              setSelectedTranslationId={setSelectedTranslationId}
-            />
+            <SelectTranslation />
           </InMenuWrapper>
         );
       case "settings":
@@ -45,18 +39,7 @@ function SideMenu({
             <SettingsPanel />
           </InMenuWrapper>
         );
-      case "comments":
-        return (
-          <InMenuWrapper onBackClick={reset}>
-            <Comments />
-          </InMenuWrapper>
-        );
-      case "footnotes":
-        return (
-          <InMenuWrapper onBackClick={reset}>
-            <FootnoteView documentId={documentId} isEditable={isEditable} />
-          </InMenuWrapper>
-        );
+
 
       default:
         return (
@@ -67,21 +50,6 @@ function SideMenu({
             >
               <Languages size={16} />
             </MenuButton>
-
-            <MenuButton
-              onClick={() => setCurrentView("comments")}
-              title="comments"
-            >
-              <MessageSquare size={16} />
-            </MenuButton>
-
-            <MenuButton
-              onClick={() => setCurrentView("footnotes")}
-              title="footnotes"
-            >
-              <FileText size={16} />
-            </MenuButton>
-
             <MenuButton
               onClick={() => setCurrentView("settings")}
               title={"settings"}

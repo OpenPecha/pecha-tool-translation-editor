@@ -4,20 +4,18 @@ import { Button } from "@/components/ui/button";
 import CreateTranslationModal from "./CreateTranslationModal";
 import { useParams } from "react-router-dom";
 import { useCurrentDocTranslations } from "@/hooks/useCurrentDoc";
+import { useTranslationSidebarParams } from "@/hooks/useQueryParams";
 
 // Import components
 import TranslationList from "./components/TranslationList";
 import { useTranslate } from "@tolgee/react";
 
-function SelectTranslation({
-  setSelectedTranslationId,
-}: {
-  readonly setSelectedTranslationId: (id: string) => void;
-}) {
+function SelectTranslation() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const { t } = useTranslate();
   const { id } = useParams();
   const rootId = id as string;
+  // URL params hook is used in child components
   const { translations, refetchTranslations } =
     useCurrentDocTranslations(rootId);
 
@@ -39,7 +37,6 @@ function SelectTranslation({
       <div className="flex flex-col gap-2 p-2">
         <TranslationList
           translations={translations}
-          setSelectedTranslationId={setSelectedTranslationId}
         />
       </div>
       {showCreateModal && (
