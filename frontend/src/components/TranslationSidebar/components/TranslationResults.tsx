@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Copy, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { Copy, Check, ChevronDown, ChevronUp, Save, X, RotateCcw } from "lucide-react";
 import { TbReplaceFilled } from "react-icons/tb";
 import DiffText from "./DiffText";
 import { useEditor } from "@/contexts/EditorContext";
@@ -25,9 +25,17 @@ interface TranslationResultsProps {
   translationResults: TranslationResult[];
   copiedItems: Set<string>;
   expandedItems: Set<number>;
+  editedTexts: Record<string, string>;
+  editingId: string | null;
+  editedText: string;
   onCopyResult: (text: string, resultId: string) => void;
   onToggleItemExpansion: (index: number) => void;
   onInsertResult: (result: TranslationResult) => void;
+  onStartEditing: (result: TranslationResult) => void;
+  onCancelEditing: () => void;
+  onSaveEdit: () => void;
+  onEditTextChange: (text: string) => void;
+  onResetToOriginal: (result: TranslationResult) => void;
 }
 
 const TRUNCATE_LENGTH = 150;
@@ -36,12 +44,31 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
   translationResults,
   copiedItems,
   expandedItems,
+  editedTexts,
+  editingId,
+  editedText,
   onCopyResult,
   onToggleItemExpansion,
   onInsertResult,
+  onStartEditing,
+  onCancelEditing,
+  onSaveEdit,
+  onEditTextChange,
+  onResetToOriginal,
 }) => {
 
   const { scrollToLineNumber } = useEditor();
+
+  // Get the current text to use (edited or original)
+  const getCurrentText = (result: TranslationResult): string => {
+    // If currently editing this result, use the current edit text
+    if (editingId === result.id) {
+      return editedText;
+    }
+    // Otherwise, use saved edited text if available, or original text
+    return editedTexts[result.id] || result.translatedText;
+  };
+
   const truncateText = (
     text: string,
     maxLength: number = TRUNCATE_LENGTH
@@ -111,7 +138,7 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
                 </span>
               )}
               <Button
-                onClick={() => onInsertResult(result)}
+                onClick={() => onInsertResult({...result, translatedText: getCurrentText(result)})}
                 variant="ghost"
                 size="sm"
                 className="h-6 w-6 p-0 hover:bg-blue-200 transition-colors"
@@ -121,7 +148,7 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
                 <TbReplaceFilled className="w-3 h-3 " />
               </Button>
               <Button
-                onClick={() => onCopyResult(result.translatedText, result.id)}
+                onClick={() => onCopyResult(getCurrentText(result), result.id)}
                 variant="ghost"
                 size="sm"
                 className={`h-6 w-6 p-0 hover:bg-gray-200 transition-colors ${
@@ -137,6 +164,19 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
                   <Copy className="w-3 h-3" />
                 )}
               </Button>
+
+              {editedTexts[result.id] && (
+                                  <Button
+                    onClick={() => onResetToOriginal(result)}
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 hover:bg-red-200 transition-colors"
+                    title="Reset to original translation"
+                    disabled={editingId !== null && editingId !== result.id}
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                  </Button>
+              )}
             </div>
           </div>
           <div className="space-y-2">
@@ -171,6 +211,11 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
               <div className="text-xs text-gray-500 mb-1 font-medium flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span>Translation:</span>
+                  {editedTexts[result.id] && (
+                    <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">
+                      Edited
+                    </span>
+                  )}
                   {result.isUpdated && result.previousTranslatedText && (() => {
                     const changes = countChanges(result.previousTranslatedText, result.translatedText);
                     return (
@@ -194,8 +239,8 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
                 </div>
                 {(() => {
                   const textToCheck = result.isUpdated && result.previousTranslatedText
-                    ? Math.max(result.previousTranslatedText.length, result.translatedText.length) > TRUNCATE_LENGTH
-                    : shouldShowExpandButton(result.translatedText);
+                    ? Math.max(result.previousTranslatedText.length, getCurrentText(result).length) > TRUNCATE_LENGTH
+                    : shouldShowExpandButton(getCurrentText(result));
                   
                   return textToCheck && (
                     <Button
@@ -214,27 +259,108 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
                 })()}
               </div>
 
-              {/* Show translation with diff highlighting if updated, otherwise show regular translation */}
+              {/* Show translation with diff highlighting if updated, otherwise show regular translation or edit mode */}
               <div className="text-sm leading-relaxed text-gray-800">
-                {result.isUpdated && result.previousTranslatedText ? (
-                  // Show diff highlighting for updated translations
-                  <DiffText
-                    oldText={expandedItems.has(index) 
-                      ? result.previousTranslatedText 
-                      : truncateText(result.previousTranslatedText)}
-                    newText={expandedItems.has(index) 
-                      ? result.translatedText 
-                      : truncateText(result.translatedText)}
-                    truncated={!expandedItems.has(index) && 
-                      (result.previousTranslatedText.length > TRUNCATE_LENGTH || 
-                       result.translatedText.length > TRUNCATE_LENGTH)}
-                  />
+                {editingId === result.id ? (
+                  // Edit mode: Show textarea with save/cancel buttons
+                  <div className="space-y-2">
+                    <textarea
+                      value={editedText}
+                      onChange={(e) => onEditTextChange(e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded text-sm resize-vertical min-h-[80px] font-sans"
+                      placeholder="Edit translation..."
+                      autoFocus
+                    />
+                    <div className="flex gap-2 justify-end">
+                      <Button
+                        onClick={onSaveEdit}
+                        variant="default"
+                        size="sm"
+                        className="h-6 text-xs bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        <Save className="w-3 h-3 mr-1" />
+                        Save
+                      </Button>
+                      <Button
+                        onClick={onCancelEditing}
+                        variant="outline"
+                        size="sm"
+                        className="h-6 text-xs"
+                      >
+                        <X className="w-3 h-3 mr-1" />
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : result.isUpdated && result.previousTranslatedText ? (
+                  // Show diff highlighting for updated translations - clickable
+                  <div 
+                    onClick={() => {
+                      if (editingId === null || editingId === result.id) {
+                        onStartEditing(result);
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if ((e.key === 'Enter' || e.key === ' ') && (editingId === null || editingId === result.id)) {
+                        e.preventDefault();
+                        onStartEditing(result);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={editingId === null || editingId === result.id ? 0 : -1}
+                    className={`rounded p-1 -m-1 transition-colors ${
+                      editingId === null || editingId === result.id 
+                        ? 'cursor-pointer hover:bg-gray-50' 
+                        : 'cursor-not-allowed opacity-50'
+                    }`}
+                    title={
+                      editingId === null || editingId === result.id 
+                        ? "Click to edit translation" 
+                        : "Another translation is being edited"
+                    }
+                  >
+                    <DiffText
+                      oldText={expandedItems.has(index) 
+                        ? result.previousTranslatedText 
+                        : truncateText(result.previousTranslatedText)}
+                      newText={expandedItems.has(index) 
+                        ? getCurrentText(result) 
+                        : truncateText(getCurrentText(result))}
+                      truncated={!expandedItems.has(index) && 
+                        (result.previousTranslatedText.length > TRUNCATE_LENGTH || 
+                         getCurrentText(result).length > TRUNCATE_LENGTH)}
+                    />
+                  </div>
                 ) : (
-                  // Show regular translation for non-updated results
-                  <div className="whitespace-pre-wrap font-sans">
+                  // Show regular translation for non-updated results - clickable
+                  <div 
+                    onClick={() => {
+                      if (editingId === null || editingId === result.id) {
+                        onStartEditing(result);
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if ((e.key === 'Enter' || e.key === ' ') && (editingId === null || editingId === result.id)) {
+                        e.preventDefault();
+                        onStartEditing(result);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={editingId === null || editingId === result.id ? 0 : -1}
+                    className={`whitespace-pre-wrap font-sans rounded p-1 -m-1 transition-colors ${
+                      editingId === null || editingId === result.id 
+                        ? 'cursor-pointer hover:bg-gray-50' 
+                        : 'cursor-not-allowed opacity-50'
+                    }`}
+                    title={
+                      editingId === null || editingId === result.id 
+                        ? "Click to edit translation" 
+                        : "Another translation is being edited"
+                    }
+                  >
                     {expandedItems.has(index)
-                      ? result.translatedText
-                      : truncateText(result.translatedText)}
+                      ? getCurrentText(result)
+                      : truncateText(getCurrentText(result))}
                   </div>
                 )}
               </div>

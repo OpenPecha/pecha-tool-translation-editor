@@ -121,6 +121,62 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
   const [copiedItems, setCopiedItems] = useState<Set<string>>(new Set());
   const [expandedItems, setExpandedItems] = useState(new Set<number>());
 
+  // State to track edited translations - moved from TranslationResults component
+  const [editedTexts, setEditedTexts] = useState<Record<string, string>>({});
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editedText, setEditedText] = useState<string>("");
+
+  // Helper function to get current text (edited or original) for a translation result
+  const getCurrentText = (result: TranslationResult): string => {
+    return editedTexts[result.id] || result.translatedText;
+  };
+
+  // Helper function to get all current translation results with edited text applied
+  const getCurrentTranslationResults = (): TranslationResult[] => {
+    return translationResults.map(result => ({
+      ...result,
+      translatedText: getCurrentText(result)
+    }));
+  };
+
+  // Editing handler functions
+  const startEditing = (result: TranslationResult) => {
+    setEditingId(result.id);
+    // Use existing edited text if available, otherwise use original
+    const textToEdit = editedTexts[result.id] || result.translatedText;
+    setEditedText(textToEdit);
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditedText("");
+  };
+
+  const saveEdit = () => {
+    if (editingId) {
+      // Save the edited text persistently
+      setEditedTexts(prev => ({
+        ...prev,
+        [editingId]: editedText
+      }));
+    }
+    setEditingId(null);
+    setEditedText("");
+  };
+
+  const resetToOriginal = (result: TranslationResult) => {
+    // Remove any edited text for this result
+    setEditedTexts(prev => {
+      const newTexts = { ...prev };
+      delete newTexts[result.id];
+      return newTexts;
+    });
+    // If currently editing this result, reset the edit text too
+    if (editingId === result.id) {
+      setEditedText(result.translatedText);
+    }
+  };
+
   // Glossary extraction state
   const [glossaryTerms, setGlossaryTerms] = useState<GlossaryTerm[]>([]);
   const [isExtractingGlossary, setIsExtractingGlossary] = useState(false);
@@ -560,7 +616,8 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
   };
 
   const copyAllResults = () => {
-    const allTranslations = translationResults
+    const currentResults = getCurrentTranslationResults();
+    const allTranslations = currentResults
       .map((result) => result.translatedText)
       .join("\n\n---\n\n");
     navigator.clipboard.writeText(allTranslations);
@@ -603,9 +660,11 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
 
   const overwriteAllResults = () => {
     const targetEditor = quillEditors.get(documentId);
+    const currentResults = getCurrentTranslationResults();
+    
     if (!targetEditor) {
       // Fallback: copy to clipboard if no editor found
-      const allTranslations = translationResults
+      const allTranslations = currentResults
         .map((result) => result.translatedText)
         .join("\n\n");
       navigator.clipboard.writeText(allTranslations);
@@ -626,7 +685,7 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
     }
 
     // Use the utility function to perform the overwrite with emoji placeholders by default
-    const result = overwriteAllTranslations(targetEditor, translationResults, {
+    const result = overwriteAllTranslations(targetEditor, currentResults, {
       placeholderType: 'emoji'
     });
     
@@ -756,10 +815,11 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
     glossaryAbortControllerRef.current = new AbortController();
 
     try {
-      // Prepare items for glossary extraction
-      const items: GlossaryItem[] = translationResults.map((result) => ({
+      // Prepare items for glossary extraction using current text (edited or original)
+      const currentResults = getCurrentTranslationResults();
+      const items: GlossaryItem[] = currentResults.map((result) => ({
         original_text: result.originalText,
-        translated_text: result.translatedText,
+        translated_text: result.translatedText, // This now includes edited text
         metadata: {
           ...result.metadata,
           timestamp: result.timestamp,
@@ -920,11 +980,12 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
     setInconsistentTerms({});
 
     try {
-      // Prepare items for standardization analysis
-      const items: StandardizationRequest["items"] = translationResults.map(
+      // Prepare items for standardization analysis using current text (edited or original)
+      const currentResults = getCurrentTranslationResults();
+      const items: StandardizationRequest["items"] = currentResults.map(
         (result) => ({
           original_text: result.originalText,
-          translated_text: result.translatedText,
+          translated_text: result.translatedText, // This now includes edited text
           glossary: glossaryTerms.map((term) => ({
             source_term: term.source_term,
             translated_term: term.translated_term,
@@ -1154,6 +1215,9 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
     setCurrentStatus("");
     setProgressPercent(0);
     setExpandedItems(new Set());
+    setEditedTexts({}); // Clear edited texts when resetting
+    setEditingId(null); // Clear editing state
+    setEditedText(""); // Clear current edit text
     setGlossaryTerms([]);
     setIsExtractingGlossary(false);
     setInconsistentTerms({});
@@ -1318,9 +1382,17 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
                     translationResults={translationResults}
                     copiedItems={copiedItems}
                     expandedItems={expandedItems}
+                    editedTexts={editedTexts}
+                    editingId={editingId}
+                    editedText={editedText}
                     onCopyResult={copyResult}
                     onToggleItemExpansion={toggleItemExpansion}
                     onInsertResult={insertSingleResult}
+                    onStartEditing={startEditing}
+                    onCancelEditing={cancelEditing}
+                    onSaveEdit={saveEdit}
+                    onEditTextChange={setEditedText}
+                    onResetToOriginal={resetToOriginal}
                   />
                 </div>
 
