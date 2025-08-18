@@ -6,7 +6,11 @@ const WORKSPACE_ENDPOINT = process.env.WORKSPACE_ENDPOINT;
  * GET /metadata?type=root
  */
 async function getExpressions(type) {
-  const response = await fetch(`${API_ENDPOINT}/metadata?type=${type}`, {
+  let url=`${API_ENDPOINT}/metadata`;
+  if(type){
+    url+=`?type=${type}`;
+  }
+  const response = await fetch(url, {
     headers: {
       accept: "application/json",
       "Content-Type": "application/json",

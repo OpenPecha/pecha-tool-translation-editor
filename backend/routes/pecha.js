@@ -1,8 +1,7 @@
 const express = require("express");
 const {
   getExpressions,
-  getManifestationText,
-  getExpression,
+  getText,
   getExpressionTexts,
 } = require("../apis/openpecha_api");
 const router = express.Router();
@@ -11,7 +10,7 @@ const router = express.Router();
  * GET /pecha/list
  * @summary Get a list of metadata filtered by type (root, commentary, translations)
  * @tags Pecha - Pecha document operations
- * @param {string} type.query.required - Filter type: root, commentary, or translations
+ * @param {string} - Filter type: root, commentary, or translations
  * @return {array<object>} 200 - List of metadata filtered by type
  * @return {object} 400 - Bad request - Type parameter is required
  * @return {object} 500 - Server error - Failed to fetch metadata
@@ -44,16 +43,11 @@ const router = express.Router();
 router.get("/list", async (req, res) => {
   const { type } = req.query;
 
-  if (!type) {
-    return res.status(400).json({
-      error: "Type parameter is required",
-      allowedTypes: ["root", "commentary", "translations"],
-    });
-  }
+ 
 
   // Validate type parameter
   const allowedTypes = ["root", "commentary", "translations"];
-  if (!allowedTypes.includes(type)) {
+  if (type && !allowedTypes.includes(type)) {
     return res.status(400).json({
       error: "Invalid type parameter",
       allowedTypes: allowedTypes,
@@ -87,7 +81,7 @@ router.get("/list", async (req, res) => {
 });
 
 /**
- * GET /pecha/{expression_id}/texts
+ * GET /pecha/{id}/texts
  * @summary Get manifestations for a specific expression ID
  * @tags Pecha - Pecha document operations
  * @param {string} id.path.required - Expression ID
@@ -125,8 +119,8 @@ router.get("/list", async (req, res) => {
  * ]
  */
 router.get("/:id/texts", async (req, res) => {
-  const expressionId = req.params.id;
 
+  const expressionId = req.params.id;
   if (!expressionId) {
     return res.status(400).json({
       error: "Expression ID is required",
@@ -134,7 +128,7 @@ router.get("/:id/texts", async (req, res) => {
   }
 
   try {
-    const manifestations = await getExpressiontexts(expressionId);
+    const manifestations = await getExpressionTexts(expressionId);
 
     if (!manifestations) {
       return res.status(404).json({
@@ -172,7 +166,7 @@ router.get("/:id/texts", async (req, res) => {
 });
 
 /**
- * GET /pecha/text/{text_id}
+ * GET /pecha/text/{id}
  * @summary Get serialized text content using text ID
  * @tags Pecha - Pecha document operations
  * @param {string} id.path.required - Text expression ID
@@ -205,7 +199,7 @@ router.get("/text/:id", async (req, res) => {
   }
 
   try {
-    const textContent = await getManifestationText(textId);
+    const textContent = await getText(textId);
 
     if (!textContent) {
       return res.status(404).json({
