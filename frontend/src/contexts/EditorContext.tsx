@@ -370,15 +370,19 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({
     });
 
     // Add visual feedback - highlight and blink the line number
-    highlightLineNumber(targetLineElement);
+    highlightLineNumberInternal(targetLineElement);
 
     return true;
   };
 
+
   // Helper function to add visual feedback to the line number
-  const highlightLineNumber = (lineElement: HTMLElement) => {
+  const highlightLineNumberInternal = (lineElement: HTMLElement) => {
     const spanElement = lineElement.querySelector("span");
-    if (!spanElement) return;
+    if (!spanElement) {
+      console.error(`❌ No span element found in line element for highlighting`);
+      return;
+    }
 
     // Remove any existing highlight classes
     spanElement.classList.remove("line-highlight", "line-blink");

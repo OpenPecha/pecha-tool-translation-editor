@@ -47,9 +47,9 @@ async function getExpression(expressionId) {
  * Step 3: Get list of available manifestations for an expression
  * GET /metadata/{expression_id}/manifestations
  */
-async function getExpressionManifestations(expressionId) {
+async function getExpressionTexts(expressionId) {
   const response = await fetch(
-    `${API_ENDPOINT}/metadata/${expressionId}/manifestations`,
+    `${API_ENDPOINT}/metadata/${expressionId}/texts`,
     {
       headers: {
         accept: "application/json",
@@ -72,8 +72,8 @@ async function getExpressionManifestations(expressionId) {
  * Step 4: Fetch serialized text for translation
  * GET /text?id=<manifestation_id>
  */
-async function getManifestationText(manifestationId) {
-  const response = await fetch(`${API_ENDPOINT}/text/${manifestationId}`, {
+async function getText(textId) {
+  const response = await fetch(`${API_ENDPOINT}/text/${textId}`, {
     headers: {
       accept: "application/json",
       "Content-Type": "application/json",
@@ -113,8 +113,8 @@ module.exports = {
   // New API flow functions
   getExpressions,
   getExpression,
-  getExpressionManifestations,
-  getManifestationText,
+  getExpressionTexts,
+  getText,
 
   // Legacy functions for backward compatibility
   getPechaLanguages,

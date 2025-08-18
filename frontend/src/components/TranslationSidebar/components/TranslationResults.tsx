@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Copy, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { TbReplaceFilled } from "react-icons/tb";
 import DiffText from "./DiffText";
 import { useEditor } from "@/contexts/EditorContext";
 import { diffWords } from "diff";
@@ -26,6 +27,7 @@ interface TranslationResultsProps {
   expandedItems: Set<number>;
   onCopyResult: (text: string, resultId: string) => void;
   onToggleItemExpansion: (index: number) => void;
+  onInsertResult: (result: TranslationResult) => void;
 }
 
 const TRUNCATE_LENGTH = 150;
@@ -36,6 +38,7 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
   expandedItems,
   onCopyResult,
   onToggleItemExpansion,
+  onInsertResult,
 }) => {
 
   const { scrollToLineNumber } = useEditor();
@@ -107,6 +110,16 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
                   {formatLineNumbers(result)}
                 </span>
               )}
+              <Button
+                onClick={() => onInsertResult(result)}
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 hover:bg-blue-200 transition-colors"
+                title="Insert translation at line position"
+                disabled={!result.lineNumbers || Object.keys(result.lineNumbers).length === 0}
+              >
+                <TbReplaceFilled className="w-3 h-3 " />
+              </Button>
               <Button
                 onClick={() => onCopyResult(result.translatedText, result.id)}
                 variant="ghost"
