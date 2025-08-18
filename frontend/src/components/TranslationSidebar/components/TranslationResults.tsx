@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Copy, Check, ChevronDown, ChevronUp, ArrowDownToLine } from "lucide-react";
+import { Copy, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { TbReplaceFilled } from "react-icons/tb";
 import DiffText from "./DiffText";
 import { useEditor } from "@/contexts/EditorContext";
 import { diffWords } from "diff";
@@ -117,7 +118,7 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
                 title="Insert translation at line position"
                 disabled={!result.lineNumbers || Object.keys(result.lineNumbers).length === 0}
               >
-                <ArrowDownToLine className="w-3 h-3 text-blue-600" />
+                <TbReplaceFilled className="w-3 h-3 " />
               </Button>
               <Button
                 onClick={() => onCopyResult(result.translatedText, result.id)}

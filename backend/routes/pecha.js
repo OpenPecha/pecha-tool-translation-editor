@@ -3,12 +3,12 @@ const {
   getExpressions,
   getManifestationText,
   getExpression,
-  getExpressionManifestations,
+  getExpressionTexts,
 } = require("../apis/openpecha_api");
 const router = express.Router();
 
 /**
- * GET /pecha/metadata
+ * GET /pecha/list
  * @summary Get a list of metadata filtered by type (root, commentary, translations)
  * @tags Pecha - Pecha document operations
  * @param {string} type.query.required - Filter type: root, commentary, or translations
@@ -41,7 +41,7 @@ const router = express.Router();
  *   }
  * ]
  */
-router.get("/metadata", async (req, res) => {
+router.get("/list", async (req, res) => {
   const { type } = req.query;
 
   if (!type) {
@@ -87,7 +87,7 @@ router.get("/metadata", async (req, res) => {
 });
 
 /**
- * GET /pecha/expressions/{id}/manifestations
+ * GET /pecha/{expression_id}/texts
  * @summary Get manifestations for a specific expression ID
  * @tags Pecha - Pecha document operations
  * @param {string} id.path.required - Expression ID
@@ -124,7 +124,7 @@ router.get("/metadata", async (req, res) => {
  *   }
  * ]
  */
-router.get("/expressions/:id/manifestations", async (req, res) => {
+router.get("/:id/texts", async (req, res) => {
   const expressionId = req.params.id;
 
   if (!expressionId) {
@@ -134,7 +134,7 @@ router.get("/expressions/:id/manifestations", async (req, res) => {
   }
 
   try {
-    const manifestations = await getExpressionManifestations(expressionId);
+    const manifestations = await getExpressiontexts(expressionId);
 
     if (!manifestations) {
       return res.status(404).json({
@@ -172,7 +172,7 @@ router.get("/expressions/:id/manifestations", async (req, res) => {
 });
 
 /**
- * GET /pecha/text/{id}
+ * GET /pecha/text/{text_id}
  * @summary Get serialized text content using text ID
  * @tags Pecha - Pecha document operations
  * @param {string} id.path.required - Text expression ID
