@@ -20,7 +20,7 @@ export const fetchTools = async () => {
     if (!response.ok) {
       throw new Error(`Failed to fetch tools: ${response.statusText}`);
     }
-    let data=await response.json()
+    const data=await response.json()
 
       // Remove "coming soon" tools
       if (data?.data) {

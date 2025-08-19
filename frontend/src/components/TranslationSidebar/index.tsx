@@ -26,6 +26,7 @@ import {
 } from "@/api/apply_standardization";
 import { useEditor } from "@/contexts/EditorContext";
 import { overwriteAllTranslations, validateTranslationResults } from "@/services/editor";
+import { useTranslationSettings } from "@/hooks/useTranslationSettings";
 
 // Import components
 import GlossaryDisplay from "./components/GlossaryDisplay";
@@ -91,14 +92,13 @@ interface GlossaryEvent {
 const TranslationSidebar: React.FC<{ documentId: string }> = ({
   documentId,
 }) => {
-  const [config, setConfig] = useState<TranslationConfig>({
-    targetLanguage: "english",
-    textType: "commentary",
-    modelName: "claude",
-    batchSize: 2,
-    userRules: "do translation normally",
-    extractGlossary: false,
-  });
+  // Use persistent translation settings
+  const { 
+    config, 
+    updateConfig, 
+    isSidebarCollapsed, 
+    setIsSidebarCollapsed 
+  } = useTranslationSettings();
 
   const [selectedText, setSelectedText] = useState<string>("");
   const [activeSelectedEditor, setActiveSelectedEditor] = useState<string | null>(null);
@@ -106,7 +106,6 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
     string,
     { from: number; to: number }
   > | null>(null);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const [isTranslating, setIsTranslating] = useState(false);
   const [translationResults, setTranslationResults] = useState<
@@ -305,7 +304,7 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
     key: K,
     value: TranslationConfig[K]
   ) => {
-    setConfig((prev) => ({ ...prev, [key]: value }));
+    updateConfig(key, value);
   };
 
   // Helper functions for managing translation state
