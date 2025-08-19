@@ -40,9 +40,7 @@ export function UploadMethodTabs({
     },
     openpecha: {
       value: "openpecha",
-      label: t("common.openpecha"),
-      disabled: true,
-      comingSoon: true,
+      label: t("common.openpecha")
     },
     ai: {
       value: "ai",
