@@ -1,8 +1,11 @@
 import { getHeaders } from "../utils";
 
+
+const server_url = import.meta.env.VITE_SERVER_URL;
+
 export const fetchTools = async () => {
   try {
-    const url = import.meta.env.VITE_WORKSPACE_URL+"/api/tools/public";
+    const url = server_url+"/workspace/tools";
     const response = await fetch(
       url,
       {

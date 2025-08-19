@@ -22,6 +22,7 @@ const translateRoutes = require("./routes/translate");
 const glossaryRoutes = require("./routes/glossary");
 const standardizeRoutes = require("./routes/standardize");
 const applyStandardizationRoutes = require("./routes/apply_standardization");
+const workspaceRoutes = require("./routes/workspace");
 
 const options = {
   info: {
@@ -119,6 +120,7 @@ app.use("/translate", translateRoutes);
 app.use("/glossary", glossaryRoutes);
 app.use("/standardize", standardizeRoutes);
 app.use("/standardize", applyStandardizationRoutes);
+app.use("/workspace", workspaceRoutes);
 const clients = new Set();
 // const getYDoc = (docId, userId) =>
 //   map.setIfUndefined(utils.docs, docId, () => {

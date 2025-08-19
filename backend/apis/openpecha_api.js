@@ -1,5 +1,4 @@
 const API_ENDPOINT = process.env.OPENPECHA_ENDPOINT;
-const WORKSPACE_ENDPOINT = process.env.WORKSPACE_ENDPOINT;
 
 /**
  * Step 1: Fetch list of root expressions (title + id)
