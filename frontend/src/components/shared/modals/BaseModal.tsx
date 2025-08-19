@@ -37,12 +37,13 @@ export function BaseModal({
   className,
   variant = "dialog",
   size = "md",
-}: BaseModalProps) {
+}: Readonly<BaseModalProps>) {
   const handleClose = () => onOpenChange(false);
 
   if (variant === "fixed") {
     return (
       <>
+        {trigger}
         {open && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
             <div
