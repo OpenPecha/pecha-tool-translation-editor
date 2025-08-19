@@ -10,6 +10,7 @@ import {
   ModalFooter,
   FormSection,
 } from "@/components/shared/modals";
+import { DEFAULT_LANGUAGE_SELECTED } from "@/config";
 
 export type SelectedPechaType = {
   id: string;
@@ -26,7 +27,7 @@ export function NewPechaForm({
   readonly closeModal: () => void;
 }) {
   const [error, setError] = useState("");
-  const [selectedLanguage, setSelectedLanguage] = useState<string>("");
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(DEFAULT_LANGUAGE_SELECTED);
   const [rootId, setRootId] = useState<string | null>(null);
   const [metadata, setMetadata] = useState<Record<string, unknown> | null>(
     null

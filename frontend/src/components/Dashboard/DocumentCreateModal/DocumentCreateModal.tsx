@@ -13,6 +13,14 @@ import { useTranslate } from "@tolgee/react";
 import { useUmamiTracking } from "@/hooks/use-umami-tracking";
 import { getUserContext } from "@/hooks/use-umami-tracking";
 import { useAuth } from "@/auth/use-auth-hook";
+import { File } from "lucide-react";
+import { MdApi } from "react-icons/md";
+
+export type AvailableMethodType={
+  type:UploadMethod,
+  label:string,
+}
+
 
 function DocumentCreateModal() {
   const [projectName, setProjectName] = useState("");
@@ -58,6 +66,12 @@ function DocumentCreateModal() {
     </div>
   );
 
+const availableMethods:AvailableMethodType[]=[
+  {type:"file",label:t("common.file")},
+  {type:"openpecha",label:t("common.openpecha")},
+]
+
+
   return (
     <BaseModal
       open={open}
@@ -66,7 +80,7 @@ function DocumentCreateModal() {
       title={t(`projects.createProject`)}
       size="lg"
     >
-      <div className="space-y-6 px-1">
+      <div className="space-y-6 px-1 ">
         {/* Project Name Input */}
         <div className=" flex gap-3 items-center">
           <Label
@@ -88,7 +102,7 @@ function DocumentCreateModal() {
         <UploadMethodTabs
           activeMethod={uploadMethod}
           onMethodChange={setUploadMethod}
-          availableMethods={["file", "openpecha"]}
+          availableMethods={availableMethods}
         >
           <TabContentWrapper value="file">
             <NewPechaForm projectName={projectName} closeModal={closeModal} />

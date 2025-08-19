@@ -13,6 +13,7 @@ import {
   FormSection,
   type UploadMethod,
 } from "@/components/shared/modals";
+import { DEFAULT_LANGUAGE_SELECTED } from "@/config";
 
 interface CreateTranslationModalProps {
   rootId: string;
@@ -25,7 +26,7 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
   onClose,
   refetchTranslations,
 }) => {
-  const [language, setLanguage] = useState("");
+  const [language, setLanguage] = useState(DEFAULT_LANGUAGE_SELECTED);
   const [uploadMethod, setUploadMethod] = useState<UploadMethod>("empty");
   const [translationId, setTranslationId] = useState<string | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
