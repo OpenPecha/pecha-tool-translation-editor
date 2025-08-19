@@ -885,7 +885,6 @@ router.patch("/:id", authenticate, async (req, res) => {
     const document = await prisma.doc.findUnique({
       where: { id: documentId },
       include: {
-        root: true,
         rootsProject: {
           include: {
             permissions: true,
@@ -999,7 +998,10 @@ router.patch("/:id", authenticate, async (req, res) => {
         where: { id: documentId },
         data: updateData,
         select: {
-          root: true,
+          id: true,
+          name: true,
+          identifier: true,
+          isRoot: true,
           translations: {
             select: {
               id: true,
@@ -1033,10 +1035,10 @@ router.patch("/:id", authenticate, async (req, res) => {
         return await tx.doc.findUnique({
           where: { id: documentId },
           include: {
-            root: true,
             translations: {
               select: { id: true },
             },
+            rootsProject: true,
           },
         });
       }

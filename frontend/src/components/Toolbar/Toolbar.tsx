@@ -6,6 +6,9 @@ import HeaderDropdown from "@/components/quillExtension/HeaderDropdown";
 import { EDITOR_READ_ONLY, MAX_HEADING_LEVEL } from "@/utils/editorConfig";
 import { BiCommentAdd } from "react-icons/bi";
 import { Button } from "@/components/ui/button";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { updateDocument } from "@/api/document";
+import EditableText from "@/components/ui/EditableText";
 
 import { createPortal } from "react-dom";
 import VersionDiff from "./VersionDiff";
@@ -312,23 +315,26 @@ const Toolbar = ({
           )}
         </div>
         
-        {/* Document name */}
+        {/* Document name - editable */}
         {documentName && (
-          <div className="flex items-center gap-2 px-2 py-1 bg-gray-50 rounded-md border">
-            <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <span className="text-sm font-medium text-gray-700 truncate max-w-[200px]" title={documentName}>
-              {documentName}
-            </span>
-          </div>
+          <EditableDocumentName documentId={documentId} documentName={documentName} />
         )}
       </div>
     </div>
   );
 };
 
-export const ToolbarButton = ({ children, onClick, title, className }) => {
+export const ToolbarButton = ({ 
+  children, 
+  onClick, 
+  title, 
+  className 
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  title: string;
+  className: string;
+}) => {
   return (
     <Button
       type="button"
@@ -342,6 +348,46 @@ export const ToolbarButton = ({ children, onClick, title, className }) => {
     >
       {children}
     </Button>
+  );
+};
+
+// Component for editable document name in toolbar
+const EditableDocumentName: React.FC<{
+  documentId: string;
+  documentName: string;
+}> = ({ documentId, documentName }) => {
+  const queryClient = useQueryClient();
+
+  // Set up mutation for updating document name
+  const updateDocumentMutation = useMutation({
+    mutationFn: async (newName: string) => {
+      return await updateDocument(documentId, { name: newName });
+    },
+    onSuccess: () => {
+      // Invalidate and refetch document data
+      queryClient.invalidateQueries({ queryKey: ["document", documentId] });
+    },
+    onError: (error) => {
+      console.error("Failed to update document name:", error);
+    },
+  });
+
+  const handleSave = async (newName: string) => {
+    await updateDocumentMutation.mutateAsync(newName);
+  };
+
+  return (
+    <div className="flex items-center gap-2 px-2 py-1 bg-gray-50 rounded-2xl border">
+      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+      <EditableText
+        initialText={documentName}
+        onSave={handleSave}
+        className="text-sm font-medium text-gray-700 max-w-[200px] truncate focus:outline-none"
+        placeholder="Document name"
+      />
+    </div>
   );
 };
 

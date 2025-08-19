@@ -37,7 +37,7 @@ function DocumentsWrapper() {
     <EditorProvider>
       {/* Portals for elements that need to be rendered outside the main container */}
       {createPortal(
-        <Navbar title={currentDoc?.name} project={project} />,
+        <Navbar project={project} />,
         document.getElementById("navbar")!
       )}
       {selectedTranslationId &&

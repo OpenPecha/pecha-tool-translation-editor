@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useAuth } from "../auth/use-auth-hook";
 import { Button } from "./ui/button";
-import { updateDocument } from "@/api/document";
+import { updateProject } from "@/api/project";
+import EditableText from "./ui/EditableText";
 
 import DocIcon from "@/assets/doc_icon.png";
 import ShareModal from "./ShareModal";
@@ -18,11 +19,10 @@ type Project = {
 };
 
 interface NavbarProps {
-  title?: string;
   project: Project;
 }
 
-const Navbar = ({ title, project }: NavbarProps) => {
+const Navbar = ({ project }: NavbarProps) => {
   const { login, isAuthenticated } = useAuth();
   const [showPermissionsModal, setShowPermissionsModal] = useState(false);
   const tolgee = useTolgee();
@@ -55,8 +55,8 @@ const Navbar = ({ title, project }: NavbarProps) => {
             className=" object-contain"
           />
         </Link>
-        <div className="flex flex-col w-fit  items-center -space-y-1">
-          <TitleWrapper title={title!} />
+        <div className="flex flex-col w-fit items-center -space-y-1">
+          <ProjectNameWrapper project={project} />
         </div>
       </div>
 
@@ -85,78 +85,44 @@ const Navbar = ({ title, project }: NavbarProps) => {
   );
 };
 
-function TitleWrapper({ title }: { readonly title: string }) {
+function ProjectNameWrapper({ project }: { readonly project: Project }) {
   // Create a separate component for the input to avoid conditional hook calls
-  if (!title) return null;
-  return <TitleInput initialTitle={title} />;
+  if (!project?.name) return null;
+  return <ProjectNameInput project={project} />;
 }
 
-// Separate component to handle the input logic
-function TitleInput({ initialTitle }: { readonly initialTitle: string }) {
-  const [inputValue, setInputValue] = useState(initialTitle);
-  const { id } = useParams<{ id: string }>();
+// Separate component to handle the project name input logic
+function ProjectNameInput({ project }: { readonly project: Project }) {
   const queryClient = useQueryClient();
 
-  // Set up mutation for updating document title
-  const updateTitleMutation = useMutation({
-    mutationFn: async (newTitle: string) => {
-      if (!id) throw new Error("Document ID not found");
-      // Update the document name instead of the identifier
-      return await updateDocument(id, { name: newTitle });
+  // Set up mutation for updating project name
+  const updateProjectMutation = useMutation({
+    mutationFn: async (newName: string) => {
+      if (!project.id) throw new Error("Project ID not found");
+      return await updateProject(project.id, { name: newName });
     },
     onSuccess: () => {
-      // Invalidate and refetch document data
-      queryClient.invalidateQueries({ queryKey: ["document", id] });
+      // Invalidate and refetch project and document data
+      queryClient.invalidateQueries({ queryKey: ["project", project.id] });
+      queryClient.invalidateQueries({ queryKey: ["document"] });
     },
     onError: (error) => {
-      console.error("Failed to update document title:", error);
-      // Revert to original title on error
-      setInputValue(initialTitle);
+      console.error("Failed to update project name:", error);
     },
   });
 
-  // Update input value when it changes
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    if (newValue === initialTitle) return;
-    if (newValue.trim() === "") return;
-    setInputValue(newValue);
-  };
-
-  // Save changes if title has changed and is not empty
-  const saveChanges = () => {
-    if (inputValue !== initialTitle && inputValue.trim()) {
-      updateTitleMutation.mutate(inputValue);
-    }
-  };
-
-  // Handle form submission (Enter key)
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    saveChanges();
-    // Blur the input on enter
-    (document.activeElement as HTMLElement)?.blur();
-  };
-
-  // Handle blur event to save changes when focus is lost
-  const handleBlur = () => {
-    saveChanges();
+  const handleSave = async (newName: string) => {
+    await updateProjectMutation.mutateAsync(newName);
   };
 
   return (
     <div className="inline-block font-monlam text-lg leading-[normal]">
-      <form onSubmit={handleSubmit}>
-        <input
-          value={inputValue}
-          onChange={handleInputChange}
-          onBlur={handleBlur}
-          className="text-md text-gray-500 hover:text-gray-700 transition capitalize hover:outline hover:outline-gray-300"
-          style={{
-            width: `${inputValue.length + 1}ch`,
-            minWidth: "50px",
-          }}
-        />
-      </form>
+      <EditableText
+        initialText={project.name}
+        onSave={handleSave}
+        className="text-md text-gray-500 hover:text-gray-700 transition capitalize hover:outline hover:outline-gray-300"
+        placeholder="Project name"
+      />
     </div>
   );
 }
