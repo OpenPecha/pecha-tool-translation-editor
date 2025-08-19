@@ -66,7 +66,7 @@ function DocumentCreateModal() {
       title={t(`projects.createProject`)}
       size="lg"
     >
-      <div className="space-y-6">
+      <div className="space-y-6 px-1">
         {/* Project Name Input */}
         <div className=" flex gap-3 items-center">
           <Label

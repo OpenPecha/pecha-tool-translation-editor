@@ -66,23 +66,13 @@ export function NewPechaForm({
   return (
     <div className="space-y-8">
       <ErrorDisplay error={error} />
-
-      <FormSection
-        title="Language Selection"
-        description="Choose the primary language for your document"
-      >
         <SelectLanguage
           setSelectedLanguage={setSelectedLanguage}
           selectedLanguage={selectedLanguage}
         />
-      </FormSection>
 
       {selectedLanguage && (
         <>
-          <FormSection
-            title="Document Upload"
-            description="Upload your document file to create the project"
-          >
             <TextUploader
               isRoot={true}
               isPublic={false}
@@ -90,7 +80,6 @@ export function NewPechaForm({
               setRootId={setRootId}
               disable={!selectedLanguage || selectedLanguage === ""}
             />
-          </FormSection>
 
           {rootId && (
             <FormSection

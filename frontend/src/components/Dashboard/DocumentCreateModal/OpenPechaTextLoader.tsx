@@ -13,6 +13,7 @@ import {
   ModalFooter,
   FormSection,
 } from "@/components/shared/modals";
+import { Label } from "@/components/ui/label";
 
 // Types for OpenPecha data structures
 interface Expression {
@@ -282,10 +283,6 @@ export function OpenPechaTextLoader({
       <ErrorDisplay error={error} />
 
       {/* Expression Selection */}
-      <FormSection
-        title="Select Pecha"
-        description="Choose a pecha from the OpenPecha library"
-      >
         <SearchableDropdown
           label="Pecha"
           placeholder="Search and select a pecha..."
@@ -295,14 +292,11 @@ export function OpenPechaTextLoader({
           loading={expressionsLoading}
           error={expressionsError?.message}
         />
-      </FormSection>
 
       {/* Manifestation Selection */}
+      <div className="flex gap-4">
       {selectedExpressionId && (
-        <FormSection
-          title="Select Version"
-          description="Choose a specific version of the selected pecha"
-        >
+        <div className="flex-1">
           <SearchableDropdown
             label="Version"
             placeholder="Select a version..."
@@ -312,15 +306,12 @@ export function OpenPechaTextLoader({
             loading={manifestationsLoading}
             error={manifestationsError?.message}
           />
-        </FormSection>
+          </div>
       )}
 
       {/* Segmentation Selection */}
       {selectedManifestationId && segmentationOptions.length > 0 && (
-        <FormSection
-          title="Select Segmentation"
-          description="Choose how the text should be segmented for translation"
-        >
+        <div className="flex-1">
           <SearchableDropdown
             label="Segmentation Type"
             placeholder="Select segmentation..."
@@ -328,23 +319,20 @@ export function OpenPechaTextLoader({
             value={selectedSegmentationId}
             onChange={setSelectedSegmentationId}
           />
-        </FormSection>
+          </div>
       )}
-      {selectedExpressionId && selectedManifestationId && segmentationOptions.length === 0 && (
-        <FormSection
-          title="No Segmentation"
-          description="No segmentation available for this version, loading first alignment"
-        >
-            <p> </p>
-        </FormSection>
+
+     {selectedExpressionId && selectedManifestationId && segmentationOptions.length === 0 && (
+        <div className="flex flex-1 flex-col space-y-2">
+            <Label className="text-sm font-medium text-gray-700">Segmentation Type</Label>
+            <p className="flex flex-1 text-sm text-red-500 items-center">No segmentation available</p>
+        </div>
       )}
+      </div>
 
       {/* Text Preview */}
       {selectedManifestationId && (
-        <FormSection
-          title="Text Preview"
-          description="Preview of the loaded text content"
-        >
+        <>
           {textContentLoading ? (
             <Card>
               <CardContent className="py-6">
@@ -365,14 +353,17 @@ export function OpenPechaTextLoader({
             </Card>
           ) : processedText ? (
             <div className="space-y-1">
-              {/* Text Information */}
-              <Card className="border-blue-200 bg-blue-50">
-                <CardContent className="py-2">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0">
-                      <FileText className="h-8 w-8 text-blue-600" />
-                    </div>
-                    <div className="flex-1 space-y-2">
+
+              {/* Content Preview */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-medium text-gray-900">Content Preview</h3>
+                  <div className="flex items-center gap-1 text-green-600">
+                    <CheckCircle className="h-4 w-4" />
+                    <span className="text-sm">Content loaded</span>
+                  </div>
+                </div>
+                <div className="flex-1 space-y-2">
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="font-medium text-blue-900">
                           {extractTitle(
@@ -397,19 +388,6 @@ export function OpenPechaTextLoader({
                         )}
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Content Preview */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium text-gray-900">Content Preview</h3>
-                  <div className="flex items-center gap-1 text-green-600">
-                    <CheckCircle className="h-4 w-4" />
-                    <span className="text-sm">Content loaded</span>
-                  </div>
-                </div>
 
                 <Textarea
                   value={processedText}
@@ -430,7 +408,7 @@ export function OpenPechaTextLoader({
               </CardContent>
             </Card>
           )}
-        </FormSection>
+        </>
       )}
 
       {/* Action Buttons */}
