@@ -61,3 +61,50 @@ export const fetchPechaBase = async (pechaId: string) => {
     return error;
   }
 };
+
+// New OpenPecha API functions for the text loader
+export const fetchExpressions = async (type?: string) => {
+  try {
+    const url = type ? `${server_url}/pecha/list?type=${type}` : `${server_url}/pecha/list`;
+    const response = await fetch(url, {
+      headers: getHeaders(),
+    });
+    if (response.ok) {
+      const data = await response.json();
+      return data;
+    }
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+export const fetchManifestations = async (expressionId: string) => {
+  try {
+    const response = await fetch(`${server_url}/pecha/${expressionId}/texts`, {
+      headers: getHeaders(),
+    });
+    if (response.ok) {
+      const data = await response.json();
+      return data;
+    }
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+export const fetchTextContent = async (textId: string) => {
+  try {
+    const response = await fetch(`${server_url}/pecha/text/${textId}`, {
+      headers: getHeaders(),
+    });
+    if (response.ok) {
+      const data = await response.json();
+      return data;
+    }
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};

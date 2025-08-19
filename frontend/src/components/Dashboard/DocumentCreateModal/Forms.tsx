@@ -1,11 +1,10 @@
 import { useState } from "react";
 import SelectLanguage from "./SelectLanguage";
-import SelectPechas from "./SelectPechas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import TextUploader from "./TextUploader";
 import MetaDataInput from "./MetaDataInput";
 import { createProject } from "@/api/project";
-import PechaView from "./PechaView";
+import { OpenPechaTextLoader } from "./OpenPechaTextLoader";
 import {
   ErrorDisplay,
   ModalFooter,
@@ -67,23 +66,13 @@ export function NewPechaForm({
   return (
     <div className="space-y-8">
       <ErrorDisplay error={error} />
-
-      <FormSection
-        title="Language Selection"
-        description="Choose the primary language for your document"
-      >
         <SelectLanguage
           setSelectedLanguage={setSelectedLanguage}
           selectedLanguage={selectedLanguage}
         />
-      </FormSection>
 
       {selectedLanguage && (
         <>
-          <FormSection
-            title="Document Upload"
-            description="Upload your document file to create the project"
-          >
             <TextUploader
               isRoot={true}
               isPublic={false}
@@ -91,7 +80,6 @@ export function NewPechaForm({
               setRootId={setRootId}
               disable={!selectedLanguage || selectedLanguage === ""}
             />
-          </FormSection>
 
           {rootId && (
             <FormSection
@@ -128,69 +116,10 @@ export function PechaFromOpenPecha({
   readonly projectName: string;
   readonly closeModal: () => void;
 }) {
-  const [selectedPecha, setSelectedPecha] = useState<SelectedPechaType | null>(
-    null
-  );
-  const [error, setError] = useState("");
-  const queryClient = useQueryClient();
-
-  const createProjectMutation = useMutation({
-    mutationFn: ({ rootId }: { rootId: string }) => {
-      if (!projectName) {
-        throw new Error("Project name is required");
-      }
-
-      return createProject({
-        name: projectName,
-        identifier: projectName.toLowerCase().replace(/\s+/g, "-"),
-        rootId: rootId,
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
-      closeModal();
-    },
-    onError: (error: Error) => {
-      setError(error.message || "Failed to create project");
-    },
-  });
-
-  const handleCreateProject = (rootId: string) => {
-    if (!projectName) {
-      setError("Project name is required");
-      return;
-    }
-    setError(""); // Clear any previous errors
-    createProjectMutation.mutate({ rootId });
-  };
-
   return (
-    <div className="space-y-8">
-      <ErrorDisplay error={error} />
-
-      <FormSection
-        title="OpenPecha Selection"
-        description="Select a pecha from the OpenPecha library"
-      >
-        <SelectPechas
-          selectedPecha={selectedPecha}
-          setSelectedPecha={setSelectedPecha}
-        />
-      </FormSection>
-
-      {selectedPecha?.id && (
-        <FormSection
-          title="Preview & Confirm"
-          description="Review the selected pecha before creating your project"
-        >
-          <PechaView
-            isRoot={true}
-            selectedPecha={selectedPecha}
-            closeModal={closeModal}
-            handleCreateProject={handleCreateProject}
-          />
-        </FormSection>
-      )}
-    </div>
+    <OpenPechaTextLoader 
+      projectName={projectName} 
+      closeModal={closeModal} 
+    />
   );
 }
