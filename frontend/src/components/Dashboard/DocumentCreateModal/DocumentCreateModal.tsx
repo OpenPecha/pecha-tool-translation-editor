@@ -11,6 +11,7 @@ import PlusIcon from "@/assets/plus.svg";
 import { ChevronLeft, ChevronRight, File } from "lucide-react";
 import { MdApi } from "react-icons/md";
 import { cn } from "@/lib/utils";
+import { TbApi } from "react-icons/tb";
 
 export type UploadMethod = "file" | "openpecha";
 
@@ -83,7 +84,7 @@ function MethodSelection({
       description: "Upload a file from your computer",
     },
     openpecha: {
-      icon: <MdApi size={24} />,
+      icon: <TbApi  size={24} />,
       title: t("common.openpecha"),
       description: "Import from OpenPecha repository",
     },

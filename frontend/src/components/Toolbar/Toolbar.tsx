@@ -191,7 +191,7 @@ const Toolbar = ({
         margin: "0 auto",
       }}
     >
-      <div className="flex items-center flex-1 h-full">
+      <div className="flex items-center flex-1 h-full self-center">
         <span className="ql-formats" style={isEnabledStyle}>
           <button className="ql-undo" title="Undo" />
           <button className="ql-redo" title="Redo" />
