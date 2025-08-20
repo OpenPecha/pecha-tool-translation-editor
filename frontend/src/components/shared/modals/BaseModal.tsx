@@ -77,6 +77,7 @@ export function BaseModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent
+        aria-describedby={undefined}
         className={cn(
           "flex flex-col min-h-[50vh] max-h-[90vh] overflow-hidden border-0 shadow-2xl",
           sizeClasses[size],

@@ -124,7 +124,6 @@ export function OpenPechaTextLoader({
   // Process text based on selected segmentation
   useEffect(() => {
     if (!textContent || !selectedSegmentationId) {
-        console.log("no textContent or segmentation")
       setProcessedText(textContent?.base || "");
       setSegmentationData(null);
       return;

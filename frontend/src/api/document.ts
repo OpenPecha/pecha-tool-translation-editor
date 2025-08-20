@@ -113,7 +113,6 @@ export const createDocument = async (formData: FormData) => {
 
 export const createDocumentWithContent = async (formData: FormData) => {
   const body = JSON.stringify(Object.fromEntries(formData));
-  console.log("sending", body);
   const response = await fetch(`${server_url}/documents/content`, {
     method: "POST",
     headers: getHeaders(),
