@@ -54,10 +54,6 @@ interface TemporaryFootnote {
 interface FootnoteEventData {
   id: string;
   order: number;
-  position: {
-    top: number;
-    left: number;
-  };
 }
 
 interface QuillRange {
@@ -435,47 +431,47 @@ function FootnoteView({
           block: "center",
           inline: "nearest",
         });
-
-        footnoteSpanList.forEach((footnoteSpan) => {
-          const blot = Quill.find(footnoteSpan) as any;
-          if (blot && blot.length) {
-            // Get the index and length of the blot
-            const index = quill.getIndex(blot);
-            const length = blot.length();
-
-            // Remove the footnote formatting
-            quill.formatText(
-              index,
-              length,
-              "background",
-              "rgba(59, 130, 246, 0.2)",
-              "api"
-            );
-
-            setTimeout(() => {
-              quill.formatText(
-                index,
-                length,
-                "background",
-                "transparent",
-                "api"
-              );
-            }, 2000);
-          }
-          // Add a temporary highlight effect
+        // Highlight the footnote group
+        // Convert NodeList to array for type safety
+        Array.from(footnoteSpanList).forEach((footnoteSpan: Element) => {
+          (footnoteSpan as HTMLElement).classList.add("footnote-highlighted");
         });
+        setTimeout(() => {
+          Array.from(footnoteSpanList).forEach((footnoteSpan: Element) => {
+            (footnoteSpan as HTMLElement).classList.remove("footnote-highlighted");
+          });
+        }, 2000);
+        // footnoteSpanList.forEach((footnoteSpan) => {
+        //   const blot = Quill.find(footnoteSpan) as any;
+        //   if (blot && blot.length) {
+        //     // Get the index and length of the blot
+        //     const index = quill.getIndex(blot);
+        //     const length = blot.length();
+
+        //     // Remove the footnote formatting
+        //     quill.formatText(
+        //       index,
+        //       length,
+        //       "background",
+        //       "rgba(59, 130, 246, 0.2)",
+        //       "api"
+        //     );
+
+        //     setTimeout(() => {
+        //       quill.formatText(
+        //         index,
+        //         length,
+        //         "background",
+        //         "transparent",
+        //         "api"
+        //       );
+        //     }, 2000);
+        //   }
+        //   // Add a temporary highlight effect
+        // });
       }
     }
 
-    // Emit event to show the footnote bubble at the specific location
-    emitter.emit("showfootnotebubble", {
-      id: footnote.threadId,
-      order: footnote.order,
-      position: {
-        top: 100,
-        left: 100,
-      },
-    });
   };
 
   const handleAccordionChange = (value: string) => {

@@ -285,41 +285,43 @@
   color: #1a73e8;
 }
 
-  .footnote:hover {
-    background-color: #e3e3e3;
-    fill:#454746;
-    border-radius: 6px;         /* optional: make it look nicer */
-  }
+/* Footnote group highlighting styles */
+.footnote-highlighted {
+background-color: #fef3cd !important;
+border-radius: 4px !important;
+box-shadow: 0 0 0 2px #fabd07 !important;
+transition: all 0.2s ease-in-out !important;
+}
 
-  /* Ensure FootnoteView sticks to bottom in both editors */
-  .footnote-view-container {
-    position: sticky;
-    bottom: 0;
-    z-index: 20;
-    background: white;
-    border-top: 1px solid #e5e7eb;
-    margin-top: auto;
-  }
+/* Ensure FootnoteView sticks to bottom in both editors */
+.footnote-view-container {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  margin-top: auto;
+}
 
-  /* Fixed footnote positioning for translation editor with overflow-auto */
-  .translation-editor-container .footnote-view-container {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 20;
-    background: white;
-    border-top: 1px solid #e5e7eb;
-    margin-top: 0;
-  }
+/* Fixed footnote positioning for translation editor with overflow-auto */
+.translation-editor-container .footnote-view-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 0;
+}
 
-  /* Make translation editor container relative for absolute positioning */
-  .translation-editor-container {
-    position: relative;
-  }
+/* Make translation editor container relative for absolute positioning */
+.translation-editor-container {
+  position: relative;
+}
 
-  /* Ensure the editor flex container allows footnote to stick to bottom */
-  .editor-container .flex.flex-col.flex-1.relative {
-    min-height: 100%;
-  }
+/* Ensure the editor flex container allows footnote to stick to bottom */
+.editor-container .flex.flex-col.flex-1.relative {
+  min-height: 100%;
+}
 
