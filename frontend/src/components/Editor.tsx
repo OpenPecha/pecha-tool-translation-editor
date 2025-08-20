@@ -69,7 +69,7 @@ const Editor = ({
   const updateDocumentMutation = useMutation({
     mutationFn: (content: Record<string, unknown>) =>
       updateContentDocument(documentId as string, {
-        docs_prosemirror_delta: content.ops,
+        content: content.ops,
       }),
     onError: (error) => {
       console.error("Error updating document content:", error);
@@ -226,16 +226,16 @@ const Editor = ({
     if (
       quillRef.current &&
       quillRef.current.getText().trim() === "" &&
-      currentDoc?.docs_prosemirror_delta
+      currentDoc?.content
     ) {
       setTimeout(() => {
-        quillRef.current?.setContents(currentDoc.docs_prosemirror_delta);
+        quillRef.current?.setContents(currentDoc.content);
         // Set content loaded after a brief delay to ensure rendering is complete
         setTimeout(() => {
           setIsContentLoaded(true);
         }, 100);
       }, 0);
-    } else if (quillRef.current && !currentDoc?.docs_prosemirror_delta) {
+    } else if (quillRef.current && !currentDoc?.content) {
       // If no content to load, mark as loaded
       setIsContentLoaded(true);
     }
@@ -244,7 +244,7 @@ const Editor = ({
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [currentDoc?.docs_prosemirror_delta]);
+  }, [currentDoc?.content]);
 
   function addComment() {
     if (!currentRange || currentRange?.length === 0) return;

@@ -155,8 +155,8 @@ function TranslationEditor({
 
   // Extract text content from document for translation
   const getDocumentText = () => {
-    if (currentDoc?.docs_prosemirror_delta?.ops) {
-      return currentDoc.docs_prosemirror_delta.ops
+    if (currentDoc?.content?.ops) {
+      return currentDoc.content.ops
         .filter((op: any) => typeof op.insert === "string")
         .map((op: any) => op.insert)
         .join("");

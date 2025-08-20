@@ -89,7 +89,7 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
       // Update the document name instead of the identifier
       return await updateDocument(data.id, {
         name: data.name,
-        docs_prosemirror_delta: undefined,
+        content: undefined,
       });
     },
     onSuccess: () => {

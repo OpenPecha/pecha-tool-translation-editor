@@ -42,8 +42,6 @@ model Project {
 model Doc {
   id                     String    @id @default(uuid())
   identifier             String    @unique
-  docs_prosemirror_delta Json?
-  docs_y_doc_state       Bytes?
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
   ownerId                String?

@@ -157,13 +157,7 @@ const clients = new Set();
 //   let doc = getYDoc(docId, userId);
 //   try {
 //     if (userId) {
-//       const docObject = await prisma.doc.findUnique({
-//         where: { id: docId },
-//         select: {
-//           docs_y_doc_state: true,
-//           docs_prosemirror_delta: true,
-//         },
-//       });
+// Legacy code removed - docs_y_doc_state and docs_prosemirror_delta fields no longer exist
 
 //       if (docObject) {
 //         await addMemberAsViewer(docId, userId);

@@ -152,7 +152,6 @@ router.get("/public/:id", optionalAuthenticate, async (req, res) => {
         language: true,
         isRoot: true,
         rootId: true,
-        docs_prosemirror_delta: true,
         translationStatus: true,
         translationJobId: true,
         createdAt: true,
@@ -252,7 +251,7 @@ router.post("/", authenticate, upload.single("file"), async (req, res) => {
       }
     }
     const delta = prosemirrorText.toDelta();
-    const state = Y.encodeStateAsUpdateV2(doc);
+
 
     const document = await prisma.$transaction(async (tx) => {
       let rootProjectId = null;
@@ -269,8 +268,6 @@ router.post("/", authenticate, upload.single("file"), async (req, res) => {
           identifier,
           name,
           ownerId: req.user.id,
-          docs_y_doc_state: state,
-          docs_prosemirror_delta: delta,
           isRoot: isRoot === "true",
           rootId: rootId ?? null,
           language,
@@ -344,7 +341,7 @@ router.post("/content", authenticate, async (req, res) => {
       }
     }
     const delta = prosemirrorText.toDelta();
-    const state = Y.encodeStateAsUpdateV2(doc);
+
     const document = await prisma.$transaction(async (tx) => {
       let rootProjectId = null;
       if (rootId) {
@@ -360,8 +357,6 @@ router.post("/content", authenticate, async (req, res) => {
           identifier,
           name,
           ownerId: req.user.id,
-          docs_y_doc_state: state,
-          docs_prosemirror_delta: delta,
           isRoot: isRoot === "true",
           rootId: rootId ?? null,
           language,
@@ -380,11 +375,18 @@ router.post("/content", authenticate, async (req, res) => {
           canWrite: true,
         },
       });
-      await tx.version.create({
+      const version = await tx.version.create({
         data: {
           content: { ops: delta },
           docId: doc.id,
           label: "initial Auto-save",
+        },
+      });
+
+      await tx.doc.update({
+        where: { id: doc.id },
+        data: {
+          currentVersionId: version.id,
         },
       });
 
@@ -523,12 +525,22 @@ router.get("/:id", authenticate, async (req, res) => {
         language: true,
         isRoot: true,
         rootId: true,
-        docs_prosemirror_delta: true,
         translationStatus: true,
         translationJobId: true,
         createdAt: true,
         updatedAt: true,
         rootProjectId: true,
+        currentVersionId: true,
+        currentVersion: {
+          select: {
+            id: true,
+            content: true,
+            createdAt: true,
+            updatedAt: true,
+            label: true,
+            userId: true,
+          },
+        },
         rootsProject: {
           include: {
             permissions: true,
@@ -550,16 +562,13 @@ router.get("/:id", authenticate, async (req, res) => {
       });
     }
 
-    // Decode Y.js state (if stored as Uint8Array) and convert to Delta
-    let delta = [];
-    if (document.docs_y_doc_state) {
-      const ydoc = new Y.Doc({ gc: true });
-      // Y.applyUpdate(ydoc, document.docs_y_doc_state);
-      delta = ydoc.getText(document.identifier).toDelta(); // Convert to Quill-compatible Delta
-    } else if (document.docs_prosemirror_delta) {
-      delta = document.docs_prosemirror_delta;
-    }
-    res.json(document);
+    // Extract content from the current version and add to response
+    const response = {
+      ...document,
+      content: document.currentVersion?.content?.ops || [],
+    };
+    
+    res.json(response);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error retrieving document" });
@@ -589,7 +598,17 @@ router.get("/:id/content", optionalAuthenticate, async (req, res) => {
         permissions: true,
         language: true,
         isRoot: true,
-        docs_prosemirror_delta: true,
+        currentVersionId: true,
+        currentVersion: {
+          select: {
+            id: true,
+            content: true,
+            createdAt: true,
+            updatedAt: true,
+            label: true,
+            userId: true,
+          },
+        },
         rootsProject: {
           include: {
             permissions: true,
@@ -610,16 +629,13 @@ router.get("/:id/content", optionalAuthenticate, async (req, res) => {
       });
     }
 
-    // Decode Y.js state (if stored as Uint8Array) and convert to Delta
-    let delta = [];
-    if (document.docs_y_doc_state) {
-      const ydoc = new Y.Doc({ gc: true });
-      // Y.applyUpdate(ydoc, document.docs_y_doc_state);
-      delta = ydoc.getText(document.identifier).toDelta(); // Convert to Quill-compatible Delta
-    } else if (document.docs_prosemirror_delta) {
-      delta = document.docs_prosemirror_delta;
-    }
-    res.json(document);
+    // Extract content from the current version and add to response
+    const response = {
+      ...document,
+      content: document.currentVersion?.content?.ops || [],
+    };
+    
+    res.json(response);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error retrieving document" });
@@ -1064,14 +1080,14 @@ router.patch("/:id", authenticate, async (req, res) => {
  * @security BearerAuth
  * @param {string} id.path.required - Document ID
  * @param {object} request.body.required - Content update data
- * @param {object} request.body.docs_prosemirror_delta - ProseMirror delta
+ * @param {object} request.body.content - Document content
  * @return {object} 200 - Success response with updated document
  * @return {object} 403 - Forbidden - No edit access
  * @return {object} 404 - Document not found
  * @return {object} 500 - Server error
  */
 router.patch("/:id/content", authenticate, async (req, res) => {
-  const { docs_prosemirror_delta } = req.body;
+  const { content } = req.body;
   try {
     // First, get the document with its current version
     const document = await prisma.doc.findUnique({
@@ -1079,7 +1095,7 @@ router.patch("/:id/content", authenticate, async (req, res) => {
       select: {
         ownerId: true,
         id: true,
-        docs_prosemirror_delta: true,
+
         rootProjectId: true,
         currentVersionId: true,
         currentVersion: {
@@ -1106,12 +1122,8 @@ router.patch("/:id/content", authenticate, async (req, res) => {
       if (!permission) return res.status(403).json({ error: "No edit access" });
     }
 
-    await prisma.doc.update({
-      where: { id: document.id },
-      data: {
-        docs_prosemirror_delta,
-      },
-    });
+    // Document content is now managed through versions only
+    // No direct update to document content field needed
 
     let currentVersionId = document.currentVersionId;
     if(currentVersionId === null){
@@ -1132,11 +1144,11 @@ router.patch("/:id/content", authenticate, async (req, res) => {
     if (!currentVersion?.userId) {
       // Compare new content with current version content
       const currentContent = JSON.stringify(currentVersion.content?.ops);
-      const newContent = JSON.stringify(docs_prosemirror_delta );
+      const newContent = JSON.stringify(content);
       if (currentContent !== newContent) {
         newVersion = await prisma.version.create({
           data: {
-            content: {ops:docs_prosemirror_delta},
+            content: {ops: content},
             docId: document.id,
             label: "Edited Initial Auto-save",
             userId: req.user.id,
@@ -1161,7 +1173,7 @@ router.patch("/:id/content", authenticate, async (req, res) => {
       await prisma.version.update({
         where: { id: currentVersionId },
         data: {
-          content: { ops: docs_prosemirror_delta || {} },
+          content: { ops: content || {} },
         },
       });
     }
@@ -1235,7 +1247,7 @@ router.post("/generate-translation", authenticate, async (req, res) => {
         name: true,
         identifier: true,
         ownerId: true,
-        docs_prosemirror_delta: true,
+
         language: true,
       },
     });
@@ -1252,7 +1264,7 @@ router.post("/generate-translation", authenticate, async (req, res) => {
     const doc = new WSSharedDoc(translationId, req.user.id);
     const prosemirrorText = doc.getText(translationId);
     const delta = prosemirrorText.toDelta();
-    const state = Y.encodeStateAsUpdateV2(doc);
+
 
     // Create the translation document in the database
     const translationDoc = await prisma.$transaction(async (tx) => {
@@ -1263,8 +1275,8 @@ router.post("/generate-translation", authenticate, async (req, res) => {
           identifier: translationId,
           name: translationName,
           ownerId: req.user.id,
-          docs_y_doc_state: state,
-          docs_prosemirror_delta: delta,
+
+
           isRoot: false,
           rootId: rootId,
           language,
@@ -1288,13 +1300,15 @@ router.post("/generate-translation", authenticate, async (req, res) => {
 
     // Trigger the translation worker
 
-    // Extract content from the root document
+    // Extract content from the root document's current version
     let content = "";
-    if (
-      rootDoc.docs_prosemirror_delta &&
-      Array.isArray(rootDoc.docs_prosemirror_delta)
-    ) {
-      content = rootDoc.docs_prosemirror_delta
+    const currentVersion = await prisma.version.findUnique({
+      where: { id: rootDoc.currentVersionId },
+      select: { content: true }
+    });
+    
+    if (currentVersion?.content?.ops && Array.isArray(currentVersion.content.ops)) {
+      content = currentVersion.content.ops
         .filter((op) => op.insert)
         .map((op) => op.insert)
         .join("");
@@ -1402,7 +1416,7 @@ router.post("/translation-webhook/:id", async (req, res) => {
 
     // Get the delta and state
     const translatedDelta = translatedText.toDelta();
-    const translatedState = Y.encodeStateAsUpdateV2(translatedDoc);
+    
 
     // Update the document with the translated content
     const data = await prisma.$transaction(async (tx) => {
@@ -1410,8 +1424,6 @@ router.post("/translation-webhook/:id", async (req, res) => {
       let updated = await tx.doc.update({
         where: { id: document_id },
         data: {
-          docs_y_doc_state: translatedState,
-          docs_prosemirror_delta: translatedDelta,
           translationStatus: status,
           metadata: {
             model_used,
@@ -1506,14 +1518,12 @@ router.get("/:id/translations/status", authenticate, async (req, res) => {
 
               // Get the delta and state
               const translatedDelta = translatedText.toDelta();
-              const translatedState = Y.encodeStateAsUpdateV2(translatedDoc);
+        
               await prisma.doc.update({
                 where: { id: translation.id },
                 data: {
                   translationStatus: "completed",
                   translationProgress: 100,
-                  docs_prosemirror_delta: translatedDelta,
-                  docs_y_doc_state: translatedState,
                 },
               });
 
@@ -1686,15 +1696,13 @@ router.get("/translation/:id/status", authenticate, async (req, res) => {
 
           // Get the delta and state
           const translatedDelta = translatedText.toDelta();
-          const translatedState = Y.encodeStateAsUpdateV2(translatedDoc);
+    
 
           await prisma.doc.update({
             where: { id: translation.id },
             data: {
               translationStatus: "completed",
               translationProgress: 100,
-              docs_prosemirror_delta: translatedDelta,
-              docs_y_doc_state: translatedState,
             },
           });
 

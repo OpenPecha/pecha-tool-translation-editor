@@ -29,8 +29,7 @@ interface Document {
   id: string;
   name: string;
   identifier: string;
-  docs_prosemirror_delta: Record<string, unknown>;
-  docs_y_doc_state: Uint8Array;
+  content: Record<string, unknown>;
   created_at?: string;
   updated_at?: string;
   translations?: Translation[];

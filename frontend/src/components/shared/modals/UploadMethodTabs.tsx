@@ -2,17 +2,17 @@ import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { useTranslate } from "@tolgee/react";
-import { AvailableMethodType } from "@/components/Dashboard/DocumentCreateModal/DocumentCreateModal";
+
 import { File } from "lucide-react";
 import { MdApi } from "react-icons/md";
 
 export type UploadMethod = "empty" | "file" | "openpecha" | "ai";
 
 interface UploadMethodTabsProps {
- readonly activeMethod: UploadMethod;
+  readonly activeMethod: UploadMethod;
   readonly onMethodChange: (method: UploadMethod) => void;
   readonly children: React.ReactNode;
-  readonly availableMethods?: AvailableMethodType[];
+  readonly availableMethods?: UploadMethod[];
   readonly className?: string;
 }
 
@@ -54,7 +54,7 @@ export function UploadMethodTabs({
     },
   };
 
-  const visibleTabs = availableMethods?.map((method) => tabConfigs[method.type]);
+  const visibleTabs = availableMethods?.map((method) => tabConfigs[method]);
   if(!visibleTabs) return null;
 
   return (
@@ -93,9 +93,9 @@ export function UploadMethodTabs({
 }
 
 interface TabContentWrapperProps {
-  value: UploadMethod;
-  children: React.ReactNode;
-  className?: string;
+  readonly value: UploadMethod;
+  readonly children: React.ReactNode;
+  readonly className?: string;
 }
 
 export function TabContentWrapper({
