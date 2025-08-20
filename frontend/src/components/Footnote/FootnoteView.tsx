@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   fetchFootnotes,
@@ -6,14 +6,13 @@ import {
   updateFootnote,
   createFootnote,
 } from "@/api/footnote";
-import { FileText, Edit2, Trash2Icon, ChevronDown, Plus } from "lucide-react";
+import { FileText, Edit2, Trash2Icon } from "lucide-react";
 import { Button } from "../ui/button";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionReverseTrigger,
-  AccordionTrigger,
 } from "../ui/accordion";
 import { ScrollArea } from "../ui/scroll-area";
 import emitter from "@/services/eventBus";
@@ -21,8 +20,6 @@ import { useEditor } from "@/contexts/EditorContext";
 import { useAuth } from "@/auth/use-auth-hook";
 import Quill from "quill";
 import { useTranslate } from "@tolgee/react";
-import AvatarWrapper from "../ui/custom-avatar";
-import ContentEditableDiv from "../ui/contentEditable";
 import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 
 interface Footnote {
@@ -118,7 +115,6 @@ function FootnoteView({
     data: footnotesData,
     isLoading,
     error,
-    refetch,
   } = useQuery({
     queryKey: [`footnotes-${documentId}`],
     queryFn: () => fetchFootnotes(documentId),
@@ -197,11 +193,11 @@ function FootnoteView({
       queryClient.invalidateQueries({ queryKey: [`footnotes-${documentId}`] });
 
       // Find the footnote to get its threadId
-      const deletedFootnote = footnotesData?.find((f) => f.id === footnoteId);
+      const deletedFootnote = footnotesData?.find((f: Footnote) => f.id === footnoteId);
       if (quill && deletedFootnote) {
-        const footnoteSpanList = quill.root.querySelectorAll(
-          `span.footnote[data-id="${deletedFootnote.threadId}"]` // Use threadId instead
-        ) as HTMLElement[];
+        const footnoteSpanList = Array.from(quill.root.querySelectorAll(
+          `span.footnote[data-id="${deletedFootnote.threadId}"]`
+        )) as HTMLElement[];
 
         if (footnoteSpanList.length > 0) {
           footnoteSpanList.forEach((span) => {
@@ -220,9 +216,7 @@ function FootnoteView({
     },
   });
 
-  const handleRefresh = () => {
-    refetch();
-  };
+
 
   const handleEdit = (footnote: Footnote) => {
     setEditingFootnote(footnote.id);
@@ -322,6 +316,116 @@ function FootnoteView({
     return position;
   };
 
+  // Detect nested footnotes using both range overlap and DOM traversal
+  const detectNestedFootnotes = () => {
+    if (!quill) return { nestedRelations: new Map(), footnoteRanges: new Map() };
+
+    const footnoteSpans = quill.root.querySelectorAll("span.footnote[data-id]");
+    const footnoteRanges = new Map<string, { start: number; end: number; spans: HTMLElement[] }>();
+    const nestedRelations = new Map<string, { nestedType: string; parentId?: string; childrenIds: string[] }>();
+
+    // Step 1: Collect range information for each footnote
+    footnoteSpans.forEach((span) => {
+      const threadId = span.getAttribute("data-id");
+      if (!threadId) return;
+
+      const blot = Quill.find(span) as any;
+      if (!blot) return;
+
+      const spanIndex = quill.getIndex(blot);
+      const spanLength = span.textContent?.length || 0;
+
+      if (!footnoteRanges.has(threadId)) {
+        footnoteRanges.set(threadId, {
+          start: spanIndex,
+          end: spanIndex + spanLength,
+          spans: []
+        });
+      }
+
+      const range = footnoteRanges.get(threadId)!;
+      range.spans.push(span as HTMLElement);
+      // Update range to encompass all instances
+      range.start = Math.min(range.start, spanIndex);
+      range.end = Math.max(range.end, spanIndex + spanLength);
+    });
+
+    // Step 2: Detect overlapping ranges (nested footnotes)
+    const threadIds = Array.from(footnoteRanges.keys());
+    
+    for (let i = 0; i < threadIds.length; i++) {
+      for (let j = i + 1; j < threadIds.length; j++) {
+        const threadA = threadIds[i];
+        const threadB = threadIds[j];
+        const rangeA = footnoteRanges.get(threadA)!;
+        const rangeB = footnoteRanges.get(threadB)!;
+
+        // Check for overlap
+        const hasOverlap = !(rangeA.end <= rangeB.start || rangeB.end <= rangeA.start);
+        
+        if (hasOverlap) {
+          // Determine parent-child relationship based on range containment
+          const aContainsB = rangeA.start <= rangeB.start && rangeA.end >= rangeB.end;
+          const bContainsA = rangeB.start <= rangeA.start && rangeB.end >= rangeA.end;
+          
+          if (aContainsB && !bContainsA) {
+            // A is parent, B is nested
+            nestedRelations.set(threadA, { 
+              nestedType: "parent", 
+              childrenIds: [...(nestedRelations.get(threadA)?.childrenIds || []), threadB] 
+            });
+            nestedRelations.set(threadB, { 
+              nestedType: "nested", 
+              parentId: threadA, 
+              childrenIds: [] 
+            });
+          } else if (bContainsA && !aContainsB) {
+            // B is parent, A is nested
+            nestedRelations.set(threadB, { 
+              nestedType: "parent", 
+              childrenIds: [...(nestedRelations.get(threadB)?.childrenIds || []), threadA] 
+            });
+            nestedRelations.set(threadA, { 
+              nestedType: "nested", 
+              parentId: threadB, 
+              childrenIds: [] 
+            });
+          }
+        }
+      }
+    }
+
+    // Step 3: Also check DOM tree for nested relationships
+    footnoteSpans.forEach((span) => {
+      const threadId = span.getAttribute("data-id");
+      if (!threadId) return;
+
+      // Check if this span is nested inside another footnote span
+      let parent = span.parentElement;
+      while (parent && parent !== quill.root) {
+        if (parent.classList.contains("footnote") && parent.getAttribute("data-id")) {
+          const parentThreadId = parent.getAttribute("data-id");
+          if (parentThreadId && parentThreadId !== threadId) {
+            // Found a DOM-based nesting relationship
+            nestedRelations.set(parentThreadId, { 
+              nestedType: "parent", 
+              childrenIds: [...(nestedRelations.get(parentThreadId)?.childrenIds || []), threadId] 
+            });
+            nestedRelations.set(threadId, { 
+              nestedType: "nested", 
+              parentId: parentThreadId, 
+              childrenIds: [] 
+            });
+            break;
+          }
+        }
+        parent = parent.parentElement;
+      }
+    });
+
+    return { nestedRelations, footnoteRanges };
+  };
+
   // Get active footnotes from the editor content
   const getActiveFootnotes = (): Footnote[] => {
     if (!quill) return footnotes;
@@ -330,6 +434,9 @@ function FootnoteView({
     const footnoteSpans = quill.root.querySelectorAll("span.footnote[data-id]");
     const activeThreadIds = new Set<string>();
     const footnotePositions = new Map<string, number>();
+
+    // Detect nested footnotes
+    const { nestedRelations, footnoteRanges } = detectNestedFootnotes();
 
     // Collect all active thread IDs and their positions from the editor
     footnoteSpans.forEach((span, index) => {
@@ -346,56 +453,65 @@ function FootnoteView({
       activeThreadIds.has(footnote.threadId)
     );
 
-    // Sort footnotes by their position in the document
+    // Sort footnotes by their end position (for nested footnotes, use range ending index)
     const sortedFootnotes = activeFootnotes.sort((a, b) => {
-      const posA = footnotePositions.get(a.threadId) ?? 0;
-      const posB = footnotePositions.get(b.threadId) ?? 0;
-      return posA - posB;
+      const rangeA = footnoteRanges.get(a.threadId);
+      const rangeB = footnoteRanges.get(b.threadId);
+      
+      const endA = rangeA ? rangeA.end : footnotePositions.get(a.threadId) ?? 0;
+      const endB = rangeB ? rangeB.end : footnotePositions.get(b.threadId) ?? 0;
+      
+      return endA - endB;
     });
 
-    // Update counter values on footnote elements
+    // Update counter values and nested attributes on footnote elements
     let currentCounter = 1;
-    let previousId: string | null = null;
-    let repeatCount = 0;
+    const processedThreadIds = new Set<string>();
 
-    footnoteSpans.forEach((span, index) => {
-      const id = span.getAttribute("data-id");
+    sortedFootnotes.forEach((footnote) => {
+      if (processedThreadIds.has(footnote.threadId)) return;
 
-      if (id === previousId) {
-        // Same as previous, this is a repeating element
-        repeatCount++;
-        span.setAttribute("data-counter", ""); // Don't show counter for repeating elements
-      } else {
-        // Different from previous ID
-        if (repeatCount > 0) {
-          // We had repeating elements, assign counter to the previous element (last in the sequence)
-          footnoteSpans[index - 1].setAttribute(
-            "data-counter",
-            currentCounter.toString()
-          );
-          currentCounter++;
-          repeatCount = 0;
-        } else if (index > 0) {
-          // Previous was a single element, assign counter to it
-          footnoteSpans[index - 1].setAttribute(
-            "data-counter",
-            currentCounter.toString()
-          );
-          currentCounter++;
+      const spans = Array.from(footnoteSpans).filter(
+        span => span.getAttribute("data-id") === footnote.threadId
+      );
+
+      spans.forEach((span) => {
+        const relation = nestedRelations.get(footnote.threadId);
+        
+        // Apply nested attributes (for hover logic only, no visual styling)
+        if (relation) {
+          span.setAttribute("data-nested-type", relation.nestedType);
+          
+          if (relation.parentId) {
+            span.setAttribute("data-parent-id", relation.parentId);
+          } else {
+            span.removeAttribute("data-parent-id");
+          }
+          
+          if (relation.childrenIds.length > 0) {
+            span.setAttribute("data-children-ids", relation.childrenIds.join(","));
+          } else {
+            span.removeAttribute("data-children-ids");
+          }
+        } else {
+          // Remove nested attributes if not nested
+          span.removeAttribute("data-nested-type");
+          span.removeAttribute("data-parent-id");
+          span.removeAttribute("data-children-ids");
         }
+      });
 
-        // Reset for current element (will be processed when we see the next different ID or at the end)
-        span.setAttribute("data-counter", "");
+      // Assign counter - only for the last span of each footnote group
+      const lastSpan = spans[spans.length - 1];
+      if (lastSpan) {
+        lastSpan.setAttribute("data-counter", currentCounter.toString());
+        // Clear counter from other spans of the same footnote
+        spans.slice(0, -1).forEach(span => span.setAttribute("data-counter", ""));
       }
 
-      previousId = id;
+      processedThreadIds.add(footnote.threadId);
+      currentCounter++;
     });
-
-    // Handle the last element in the array
-    if (footnoteSpans.length > 0) {
-      const lastSpan = footnoteSpans[footnoteSpans.length - 1];
-      lastSpan.setAttribute("data-counter", currentCounter.toString());
-    }
 
     return sortedFootnotes;
   };
@@ -418,57 +534,70 @@ function FootnoteView({
 
   const combinedFootnotes = getCombinedFootnotes();
 
+  // Helper function to apply highlighting with same logic as hover
+  const applyFootnoteHighlighting = (footnoteId: string, isHighlighted: boolean) => {
+    const allFootnoteSpans = document.querySelectorAll(
+      `span.footnote[data-id="${footnoteId}"]`
+    );
+    
+    allFootnoteSpans.forEach((span) => {
+      const nestedType = span.getAttribute("data-nested-type");
+      const childrenIds = span.getAttribute("data-children-ids")?.split(",").filter(Boolean) || [];
+      
+      if (isHighlighted) {
+        // All footnotes use the same base highlighting
+        span.classList.add("footnote-highlighted");
+        
+        // When highlighting parent, highlight children with different style
+        if (nestedType === "parent") {
+          childrenIds.forEach(childId => {
+            const childSpans = document.querySelectorAll(`span.footnote[data-id="${childId}"]`);
+            childSpans.forEach(childSpan => {
+              childSpan.classList.add("footnote-inner-highlighted");
+            });
+          });
+        }
+        
+        // When highlighting nested footnote, DO NOT highlight parent
+        // Only the inner footnote itself gets highlighted
+      } else {
+        // Remove all highlighting classes
+        span.classList.remove("footnote-highlighted", "footnote-inner-highlighted");
+        
+        // Remove highlighting from children if this is a parent
+        if (nestedType === "parent") {
+          childrenIds.forEach(childId => {
+            const childSpans = document.querySelectorAll(`span.footnote[data-id="${childId}"]`);
+            childSpans.forEach(childSpan => {
+              childSpan.classList.remove("footnote-inner-highlighted");
+            });
+          });
+        }
+      }
+    });
+  };
+
   const handleFootnoteClick = (footnote: Footnote) => {
     // Find the footnote span in the editor and scroll to it
     if (quill) {
-      const footnoteSpanList = quill.root.querySelectorAll(
+      const footnoteSpanList = Array.from(quill.root.querySelectorAll(
         `span.footnote[data-id="${footnote.threadId}"]`
-      ) as HTMLElement;
-      if (footnoteSpanList?.length > 0) {
+      )) as HTMLElement[];
+      if (footnoteSpanList.length > 0) {
         // Scroll the footnote span into view
         footnoteSpanList[0].scrollIntoView({
           behavior: "smooth",
           block: "center",
           inline: "nearest",
         });
-        // Highlight the footnote group
-        // Convert NodeList to array for type safety
-        Array.from(footnoteSpanList).forEach((footnoteSpan: Element) => {
-          (footnoteSpan as HTMLElement).classList.add("footnote-highlighted");
-        });
+        
+        // Apply highlighting with same logic as hover
+        applyFootnoteHighlighting(footnote.threadId, true);
+        
+        // Remove highlighting after 2 seconds
         setTimeout(() => {
-          Array.from(footnoteSpanList).forEach((footnoteSpan: Element) => {
-            (footnoteSpan as HTMLElement).classList.remove("footnote-highlighted");
-          });
+          applyFootnoteHighlighting(footnote.threadId, false);
         }, 2000);
-        // footnoteSpanList.forEach((footnoteSpan) => {
-        //   const blot = Quill.find(footnoteSpan) as any;
-        //   if (blot && blot.length) {
-        //     // Get the index and length of the blot
-        //     const index = quill.getIndex(blot);
-        //     const length = blot.length();
-
-        //     // Remove the footnote formatting
-        //     quill.formatText(
-        //       index,
-        //       length,
-        //       "background",
-        //       "rgba(59, 130, 246, 0.2)",
-        //       "api"
-        //     );
-
-        //     setTimeout(() => {
-        //       quill.formatText(
-        //         index,
-        //         length,
-        //         "background",
-        //         "transparent",
-        //         "api"
-        //       );
-        //     }, 2000);
-        //   }
-        //   // Add a temporary highlight effect
-        // });
       }
     }
 
@@ -485,6 +614,7 @@ function FootnoteView({
   useEffect(() => {
     const openHandler = (data: unknown) => {
       const footnoteData = data as FootnoteEventData;
+      console.log("footnoteData", footnoteData);
       setIsModalOpen(true);
 
       setTimeout(() => {

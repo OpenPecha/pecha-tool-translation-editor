@@ -293,6 +293,16 @@ box-shadow: 0 0 0 2px #fabd07 !important;
 transition: all 0.2s ease-in-out !important;
 }
 
+
+
+/* Inner footnote highlighting when parent is hovered */
+.footnote-inner-highlighted {
+  background-color: #e3f2fd !important;
+  border-radius: 4px !important;
+  box-shadow: 0 0 0 2px #1976d2 !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
 /* Ensure FootnoteView sticks to bottom in both editors */
 .footnote-view-container {
   position: sticky;
