@@ -2,6 +2,7 @@ import { memo, useCallback, useEffect, useRef, useState } from "react";
 import Quill from "quill";
 import Toolbar from "./Toolbar/Toolbar";
 import "quill/dist/quill.snow.css";
+import "quill-footnote/dist/quill-footnote.css";
 import quill_import from "./quillExtension";
 import { useQuillVersion } from "../contexts/VersionContext";
 import LineNumberVirtualized from "./LineNumbers";
@@ -19,6 +20,8 @@ import emitter from "@/services/eventBus";
 import { useUmamiTracking, getUserContext } from "@/hooks/use-umami-tracking";
 import { useAuth } from "@/auth/use-auth-hook";
 import SkeletonLoader from "./SkeletonLoader";
+import { footnoteKeyboardBindings } from "quill-footnote";
+
 quill_import();
 
 const Editor = ({
@@ -154,12 +157,20 @@ const Editor = ({
             undo: () => {
               quill.history.undo();
             },
+            footnote: () => {
+              const module = quill.getModule("footnote");
+              console.log(module,"module")
+              module.addFootnote("");
+            },
           },
         },
+        footnote:true,
         // cursors: {
         //   transformOnTextChange: false,
         // },
-        keyboard: true,
+        keyboard: {
+          bindings: {...footnoteKeyboardBindings},
+        },
         counter: { container: `#${counterId}`, unit: "character" },
       },
       readOnly: !isEditable,
@@ -252,8 +263,12 @@ const Editor = ({
     setShowCommentModal(true);
   }
   function addFootnote() {
-    if (!currentRange || currentRange?.length === 0) return;
-    emitter.emit("createFootnote", { range: currentRange, documentId });
+    const quill=quillRef.current
+    if (!currentRange || currentRange?.length === 0|| !quill) return;
+    const module = quill.getModule("footnote");
+    console.log(quill.options.modules);
+
+    // emitter.emit("createFootnote", { range: currentRange, documentId });
   }
   if (!documentId) return null;
   return (

@@ -44,6 +44,10 @@ const ICONS = {
     component: RedoSvg,
     alt: "Redo",
   },
+  Footnote: {
+    component:  RedoSvg,
+    alt: "Footnote",
+  },
 };
 
 interface IconProps {
@@ -54,7 +58,7 @@ const createIconComponent = (iconKey: keyof typeof ICONS) => {
   return () => {
     const Icon = ICONS[iconKey].component;
     // return <ReactSVG src={Icon} className="toolbar-icon" />;
-    const encodedSvg = Icon.split(",")[1];
+    const encodedSvg = Icon?.toString().split(",")[1];
     const decodedSvg = decodeURIComponent(encodedSvg);
     const parser = new DOMParser();
     const svgDoc = parser.parseFromString(decodedSvg, "image/svg+xml");
@@ -76,6 +80,7 @@ const JoinIcon = createIconComponent("Join");
 const UndoIcon = createIconComponent("Undo");
 const RedoIcon = createIconComponent("Redo");
 const underlineIcon = createIconComponent("Underline");
+const FootnoteIcon = createIconComponent("Footnote");
 
 export {
   BoldIcon,
@@ -87,4 +92,5 @@ export {
   UndoIcon,
   RedoIcon,
   underlineIcon,
+  FootnoteIcon
 };

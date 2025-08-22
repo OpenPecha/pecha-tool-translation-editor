@@ -1,16 +1,18 @@
 import Quill from "quill";
 
 import CommentBlot from "./commentBlot";
-import footnote from "./footNoteBlot";
 import CustomParagraph from "./customPtag";
 import HeaderNBlot from "./headerDynamicBlot";
 import { MAX_HEADING_LEVEL } from "@/utils/editorConfig";
+import { FootnoteModule } from "quill-footnote";
+
 import {
   BoldIcon,
   ItalicIcon,
   RedoIcon,
   underlineIcon,
   UndoIcon,
+  FootnoteIcon
 } from "../Toolbar/ToolbarIcons";
 import { tolgee } from "@/contexts/TolgeeContext";
 
@@ -37,12 +39,13 @@ export default function quill_import() {
   Quill.register(Block, true);
   Quill.register(CustomParagraph);
   Quill.register(CommentBlot);
-  Quill.register(footnote);
+  Quill.register("modules/footnote", FootnoteModule);
 
   const icons = Quill.import("ui/icons");
   icons.bold = BoldIcon();
   icons.italic = ItalicIcon();
   icons.underline = underlineIcon();
+  icons.footnote = FootnoteIcon();
   // No longer needed - removed commented code
   icons.undo = UndoIcon();
   icons.redo = RedoIcon();
