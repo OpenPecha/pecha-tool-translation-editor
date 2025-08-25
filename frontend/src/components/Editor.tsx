@@ -158,12 +158,15 @@ const Editor = ({
               quill.history.undo();
             },
             footnote: () => {
-              const module = quill.getModule("footnote");
-              console.log(module,"module")
+              console.log("footnote");
+              const quill = quillRef.current;
+              if (!quill) return;
+              const module = quill.getModule("customFootnote");
               module.addFootnote("");
             },
           },
         },
+        customFootnote:true,
         footnote:true,
         // cursors: {
         //   transformOnTextChange: false,
@@ -263,11 +266,10 @@ const Editor = ({
     setShowCommentModal(true);
   }
   function addFootnote() {
+    console.log("addFootnote");
     const quill=quillRef.current
     if (!currentRange || currentRange?.length === 0|| !quill) return;
     const module = quill.getModule("footnote");
-    console.log(quill.options.modules);
-
     // emitter.emit("createFootnote", { range: currentRange, documentId });
   }
   if (!documentId) return null;
@@ -311,12 +313,7 @@ const Editor = ({
               </div>
             )}
 
-            {/* Only render FootnoteView after content is loaded */}
-            {isContentLoaded && (
-              <div className="footnote-view-container">
-                <FootnoteView documentId={documentId} isEditable={isEditable} />
-              </div>
-            )}
+            
           </div>
           {createPortal(
             <div className="flex gap-1 items-center">

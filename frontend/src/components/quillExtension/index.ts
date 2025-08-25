@@ -4,8 +4,7 @@ import CommentBlot from "./commentBlot";
 import CustomParagraph from "./customPtag";
 import HeaderNBlot from "./headerDynamicBlot";
 import { MAX_HEADING_LEVEL } from "@/utils/editorConfig";
-import { FootnoteModule } from "quill-footnote";
-
+import { CustomFootnoteModule, CollapsibleFootnoteSection } from "./CustomFootnote";
 import {
   BoldIcon,
   ItalicIcon,
@@ -14,7 +13,6 @@ import {
   UndoIcon,
   FootnoteIcon
 } from "../Toolbar/ToolbarIcons";
-import { tolgee } from "@/contexts/TolgeeContext";
 
 const customHeaders: any[] = [];
 export default function quill_import() {
@@ -39,8 +37,8 @@ export default function quill_import() {
   Quill.register(Block, true);
   Quill.register(CustomParagraph);
   Quill.register(CommentBlot);
-  Quill.register("modules/footnote", FootnoteModule);
-
+  Quill.register("modules/customFootnote", CustomFootnoteModule);
+  Quill.register(CollapsibleFootnoteSection, true);
   const icons = Quill.import("ui/icons");
   icons.bold = BoldIcon();
   icons.italic = ItalicIcon();

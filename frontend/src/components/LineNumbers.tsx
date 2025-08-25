@@ -338,7 +338,7 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
         } text-right relative`}
         style={{ width: `${maxLineWidth + 2}ch` }}
       >
-        {lineNumbers.map((lineNum) => (
+        {lineNumbers.slice(0, -1).map((lineNum) => (
           <span
             key={`${documentId}-line-${lineNum.number}`}
             onDoubleClick={() => handleDoubleClick(lineNum.number)}
