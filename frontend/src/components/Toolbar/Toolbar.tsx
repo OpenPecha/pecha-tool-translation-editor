@@ -14,6 +14,8 @@ import { createPortal } from "react-dom";
 import VersionDiff from "./VersionDiff";
 import Quill from "quill";
 import { useAuth } from "@/auth/use-auth-hook";
+import FootnoteSvg from "@/assets/toolbar/footnote.svg";
+
 const isEnabled = !EDITOR_READ_ONLY;
 
 interface ToolbarProps {
@@ -261,7 +263,9 @@ const Toolbar = ({
             <FaHistory />
           </ToolbarButton>
           <span className="ql-formats" style={isEnabledStyle}>
-          <button className="ql-footnote" title="footnote" />
+          <button className="ql-footnote" title="footnote" >
+            <img src={FootnoteSvg} alt="footnote" className="filter opacity-70"  />
+            </button>
         </span>
         </span>
 

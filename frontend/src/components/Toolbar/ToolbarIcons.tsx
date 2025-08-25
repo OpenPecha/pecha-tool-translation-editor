@@ -7,6 +7,7 @@ import JoinSvg from "@/assets/toolbar/join.svg";
 import UndoSvg from "@/assets/toolbar/undo.svg";
 import RedoSvg from "@/assets/toolbar/redo.svg";
 import UnderlineSvg from "@/assets/toolbar/underline.svg";
+import FootnoteSvg from "@/assets/toolbar/footnote.svg";
 const ICONS = {
   Underline: {
     component: UnderlineSvg,
@@ -45,7 +46,7 @@ const ICONS = {
     alt: "Redo",
   },
   Footnote: {
-    component:  RedoSvg,
+    component:  FootnoteSvg,
     alt: "Footnote",
   },
 };
