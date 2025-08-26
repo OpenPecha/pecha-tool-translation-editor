@@ -6,6 +6,7 @@ class CollapsibleFootnoteSection extends FootnoteSection {
   constructor(scroll: any, domNode: HTMLElement, value: any) {
     super(scroll, domNode, value);
 
+    domNode.classList.add("collapsed")
     if (!domNode.querySelector(".footnote-toggle")) {
       
       const header = document.createElement("div");
@@ -17,12 +18,6 @@ class CollapsibleFootnoteSection extends FootnoteSection {
       header.addEventListener("click", () => {
         domNode.classList.toggle("collapsed");
 
-        const rows = domNode.querySelectorAll(".footnote-row");
-        rows.forEach((row: Element) => {
-          (row as HTMLElement).style.display = domNode.classList.contains("collapsed")
-            ? "none"
-            : "";
-        });
 
         header.innerText = domNode.classList.contains("collapsed")
           ? "Footnotes"

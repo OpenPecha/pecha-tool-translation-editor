@@ -365,12 +365,17 @@
   }
   
   .footnote-toggle::after {
-    content: "▲";
+    content: "▼";
     transition: transform 0.3s;
   }
   .footnote-section.collapsed .footnote-toggle::after {
     transform: rotate(180deg);
   }
+
+  .footnote-section.collapsed .footnote-row{
+    display: none;
+  }
+
   .footnote-row {
     margin: 0 0 16px 0;
     padding: 0;
@@ -379,19 +384,16 @@
     font-size: 12px;
     line-height: 1.6;
     color: #6b7280;
-    display: flex;
-    align-items: flex-start;
-    gap: 1px;
     transition: color 0.2s ease;
   }
   
   .footnote-row:last-child {
     margin-bottom: 0;
-  }
+  } 
   
   .footnote-row::before {
     content: attr(data-index);
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     /* background: #f3f4f6; */

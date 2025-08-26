@@ -21,6 +21,7 @@ import { useUmamiTracking, getUserContext } from "@/hooks/use-umami-tracking";
 import { useAuth } from "@/auth/use-auth-hook";
 import SkeletonLoader from "./SkeletonLoader";
 import { footnoteKeyboardBindings } from "quill-footnote";
+import { CustomFootnoteModule } from "./quillExtension/CustomFootnote";
 
 quill_import();
 
@@ -158,7 +159,6 @@ const Editor = ({
               quill.history.undo();
             },
             footnote: () => {
-              console.log("footnote");
               const quill = quillRef.current;
               if (!quill) return;
               const module = quill.getModule("footnote");
@@ -172,7 +172,27 @@ const Editor = ({
         //   transformOnTextChange: false,
         // },
         keyboard: {
-          bindings: {...footnoteKeyboardBindings},
+          bindings: {...footnoteKeyboardBindings,
+            footnoteEsc: {
+              key: "Escape",
+              format: ["footnote-row"],
+              handler: function (this: { quill: Quill }, range: any): boolean {
+                const [line] = this.quill.getLine(range.index);
+                if (line?.statics?.blotName === "footnote-row") {
+                  const footnoteModule = this.quill.getModule(
+                    "footnote",
+                  ) as CustomFootnoteModule;
+          
+                  // delete the whole footnote row (pass the blot)
+                  footnoteModule.deleteFootnote(line);
+          
+                  return false; // prevent default Escape behavior
+                }
+          
+                return true;
+              },
+            },
+          },
         },
         counter: { container: `#${counterId}`, unit: "character" },
       },
@@ -180,6 +200,7 @@ const Editor = ({
       placeholder: "Start collaborating...",
       // className is not a valid Quill option, apply these styles to the container instead
     });
+
     registerQuill(quill);
     quillRef.current = quill;
     registerQuill2(editorId, quill);
@@ -191,6 +212,18 @@ const Editor = ({
             e.preventDefault();
             e.stopPropagation();
           }
+        }
+        if (e.key==='space' || e.key==='Enter' ||e.key==='Delete' ||e.key==='Backspace'){
+         const footnotesInEditor=quill.root.querySelectorAll('.footnote-number');
+         const footnoteIdsInEditor=Array.from(footnotesInEditor).map(footnote=>footnote.id.split('-')[1]);
+         const footnotesInFootnoteSection=quill.root.querySelectorAll('.footnote-row');
+         // footnote that are present in footnote section and not in editor should be deleted check with there id footnote row contains id as footnote-row-[id]  and editor footnote contain footnote-id[]
+         footnotesInFootnoteSection.forEach(footnote=>{
+           const footnoteId=footnote.id.split('-row-')[1];
+           if (!footnoteIdsInEditor.includes(footnoteId)){
+            footnote.remove();
+           }
+         })
         }
       },
       signal
