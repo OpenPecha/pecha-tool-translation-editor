@@ -298,20 +298,12 @@ const Editor = ({
 
     setShowCommentModal(true);
   }
-  function addFootnote() {
-    console.log("addFootnote");
-    const quill=quillRef.current
-    if (!currentRange || currentRange?.length === 0|| !quill) return;
-    const module = quill.getModule("footnote");
-    // emitter.emit("createFootnote", { range: currentRange, documentId });
-  }
   if (!documentId) return null;
   return (
     <>
       {createPortal(
         <Toolbar
           addComment={addComment}
-          addFootnote={addFootnote}
           synced={isSynced}
           documentId={documentId}
           toolbarId={toolbarId}

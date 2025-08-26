@@ -345,6 +345,8 @@
     overflow-y: auto;
   }
   .footnote-toggle {
+    position:sticky;
+    top:0;
     margin: 0 !important;
     background-color: #f3f4f6;
     border-radius: 0.5rem 0.5rem 0 0;

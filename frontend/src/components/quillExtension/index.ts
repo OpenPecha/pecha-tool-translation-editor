@@ -4,7 +4,7 @@ import CommentBlot from "./commentBlot";
 import CustomParagraph from "./customPtag";
 import HeaderNBlot from "./headerDynamicBlot";
 import { MAX_HEADING_LEVEL } from "@/utils/editorConfig";
-import { CustomFootnoteModule } from "./CustomFootnote";
+import { CustomFootnoteModule, CollapsibleFootnoteSection } from "./CustomFootnote";
 import {
   BoldIcon,
   ItalicIcon,
@@ -38,12 +38,12 @@ export default function quill_import() {
   Quill.register(CustomParagraph);
   Quill.register(CommentBlot);
   Quill.register("modules/footnote", CustomFootnoteModule);
-  const icons = Quill.import("ui/icons");
+  Quill.register(CollapsibleFootnoteSection, true);
+  const icons:any = Quill.import("ui/icons");
   icons.bold = BoldIcon();
   icons.italic = ItalicIcon();
   icons.underline = underlineIcon();
   icons.footnote = FootnoteIcon();
-  // No longer needed - removed commented code
   icons.undo = UndoIcon();
   icons.redo = RedoIcon();
   // Generate and register custom header blots

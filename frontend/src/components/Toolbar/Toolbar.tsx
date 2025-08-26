@@ -24,14 +24,12 @@ interface ToolbarProps {
   documentId: string;
   toolbarId: string;
   range: any;
-  addFootnote: () => void;
   isEditable: boolean;
   documentName?: string; // Add document name prop
 }
 
 const Toolbar = ({
   addComment,
-  addFootnote,
   synced,
   documentId,
   toolbarId,
