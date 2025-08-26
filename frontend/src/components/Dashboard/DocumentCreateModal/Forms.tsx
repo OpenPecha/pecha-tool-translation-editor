@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import SelectLanguage from "./SelectLanguage";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import TextUploader from "./TextUploader";
@@ -7,9 +7,9 @@ import { createProject } from "@/api/project";
 import { OpenPechaTextLoader } from "./OpenPechaTextLoader";
 import {
   ErrorDisplay,
-  ModalFooter,
   FormSection,
 } from "@/components/shared/modals";
+import { DEFAULT_LANGUAGE_SELECTED } from "@/config";
 
 export type SelectedPechaType = {
   id: string;
@@ -21,17 +21,28 @@ export type SelectedPechaType = {
 export function NewPechaForm({
   projectName,
   closeModal,
+  onValidationChange,
+  onCreateProject,
 }: {
   readonly projectName: string;
   readonly closeModal: () => void;
+  readonly onValidationChange?: (isValid: boolean) => void;
+  readonly onCreateProject?: React.MutableRefObject<(() => void) | null>;
 }) {
   const [error, setError] = useState("");
-  const [selectedLanguage, setSelectedLanguage] = useState<string>("");
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(DEFAULT_LANGUAGE_SELECTED);
   const [rootId, setRootId] = useState<string | null>(null);
   const [metadata, setMetadata] = useState<Record<string, unknown> | null>(
     null
   );
   const queryClient = useQueryClient();
+
+  // Notify parent about validation state
+  const isValid = !!(rootId && selectedLanguage && selectedLanguage !== "");
+  
+  React.useEffect(() => {
+    onValidationChange?.(isValid);
+  }, [isValid, onValidationChange]);
 
   const createProjectMutation = useMutation({
     mutationFn: () => {
@@ -54,14 +65,22 @@ export function NewPechaForm({
     },
   });
 
-  const handleCreateProject = () => {
+  const handleCreateProject = React.useCallback(() => {
     if (!projectName) {
       setError("Project name is required");
       return;
     }
     setError(""); // Clear any previous errors
     createProjectMutation.mutate();
-  };
+  }, [projectName, createProjectMutation]);
+
+  // Expose the create function to parent
+  React.useEffect(() => {
+    if (onCreateProject) {
+      // Replace the onCreateProject prop with our handleCreateProject
+      (onCreateProject as React.MutableRefObject<(() => void) | null>).current = handleCreateProject;
+    }
+  }, [handleCreateProject, onCreateProject]);
 
   return (
     <div className="space-y-8">
@@ -97,14 +116,7 @@ export function NewPechaForm({
         </>
       )}
 
-      <ModalFooter
-        onCancel={closeModal}
-        onConfirm={handleCreateProject}
-        confirmDisabled={
-          !rootId || !selectedLanguage || selectedLanguage === ""
-        }
-        confirmLoading={createProjectMutation.isPending}
-      />
+
     </div>
   );
 }
@@ -112,14 +124,20 @@ export function NewPechaForm({
 export function PechaFromOpenPecha({
   projectName,
   closeModal,
+  onValidationChange,
+  onCreateProject,
 }: {
   readonly projectName: string;
   readonly closeModal: () => void;
+  readonly onValidationChange?: (isValid: boolean) => void;
+  readonly onCreateProject?: React.MutableRefObject<(() => void) | null>;
 }) {
   return (
     <OpenPechaTextLoader 
       projectName={projectName} 
-      closeModal={closeModal} 
+      closeModal={closeModal}
+      onValidationChange={onValidationChange}
+      onCreateProject={onCreateProject}
     />
   );
 }

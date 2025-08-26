@@ -3,14 +3,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { useTranslate } from "@tolgee/react";
 
+import { File } from "lucide-react";
+import { MdApi } from "react-icons/md";
+
 export type UploadMethod = "empty" | "file" | "openpecha" | "ai";
 
 interface UploadMethodTabsProps {
-  activeMethod: UploadMethod;
-  onMethodChange: (method: UploadMethod) => void;
-  children: React.ReactNode;
-  availableMethods?: UploadMethod[];
-  className?: string;
+  readonly activeMethod: UploadMethod;
+  readonly onMethodChange: (method: UploadMethod) => void;
+  readonly children: React.ReactNode;
+  readonly availableMethods?: UploadMethod[];
+  readonly className?: string;
 }
 
 interface TabConfig {
@@ -18,13 +21,14 @@ interface TabConfig {
   label: string;
   disabled?: boolean;
   comingSoon?: boolean;
+  icon?: React.ReactNode;
 }
 
 export function UploadMethodTabs({
   activeMethod,
   onMethodChange,
   children,
-  availableMethods = ["empty", "file", "openpecha", "ai"],
+  availableMethods ,
   className,
 }: UploadMethodTabsProps) {
   const { t } = useTranslate();
@@ -37,10 +41,12 @@ export function UploadMethodTabs({
     file: {
       value: "file",
       label: t("common.file"),
+      icon: <File size={14}/>
     },
     openpecha: {
       value: "openpecha",
-      label: t("common.openpecha")
+      label: t("common.openpecha"),
+      icon: <MdApi size={14}/>
     },
     ai: {
       value: "ai",
@@ -48,16 +54,18 @@ export function UploadMethodTabs({
     },
   };
 
-  const visibleTabs = availableMethods.map((method) => tabConfigs[method]);
+  const visibleTabs = availableMethods?.map((method) => tabConfigs[method]);
+  if(!visibleTabs) return null;
 
   return (
     <Tabs
       value={activeMethod}
       onValueChange={(value) => onMethodChange(value as UploadMethod)}
       className={cn("w-full", className)}
+      defaultValue={visibleTabs[0].value}
     >
       <TabsList
-        className="grid w-full bg-gray-100 rounded-lg p-1"
+        className="before:bg-border relative mb-3 h-auto w-full gap-0.5 bg-transparent p-0 before:absolute before:inset-x-0 before:bottom-0 before:h-px"
         style={{ gridTemplateColumns: `repeat(${visibleTabs.length}, 1fr)` }}
       >
         {visibleTabs.map((tab) => (
@@ -65,13 +73,10 @@ export function UploadMethodTabs({
             key={tab.value}
             value={tab.value}
             disabled={tab.disabled}
-            className={cn(
-              "relative rounded-md transition-all duration-200 text-sm font-medium",
-              "data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm",
-              "data-[state=inactive]:text-gray-600 hover:text-gray-900",
-              tab.disabled && "opacity-50 cursor-not-allowed"
-            )}
+            className="bg-muted w-full flex gap-2 overflow-hidden rounded-b-none border-x border-t py-2 data-[state=active]:z-10 data-[state=active]:shadow-none "
+       
           >
+            {tab.icon}
             {tab.label}
             {tab.comingSoon && (
               <span className="ml-1 text-xs text-orange-500 font-normal">
@@ -88,9 +93,9 @@ export function UploadMethodTabs({
 }
 
 interface TabContentWrapperProps {
-  value: UploadMethod;
-  children: React.ReactNode;
-  className?: string;
+  readonly value: UploadMethod;
+  readonly children: React.ReactNode;
+  readonly className?: string;
 }
 
 export function TabContentWrapper({

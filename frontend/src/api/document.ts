@@ -169,7 +169,7 @@ export const deleteDocument = async (id: string) => {
 
 interface UpdateDocumentParams {
   name?: string;
-  docs_prosemirror_delta?: Op[];
+  content?: Op[];
 }
 
 /**

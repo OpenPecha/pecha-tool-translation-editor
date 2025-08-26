@@ -10,7 +10,7 @@ const dmp = new diff_match_patch();
 // Create a new root text
 router.post("/root", authenticate, async (req, res) => {
   try {
-    const { title, content, language } = req.body;
+    const { title, language } = req.body;
 
     if (!title || !language) {
       return res.status(400).json({
@@ -24,7 +24,7 @@ router.post("/root", authenticate, async (req, res) => {
         identifier: `root-${Date.now()}`,
         language,
         isRoot: true,
-        docs_prosemirror_delta: content ? { content } : null,
+
         ownerId: req.user.id,
       },
     });
@@ -122,7 +122,7 @@ router.get("/root/:id", async (req, res) => {
 // Create a translation for a root text
 router.post("/translation", authenticate, async (req, res) => {
   try {
-    const { rootId, title, content, language } = req.body;
+    const { rootId, title, language } = req.body;
 
     if (!rootId || !title || !language) {
       return res.status(400).json({
@@ -149,7 +149,7 @@ router.post("/translation", authenticate, async (req, res) => {
         language,
         isRoot: false,
         rootId,
-        docs_prosemirror_delta: content ? { content } : null,
+
         ownerId: req.user.id,
       },
     });

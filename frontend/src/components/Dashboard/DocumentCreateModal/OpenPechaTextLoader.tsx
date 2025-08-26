@@ -1,17 +1,15 @@
-import { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { AlertCircle, CheckCircle, FileText, Languages, Loader2 } from "lucide-react";
+import { AlertCircle, CheckCircle, Languages, Loader2 } from "lucide-react";
 import { createProject } from "@/api/project";
 import { createDocumentWithContent } from "@/api/document";
 import { fetchExpressions, fetchManifestations, fetchTextContent } from "@/api/pecha";
 import { SearchableDropdown } from "./SearchableDropdown";
 import {
   ErrorDisplay,
-  ModalFooter,
-  FormSection,
 } from "@/components/shared/modals";
 import { Label } from "@/components/ui/label";
 
@@ -26,13 +24,13 @@ interface Expression {
 interface Manifestation {
   id: string;
   expression_id: string;
-  annotation: any;
+  annotation: {[key: string]: unknown};
   type: string;
 }
 
 interface TextContentType {
   annotations: {
-    [key: string]: any[];
+    [key: string]: Array<{[key: string]: unknown}>;
   };
   base: string;
 }
@@ -40,9 +38,13 @@ interface TextContentType {
 export function OpenPechaTextLoader({
   projectName,
   closeModal,
+  onValidationChange,
+  onCreateProject,
 }: {
   readonly projectName: string;
   readonly closeModal: () => void;
+  readonly onValidationChange?: (isValid: boolean) => void;
+  readonly onCreateProject?: React.MutableRefObject<(() => void) | null>;
 }) {
   // State management
   const [error, setError] = useState("");
@@ -50,9 +52,22 @@ export function OpenPechaTextLoader({
   const [selectedManifestationId, setSelectedManifestationId] = useState("");
   const [selectedSegmentationId, setSelectedSegmentationId] = useState("");
   const [processedText, setProcessedText] = useState("");
-  const [segmentationData, setSegmentationData] = useState<any>(null);
+  const [segmentationData, setSegmentationData] = useState<Array<{[key: string]: unknown}> | null>(null);
 
   const queryClient = useQueryClient();
+
+  // Validation state
+  const isValid = !!(
+    selectedExpressionId && 
+    selectedManifestationId && 
+    processedText.trim() &&
+    projectName.trim()
+  );
+
+  // Notify parent about validation state
+  React.useEffect(() => {
+    onValidationChange?.(isValid);
+  }, [isValid, onValidationChange]);
 
   // Utility function to extract title from title object or string
   const extractTitle = (title: string | { bo?: string; en?: string; [key: string]: string | undefined } | undefined, fallback: string = ""): string => {
@@ -231,7 +246,7 @@ export function OpenPechaTextLoader({
     },
   });
 
-  const handleCreateProject = () => {
+  const handleCreateProject = React.useCallback(() => {
     if (!projectName) {
       setError("Project name is required");
       return;
@@ -246,7 +261,14 @@ export function OpenPechaTextLoader({
     }
     setError("");
     createProjectMutation.mutate();
-  };
+  }, [projectName, selectedExpressionId, selectedManifestationId, createProjectMutation]);
+
+  // Expose the create function to parent
+  React.useEffect(() => {
+    if (onCreateProject) {
+      (onCreateProject as React.MutableRefObject<(() => void) | null>).current = handleCreateProject;
+    }
+  }, [handleCreateProject, onCreateProject]);
 
   // Prepare dropdown options
   const expressionOptions = expressions.map((exp: Expression) => ({
@@ -410,19 +432,7 @@ export function OpenPechaTextLoader({
         </>
       )}
 
-      {/* Action Buttons */}
-      <ModalFooter
-        onCancel={closeModal}
-        onConfirm={handleCreateProject}
-        confirmDisabled={
-          !selectedExpressionId || 
-          !selectedManifestationId || 
-          !processedText.trim() ||
-          !projectName.trim()
-        }
-        confirmLoading={createProjectMutation.isPending}
-        confirmText="Create Project"
-      />
+
     </div>
   );
 }
