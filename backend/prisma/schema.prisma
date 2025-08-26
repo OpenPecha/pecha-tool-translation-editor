@@ -34,7 +34,7 @@ model Project {
   isPublic     Boolean      @default(false)
   publicAccess String       @default("none")
   shareLink    String?      @unique
-  roots        Doc[]        @relation("Roots")
+  roots        Doc[]        @relation("Roots") 
   permissions  Permission[] @relation("ProjectPermissions")
   owner        User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 }
@@ -47,13 +47,13 @@ model Doc {
   ownerId                String?
   isRoot                 Boolean   @default(false)
   language               String    @default("bo")
+  root                   Doc?      @relation("Root", fields: [rootId], references: [id], onDelete: Cascade)
   rootId                 String?
+  translations           Doc[]     @relation("Root")
   metadata               Json?
+  rootProject            Project?  @relation("Roots", fields: [rootProjectId], references: [id], onDelete: Cascade)
   rootProjectId          String?
   name                   String    @default("document")
-  translationJobId       String?
-  translationProgress    Int?      @default(0)
-  translationStatus      String?
   comments               Comment[]
   owner                  User?     @relation("UserDocs", fields: [ownerId], references: [id], onDelete: Cascade)
 
@@ -62,8 +62,6 @@ model Doc {
   footnotes        Footnote[] // A document can have multiple footnotes
   currentVersionId String?      @unique
   currentVersion   Version?     @relation("CurrentVersion", fields: [currentVersionId], references: [id])
-
-  rootsProject Project? @relation("Roots", fields: [rootProjectId], references: [id])
 
   @@index([ownerId])
   @@index([rootId])

@@ -8,18 +8,13 @@ const multer = require("multer");
 const { WSSharedDoc } = require("../services");
 const Y = require("yjs");
 const Delta = require("quill-delta");
-const {
-  sendTranslationRequest,
-  getTranslationStatus,
-  getHealthWorker,
-} = require("../apis/translation_worker");
 
 const prisma = new PrismaClient();
 const router = express.Router();
 
 /**
  * Check if a user has permission to access a document
- * @param {Object} document - The document object with rootsProject information
+ * @param {Object} document - The document object with rootProject information
  * @param {string} userId - The ID of the user to check permissions for
  * @returns {boolean} - Whether the user has permission to access the document
  */
@@ -27,7 +22,7 @@ async function checkDocumentPermission(document, userId) {
   // If the document doesn't exist, no permission
   if (!document) return false;
   // If the document's project is public, everyone has read access
-  if (document.rootsProject && document.rootsProject.isPublic) return true;
+  if (document.rootProject && document.rootProject.isPublic) return true;
 
   // If no user provided (anonymous), they can only access public documents
   if (!userId) return false;
@@ -36,13 +31,13 @@ async function checkDocumentPermission(document, userId) {
   if (document.ownerId === userId) return true;
 
   // Check if user is the owner of the project
-  if (document.rootsProject && document.rootsProject.ownerId === userId) {
+  if (document.rootProject && document.rootProject.ownerId === userId) {
     return true;
   }
 
   // Check if user has explicit permission in the project
-  if (document.rootsProject && document.rootsProject.permissions) {
-    const userPermission = document.rootsProject.permissions.find(
+  if (document.rootProject && document.rootProject.permissions) {
+    const userPermission = document.rootProject.permissions.find(
       (permission) => permission.userId === userId
     );
 
@@ -68,7 +63,7 @@ async function checkDocumentPermission(document, userId) {
 
 /**
  * Check if a user has write permission to a document
- * @param {Object} document - The document object with rootsProject information
+ * @param {Object} document - The document object with rootProject information
  * @param {string} userId - The ID of the user to check permissions for (can be undefined for anonymous users)
  * @returns {boolean} - Whether the user has write permission to the document
  */
@@ -79,9 +74,9 @@ async function checkDocumentWritePermission(document, userId) {
   // If the document's project is public and allows editing, anyone with a user ID can write
   if (
     userId &&
-    document.rootsProject &&
-    document.rootsProject.isPublic &&
-    document.rootsProject.publicAccess === "editor"
+    document.rootProject &&
+    document.rootProject.isPublic &&
+    document.rootProject.publicAccess === "editor"
   ) {
     return true;
   }
@@ -93,13 +88,13 @@ async function checkDocumentWritePermission(document, userId) {
   if (document.ownerId === userId) return true;
 
   // Check if user is the owner of the project
-  if (document.rootsProject && document.rootsProject.ownerId === userId) {
+  if (document.rootProject && document.rootProject.ownerId === userId) {
     return true;
   }
 
   // Check if user has explicit write permission in the project
-  if (document.rootsProject && document.rootsProject.permissions) {
-    const userPermission = document.rootsProject.permissions.find(
+  if (document.rootProject && document.rootProject.permissions) {
+    const userPermission = document.rootProject.permissions.find(
       (permission) => permission.userId === userId && permission.canWrite
     );
 
@@ -152,17 +147,15 @@ router.get("/public/:id", optionalAuthenticate, async (req, res) => {
         language: true,
         isRoot: true,
         rootId: true,
-        translationStatus: true,
-        translationJobId: true,
         createdAt: true,
         updatedAt: true,
         rootProjectId: true,
         permissions: true,
-        rootsProject: {
-          include: {
-            permissions: true,
-          },
-        },
+      rootProject:{
+        include:{
+          permissions:true,
+        }
+      }
       },
     });
 
@@ -179,7 +172,7 @@ router.get("/public/:id", optionalAuthenticate, async (req, res) => {
     }
 
     // Determine access level from project settings
-    const publicAccess = document.rootsProject?.publicAccess || "viewer";
+    const publicAccess = document.rootProject?.publicAccess || "viewer";
     const isReadOnly =
       publicAccess === "viewer" ||
       !req.user ||
@@ -190,7 +183,7 @@ router.get("/public/:id", optionalAuthenticate, async (req, res) => {
       ...document,
       isReadOnly,
       publicAccess,
-      inheritedFromProject: document.rootsProject?.isPublic || false,
+      inheritedFromProject: document.rootProject?.isPublic || false,
     };
 
     res.json(responseDocument);
@@ -312,9 +305,8 @@ router.post("/", authenticate, upload.single("file"), async (req, res) => {
 
 router.post("/content", authenticate, async (req, res) => {
   try {
-    const { identifier, isRoot, rootId, language, name, content } = req.body;
+    const { identifier, isRoot, rootId, language, name, content,metadata } = req.body;
 
-    console.log(identifier, isRoot, rootId, language, name);
 
     // Validate required fields
     if (!identifier) {
@@ -361,6 +353,7 @@ router.post("/content", authenticate, async (req, res) => {
           rootId: rootId ?? null,
           language,
           rootProjectId: rootProjectId,
+          metadata: JSON.parse(metadata),
         },
         select: {
           id: true,
@@ -421,7 +414,7 @@ router.get("/", authenticate, async (req, res) => {
       whereCondition = {
         AND: [
           { ownerId: { not: req.user.id } },
-          { rootsProject: { isPublic: true } },
+          { rootProject: { isPublic: true } },
         ],
       };
     } else {
@@ -483,7 +476,7 @@ router.get("/", authenticate, async (req, res) => {
           },
         },
         rootId: true,
-        rootsProject: {
+        rootProject: {
           select: {
             id: true,
             name: true,
@@ -525,8 +518,6 @@ router.get("/:id", authenticate, async (req, res) => {
         language: true,
         isRoot: true,
         rootId: true,
-        translationStatus: true,
-        translationJobId: true,
         createdAt: true,
         updatedAt: true,
         rootProjectId: true,
@@ -541,7 +532,7 @@ router.get("/:id", authenticate, async (req, res) => {
             userId: true,
           },
         },
-        rootsProject: {
+        rootProject: {
           include: {
             permissions: true,
           },
@@ -562,13 +553,7 @@ router.get("/:id", authenticate, async (req, res) => {
       });
     }
 
-    // Extract content from the current version and add to response
-    const response = {
-      ...document,
-      content: document.currentVersion?.content?.ops || [],
-    };
-    
-    res.json(response);
+    res.json(document);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error retrieving document" });
@@ -609,7 +594,7 @@ router.get("/:id/content", optionalAuthenticate, async (req, res) => {
             userId: true,
           },
         },
-        rootsProject: {
+        rootProject: {
           include: {
             permissions: true,
           },
@@ -629,13 +614,7 @@ router.get("/:id/content", optionalAuthenticate, async (req, res) => {
       });
     }
 
-    // Extract content from the current version and add to response
-    const response = {
-      ...document,
-      content: document.currentVersion?.content?.ops || [],
-    };
-    
-    res.json(response);
+    res.json(document);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error retrieving document" });
@@ -661,7 +640,7 @@ router.get("/:id/translations", optionalAuthenticate, async (req, res) => {
     const document = await prisma.doc.findUnique({
       where: { id: documentId },
       include: {
-        rootsProject: {
+        rootProject: {
           include: {
             permissions: true,
           },
@@ -696,9 +675,6 @@ router.get("/:id/translations", optionalAuthenticate, async (req, res) => {
         language: true,
         ownerId: true,
         updatedAt: true,
-        translationProgress: true,
-        translationStatus: true,
-        translationJobId: true,
         owner: {
           select: {
             username: true,
@@ -745,7 +721,7 @@ router.delete("/:id", authenticate, async (req, res) => {
             ownerId: true,
           },
         },
-        rootsProject: {
+        rootProject: {
           include: {
             permissions: true,
           },
@@ -809,7 +785,7 @@ router.post("/:id/permissions", authenticate, async (req, res) => {
       where: { id: documentId },
       include: {
         translations: true,
-        rootsProject: {
+        rootProject: {
           include: {
             permissions: true,
           },
@@ -901,7 +877,7 @@ router.patch("/:id", authenticate, async (req, res) => {
     const document = await prisma.doc.findUnique({
       where: { id: documentId },
       include: {
-        rootsProject: {
+        rootProject: {
           include: {
             permissions: true,
           },
@@ -1054,7 +1030,7 @@ router.patch("/:id", authenticate, async (req, res) => {
             translations: {
               select: { id: true },
             },
-            rootsProject: true,
+            rootProject: true,
           },
         });
       }
@@ -1222,12 +1198,7 @@ router.post("/generate-translation", authenticate, async (req, res) => {
     if (!model || !language) {
       return res.status(400).json({ error: "Model and language are required" });
     }
-    // const isTranslationWorkerHealthy = await getHealthWorker();
-    // if (!isTranslationWorkerHealthy) {
-    //   return res
-    //     .status(500)
-    //     .json({ error: "Translation worker is not healthy" });
-    // }
+   
 
     const apiKey = api_keys[model.split("-")[0].toLowerCase()] || "";
     if (apiKey === "") {
@@ -1280,8 +1251,6 @@ router.post("/generate-translation", authenticate, async (req, res) => {
           isRoot: false,
           rootId: rootId,
           language,
-          translationStatus: "completed", // Add status field for tracking
-          translationProgress: 0, // Add progress field (0-100)
         },
       });
 
@@ -1336,34 +1305,7 @@ router.post("/generate-translation", authenticate, async (req, res) => {
       translationData["use_segmentation"] = use_segmentation;
     }
     return res.status(201).json({ success: true, data: translationDoc });
-    // Try to send the translation request, but use a mock implementation if it fails
-    // try {
-    //   const response = await sendTranslationRequest(translationData);
-
-    //   // Update the document with the translation job ID
-    //   let updated = await prisma.doc.update({
-    //     where: { id: translationId },
-    //     data: {
-    //       translationJobId: response.id,
-    //       translationStatus: "pending",
-    //       translationProgress: 1,
-    //     },
-    //   });
-
-    //   // Return the created document
-    //   res.status(201).json(updated);
-    // } catch (error) {
-    //   let updated = await prisma.doc.update({
-    //     where: { id: translationId },
-    //     data: {
-    //       translationJobId: null,
-    //       translationStatus: "failed",
-    //       translationProgress: 0,
-    //     },
-    //   });
-    //   // Return the created document
-    //   res.status(201).json({ error: error.message });
-    // }
+   
   } catch (error) {
     console.error("Error generating translation:", error);
     res
@@ -1372,415 +1314,8 @@ router.post("/generate-translation", authenticate, async (req, res) => {
   }
 });
 
-/**
- * POST /documents/translation-webhook/{id}
- * @summary Webhook endpoint for receiving translation results
- * @tags Documents - Document management operations
- * @param {string} id.path.required - Document ID
- * @param {object} request.body.required - Translation result
- * @param {string} request.body.content - Translated content
- * @return {object} 200 - Success
- * @return {object} 404 - Document not found
- * @return {object} 500 - Server error
- */
-router.post("/translation-webhook/:id", async (req, res) => {
-  try {
-    const document_id = req.params.id;
-    const { content, message_id, status, model_used, progress } = req.body;
 
-    // Find the document
-    const document = await prisma.doc.findUnique({
-      where: { id: document_id },
-      select: {
-        id: true,
-        identifier: true,
-        ownerId: true,
-      },
-    });
 
-    if (!document) {
-      return res.status(404).json({ error: "Document not found" });
-    }
 
-    // Create a new Y.Doc to store the translated content
-    const translatedDoc = new WSSharedDoc(
-      document.identifier,
-      document.ownerId
-    );
-    const translatedText = translatedDoc.getText(document.identifier);
-
-    // Insert the translated content
-    if (content) {
-      translatedText.insert(0, content);
-    }
-
-    // Get the delta and state
-    const translatedDelta = translatedText.toDelta();
-    
-
-    // Update the document with the translated content
-    const data = await prisma.$transaction(async (tx) => {
-      // Update the document with the translated content
-      let updated = await tx.doc.update({
-        where: { id: document_id },
-        data: {
-          translationStatus: status,
-          metadata: {
-            model_used,
-            message_id,
-          },
-          translationProgress: progress,
-        },
-      });
-
-      // Create initial version
-      await tx.version.create({
-        data: {
-          content: { ops: translatedDelta },
-          docId: document_id,
-          label: "Initial translation",
-        },
-      });
-      return updated;
-    });
-
-    res.status(200).json({ success: true, data });
-  } catch (error) {
-    console.error("Error processing translation webhook:", error);
-    res.status(500).json({ error: "Error processing translation webhook" });
-  }
-});
-
-/**
- * GET /documents/{id}/translations/status
- * @summary Get translation status and progress for all translations of a root document
- * @tags Documents - Document management operations
- * @security BearerAuth
- * @param {string} id.path.required - Root document ID
- * @return {object} 200 - Translation status information
- * @return {object} 403 - Forbidden - No access
- * @return {object} 404 - Document not found
- * @return {object} 500 - Server error
- */
-router.get("/:id/translations/status", authenticate, async (req, res) => {
-  try {
-    const rootId = req.params.id;
-
-    // Get all translations for this root document with minimal data - just IDs and job IDs
-    const translations = await prisma.doc.findMany({
-      where: {
-        rootId: rootId,
-      },
-      select: {
-        id: true,
-        name: true,
-        language: true,
-        translationStatus: true,
-        translationProgress: true,
-        translationJobId: true,
-        updatedAt: true,
-      },
-    });
-
-    // For any translations that are in progress (started, pending, or progress), directly check with the translation worker
-    // for the latest status without updating the database first
-    const updatedTranslations = await Promise.all(
-      translations.map(async (translation) => {
-        // Only check status with translation worker if there's a job ID and translation is in progress
-        if (
-          translation.translationJobId &&
-          (translation.translationStatus === "started" ||
-            translation.translationStatus === "pending")
-        ) {
-          try {
-            // Get the latest status directly from the translation worker (Redis-based, faster)
-            const status = await getTranslationStatus(
-              translation.translationJobId
-            );
-            console.log(status);
-            // If the translation is completed, update the database to reflect the final state
-            if (status.status.status_type === "completed") {
-              // Update the database record to mark the translation as completed
-
-              // Create a new Y.Doc to store the translated content
-              const translatedDoc = new WSSharedDoc(
-                translation.identifier,
-                translation.ownerId
-              );
-              const translatedText = translatedDoc.getText(
-                translation.identifier
-              );
-
-              // Insert the translated content
-              if (status?.translated_text) {
-                translatedText.insert(0, status.translated_text);
-              }
-
-              // Get the delta and state
-              const translatedDelta = translatedText.toDelta();
-        
-              await prisma.doc.update({
-                where: { id: translation.id },
-                data: {
-                  translationStatus: "completed",
-                  translationProgress: 100,
-                },
-              });
-
-              const newVersion = await prisma.version.create({
-                data: {
-                  docId: translation.id,
-                  label: "auto generated",
-                  content: translatedDelta,
-                  userId: req.user.id,
-                },
-              });
-            }
-
-            if (status.status.status_type === "failed") {
-              await prisma.doc.update({
-                where: { id: translation.id },
-                data: {
-                  translationStatus: "failed",
-                  translationProgress: status.status.progress,
-                },
-              });
-            }
-            // If we got a valid status, use it directly without updating the database
-            if (
-              status.status.status_type === "pending" ||
-              status.status.status_type === "progress" ||
-              status.status.status_type === "started"
-            ) {
-              // Return the translation with the updated status from the worker
-              return {
-                ...translation,
-                translationStatus:
-                  status.status.status_type || translation.translationStatus,
-                translationProgress:
-                  status.status.progress || translation.translationProgress,
-                message: status?.status?.message || "",
-              };
-            }
-          } catch (error) {
-            console.error(
-              `Error checking translation status for ${translation.id}:`,
-              error
-            );
-            await prisma.doc.update({
-              where: { id: translation.id },
-              data: {
-                translationStatus: "failed",
-                translationProgress: 100,
-              },
-            });
-            // Continue with the current status if there's an error
-          }
-        }
-        // Return the original translation if no job ID or error occurred
-        return translation;
-      })
-    );
-
-    res.json(updatedTranslations);
-  } catch (error) {
-    console.error("Error fetching translation status:", error);
-    res.status(500).json({ error: "Error fetching translation status" });
-  }
-});
-
-/**
- * GET /documents/translation-status/{jobId}
- * @summary Get translation status by job ID
- * @tags Documents - Document management operations
- * @security BearerAuth
- * @param {string} jobId.path.required - Translation job ID
- * @return {object} 200 - Translation status information
- * @return {object} 400 - Bad request - Missing job ID
- * @return {object} 500 - Server error
- */
-router.get("/translation-status/:jobId", authenticate, async (req, res) => {
-  try {
-    const jobId = req.params.jobId;
-
-    if (!jobId) {
-      return res.status(400).json({ error: "Job ID is required" });
-    }
-
-    const status = await getTranslationStatus(jobId);
-    res.json(status);
-  } catch (error) {
-    console.error("Error fetching translation status:", error);
-    res.status(500).json({
-      error: "Error fetching translation status",
-      message: error.message,
-    });
-  }
-});
-
-/**
- * GET /documents/translation/{id}/status
- * @summary Get translation status and progress for a single translation
- * @tags Documents - Document management operations
- * @security BearerAuth
- * @param {string} id.path.required - Translation document ID
- * @return {object} 200 - Translation status information
- * @return {object} 403 - Forbidden - No access
- * @return {object} 404 - Document not found
- * @return {object} 500 - Server error
- */
-router.get("/translation/:id/status", authenticate, async (req, res) => {
-  try {
-    const translationId = req.params.id;
-
-    // Get the specific translation
-    const translation = await prisma.doc.findUnique({
-      where: { id: translationId },
-      select: {
-        id: true,
-        name: true,
-        language: true,
-        translationStatus: true,
-        translationProgress: true,
-        translationJobId: true,
-        updatedAt: true,
-        rootId: true,
-        rootsProject: {
-          include: {
-            permissions: true,
-          },
-        },
-      },
-    });
-
-    if (!translation) {
-      return res.status(404).json({
-        success: false,
-        message: "Translation not found",
-      });
-    }
-
-    // Check if user has permission to access this translation
-    const hasPermission = checkDocumentPermission(translation, req.user.id);
-    if (!hasPermission) {
-      return res.status(403).json({
-        success: false,
-        message: "You do not have permission to access this translation",
-      });
-    }
-
-    // Only check status with translation worker if there's a job ID and translation is in progress
-    if (
-      translation.translationJobId &&
-      (translation.translationStatus === "started" ||
-        translation.translationStatus === "pending")
-    ) {
-      try {
-        // Get the latest status directly from the translation worker
-        const status = await getTranslationStatus(translation.translationJobId);
-        console.log(`Status for ${translationId}:`, status);
-
-        // If the translation is completed, update the database to reflect the final state
-        if (status.status.status_type === "completed") {
-          // Create a new Y.Doc to store the translated content
-          const translatedDoc = new WSSharedDoc(
-            translation.identifier,
-            translation.ownerId
-          );
-          const translatedText = translatedDoc.getText(translation.identifier);
-
-          // Insert the translated content
-          if (status?.translated_text) {
-            translatedText.insert(0, status.translated_text);
-          }
-
-          // Get the delta and state
-          const translatedDelta = translatedText.toDelta();
-    
-
-          await prisma.doc.update({
-            where: { id: translation.id },
-            data: {
-              translationStatus: "completed",
-              translationProgress: 100,
-            },
-          });
-
-          await prisma.version.create({
-            data: {
-              docId: translation.id,
-              label: "auto generated",
-              content: translatedDelta,
-              userId: req.user.id,
-            },
-          });
-
-          // Return the updated translation
-          return res.json({
-            ...translation,
-            translationStatus: "completed",
-            translationProgress: 100,
-          });
-        }
-
-        if (status.status.status_type === "failed") {
-          await prisma.doc.update({
-            where: { id: translation.id },
-            data: {
-              translationStatus: "failed",
-              translationProgress: status.status.progress,
-            },
-          });
-
-          return res.json({
-            ...translation,
-            translationStatus: "failed",
-            translationProgress: status.status.progress,
-          });
-        }
-
-        // If we got a valid status, return it directly without updating the database
-        if (
-          status.status.status_type === "pending" ||
-          status.status.status_type === "progress" ||
-          status.status.status_type === "started"
-        ) {
-          return res.json({
-            ...translation,
-            translationStatus:
-              status.status.status_type || translation.translationStatus,
-            translationProgress:
-              status.status.progress || translation.translationProgress,
-            message: status?.status?.message || "",
-          });
-        }
-      } catch (error) {
-        console.error(
-          `Error checking translation status for ${translationId}:`,
-          error
-        );
-        await prisma.doc.update({
-          where: { id: translation.id },
-          data: {
-            translationStatus: "failed",
-            translationProgress: 0,
-          },
-        });
-
-        return res.json({
-          ...translation,
-          translationStatus: "failed",
-          translationProgress: 0,
-        });
-      }
-    }
-
-    // Return the original translation if no job ID or not in progress
-    res.json(translation);
-  } catch (error) {
-    console.error("Error fetching translation status:", error);
-    res.status(500).json({ error: "Error fetching translation status" });
-  }
-});
 
 module.exports = router;

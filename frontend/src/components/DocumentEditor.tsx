@@ -4,6 +4,7 @@ import "../editor.css";
 import { CommentProvider } from "@/contexts/CommentContext";
 import { QuillVersionProvider } from "@/contexts/VersionContext";
 import { FootNoteProvider } from "@/contexts/FootNoteContext";
+import type { Document } from "@/hooks/useCurrentDoc";
 
 const RealTimeEditor = ({
   docId,
@@ -12,10 +13,15 @@ const RealTimeEditor = ({
 }: {
   docId: string | undefined;
   isEditable: boolean;
-  currentDoc: any;
+  currentDoc: Document;
 }) => {
+  const currentVersionData = currentDoc?.currentVersion ? {
+    id: currentDoc.currentVersion.id,
+    content: currentDoc.currentVersion.content
+  } : undefined;
+
   return (
-    <QuillVersionProvider docId={docId} maxVersions={50}>
+    <QuillVersionProvider docId={docId} maxVersions={50} currentVersionData={currentVersionData}>
       <CommentProvider>
         <FootNoteProvider>
           <Editor

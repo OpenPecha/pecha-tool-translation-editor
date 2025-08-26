@@ -3,7 +3,6 @@ import {
   fetchDocument,
   fetchDocumentTranslations,
   fetchPublicDocument,
-  fetchSingleTranslationStatus,
 } from "../api/document";
 import { useAuth } from "@/auth/use-auth-hook";
 import { useQuery } from "@tanstack/react-query";
@@ -14,9 +13,6 @@ export interface Translation {
   language: string;
   name: string;
   updatedAt: string;
-  translationStatus?: string; // pending, progress, completed, failed
-  translationProgress?: number; // 0-100 percentage
-  translationJobId?: string; // ID from the translation worker
 }
 
 interface Permission {
@@ -25,18 +21,25 @@ interface Permission {
   canRead: boolean;
 }
 
-interface Document {
+export interface Document {
   id: string;
   name: string;
   identifier: string;
-  content: Record<string, unknown>;
   created_at?: string;
   updated_at?: string;
   translations?: Translation[];
   rootProjectId?: string;
-  translationStatus?: string;
-  translationJobId?: string;
-  rootsProject?: {
+  currentVersion?: {
+    id: string;
+    content: {
+      ops: Record<string, unknown>[];
+    };
+    createdAt: string;
+    updatedAt: string;
+    label: string;
+    userId?: string;
+  };
+  rootProject?: {
     id?: string;
     name?: string;
     permissions?: Permission[];
@@ -69,8 +72,8 @@ export const useCurrentDoc = (
         setIsEditable(false);
       }
 
-      if (doc?.rootsProject?.permissions && !EDITOR_READ_ONLY) {
-        doc?.rootsProject.permissions.map((permission: Permission) => {
+      if (doc?.rootProject?.permissions && !EDITOR_READ_ONLY) {
+        doc?.rootProject.permissions.map((permission: Permission) => {
           if (permission?.userId === currentUser?.id && permission?.canWrite) {
             setIsEditable(true);
           }
@@ -123,61 +126,4 @@ export const useCurrentDocTranslations = (docId: string | undefined) => {
   };
 };
 
-/**
- * Hook to manage individual translation status with polling
- * @param translationId The ID of the translation to monitor
- * @param translationStatus Current translation status from the translation list
- * @returns Object containing status data, loading state, and error
- */
-export const useTranslationStatus = (
-  translationId: string | undefined,
-  translationStatus?: string
-) => {
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: [`translation-status-${translationId}`],
-    queryFn: async () => {
-      if (!translationId) return null;
-      return await fetchSingleTranslationStatus(translationId);
-    },
-    enabled:
-      !!translationId &&
-      (translationStatus === "pending" ||
-        translationStatus === "started" ||
-        translationStatus === "progress" ||
-        translationStatus === "failed"),
-    refetchInterval: (query) => {
-      const status = query.state.data?.translationStatus;
-      const message = query.state.data?.message;
 
-      // Stop polling only if translation is completed or permanently failed
-      if (status === "completed") {
-        return false;
-      }
-
-      // Continue polling if status is failed but contains retry information
-      if (status === "failed" && message && message.includes("retry")) {
-        return 5000; // Poll every 5 seconds during retry scenarios
-      }
-
-      // Stop polling for permanent failures (no retry message)
-      if (status === "failed") {
-        return false;
-      }
-
-      return 5000; // Poll every 5 seconds for in-progress translations
-    },
-    refetchOnWindowFocus: false,
-    staleTime: 0,
-  });
-
-  return {
-    statusData: data,
-    isLoading,
-    error: error
-      ? error instanceof Error
-        ? error.message
-        : "Failed to load status"
-      : null,
-    refetchStatus: refetch,
-  };
-};

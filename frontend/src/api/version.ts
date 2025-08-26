@@ -188,29 +188,4 @@ export const getVersionDiff = async (versionId: string) => {
   }
 };
 
-/**
- * Fetch the current version of a document from the database
- * @param docId - Document ID
- */
-export const fetchCurrentVersion = async (docId: string) => {
-  try {
-    const response = await fetch(
-      `${server_url}/versions/current/${docId}`,
-      {
-        headers: getHeaders(),
-      }
-    );
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        return null; // No current version set
-      }
-      throw new Error("Failed to fetch current version");
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching current version:", error);
-    throw error;
-  }
-};

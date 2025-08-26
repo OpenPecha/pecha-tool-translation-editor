@@ -22,6 +22,7 @@ import { useAuth } from "@/auth/use-auth-hook";
 import SkeletonLoader from "./SkeletonLoader";
 import { footnoteKeyboardBindings } from "quill-footnote";
 import { CustomFootnoteModule } from "./quillExtension/CustomFootnote";
+import type { Document } from "@/hooks/useCurrentDoc";
 
 quill_import();
 
@@ -81,7 +82,7 @@ const Editor = ({
     onSuccess: () => {
       // refetch versions
       queryClient.invalidateQueries({ queryKey: [`versions-${documentId}`] });
-      queryClient.invalidateQueries({ queryKey: [`current-version-${documentId}`] });
+
       // Track document save
       if (documentId) {
         trackDocumentSaved(documentId, "auto", getUserContext(currentUser));
@@ -270,19 +271,20 @@ const Editor = ({
   }, [isEditable]);
 
   useEffect(() => {
+    const content=currentDoc?.currentVersion?.content?.ops || [];
     if (
       quillRef.current &&
       quillRef.current.getText().trim() === "" &&
-      currentDoc?.content
+      content
     ) {
       setTimeout(() => {
-        quillRef.current?.setContents(currentDoc.content);
+        quillRef.current?.setContents(content || []);
         // Set content loaded after a brief delay to ensure rendering is complete
         setTimeout(() => {
           setIsContentLoaded(true);
         }, 100);
       }, 0);
-    } else if (quillRef.current && !currentDoc?.content) {
+    } else if (quillRef.current && !content) {
       // If no content to load, mark as loaded
       setIsContentLoaded(true);
     }
@@ -291,7 +293,7 @@ const Editor = ({
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [currentDoc?.content]);
+  }, []);
 
   function addComment() {
     if (!currentRange || currentRange?.length === 0) return;

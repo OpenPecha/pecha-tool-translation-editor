@@ -205,18 +205,22 @@ export function OpenPechaTextLoader({
       formData.append("isRoot", "true");
       formData.append("language", selectedExpression?.language || "tibetan");
       formData.append("content", processedText);
+      formData.append("metadata", JSON.stringify({
+        openpecha: {
+          expression_id: selectedExpressionId,
+          manifestation_id: selectedManifestationId,
+          segmentation_type: selectedSegmentationId,
+        }
+      }));
 
       // Add segmentation metadata if available
-      if (segmentationData) {
         formData.append("metadata", JSON.stringify({
           openpecha: {
-            expression_id: selectedExpressionId,
-            manifestation_id: selectedManifestationId,
-            segmentation_type: selectedSegmentationId,
-            segmentation_data: segmentationData,
+            expression_id: selectedExpressionId??"",
+            manifestation_id: selectedManifestationId??"",
+            segmentation_type: selectedSegmentationId??""
           }
         }));
-      }
 
       const documentResponse = await createDocumentWithContent(formData);
       

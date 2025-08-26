@@ -3,12 +3,7 @@ import { Translation } from "../../DocumentWrapper";
 import TranslationItem from "./TranslationItem";
 
 interface TranslationListProps {
-  translations: Array<
-    Translation & {
-      translationStatus?: string;
-      translationProgress?: number;
-    }
-  >;
+  translations: Translation[];
 }
 
 const TranslationList: React.FC<TranslationListProps> = ({

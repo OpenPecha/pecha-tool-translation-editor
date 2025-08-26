@@ -7,10 +7,19 @@ import { useState } from "react";
 import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 import { createPortal } from "react-dom";
 
-// Use the Version type from context
+interface Version {
+  id: string;
+  label: string;
+  createdAt: string;
+  user?: {
+    username?: string;
+    name?: string;
+  } | null;
+  isCurrent?: boolean;
+}
 
 interface EachVersionProps {
-  version: any;
+  version: Version;
   onDeleteClick: (versionId: string, versionLabel: string) => void;
   isDeleting: boolean;
 }
@@ -92,7 +101,7 @@ function VersionList({ handleViewAll }: { handleViewAll: () => void }) {
           <p className="text-gray-500">No saved versions yet</p>
         ) : (
           <div className="max-h-60 overflow-y-auto border">
-            {versions.map((version: any) => (
+            {versions.map((version: Version) => (
               <EachVersion
                 key={version.id}
                 version={version}
@@ -132,7 +141,6 @@ function VersionList({ handleViewAll }: { handleViewAll: () => void }) {
 
 function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
   const {
-    currentVersionId,
     loadVersion,
     isLoadingVersion,
     loadingVersionId,
@@ -140,7 +148,7 @@ function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
   } = useQuillVersion();
 
   const isLoading = isLoadingVersion && loadingVersionId === version.id;
-  const isCurrentVersion = version.id === currentVersionId;
+  const isCurrentVersion = version.isCurrent || false;
   const isLatestVersion = versions[0]?.id === version.id;
   const isSystemVersion = version.user === null;
   const canDelete =

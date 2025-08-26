@@ -9,7 +9,6 @@ import Navbar from "./Navbar";
 import { useDevToolsStatus } from "@/hooks/useDevToolStatus";
 import { createPortal } from "react-dom";
 import { IoIosArrowForward } from "react-icons/io";
-import { fetchTranslationStatusByJobId } from "@/api/document";
 import { useQuery } from "@tanstack/react-query";
 import TranslationSidebar from "./TranslationSidebar";
 import { useTranslationSidebarParams } from "@/hooks/useQueryParams";
@@ -30,8 +29,8 @@ function DocumentsWrapper() {
     setSelectedTranslationId(translationId);
   };
   const project = {
-    id: currentDoc?.rootProjectId || currentDoc?.rootsProject?.id || "",
-    name: currentDoc?.rootsProject?.name || "Project",
+    id: currentDoc?.rootProjectId || currentDoc?.rootProject?.id || "",
+    name: currentDoc?.rootProject?.name || "Project",
   };
   return (
     <EditorProvider>
@@ -141,22 +140,12 @@ function TranslationEditor({
   readonly handleSelectTranslation: (translationId: string | null) => void;
 }) {
   const { currentDoc } = useCurrentDoc(selectedTranslationId);
-  if (
-    currentDoc?.translationStatus &&
-    currentDoc?.translationStatus !== "completed"
-  ) {
-    return (
-      <TranslationFetcher
-        jobId={currentDoc?.translationJobId!}
-        handleSelectTranslation={handleSelectTranslation}
-      />
-    );
-  }
+  
 
   // Extract text content from document for translation
   const getDocumentText = () => {
-    if (currentDoc?.content?.ops) {
-      return currentDoc.content.ops
+    if (currentDoc?.currentVersion?.content?.ops) {
+      return currentDoc.currentVersion.content.ops
         .filter((op: any) => typeof op.insert === "string")
         .map((op: any) => op.insert)
         .join("");
@@ -183,31 +172,6 @@ function TranslationEditor({
   );
 }
 
-function TranslationFetcher({
-  jobId,
-  handleSelectTranslation,
-}: {
-  jobId: string;
-  handleSelectTranslation: (translationId: string | null) => void;
-}) {
-  //get translation status from api tat
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["translation-status", jobId],
-    queryFn: () => fetchTranslationStatusByJobId(jobId),
-    refetchInterval: 2000,
-    enabled: !!jobId,
-  });
-  useEffect(() => {
-    if (data?.status?.status_type === "completed") {
-      setTimeout(() => {
-        handleSelectTranslation(null);
-      }, 1000);
-    }
-  }, [data?.status?.status_type]);
-  const transaltedText = data?.translated_text;
-  if (isLoading || !transaltedText) return null;
-  return <textarea className="w-[50vw] h-full">{transaltedText}</textarea>;
-}
 
 function Loader({ show }: { show: boolean }) {
   if (!show) return null;

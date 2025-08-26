@@ -12,6 +12,7 @@ import { groupBy } from "lodash";
 import { GrDocument } from "react-icons/gr";
 import { Badge } from "@/components/ui/badge";
 import formatTimeAgo from "@/lib/formatTimeAgo";
+import { Translation } from "@/hooks/useCurrentDoc";
 
 type MenuOption = "main" | "translations" | "comments" | "footnotes";
 
@@ -101,7 +102,7 @@ function PublicTranslations({
   onSelectTranslation?: (translationId: string) => void;
 }) {
   const {
-    data: translations = [],
+    data: translations = [] as Translation[],
     isLoading,
     error,
   } = useQuery({
@@ -128,7 +129,7 @@ function PublicTranslations({
       </div>
 
       <div className="flex flex-col gap-2 p-2">
-        {translations.map((translation) => (
+        {translations.map((translation: Translation) => (
           <PublicTranslationItem
             key={translation.id}
             translation={translation}
@@ -145,13 +146,11 @@ function PublicTranslationItem({
   translation,
   onSelectTranslation,
 }: {
-  translation: any;
+  translation: Translation;
   onSelectTranslation?: (translationId: string) => void;
 }) {
-  const isCompleted =
-    !translation.translationStatus ||
-    translation.translationStatus === "completed";
-  const isDisabled = !isCompleted;
+
+  const isDisabled = false;
 
   return (
     <div className="flex items-center w-full">
@@ -179,7 +178,7 @@ function PublicTranslationItem({
         <div className="relative flex items-center">
           <GrDocument
             size={24}
-            color={isCompleted ? "#d1d5db" : "lightblue"}
+            color={"#d1d5db"}
             className="flex-shrink-0"
           />
           <div className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-gray-700 capitalize">
@@ -192,16 +191,7 @@ function PublicTranslationItem({
             {translation.name}
           </span>
           <div className="flex items-center gap-1 text-xs text-gray-500">
-            {translation.translationStatus &&
-            translation.translationStatus !== "completed" ? (
-              <span className="text-blue-600">
-                {translation.translationStatus === "pending"
-                  ? "Waiting..."
-                  : "Processing..."}
-              </span>
-            ) : (
-              <span>{formatTimeAgo(translation.updatedAt)}</span>
-            )}
+            <span>{formatTimeAgo(translation.updatedAt)}</span>
           </div>
         </div>
       </div>

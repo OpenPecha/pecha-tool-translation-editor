@@ -164,7 +164,7 @@ const PublicDocumentViewer: React.FC<PublicDocumentViewerProps> = ({
   // Create a project object similar to DocumentWrapper
   const project = {
     id: documentData?.rootProjectId,
-    name: documentData?.rootsProject?.name || "Public Document",
+    name: documentData?.rootProject?.name || "Public Document",
   };
 
   return (

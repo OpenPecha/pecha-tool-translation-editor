@@ -1,22 +1,19 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { GrDocument } from "react-icons/gr";
-import { RefreshCw, Trash2, AlertCircle } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { Translation } from "../../DocumentWrapper";
 import TranslationMenu from "./TranslationMenu";
-import TranslationProgressBar from "./TranslationProgressBar";
+
 import formatTimeAgo from "@/lib/formatTimeAgo";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteDocument, updateDocument } from "@/api/document";
 import { useParams } from "react-router-dom";
 import { FaSpinner } from "react-icons/fa";
-import { useTranslationStatus } from "@/hooks/useCurrentDoc";
+
 import { useTranslationSidebarParams } from "@/hooks/useQueryParams";
 
 interface TranslationItemProps {
-  translation: Translation & {
-    translationStatus?: string;
-    translationProgress?: number;
-  };
+  translation: Translation;
 }
 
 const TranslationItem: React.FC<TranslationItemProps> = ({
@@ -27,34 +24,7 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
   const rootId = id as string;
   const { setSelectedTranslationId } = useTranslationSidebarParams();
 
-  // Use individual translation status hook
-  const { statusData } = useTranslationStatus(
-    translation.id,
-    translation.translationStatus
-  );
 
-  // Use status data from the hook if available, otherwise fall back to translation data
-  const currentStatus =
-    statusData?.translationStatus || translation.translationStatus;
-  const currentProgress =
-    statusData?.translationProgress || translation.translationProgress;
-
-  // Refresh translations list when a translation completes
-  useEffect(() => {
-    if (
-      currentStatus === "completed" &&
-      translation.translationStatus !== "completed"
-    ) {
-      // Small delay to ensure the backend has updated the status
-      const timeoutId = setTimeout(() => {
-        queryClient.invalidateQueries({
-          queryKey: [`translations-${rootId}`],
-        });
-      }, 1000);
-
-      return () => clearTimeout(timeoutId);
-    }
-  }, [currentStatus, translation.translationStatus, queryClient, rootId]);
 
   // Helper function to render the status indicator
   const refetchTranslations = () =>
@@ -113,7 +83,7 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
       deleteTranslationMutation.mutate(translationId);
     }
   };
-  const renderStatusIndicator = ({ message }: { message: string }) => {
+  const renderStatusIndicator = () => {
     if (isDeleting) {
       return (
         <>
@@ -122,40 +92,12 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
         </>
       );
     }
-    if (currentStatus === "failed") {
-      return (
-        <>
-          <AlertCircle className="h-3 w-3 mr-1 text-red-500" />
-          <span className="text-red-500">Translation failed</span>
-        </>
-      );
-    }
-
-    if (
-      currentStatus === "progress" ||
-      currentStatus === "started" ||
-      currentStatus === "pending"
-    ) {
-      return (
-        <>
-          <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
-          {currentStatus === "pending"
-            ? "Waiting..."
-            : message ?? "translating..."}
-        </>
-      );
-    }
 
     return formatTimeAgo(translation.updatedAt);
   };
   const isDeleting = deleteTranslationMutation.isPending;
   const isUpdating = updateTitleMutation.isPending;
-  const disabled =
-    currentStatus === "progress" ||
-    currentStatus === "started" ||
-    currentStatus === "failed" ||
-    isDeleting ||
-    isUpdating;
+  const disabled = isDeleting || isUpdating;
   return (
     <div key={translation.id} className="flex flex-col w-full">
       <div className="flex items-center w-full">
@@ -169,10 +111,7 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
             }
           }}
           onKeyDown={(e) => {
-            if (
-              (e.key === "Enter" && !currentStatus) ||
-              (e.key === "Enter" && currentStatus === "completed")
-            ) {
+            if (e.key === "Enter" && !disabled) {
               setSelectedTranslationId(translation.id);
             }
           }}
@@ -187,11 +126,7 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
           <div className="relative flex items-center">
             <GrDocument
               size={24}
-              color={
-                !currentStatus || currentStatus === "completed"
-                  ? "#d1d5db"
-                  : "lightblue"
-              }
+              color={"#d1d5db"}
               className="flex-shrink-0"
             />
             <div className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-gray-700 capitalize">
@@ -203,7 +138,7 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
               <div className="truncate">{translation.name}</div>
             </div>
             <div className="text-xs text-gray-500 capitalize flex items-center">
-              {renderStatusIndicator({ message: statusData?.message })}
+              {renderStatusIndicator()}
             </div>
           </div>
           {isDeleting || isUpdating ? (
@@ -217,15 +152,7 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
           )}
         </div>
       </div>
-      {/* Progress bar for translations in progress */}
-      <TranslationProgressBar
-        translationStatusData={statusData ? [statusData] : undefined}
-        translation={{
-          ...translation,
-          translationStatus: currentStatus,
-          translationProgress: currentProgress,
-        }}
-      />
+
     </div>
   );
 };

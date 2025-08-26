@@ -7,11 +7,18 @@ const prisma = new PrismaClient();
 
 /**
  * @route GET /versions/:docId
- * @desc Get all versions for a specific document
+ * @desc Get all versions for a specific document with current version marked
  */
 router.get("/:docId", authenticate, async (req, res) => {
   try {
     const { docId } = req.params;
+    
+    // Get the document's current version ID
+    const document = await prisma.doc.findUnique({
+      where: { id: docId },
+      select: { currentVersionId: true }
+    });
+    
     const versions = await prisma.version.findMany({
       where: { docId },
       select: {
@@ -23,7 +30,14 @@ router.get("/:docId", authenticate, async (req, res) => {
       },
       orderBy: { createdAt: "desc" },
     });
-    res.json(versions);
+    
+    // Mark the current version
+    const versionsWithCurrentFlag = versions.map(version => ({
+      ...version,
+      isCurrent: version.id === document?.currentVersionId
+    }));
+    
+    res.json(versionsWithCurrentFlag);
   } catch (error) {
     console.error("Error fetching versions:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -226,37 +240,6 @@ router.put("/version/:id", authenticate, async (req, res) => {
   }
 });
 
-/**
- * @route GET /versions/current/:docId
- * @desc Get the current version of a document
- */
-router.get("/current/:docId", authenticate, async (req, res) => {
-  try {
-    const { docId } = req.params;
 
-    // Get the most recent version for this document
-    const document = await prisma.doc.findUnique({
-      where: { id: docId },
-      select: {
-        id: true,
-        currentVersionId: true,
-      },
-    });
-
-    if (!document) {
-      return res.status(404).json({ error: "Document not found" });
-    }
-    if (!document.currentVersionId) {
-      return res
-        .status(404)
-        .json({ error: "No current version found for this document" });
-    }
-
-    res.json({ id: document.currentVersionId });
-  } catch (error) {
-    console.error("Error fetching current version:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
 
 module.exports = router;
