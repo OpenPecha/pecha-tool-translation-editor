@@ -38,7 +38,7 @@
     background-color: white;
     border: 0 !important;
     line-height: normal;
-    padding-bottom: 100px !important;
+    /* padding-bottom: 100px !important; */
     counter-reset: footnote-counter;
     height: 100%;
     overflow-y: auto;
@@ -275,15 +275,6 @@
   counter-increment: footnote-counter;
 }
 
-.footnote::after {
-  content: attr(data-counter);
-  position: relative;
-  margin-right: 0.2em;
-  top: -0.5em;
-  font-size: 0.8em;
-  font-weight: 500;
-  color: #1a73e8;
-}
 
   .footnote:hover {
     background-color: #e3e3e3;
@@ -323,3 +314,122 @@
     min-height: 100%;
   }
 
+
+  /* Footnote styling */
+  a.footnote-number {
+    text-decoration: none !important;
+    padding-left: 1px;
+    padding-right: 1px;
+    cursor: pointer;
+    color: #1a73e8;
+    vertical-align: super;
+    font-size: 0.8em;
+  }
+  
+  hr.footnote-divider {
+    background-color: #dddddd;
+    height: 0;
+    border: 0;
+  }
+  
+  .footnote-section {
+    position:absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    z-index: 1000;
+    max-height: 180px;
+    overflow-y: auto;
+  }
+  .footnote-toggle {
+    position:sticky;
+    top:0;
+    margin: 0 !important;
+    background-color: #f3f4f6;
+    border-radius: 0.5rem 0.5rem 0 0;
+    border: none;    
+    padding:0.2rem 0.5rem !important;
+    width: 100%;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: background-color 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .footnote-toggle:hover {
+    background-color: #e5e7eb;
+  }
+  
+  .footnote-toggle::after {
+    content: "▼";
+    transition: transform 0.3s;
+  }
+  .footnote-section.collapsed .footnote-toggle::after {
+    transform: rotate(180deg);
+  }
+
+  .footnote-section.collapsed .footnote-row{
+    display: none;
+  }
+
+  .footnote-row {
+    margin: 0 0 16px 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #6b7280;
+    transition: color 0.2s ease;
+  }
+  
+  .footnote-row:last-child {
+    margin-bottom: 0;
+  } 
+  
+  .footnote-row::before {
+    content: attr(data-index);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #1a73e8;
+    font-size: 8px;
+    font-weight: 500;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    transition: all 0.2s ease;
+  }
+  
+  .footnote-section::-webkit-scrollbar {
+    width: 3px;
+  }
+  
+  .footnote-section::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .footnote-section::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 2px;
+  }
+  
+  .footnote-section::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.15);
+  }
+  
+  .footnote-row:hover {
+    color: #374151;
+  }
+  
+  .footnote-row:hover::before {
+    background: #e5e7eb;
+    color: #6b7280;
+  }

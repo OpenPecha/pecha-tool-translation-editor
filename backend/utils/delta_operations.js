@@ -211,21 +211,21 @@ async function getDocumentContent(docId) {
       select: {
         id: true,
         identifier: true,
-        docs_prosemirror_delta: true,
-        docs_y_doc_state: true,
+        currentVersionId: true,
       },
     });
 
     if (!document) return null;
 
-    // Get content from ProseMirror delta or Y.js state
+    // Get content from current version
     let delta = null;
-    if (document.docs_prosemirror_delta) {
-      delta = document.docs_prosemirror_delta;
-    } else if (document.docs_y_doc_state) {
-      const ydoc = new Y.Doc({ gc: true });
-      Y.applyUpdate(ydoc, document.docs_y_doc_state);
-      delta = ydoc.getText(document.identifier).toDelta();
+    const currentVersion = await prisma.version.findUnique({
+      where: { id: document.currentVersionId },
+      select: { content: true }
+    });
+    
+    if (currentVersion?.content?.ops) {
+      delta = currentVersion.content.ops;
     }
 
     return delta;

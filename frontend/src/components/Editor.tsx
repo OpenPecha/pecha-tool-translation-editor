@@ -2,6 +2,7 @@ import { memo, useCallback, useEffect, useRef, useState } from "react";
 import Quill from "quill";
 import Toolbar from "./Toolbar/Toolbar";
 import "quill/dist/quill.snow.css";
+import "quill-footnote/dist/quill-footnote.css";
 import quill_import from "./quillExtension";
 import { useQuillVersion } from "../contexts/VersionContext";
 import LineNumberVirtualized from "./LineNumbers";
@@ -19,6 +20,9 @@ import emitter from "@/services/eventBus";
 import { useUmamiTracking, getUserContext } from "@/hooks/use-umami-tracking";
 import { useAuth } from "@/auth/use-auth-hook";
 import SkeletonLoader from "./SkeletonLoader";
+import { footnoteKeyboardBindings } from "quill-footnote";
+import { CustomFootnoteModule } from "./quillExtension/CustomFootnote";
+
 quill_import();
 
 const Editor = ({
@@ -69,7 +73,7 @@ const Editor = ({
   const updateDocumentMutation = useMutation({
     mutationFn: (content: Record<string, unknown>) =>
       updateContentDocument(documentId as string, {
-        docs_prosemirror_delta: content.ops,
+        content: content.ops,
       }),
     onError: (error) => {
       console.error("Error updating document content:", error);
@@ -154,18 +158,49 @@ const Editor = ({
             undo: () => {
               quill.history.undo();
             },
+            footnote: () => {
+              const quill = quillRef.current;
+              if (!quill) return;
+              const module = quill.getModule("footnote");
+              module.addFootnote("");
+            },
           },
         },
+        customFootnote:true,
+        footnote:true,
         // cursors: {
         //   transformOnTextChange: false,
         // },
-        keyboard: true,
+        keyboard: {
+          bindings: {...footnoteKeyboardBindings,
+            footnoteEsc: {
+              key: "Escape",
+              format: ["footnote-row"],
+              handler: function (this: { quill: Quill }, range: any): boolean {
+                const [line] = this.quill.getLine(range.index);
+                if (line?.statics?.blotName === "footnote-row") {
+                  const footnoteModule = this.quill.getModule(
+                    "footnote",
+                  ) as CustomFootnoteModule;
+          
+                  // delete the whole footnote row (pass the blot)
+                  footnoteModule.deleteFootnote(line);
+          
+                  return false; // prevent default Escape behavior
+                }
+          
+                return true;
+              },
+            },
+          },
+        },
         counter: { container: `#${counterId}`, unit: "character" },
       },
       readOnly: !isEditable,
       placeholder: "Start collaborating...",
       // className is not a valid Quill option, apply these styles to the container instead
     });
+
     registerQuill(quill);
     quillRef.current = quill;
     registerQuill2(editorId, quill);
@@ -177,6 +212,18 @@ const Editor = ({
             e.preventDefault();
             e.stopPropagation();
           }
+        }
+        if (e.key==='space' || e.key==='Enter' ||e.key==='Delete' ||e.key==='Backspace'){
+         const footnotesInEditor=quill.root.querySelectorAll('.footnote-number');
+         const footnoteIdsInEditor=Array.from(footnotesInEditor).map(footnote=>footnote.id.split('-')[1]);
+         const footnotesInFootnoteSection=quill.root.querySelectorAll('.footnote-row');
+         // footnote that are present in footnote section and not in editor should be deleted check with there id footnote row contains id as footnote-row-[id]  and editor footnote contain footnote-id[]
+         footnotesInFootnoteSection.forEach(footnote=>{
+           const footnoteId=footnote.id.split('-row-')[1];
+           if (!footnoteIdsInEditor.includes(footnoteId)){
+            footnote.remove();
+           }
+         })
         }
       },
       signal
@@ -226,16 +273,16 @@ const Editor = ({
     if (
       quillRef.current &&
       quillRef.current.getText().trim() === "" &&
-      currentDoc?.docs_prosemirror_delta
+      currentDoc?.content
     ) {
       setTimeout(() => {
-        quillRef.current?.setContents(currentDoc.docs_prosemirror_delta);
+        quillRef.current?.setContents(currentDoc.content);
         // Set content loaded after a brief delay to ensure rendering is complete
         setTimeout(() => {
           setIsContentLoaded(true);
         }, 100);
       }, 0);
-    } else if (quillRef.current && !currentDoc?.docs_prosemirror_delta) {
+    } else if (quillRef.current && !currentDoc?.content) {
       // If no content to load, mark as loaded
       setIsContentLoaded(true);
     }
@@ -244,16 +291,12 @@ const Editor = ({
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [currentDoc?.docs_prosemirror_delta]);
+  }, [currentDoc?.content]);
 
   function addComment() {
     if (!currentRange || currentRange?.length === 0) return;
 
     setShowCommentModal(true);
-  }
-  function addFootnote() {
-    if (!currentRange || currentRange?.length === 0) return;
-    emitter.emit("createFootnote", { range: currentRange, documentId });
   }
   if (!documentId) return null;
   return (
@@ -261,7 +304,6 @@ const Editor = ({
       {createPortal(
         <Toolbar
           addComment={addComment}
-          addFootnote={addFootnote}
           synced={isSynced}
           documentId={documentId}
           toolbarId={toolbarId}
@@ -296,12 +338,7 @@ const Editor = ({
               </div>
             )}
 
-            {/* Only render FootnoteView after content is loaded */}
-            {isContentLoaded && (
-              <div className="footnote-view-container">
-                <FootnoteView documentId={documentId} isEditable={isEditable} />
-              </div>
-            )}
+            
           </div>
           {createPortal(
             <div className="flex gap-1 items-center">

@@ -37,12 +37,13 @@ export function BaseModal({
   className,
   variant = "dialog",
   size = "md",
-}: BaseModalProps) {
+}: Readonly<BaseModalProps>) {
   const handleClose = () => onOpenChange(false);
 
   if (variant === "fixed") {
     return (
       <>
+        {trigger}
         {open && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
             <div
@@ -85,12 +86,12 @@ export function BaseModal({
           className
         )}
       >
-        <DialogHeader className="pb-4 border-b border-gray-100 bg-gray-50/50 -m-6 p-6 mb-6">
+        <DialogHeader className="pb-4 border-b border-gray-100 bg-gray-50/50 -m-6 p-6">
           <DialogTitle className="text-xl font-semibold text-gray-800">
             {title}
           </DialogTitle>
         </DialogHeader>
-        <div className="flex-1 overflow-y-auto">{children}</div>
+        <div className="flex-1 h-[80vh] p-6">{children}</div>
       </DialogContent>
     </Dialog>
   );

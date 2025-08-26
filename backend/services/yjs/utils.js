@@ -89,14 +89,8 @@ const closeConn = (doc, conn) => {
   persistence = {
 
     bindState: async (id, doc) => {
-      const docInstance = await prisma.doc.findUnique({
-        where: { id },
-        select: { docs_y_doc_state: true },
-      });
-      console.log("applying update, document size:", docInstance?.docs_y_doc_state?.byteLength || 0, "bytes");
-      if (docInstance?.docs_y_doc_state) {
-          Y.applyUpdateV2(doc, docInstance.docs_y_doc_state);
-      }
+      // Y.js state is no longer stored directly - content comes from versions
+      console.log("Y.js bindState called for document:", id);
     },
     writeState: async (ydoc) => {
 
@@ -113,13 +107,9 @@ const closeConn = (doc, conn) => {
       
   try {
     if (text_length < largeContentCharacterLength) {
-      await prisma.doc.update({
-        where: { id },
-        data: {
-          docs_prosemirror_delta: delta,
-          docs_y_doc_state: state,
-        },
-      });
+      // Y.js state and delta no longer stored directly in doc table
+      // Content is managed through the Version system
+      console.log("Y.js writeState called for document:", id);
     }
 
     // Write delta for debug

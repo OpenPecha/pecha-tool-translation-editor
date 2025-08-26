@@ -18,3 +18,6 @@ export const models = {
 };
 
 export const token_limit = 100000;
+
+
+export const DEFAULT_LANGUAGE_SELECTED = "bo";
