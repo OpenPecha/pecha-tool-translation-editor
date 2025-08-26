@@ -161,7 +161,7 @@ const Editor = ({
               console.log("footnote");
               const quill = quillRef.current;
               if (!quill) return;
-              const module = quill.getModule("customFootnote");
+              const module = quill.getModule("footnote");
               module.addFootnote("");
             },
           },

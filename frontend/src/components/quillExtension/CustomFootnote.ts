@@ -1,5 +1,6 @@
 import { FootnoteModule, FootnoteSection } from "quill-footnote";
 import Quill from "quill";
+
 // Extended FootnoteSection (collapsible)
 class CollapsibleFootnoteSection extends FootnoteSection {
   constructor(scroll: any, domNode: HTMLElement, value: any) {
@@ -35,6 +36,16 @@ class CollapsibleFootnoteSection extends FootnoteSection {
 
 // Extended FootnoteModule (focus new row after insertion)
 class CustomFootnoteModule extends FootnoteModule {
+
+  constructor(quill: Quill, options: any) {
+    super(quill, options);
+  }
+
+  static register(): void {
+    super.register();
+    Quill.register(CollapsibleFootnoteSection);
+  }
+
   addFootnote(content: string): void {
     const createdAt = Date.now(); // unique ID for this footnote
     super.addFootnote(content);
@@ -62,6 +73,9 @@ class CustomFootnoteModule extends FootnoteModule {
         }
       }
     }, 0);
+  }
+  deleteFootnote(footnoteNumber: any): void {
+    super.deleteFootnote(footnoteNumber);
   }
 }
 

@@ -333,7 +333,7 @@
   }
   
   .footnote-section {
-    position:sticky;
+    position:absolute;
     bottom: 0;
     left: 0;
     right: 0;
@@ -381,7 +381,7 @@
     color: #6b7280;
     display: flex;
     align-items: flex-start;
-    gap: 12px;
+    gap: 1px;
     transition: color 0.2s ease;
   }
   
@@ -394,13 +394,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f3f4f6;
+    /* background: #f3f4f6; */
     color: #1a73e8;
     font-size: 8px;
     font-weight: 500;
     width: 20px;
     height: 20px;
-    border-radius: 50%;
     flex-shrink: 0;
     margin-top: 2px;
     transition: all 0.2s ease;
