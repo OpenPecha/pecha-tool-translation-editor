@@ -167,7 +167,6 @@ const Editor = ({
             },
           },
         },
-        customFootnote:true,
         footnote:true,
         // cursors: {
         //   transformOnTextChange: false,
