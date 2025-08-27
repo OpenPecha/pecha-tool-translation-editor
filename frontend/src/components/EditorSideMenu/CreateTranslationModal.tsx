@@ -14,6 +14,7 @@ import {
   type UploadMethod,
 } from "@/components/shared/modals";
 import { DEFAULT_LANGUAGE_SELECTED } from "@/config";
+import { OpenPechaTranslationLoader } from "./OpenPechaTranslationLoader";
 
 interface CreateTranslationModalProps {
   rootId: string;
@@ -55,7 +56,6 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
   const handlePreviewSuccess = (newTranslationId: string) => {
     setTranslationId(newTranslationId);
   };
-
   return (
     <BaseModal
       open={true}
@@ -67,7 +67,7 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
       <div className="space-y-6">
         {!showPreview ? (
           <>
-            <FormSection
+            {uploadMethod !== "openpecha" && <FormSection
               title="Language Selection"
               description="Choose the target language for your translation"
             >
@@ -75,9 +75,7 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
                 selectedLanguage={language}
                 setSelectedLanguage={setLanguage}
               />
-            </FormSection>
-
-            {language && (
+            </FormSection>}
               <FormSection
                 title="Upload Method"
                 description="Choose how you want to create your translation"
@@ -110,22 +108,13 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
                   </TabContentWrapper>
 
                   <TabContentWrapper value="openpecha">
-                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
-                        <span className="text-2xl">🚧</span>
-                      </div>
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">
-                        Coming Soon
-                      </h3>
-                      <p className="text-gray-600 max-w-sm">
-                        OpenPecha integration is currently in development.
-                        Please use empty document or file upload for now.
-                      </p>
-                    </div>
+                    <OpenPechaTranslationLoader 
+                    rootId={rootId} 
+                    onSuccess={setTranslationId} 
+                    refetchTranslations={refetchTranslations} />
                   </TabContentWrapper>
                 </UploadMethodTabs>
               </FormSection>
-            )}
           </>
         ) : (
           <FormSection

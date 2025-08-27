@@ -104,7 +104,7 @@ export function TabContentWrapper({
   className,
 }: TabContentWrapperProps) {
   return (
-    <TabsContent value={value} className={cn("space-y-4", className)}>
+    <TabsContent value={value} className={cn("space-y-4 min-h-[300px]", className)}>
       {children}
     </TabsContent>
   );
