@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import CreateTranslationModal from "./CreateTranslationModal";
 import { useParams } from "react-router-dom";
 import { useCurrentDocTranslations } from "@/hooks/useCurrentDoc";
-import { useTranslationSidebarParams } from "@/hooks/useQueryParams";
 
 // Import components
 import TranslationList from "./components/TranslationList";
