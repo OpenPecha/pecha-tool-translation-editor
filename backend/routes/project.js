@@ -1126,11 +1126,6 @@ router.post("/:id/share", authenticate, async (req, res) => {
       console.log("Generated new share link:", shareLink);
     }
 
-    console.log("Updating project with:", {
-      isPublic: isPublic || false,
-      publicAccess: publicAccess || "none",
-      shareLink: isPublic ? shareLink : null,
-    });
 
     // Update project
     const updatedProject = await prisma.project.update({
@@ -1142,7 +1137,6 @@ router.post("/:id/share", authenticate, async (req, res) => {
       },
     });
 
-    console.log("Project updated successfully");
 
     // Generate direct link to root document instead of project link
     const baseUrl = process.env.FRONTEND_URL || "http://localhost:3000";
@@ -1150,7 +1144,6 @@ router.post("/:id/share", authenticate, async (req, res) => {
     const shareableLink = updatedProject.isPublic
       ? `${baseUrl}/documents/public/${rootDocument.id}`
       : null;
-
     res.json({
       success: true,
       data: {

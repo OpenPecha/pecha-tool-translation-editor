@@ -150,17 +150,35 @@ router.get("/public/:id", optionalAuthenticate, async (req, res) => {
         createdAt: true,
         updatedAt: true,
         rootProjectId: true,
+        currentVersionId: true,
+        currentVersion: {
+          select: {
+            id: true,
+            content: true,
+            createdAt: true,
+            updatedAt: true,
+            label: true,
+            userId: true,
+          },
+        },
         permissions: true,
-      rootProject:{
-        include:{
-          permissions:true,
+        rootProject:{
+          include:{
+            permissions:true,
+
+          }
         }
-      }
       },
     });
 
     if (!document) return res.status(404).json({ error: "Document not found" });
-
+    const isPublic = document.rootProject.isPublic
+    if(!isPublic){
+      return res.status(403).json({
+        success: false,
+        message: "This document is not publicly accessible",
+      });
+    }
     // Check if user has permission to access this document
     const hasPermission = await checkDocumentPermission(document, req.user?.id);
 
