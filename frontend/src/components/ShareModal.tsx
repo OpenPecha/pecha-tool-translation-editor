@@ -538,12 +538,12 @@ const ShareModal: React.FC<ShareModalProps> = ({
                 )}
               </div>
 
-            {/* General Access Section - Compact */}
-            <div className=" rounded-lg p-3 space-y-2">
+            {/* General Access Section - Enhanced */}
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Globe className="h-3 w-3 text-gray-500" />
-                  <span className="text-xs font-medium text-gray-700">Access</span>
+                  <Globe className="h-4 w-4 text-gray-600" />
+                  <span className="text-sm font-medium text-gray-800">General access</span>
                 </div>
                 {shareData?.isOwner && (
                   <Select
@@ -553,71 +553,84 @@ const ShareModal: React.FC<ShareModalProps> = ({
                     }
                     disabled={updateShareMutation.isPending}
                   >
-                    <SelectTrigger className=" h-6 text-xs w-fit">
+                    <SelectTrigger className="h-8 text-sm w-auto min-w-24">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="private">
-                        <div className="flex items-center gap-1.5">
-                          <Lock className="h-2.5 w-2.5" />
-                          <span className="text-xs">Private</span>
+                        <div className="flex items-center gap-2">
+                          <Lock className="h-3 w-3" />
+                          <span>Private</span>
                         </div>
                       </SelectItem>
                       <SelectItem value="public">
-                        <div className="flex items-center gap-1.5">
-                          <Globe className="h-2.5 w-2.5" />
-                          <span className="text-xs">Public</span>
+                        <div className="flex items-center gap-2">
+                          <Globe className="h-3 w-3" />
+                          <span>Public</span>
                         </div>
                       </SelectItem>
                     </SelectContent>
                   </Select>
                 )}
                 {!shareData?.isOwner && (
-                  <Badge variant="outline" className="text-xs h-6 px-2">
+                  <Badge variant="outline" className="text-sm h-8 px-3">
                     {shareData?.isPublic ? "Public" : "Private"}
                   </Badge>
                 )}
               </div>
               
-              {/* Shareable Link - Compact */}
+              <div className="text-xs text-gray-600">
+                {shareData?.isPublic 
+                  ? "Anyone with the link can view this document" 
+                  : "Only people with access can open with the link"
+                }
+              </div>
+              
+              {/* Shareable Link - Enhanced */}
               {shareData?.isPublic && shareData?.rootDocument && (
-                <div className="flex items-center gap-1.5">
-                  <Input
-                    value={
-                      generateShareableLink(shareData.rootDocument) || ""
-                    }
-                    readOnly
-                    className="text-xs h-6 bg-gray-50 text-gray-600"
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const link = generateShareableLink(
-                        shareData.rootDocument
-                      );
-                      if (link) copyToClipboard(link);
-                    }}
-                    className="h-6 w-6 p-0 shrink-0"
-                  >
-                    <Copy className="h-2.5 w-2.5" />
-                  </Button>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-gray-600">Share link</label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={
+                        generateShareableLink(shareData.rootDocument) || ""
+                      }
+                      readOnly
+                      className="text-xs h-8 bg-gray-50 border-gray-200 text-gray-700 cursor-default select-all focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      onFocus={(e) => e.target.select()}
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const link = generateShareableLink(
+                          shareData.rootDocument
+                        );
+                        if (link) copyToClipboard(link);
+                      }}
+                      className="h-8 px-3 shrink-0 hover:bg-gray-100"
+                      title="Copy link"
+                    >
+                      <Copy className="h-3 w-3 mr-1" />
+                      Copy
+                    </Button>
+                  </div>
                 </div>
               )}
 
-              {/* Compact Status Messages */}
+              {/* Status Messages */}
               {(error || success) && (
-                <div className="text-xs">
+                <div className="text-sm">
                   {error && (
-                    <div className="flex items-center gap-1.5 text-red-600 bg-red-50 p-1.5 rounded text-xs">
-                      <AlertTriangle className="h-3 w-3" />
-                      <span>{error}</span>
+                    <div className="flex items-center gap-2 text-red-700 bg-red-50 border border-red-200 p-3 rounded-md">
+                      <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+                      <span className="text-sm">{error}</span>
                     </div>
                   )}
                   {success && (
-                    <div className="flex items-center gap-1.5 text-green-600 bg-green-50 p-1.5 rounded text-xs">
-                      <CheckCircle className="h-3 w-3" />
-                      <span>{success}</span>
+                    <div className="flex items-center gap-2 text-green-700 bg-green-50 border border-green-200 p-3 rounded-md">
+                      <CheckCircle className="h-4 w-4 flex-shrink-0" />
+                      <span className="text-sm">{success}</span>
                     </div>
                   )}
                 </div>
