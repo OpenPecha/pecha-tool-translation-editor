@@ -133,8 +133,11 @@ const NavSidebar = () => {
           </nav>
 
           {/* Sidebar footer */}
-          <div className="p-4 border-t">
-            <p className="text-sm text-gray-500">© 2025 Pecha.Tools</p>
+          <div className="p-4 border-t space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-gray-500">© 2025 Pecha.Tools</p>
+            
+            </div>
           </div>
         </div>
       </aside>
