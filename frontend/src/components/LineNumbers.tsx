@@ -140,6 +140,7 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
     };
 
     Array.from(childs).forEach((child, index) => {
+      if(child.tagName !== "P") return;
       const trimmedText = child.textContent?.trim();
       if (!trimmedText) return;
       const currentType = child.getAttribute("data-type");
@@ -338,7 +339,7 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
         } text-right relative`}
         style={{ width: `${maxLineWidth + 2}ch` }}
       >
-        {lineNumbers.slice(0, -1).map((lineNum) => (
+        {lineNumbers.map((lineNum) => (
           <span
             key={`${documentId}-line-${lineNum.number}`}
             onDoubleClick={() => handleDoubleClick(lineNum.number)}

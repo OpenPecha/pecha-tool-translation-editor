@@ -5,7 +5,17 @@ import OpenPecha from "@/assets/icon.png";
 import Footer from "./Footbar";
 import Navbar from "./Navbar";
 
-function Loader(){
+
+export const LoadingFallback: React.FC = () => (
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="flex flex-col items-center space-y-4">
+        <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+        <p className="text-gray-600 text-sm">Loading translations...</p>
+      </div>
+    </div>
+  );
+
+function LoaderWithLogo(){
     return <div className="flex flex-col justify-center items-center h-screen bg-gray-50">
     <div className="flex flex-col items-center space-y-6">
       <div className="flex items-center space-x-3">
@@ -26,7 +36,7 @@ function Loader(){
 
 export function SuspenceWithLoadingFallback({children}: {children: React.ReactNode}) {
   return (
-    <Suspense fallback={<Loader />}>
+    <Suspense fallback={<LoaderWithLogo />}>
       {children}
     </Suspense>
   );

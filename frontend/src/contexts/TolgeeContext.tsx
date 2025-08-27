@@ -14,6 +14,7 @@ import {
   useTolgee,
   BackendFetch,
 } from "@tolgee/react";
+import { LoadingFallback } from "@/pages/layout";
 
 const apiKey = import.meta.env.VITE_APP_TOLGEE_API_KEY;
 const apiUrl = import.meta.env.VITE_APP_TOLGEE_API_URL;
@@ -126,14 +127,7 @@ const TolgeeContextProvider: React.FC<{
   );
 };
 
-const LoadingFallback: React.FC = () => (
-  <div className="flex items-center justify-center min-h-screen bg-gray-50">
-    <div className="flex flex-col items-center space-y-4">
-      <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
-      <p className="text-gray-600 text-sm">Loading translations...</p>
-    </div>
-  </div>
-);
+
 
 export const useTolgeeContext = (): TolgeeContextType => {
   const context = useContext(TolgeeContext);
