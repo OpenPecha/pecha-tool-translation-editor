@@ -275,7 +275,7 @@ const Editor = ({
     if (
       quillRef.current &&
       quillRef.current.getText().trim() === "" &&
-      content
+      content.length > 0
     ) {
       setTimeout(() => {
         quillRef.current?.setContents(content || []);
@@ -284,7 +284,7 @@ const Editor = ({
           setIsContentLoaded(true);
         }, 100);
       }, 0);
-    } else if (quillRef.current && !content) {
+    } else if (quillRef.current && content.length === 0) {
       // If no content to load, mark as loaded
       setIsContentLoaded(true);
     }
@@ -293,7 +293,7 @@ const Editor = ({
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, []);
+  }, [currentDoc]);
 
   function addComment() {
     if (!currentRange || currentRange?.length === 0) return;
