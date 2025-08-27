@@ -343,17 +343,16 @@ const ShareModal: React.FC<ShareModalProps> = ({
           {/* Share Tab */}
           <TabsContent
             value="share"
-            className="flex-1 overflow-y-auto p-3 space-y-3"
+            className="flex-1 overflow-y-auto p-6 space-y-3 "
           >
             {/* People with Access */}
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-sm">
+              <div className="pb-2">
+                <div className="flex items-center gap-2 text-sm">
                   <Users className="h-4 w-4" />
                   People with Access
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
+                </div>
+              </div>
+              <div className="space-y-2">
                 {/* Add people section */}
                 {shareData?.isOwner && (
                   <div className="space-y-2">
@@ -537,109 +536,97 @@ const ShareModal: React.FC<ShareModalProps> = ({
                     <p className="text-xs">No collaborators yet</p>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
 
-            {/* General Access Section - Redesigned */}
-            <Card>
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 text-sm">
-                    <Globe className="h-4 w-4" />
-                    General Access
-                  </CardTitle>
-                  {shareData?.isOwner && (
-                    <Select
-                      value={shareData?.isPublic ? "public" : "private"}
-                      onValueChange={(value) =>
-                        handlePublicToggle(value === "public")
-                      }
-                      disabled={updateShareMutation.isPending}
-                    >
-                      <SelectTrigger className="w-32 h-8">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="private">
-                          <div className="flex items-center gap-2">
-                            <Lock className="h-3 w-3" />
-                            Private
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="public">
-                          <div className="flex items-center gap-2">
-                            <Globe className="h-3 w-3" />
-                            Public
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
-                  {!shareData?.isOwner && (
-                    <Badge variant="outline" className="text-xs">
-                      {shareData?.isPublic ? "Public" : "Private"}
-                    </Badge>
-                  )}
+            {/* General Access Section - Compact */}
+            <div className=" rounded-lg p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Globe className="h-3 w-3 text-gray-500" />
+                  <span className="text-xs font-medium text-gray-700">Access</span>
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {/* Shareable Link Section */}
-                {shareData?.isPublic && shareData?.rootDocument && (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Input
-                        value={
-                          generateShareableLink(shareData.rootDocument) || ""
-                        }
-                        readOnly
-                        className="text-xs h-8 bg-gray-50"
-                      />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          const link = generateShareableLink(
-                            shareData.rootDocument
-                          );
-                          if (link) copyToClipboard(link);
-                        }}
-                        className="h-8 w-8 p-0 shrink-0"
-                      >
-                        <Copy className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
+                {shareData?.isOwner && (
+                  <Select
+                    value={shareData?.isPublic ? "public" : "private"}
+                    onValueChange={(value) =>
+                      handlePublicToggle(value === "public")
+                    }
+                    disabled={updateShareMutation.isPending}
+                  >
+                    <SelectTrigger className=" h-6 text-xs w-fit">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="private">
+                        <div className="flex items-center gap-1.5">
+                          <Lock className="h-2.5 w-2.5" />
+                          <span className="text-xs">Private</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="public">
+                        <div className="flex items-center gap-1.5">
+                          <Globe className="h-2.5 w-2.5" />
+                          <span className="text-xs">Public</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 )}
+                {!shareData?.isOwner && (
+                  <Badge variant="outline" className="text-xs h-6 px-2">
+                    {shareData?.isPublic ? "Public" : "Private"}
+                  </Badge>
+                )}
+              </div>
+              
+              {/* Shareable Link - Compact */}
+              {shareData?.isPublic && shareData?.rootDocument && (
+                <div className="flex items-center gap-1.5">
+                  <Input
+                    value={
+                      generateShareableLink(shareData.rootDocument) || ""
+                    }
+                    readOnly
+                    className="text-xs h-6 bg-gray-50 text-gray-600"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const link = generateShareableLink(
+                        shareData.rootDocument
+                      );
+                      if (link) copyToClipboard(link);
+                    }}
+                    className="h-6 w-6 p-0 shrink-0"
+                  >
+                    <Copy className="h-2.5 w-2.5" />
+                  </Button>
+                </div>
+              )}
 
-                {/* Alert Message Area */}
-                <div className="min-h-[32px]">
-                  {(error || success) && (
-                    <div className="text-xs">
-                      {error && (
-                        <Alert variant="destructive" className="py-2">
-                          <AlertTriangle className="h-4 w-4" />
-                          <AlertDescription className="text-xs ml-2">
-                            {error}
-                          </AlertDescription>
-                        </Alert>
-                      )}
-                      {success && (
-                        <Alert className="border-green-200 bg-green-50">
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                          <AlertDescription className="text-green-800 text-xs ml-2">
-                            {success}
-                          </AlertDescription>
-                        </Alert>
-                      )}
+              {/* Compact Status Messages */}
+              {(error || success) && (
+                <div className="text-xs">
+                  {error && (
+                    <div className="flex items-center gap-1.5 text-red-600 bg-red-50 p-1.5 rounded text-xs">
+                      <AlertTriangle className="h-3 w-3" />
+                      <span>{error}</span>
+                    </div>
+                  )}
+                  {success && (
+                    <div className="flex items-center gap-1.5 text-green-600 bg-green-50 p-1.5 rounded text-xs">
+                      <CheckCircle className="h-3 w-3" />
+                      <span>{success}</span>
                     </div>
                   )}
                 </div>
-              </CardContent>
-            </Card>
+              )}
+            </div>
           </TabsContent>
 
           {/* Export Tab */}
-          <TabsContent value="export" className="flex-1 p-3">
+          <TabsContent value="export" className="flex-1 p-6">
             <ExportButton projectId={projectId} projectName={projectName} />
           </TabsContent>
         </Tabs>

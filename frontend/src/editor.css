@@ -342,7 +342,6 @@ transition: all 0.2s ease-in-out !important;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    z-index: 1000;
     max-height: 180px;
     overflow-y: auto;
   }
