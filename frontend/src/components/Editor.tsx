@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Quill from "quill";
 import Toolbar from "./Toolbar/Toolbar";
 import "quill/dist/quill.snow.css";
@@ -23,6 +23,7 @@ import SkeletonLoader from "./SkeletonLoader";
 import { footnoteKeyboardBindings } from "quill-footnote";
 import { CustomFootnoteModule } from "./quillExtension/CustomFootnote";
 import type { Document } from "@/hooks/useCurrentDoc";
+import { checkIsTibetan } from "@/lib/isTibetan";
 
 quill_import();
 
@@ -43,6 +44,7 @@ const Editor = ({
   const [currentRange, setCurrentRange] = useState<Range | null>(null);
   const [showCommentModal, setShowCommentModal] = useState(false);
   const { registerQuill, transitionPhase } = useQuillVersion();
+  const [isTibetan,setIsTibetan]=useState(false);
   const {
     registerQuill: registerQuill2,
     unregisterQuill: unregisterQuill2,
@@ -278,6 +280,7 @@ const Editor = ({
     ) {
       setTimeout(() => {
         quillRef.current?.setContents(content || []);
+        setIsTibetan(checkIsTibetan(quillRef.current?.getText() || ""));
         // Set content loaded after a brief delay to ensure rendering is complete
         setTimeout(() => {
           setIsContentLoaded(true);
@@ -299,6 +302,7 @@ const Editor = ({
 
     setShowCommentModal(true);
   }
+
   if (!documentId) return null;
   return (
     <>
@@ -326,7 +330,7 @@ const Editor = ({
               ref={editorRef}
               className={`editor-content flex-1 pb-1 w-full overflow-y-auto`}
               style={{
-                fontFamily: "Monlam",
+                fontFamily: isTibetan ? "Monlam" : "google-sans-regular",
                 fontSize: "1rem",
                 lineHeight: 1.5,
               }}

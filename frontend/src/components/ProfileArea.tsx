@@ -47,7 +47,6 @@ function ProfileArea() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  console.log(currentLanguage);
   return (
     <div className={`relative `} ref={dropdownRef}>
       {/* Profile Button */}
