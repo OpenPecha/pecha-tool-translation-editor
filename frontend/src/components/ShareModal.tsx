@@ -579,17 +579,11 @@ const ShareModal: React.FC<ShareModalProps> = ({
                 )}
               </div>
               
-              <div className="text-xs text-gray-600">
-                {shareData?.isPublic 
-                  ? "Anyone with the link can view this document" 
-                  : "Only people with access can open with the link"
-                }
-              </div>
+              
               
               {/* Shareable Link - Enhanced */}
               {shareData?.isPublic && shareData?.rootDocument && (
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-gray-600">Share link</label>
                   <div className="flex items-center gap-2">
                     <Input
                       value={
@@ -612,7 +606,6 @@ const ShareModal: React.FC<ShareModalProps> = ({
                       title="Copy link"
                     >
                       <Copy className="h-3 w-3 mr-1" />
-                      Copy
                     </Button>
                   </div>
                 </div>
