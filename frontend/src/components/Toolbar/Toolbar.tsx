@@ -15,6 +15,7 @@ import VersionDiff from "./VersionDiff";
 import Quill from "quill";
 import { useAuth } from "@/auth/use-auth-hook";
 import FootnoteSvg from "@/assets/toolbar/footnote.svg";
+import { FootnoteIcon } from "./ToolbarIcons";
 
 const isEnabled = !EDITOR_READ_ONLY;
 
@@ -261,10 +262,8 @@ const Toolbar = ({
             <FaHistory />
           </ToolbarButton>
           <span className="ql-formats" style={isEnabledStyle}>
-          <button className="ql-footnote" title="footnote" >
-            <img src={FootnoteSvg} alt="footnote" className="filter opacity-70"  />
-            </button>
-        </span>
+          <button className="ql-footnote" title="footnote" />
+          </span>
         </span>
 
         {openHistory && (
