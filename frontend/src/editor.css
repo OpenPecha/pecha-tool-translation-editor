@@ -300,7 +300,18 @@
     height: 0;
     border: 0;
   }
-  
+  a.footnote-number{
+    font-size: 0.7rem;
+    line-height: 0.7rem;
+    padding: 0.2rem 0.3rem;
+    border-radius: 0.3rem;
+    pointer-events: none;
+    text-decoration: none;
+    cursor: default;
+    vertical-align: super;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    letter-spacing: 1px;
+  }
   .footnote-section {
     position:absolute;
     bottom: 0;
