@@ -880,7 +880,67 @@ async function createSideBySideDocxTemplate(
 }
 
 /**
- * Create a source-only DOCX template
+ * Create paginated pages for single text content.
+ * Groups paragraphs into pages until MAXCHARPERPAGE is reached.
+ *
+ * @param {string[]} paragraphs - Array of text paragraphs
+ * @param {number} maxCharsPerPage - Maximum characters per page
+ * @returns {Array} - Paginated page objects
+ */
+function createPagination(
+  paragraphs,
+  maxCharsPerPage = MAXCHARPERPAGE
+) {
+  const paginatedPages = [];
+  let currentPage = {
+    sourceParagraphs: [],
+    totalChars: 0,
+    pageNumber: 1,
+  };
+
+  for (const para of paragraphs) {
+    const paraLength = para.length;
+
+    // If adding this paragraph would exceed the limit, finalize current page
+    if (
+      currentPage.totalChars + paraLength > maxCharsPerPage &&
+      currentPage.totalChars > 0
+    ) {
+      paginatedPages.push({
+        source: currentPage.sourceParagraphs.join(" "),
+        pageNumber: currentPage.pageNumber,
+        totalChars: currentPage.totalChars,
+        sourceParagraphs: [...currentPage.sourceParagraphs],
+      });
+
+      // Start a new page
+      currentPage = {
+        sourceParagraphs: [],
+        totalChars: 0,
+        pageNumber: currentPage.pageNumber + 1,
+      };
+    }
+
+    // Add paragraph to current page
+    currentPage.sourceParagraphs.push(para);
+    currentPage.totalChars += paraLength;
+  }
+
+  // Push the last page if not empty
+  if (currentPage.totalChars > 0) {
+    paginatedPages.push({
+      source: currentPage.sourceParagraphs.join(" "),
+      pageNumber: currentPage.pageNumber,
+      totalChars: currentPage.totalChars,
+      sourceParagraphs: [...currentPage.sourceParagraphs],
+    });
+  }
+
+  return paginatedPages;
+}
+
+/**
+ * Create a source-only DOCX template with pagination
  * @param {string} docName - The document name
  * @param {Array} sourceDelta - The source document content as a Delta array
  * @param {string} progressId - Progress tracking ID
@@ -901,22 +961,26 @@ async function createSourceOnlyDocxTemplate(docName, sourceDelta, progressId) {
     // Split by paragraphs
     const sourceParagraphs = sourceText.split(/\n+/).filter((p) => p.trim());
 
-    // Create pages array with source only (clean format)
-    const pages = [];
-    for (let i = 0; i < sourceParagraphs.length; i++) {
+    // Paginate source text
+    const paginatedMapping = createPagination(sourceParagraphs, MAXCHARPERPAGE);
+    // Convert to pages array for template
+    const pages = paginatedMapping.map((page, i) => {
       const pageBreak = i >= 0 ? '<w:br w:type="page"/>' : "";
-      const pageNumber = i + 1;
-      pages.push({
-        source: sourceParagraphs[i],
-        translation: "", // Empty translation
-        isLast: true, // Flag to identify last page for template
+      const pageNumber = page.pageNumber;
+      return {
+        source: page.source,
+        translation: "", // always empty
+        isLast: i === paginatedMapping.length - 1,
         pageBreak,
-        needsPageBreak: i > 0,
+        needsPageBreak: false,
         tibetanPageMarker: pageNumber % 2 === 1 ? "༄༅། །" : "",
         isOddPage: pageNumber % 2 === 1,
-      });
-    }
-
+        // Metadata
+        pageNumber: page.pageNumber,
+        totalChars: page.totalChars,
+        sourceParagraphs: page.sourceParagraphs,
+      };
+    });
     // Check if template exists
     if (!fs.existsSync(TEMPLATE_PATH)) {
       console.warn(
@@ -930,9 +994,7 @@ async function createSourceOnlyDocxTemplate(docName, sourceDelta, progressId) {
     // Read the template file
     const templateContent = fs.readFileSync(TEMPLATE_PATH);
 
-    // Use docxtemplater to populate the template
     const zip = new PizZip(templateContent);
-
     let doc;
     try {
       doc = new Docxtemplater(zip, {
@@ -942,7 +1004,6 @@ async function createSourceOnlyDocxTemplate(docName, sourceDelta, progressId) {
       });
     } catch (templateError) {
       console.error("Template parsing error:", templateError);
-
       return createFallbackSideBySideDocxTemplate(pages);
     }
 
@@ -951,15 +1012,15 @@ async function createSourceOnlyDocxTemplate(docName, sourceDelta, progressId) {
       targetLanguage: "Source Only",
       totalPages: pages.length,
       pages: pages,
+      paginationInfo: {
+        maxCharsPerPage: MAXCHARPERPAGE,
+        totalOriginalParagraphs: sourceParagraphs.length,
+        totalPaginatedPages: paginatedMapping.length,
+      },
     };
-
-    console.log(
-      `📊 Template data prepared for ${docName} (source only): ${pages.length} pages`
-    );
 
     sendProgress(progressStreams, progressId, 70, "Rendering template...");
 
-    // Render the template with data
     try {
       doc.render(templateData);
     } catch (renderError) {
@@ -974,7 +1035,6 @@ async function createSourceOnlyDocxTemplate(docName, sourceDelta, progressId) {
       "Generating final document..."
     );
 
-    // Get the generated document buffer
     const docBuffer = doc.getZip().generate({
       type: "nodebuffer",
       compression: "DEFLATE",
@@ -983,7 +1043,6 @@ async function createSourceOnlyDocxTemplate(docName, sourceDelta, progressId) {
     return docBuffer;
   } catch (error) {
     console.error("Error creating source-only DOCX template:", error);
-    // Fallback to simple structure
     const pages = [{ source: "Error", translation: "" }];
     return createFallbackSideBySideDocxTemplate(pages);
   }
