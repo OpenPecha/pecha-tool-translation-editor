@@ -98,6 +98,7 @@ function ExportButton({
   const [exportProgress, setExportProgress] = useState<number>(0);
   const [exportMessage, setExportMessage] = useState<string>("");
   const [selectedTranslation, setSelectedTranslation] = useState<string>("all");
+  const [showTranslationError, setShowTranslationError] = useState(false);
   const { t } = useTranslate();
   
   // Fetch available translations for the root document
@@ -119,12 +120,23 @@ function ExportButton({
     }
   }, [translations]);
   
+  // Clear translation error when translations become available or mode changes
+  useEffect(() => {
+    if (translations && translations.length > 0) {
+      setShowTranslationError(false);
+    }
+    if (exportMode !== "with_translation") {
+      setShowTranslationError(false);
+    }
+  }, [translations, exportMode]);
+  
   // Update export format when mode changes
   const handleExportModeChange = (value: ExportMode) => {
     setExportMode(value);
     // Reset translation selection when switching away from with_translation
     if (value !== "with_translation") {
       setSelectedTranslation("all");
+      setShowTranslationError(false);
     }
     // Set default format based on mode
     if (value === "single") {
@@ -304,6 +316,16 @@ function ExportButton({
   });
 
   const exportZip = () => {
+    // Check if user is trying to export with translation but no translations are available
+    if (exportMode === "with_translation" && (!translations || translations.length === 0)) {
+      setShowTranslationError(true);
+      // Auto-clear the error after 3 seconds
+      setTimeout(() => {
+        setShowTranslationError(false);
+      }, 3000);
+      return; // Stop the export process
+    }
+    
     setIsExporting(true);
     downloadZip();
   };
@@ -318,7 +340,7 @@ function ExportButton({
     <TooltipProvider>
       <div className="flex flex-col w-full gap-2 ">
         {/* Export Mode Selection */}
-        <div className="space-y-4">
+        <div className="space-y-2">
           <div className="text-sm font-medium text-gray-900">
             {t("export.exportMode")}
           </div>
@@ -327,7 +349,7 @@ function ExportButton({
             onValueChange={(value) =>
               handleExportModeChange(value as ExportMode)
             }
-            className="space-y-3"
+            className="space-y-1 gap-2"
           >
             {ExportModeOptions.map((mode) => (
               <div key={mode.label} className="flex items-start space-x-3">
@@ -345,46 +367,58 @@ function ExportButton({
                       >
                         {mode.label}
                       </Label>
-                      <p className="text-sm text-gray-500 mt-1">
-                        {mode.value === "single"
-                          ? "Export all documents as individual files"
-                          : "Export source content with translations"}
-                      </p>
-                    </div>
-                    
-                    {/* Translation Dropdown - only show for with_translation mode */}
-                    {mode.value === "with_translation" && (
-                      <div className="min-w-[200px]">
-                        <Select
-                          value={selectedTranslation}
-                          onValueChange={setSelectedTranslation}
-                          disabled={exportMode !== "with_translation" || translationsLoading}
-                        >
-                          <SelectTrigger className="h-9 text-sm">
-                            <SelectValue placeholder="Select translation..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {/* Default "All translations" option */}
-                            {translations && translations.length > 1 && (
-                              <SelectItem value="all">All translations</SelectItem>
-                            )}
-                            
-                            {/* Individual translation options */}
-                            {translations && translations.length > 0 ? (
-                              translations.map((translation: Translation) => (
-                                <SelectItem key={translation.id} value={translation.id}>
-                                  {translation.name || translation.language || `Translation ${translation.id.slice(0, 8)}`}
+                      {mode.value === "single" ? (
+                        <p className="text-sm text-gray-500 mt-1">
+                          Export all documents as individual files
+                        </p>
+                      ) : (
+                        // Translation Dropdown replaces the description text for with_translation mode
+                        <div className="">
+                          <Select
+                            value={translations && translations.length > 0
+                              ? selectedTranslation
+                              : "none"}
+                            onValueChange={setSelectedTranslation}
+                            disabled={exportMode !== "with_translation" || translationsLoading}
+                          >
+                            <SelectTrigger 
+                              className={`h-6 text-sm min-w-[250px] max-w-[300px] transition-all duration-200 ${
+                                showTranslationError 
+                                  ? 'border-red-500 animate-pulse shadow-md shadow-red-200' 
+                                  : ''
+                              }`}
+                            >
+                              <SelectValue placeholder="Select translation..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {/* Default "All translations" option */}
+                              {translations && translations.length > 1 && (
+                                <SelectItem value="all">All translations</SelectItem>
+                              )}
+                              
+                              {/* Individual translation options */}
+                              {translations && translations.length > 0 ? (
+                                translations.map((translation: Translation) => (
+                                  <SelectItem key={translation.id} value={translation.id}>
+                                    {translation.name || translation.language || `Translation ${translation.id.slice(0, 8)}`}
+                                  </SelectItem>
+                                ))
+                              ) : (
+                                <SelectItem value="none" disabled>
+                                  {translationsLoading ? "Loading..." : "No translations found"}
                                 </SelectItem>
-                              ))
-                            ) : (
-                              <SelectItem value="none" disabled>
-                                {translationsLoading ? "Loading..." : "No translations found"}
-                              </SelectItem>
-                            )}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
+                              )}
+                            </SelectContent>
+                          </Select>
+                          {/* Error message for no translations */}
+                          {showTranslationError && (
+                            <p className="text-red-500 text-xs mt-1 animate-fade-in">
+                              Please add translations before exporting with translation mode
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -401,12 +435,12 @@ function ExportButton({
             <RadioGroup
               value={exportFormat}
               onValueChange={(value) => setExportFormat(value as ExportFormat)}
-              className="space-y-3"
+              className="space-y-1"
             >
               {formatOptions.map((option) => (
                 <div
                   key={option.value}
-                  className="flex items-start space-x-3 px-3 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex items-start space-x-3 px-3 py-1 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   <RadioGroupItem value={option.value} id={option.value} />
                   <Label
@@ -501,6 +535,7 @@ function ExportButton({
           )}
         </Button>
       </div>
+
     </TooltipProvider>
   );
 }
