@@ -493,7 +493,7 @@ router.delete("/:id", authenticate, async (req, res) => {
 router.get("/:id/export", authenticate, async (req, res) => {
   try {
     const { id } = req.params;
-    const { type } = req.query;
+    const { type, translationId } = req.query;
 
     if (type === "side-by-side") {
       // Check if project exists and user has permission
@@ -524,8 +524,16 @@ router.get("/:id/export", authenticate, async (req, res) => {
       for (const rootDoc of project.roots) {
         const rootDocContent = await getDocumentContent(rootDoc.id);
 
+        // Filter translations based on translationId parameter
+        let translationsToProcess = rootDoc.translations;
+        if (translationId && translationId !== "all") {
+          translationsToProcess = rootDoc.translations.filter(
+            (translation) => translation.id === translationId
+          );
+        }
+
         // Process translations
-        for (const translation of rootDoc.translations) {
+        for (const translation of translationsToProcess) {
           const translationContent = await getDocumentContent(translation.id);
           if (rootDocContent && translationContent) {
             // Create a combined document with source and translation side by side
@@ -573,8 +581,16 @@ router.get("/:id/export", authenticate, async (req, res) => {
       for (const rootDoc of project.roots) {
         const rootDocContent = await getDocumentContent(rootDoc.id);
 
+        // Filter translations based on translationId parameter
+        let translationsToProcess = rootDoc.translations;
+        if (translationId && translationId !== "all") {
+          translationsToProcess = rootDoc.translations.filter(
+            (translation) => translation.id === translationId
+          );
+        }
+
         // Process translations
-        for (const translation of rootDoc.translations) {
+        for (const translation of translationsToProcess) {
           const translationContent = await getDocumentContent(translation.id);
           if (rootDocContent && translationContent) {
             // Create a combined document with source and translation line by line
@@ -649,8 +665,16 @@ router.get("/:id/export", authenticate, async (req, res) => {
             `🔍 Root document ${rootDoc.name} has ${rootDoc.translations.length} translations`
           );
 
+          // Filter translations based on translationId parameter
+          let translationsToProcess = rootDoc.translations;
+          if (translationId && translationId !== "all") {
+            translationsToProcess = rootDoc.translations.filter(
+              (translation) => translation.id === translationId
+            );
+          }
+
           // Process each translation separately (like side-by-side export)
-          for (const translation of rootDoc.translations) {
+          for (const translation of translationsToProcess) {
             const translationContent = await getDocumentContent(translation.id);
 
             if (translationContent) {
@@ -676,8 +700,8 @@ router.get("/:id/export", authenticate, async (req, res) => {
             }
           }
 
-          // Also create a source-only document if there are no translations
-          if (rootDoc.translations.length === 0) {
+          // Also create a source-only document if there are no translations to process
+          if (translationsToProcess.length === 0) {
             const sourceOnlyDocx = await createSourceOnlyDocxTemplate(
               rootDoc.name,
               rootDocContent,

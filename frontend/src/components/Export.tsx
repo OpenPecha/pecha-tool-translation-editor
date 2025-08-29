@@ -1,10 +1,17 @@
 import { Button } from "./ui/button";
 import { useMutation } from "@tanstack/react-query";
 import { downloadProjectDocuments, server_url } from "@/api/project";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BookOpen, Download, HelpCircle } from "lucide-react";
 import { Label } from "./ui/label";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
 import {
   Tooltip,
@@ -15,6 +22,7 @@ import {
 import { useParams } from "react-router-dom";
 import { Card, CardContent } from "./ui/card";
 import { useTranslate } from "@tolgee/react";
+import { useCurrentDocTranslations, Translation } from "@/hooks/useCurrentDoc";
 
 export type ExportMode = "single" | "with_translation";
 export type ExportFormat =
@@ -89,10 +97,35 @@ function ExportButton({
   const [exportFormat, setExportFormat] = useState<ExportFormat>("page-view");
   const [exportProgress, setExportProgress] = useState<number>(0);
   const [exportMessage, setExportMessage] = useState<string>("");
+  const [selectedTranslation, setSelectedTranslation] = useState<string>("all");
   const { t } = useTranslate();
+  
+  // Fetch available translations for the root document
+  const { translations, loading: translationsLoading } = useCurrentDocTranslations(rootId);
+  
+  // Handle translation selection logic
+  useEffect(() => {
+    if (translations && translations.length > 0) {
+      if (translations.length === 1) {
+        // Auto-select single translation
+        setSelectedTranslation(translations[0].id);
+      } else {
+        // Default to "all" for multiple translations
+        setSelectedTranslation("all");
+      }
+    } else {
+      // Reset to "all" if no translations
+      setSelectedTranslation("all");
+    }
+  }, [translations]);
+  
   // Update export format when mode changes
   const handleExportModeChange = (value: ExportMode) => {
     setExportMode(value);
+    // Reset translation selection when switching away from with_translation
+    if (value !== "with_translation") {
+      setSelectedTranslation("all");
+    }
     // Set default format based on mode
     if (value === "single") {
       setExportFormat("page-view");
@@ -184,12 +217,19 @@ function ExportButton({
         console.log("🚀 Starting export after SSE connection established");
 
         try {
+          // Determine translationId to pass to the API
+          let translationId: string | undefined;
+          if (exportMode === "with_translation" && selectedTranslation !== "all") {
+            translationId = selectedTranslation;
+          }
+          
           // Start the download with progress tracking
           const blob = await downloadProjectDocuments(
             projectId,
             actualExportType,
             exportMode === "single" ? undefined : rootId,
-            progressId
+            progressId,
+            translationId
           );
 
           // Close the SSE connection
@@ -206,7 +246,13 @@ function ExportButton({
         }
       } else {
         // For non-progress exports, use the regular method
-        return downloadProjectDocuments(projectId, actualExportType);
+        // Determine translationId to pass to the API
+        let translationId: string | undefined;
+        if (exportMode === "with_translation" && selectedTranslation !== "all") {
+          translationId = selectedTranslation;
+        }
+        
+        return downloadProjectDocuments(projectId, actualExportType, undefined, undefined, translationId);
       }
     },
     onSuccess: (blob) => {
@@ -291,17 +337,55 @@ function ExportButton({
                   className="mt-1"
                 />
                 <div className="flex-1">
-                  <Label
-                    htmlFor={mode.value}
-                    className="text-sm font-medium text-gray-900 cursor-pointer"
-                  >
-                    {mode.label}
-                  </Label>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {mode.value === "single"
-                      ? "Export all documents as individual files"
-                      : "Export source content with translations"}
-                  </p>
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex-1">
+                      <Label
+                        htmlFor={mode.value}
+                        className="text-sm font-medium text-gray-900 cursor-pointer"
+                      >
+                        {mode.label}
+                      </Label>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {mode.value === "single"
+                          ? "Export all documents as individual files"
+                          : "Export source content with translations"}
+                      </p>
+                    </div>
+                    
+                    {/* Translation Dropdown - only show for with_translation mode */}
+                    {mode.value === "with_translation" && (
+                      <div className="min-w-[200px]">
+                        <Select
+                          value={selectedTranslation}
+                          onValueChange={setSelectedTranslation}
+                          disabled={exportMode !== "with_translation" || translationsLoading}
+                        >
+                          <SelectTrigger className="h-9 text-sm">
+                            <SelectValue placeholder="Select translation..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {/* Default "All translations" option */}
+                            {translations && translations.length > 1 && (
+                              <SelectItem value="all">All translations</SelectItem>
+                            )}
+                            
+                            {/* Individual translation options */}
+                            {translations && translations.length > 0 ? (
+                              translations.map((translation: Translation) => (
+                                <SelectItem key={translation.id} value={translation.id}>
+                                  {translation.name || translation.language || `Translation ${translation.id.slice(0, 8)}`}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem value="none" disabled>
+                                {translationsLoading ? "Loading..." : "No translations found"}
+                              </SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
