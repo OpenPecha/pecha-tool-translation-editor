@@ -331,7 +331,7 @@ const Editor = ({
               className={`editor-content flex-1 pb-1 w-full overflow-y-auto`}
               style={{
                 fontFamily: isTibetan ? "Monlam" : "google-sans-regular",
-                fontSize: "1rem",
+                fontSize: isTibetan?"1rem":"1.3rem",
                 lineHeight: 1.5,
               }}
             />
