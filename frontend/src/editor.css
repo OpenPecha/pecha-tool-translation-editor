@@ -211,12 +211,7 @@
   border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
 }
 
-/* Custom triangle pointer that matches the flag */
-.footnote {
-  position: relative;
-  background-color: transparent;
-  line-height: 0;
-}
+
 
 /* Version Loading Skeleton Styles */
 .skeleton-loader {
@@ -269,30 +264,11 @@
   }
 }
 
-.footnote {
-  text-decoration: none;
-  cursor: pointer;
-  counter-increment: footnote-counter;
-}
 
 
-/* Footnote group highlighting styles */
-.footnote-highlighted {
-background-color: #fef3cd !important;
-border-radius: 4px !important;
-box-shadow: 0 0 0 2px #fabd07 !important;
-transition: all 0.2s ease-in-out !important;
-}
 
-/* Ensure FootnoteView sticks to bottom in both editors */
-.footnote-view-container {
-  position: sticky;
-  bottom: 0;
-  z-index: 20;
-  background: white;
-  border-top: 1px solid #e5e7eb;
-  margin-top: auto;
-}
+
+
 
 /* Fixed footnote positioning for translation editor with overflow-auto */
 .translation-editor-container .footnote-view-container {
@@ -317,23 +293,25 @@ transition: all 0.2s ease-in-out !important;
 }
 
 
-  /* Footnote styling */
-  a.footnote-number {
-    text-decoration: none !important;
-    padding-left: 1px;
-    padding-right: 1px;
-    cursor: pointer;
-    color: #1a73e8;
-    vertical-align: super;
-    font-size: 0.8em;
-  }
+
   
   hr.footnote-divider {
     background-color: #dddddd;
     height: 0;
     border: 0;
   }
-  
+  a.footnote-number{
+    font-size: 0.7rem;
+    line-height: 0.7rem;
+    padding: 0.2rem 0.3rem;
+    border-radius: 0.3rem;
+    pointer-events: none;
+    text-decoration: none;
+    cursor: default;
+    vertical-align: super;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    letter-spacing: 1px;
+  }
   .footnote-section {
     position:absolute;
     bottom: 0;
@@ -342,7 +320,6 @@ transition: all 0.2s ease-in-out !important;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    z-index: 1000;
     max-height: 180px;
     overflow-y: auto;
   }
@@ -362,6 +339,8 @@ transition: all 0.2s ease-in-out !important;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    color: gray;
+    font-family: "Poppins",Georgia, 'Times New Roman', Times, serif;
   }
   
   .footnote-toggle:hover {

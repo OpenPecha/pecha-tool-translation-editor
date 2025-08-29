@@ -65,7 +65,7 @@ const PublicDocumentViewer: React.FC<PublicDocumentViewerProps> = ({
     enabled: !!documentId,
     retry: 1,
   });
-
+  
   const handleBackToApp = useCallback(() => {
     if (isAuthenticated) {
       navigate("/");

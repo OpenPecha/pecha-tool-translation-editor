@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import SearchInput from "./SearchInput";
-import NavSidebar from "./NavSidebar";
+import SearchInput from "@/components/Dashboard/SearchInput";
+import NavSidebar from "@/components/Dashboard/NavSidebar";
 import { useAuth } from "@/auth/use-auth-hook";
 import AppLauncher from "@/components/Applauncher";
 import DocIcon from "@/assets/doc_icon.png";
-import ProfileArea from "../ProfileArea";
+import ProfileArea from "@/components/ProfileArea";
 const Navbar = () => {
   const { login, isAuthenticated } = useAuth();
   return (

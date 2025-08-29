@@ -1,3 +1,4 @@
+import { checkIsTibetan } from '@/lib/isTibetan';
 import React, { useState, useEffect } from 'react';
 
 interface EditableTextProps {
@@ -76,7 +77,7 @@ const EditableText: React.FC<EditableTextProps> = ({
   const handleBlur = () => {
     saveChanges();
   };
-
+  const isTibetan=checkIsTibetan(inputValue);
   return (
     <div className="inline-block">
       <form onSubmit={handleSubmit}>
@@ -86,7 +87,9 @@ const EditableText: React.FC<EditableTextProps> = ({
           onBlur={handleBlur}
           disabled={disabled || isLoading}
           placeholder={placeholder}
-          className={`${className} ${
+          className={`${className} 
+           ${isTibetan ? 'font-monlam' : "font-google-sans"}
+          ${
             isLoading ? 'opacity-50 cursor-not-allowed' : ''
           }`}
           style={{
@@ -101,3 +104,6 @@ const EditableText: React.FC<EditableTextProps> = ({
 };
 
 export default EditableText;
+
+
+
