@@ -245,8 +245,16 @@ function deltaToPlainText(delta) {
 
   let text = "";
   for (const op of delta) {
+    // stop if we reach the footnote divider
+    if (typeof op.insert === "object" && op.insert["footnote-divider"]) {
+      break;
+    }
+
     if (typeof op.insert === "string") {
-      text += op.insert;
+      // append only non-footnote-row text
+      if (!(op.attributes && op.attributes["footnote-row"])) {
+        text += op.insert;
+      }
     }
   }
 

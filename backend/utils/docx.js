@@ -10,7 +10,8 @@ const {
   TableRow,
   TableCell,
   BorderStyle,
-} = require("docx");
+  FootnoteReferenceRun,
+  } = require("docx");
 const PizZip = require("pizzip");
 const fs = require("fs");
 const { PrismaClient } = require("@prisma/client");
@@ -62,6 +63,119 @@ function createDocumentHeader(docName) {
     }),
     new Paragraph({ children: [new TextRun({ text: "" })] }),
   ];
+}
+
+function convertDeltaToDocx(deltaData) {
+  const paragraphs = [];
+  const footnotes = new Map();
+  let currentParagraph = [];
+  
+  // First pass: collect footnote content
+  deltaData.forEach(op => {
+      if (op.attributes && op.attributes['footnote-row']) {
+          const footnoteData = op.attributes['footnote-row'];
+          footnotes.set(footnoteData.index, footnoteData.content);
+      }
+  });
+  
+  // Process each operation in the delta
+  deltaData.forEach((op, index) => {
+      // Skip footnote dividers and footnote rows
+      if (op.insert && typeof op.insert === 'object') {
+          if (op.insert['footnote-divider']) {
+              return; // Skip footnote dividers
+          }
+          if (op.insert['footnote-number']) {
+              // Add footnote reference
+              const footnoteId = parseInt(op.insert['footnote-number'].index);
+              currentParagraph.push(new FootnoteReferenceRun(footnoteId));
+              return;
+          }
+      }
+      
+      // Skip footnote row attributes
+      if (op.attributes && op.attributes['footnote-row']) {
+          return;
+      }
+      
+      if (typeof op.insert === 'string') {
+          const text = op.insert;
+          
+          // Split by newlines to create separate paragraphs
+          const lines = text.split('\n');
+          
+          lines.forEach((line, lineIndex) => {
+              if (line.length > 0) {
+                  // Add text to current paragraph
+                  currentParagraph.push(new TextRun({
+                      text: line
+                  }));
+              }
+              
+              // If there's a newline (except for the last empty line), create a new paragraph
+              if (lineIndex < lines.length - 1) {
+                  if (currentParagraph.length > 0) {
+                      paragraphs.push(new Paragraph({
+                          children: [...currentParagraph]
+                      }));
+                      currentParagraph = [];
+                  } else {
+                      // Empty line, add empty paragraph
+                      paragraphs.push(new Paragraph({}));
+                  }
+              }
+          });
+      }
+  });
+  
+  // Add any remaining content as the last paragraph
+  if (currentParagraph.length > 0) {
+      paragraphs.push(new Paragraph({
+          children: currentParagraph
+      }));
+  }
+  
+  // Create footnotes for the document
+  const docFootnotes = {};
+  footnotes.forEach((content, index) => {
+      docFootnotes[index] = {
+          children: [
+              new Paragraph({
+                  children: [
+                      new TextRun(content)
+                  ]
+              })
+          ]
+      };
+  });
+  
+  // Create the document
+  const doc = new Document({
+      sections: [{
+          properties: {},
+          children: paragraphs
+      }],
+      footnotes: footnotes.size > 0 ? docFootnotes : undefined
+  });
+  
+  return doc;
+}
+
+async function generateDocxFile(deltaData) {
+  try {
+      console.log('Converting Delta data to DOCX...');
+      
+      const doc = convertDeltaToDocx(deltaData);
+      
+      // Generate buffer
+      const buffer = await Packer.toBuffer(doc);
+      
+      return buffer;
+      
+  } catch (error) {
+      console.error('❌ Error generating DOCX file:', error);
+      throw error;
+  }
 }
 
 async function extractFootnotesFromDelta(docName, delta) {
@@ -545,51 +659,6 @@ async function createLineByLineDocx(
   }
 }
 
-/**
- * Convert Markdown to DOCX using Pandoc
- * @param {string} markdown - Markdown content
- * @param {string} outputPath - Path for the output DOCX file
- * @param {boolean} useTemplate - Whether to use the template (default: true)
- * @returns {Promise<Buffer>} - DOCX file as buffer
- */
-async function convertMarkdownToDocx(markdown, outputPath, useTemplate = true) {
-  try {
-    // Ensure uploads directory exists
-    const uploadsDir = path.dirname(outputPath);
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
-    }
-
-    // Create temporary markdown file
-    const tempMarkdownPath = outputPath.replace(".docx", ".md");
-    fs.writeFileSync(tempMarkdownPath, markdown, "utf8");
-
-    // Convert using Pandoc with or without template
-    let pandocCommand;
-    if (useTemplate) {
-      pandocCommand = `pandoc "${tempMarkdownPath}" -o "${outputPath}" --reference-doc="${TEMPLATE_PATH}"`;
-    } else {
-      pandocCommand = `pandoc "${tempMarkdownPath}" -o "${outputPath}"`;
-    }
-
-    await execAsync(pandocCommand);
-
-    // Read the generated DOCX file
-    const docxBuffer = fs.readFileSync(outputPath);
-
-    // Clean up temporary files
-    fs.unlinkSync(tempMarkdownPath);
-    fs.unlinkSync(outputPath);
-
-    console.log(
-      `✅ Successfully converted Markdown to DOCX: ${docxBuffer.length} bytes`
-    );
-    return docxBuffer;
-  } catch (error) {
-    console.error("❌ Error converting Markdown to DOCX:", error);
-    throw error;
-  }
-}
 
 /**
  * Create a mapping between source and translation paragraphs for better alignment
@@ -790,6 +859,7 @@ async function createSideBySideDocxTemplate(
     });
     // Check if template exists
     const templatePath = TEMPLATE_MAP[`bo_${targetLanguage}`] || TEMPLATE_PATH;
+    console.log("templatePath :: ", templatePath)
     if (!fs.existsSync(templatePath)) {
       console.warn(
         `Template not found at ${templatePath}, using fallback DOCX`
@@ -948,7 +1018,6 @@ async function createDocxTemplate(docName, language, sourceDelta, progressId) {
 
     // Convert delta to plain text
     const sourceText = deltaToPlainText(sourceDelta);
-
     // Split by paragraphs
     const sourceParagraphs = sourceText.split(/\n+/).filter((p) => p.trim());
 
@@ -1487,7 +1556,7 @@ module.exports = {
   createDocxBuffer,
   createSideBySideDocx,
   createLineByLineDocx,
-  convertMarkdownToDocx,
+  generateDocxFile,
   createSideBySideDocxTemplate,
   createDocxTemplate,
   createPageViewDocxBuffer,
