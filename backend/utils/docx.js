@@ -10,14 +10,15 @@ const {
   TableRow,
   TableCell,
   BorderStyle,
-} = require("docx");
+  FootnoteReferenceRun,
+  } = require("docx");
 const PizZip = require("pizzip");
 const fs = require("fs");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const path = require("path");
 const Docxtemplater = require("docxtemplater");
-const { TEMPLATE_PATH } = require("./const");
+const { TEMPLATE_MAP, TEMPLATE_PATH, MAX_CHAR_SOURCE_TRANSLATION_PAGE, MAX_CHAR_PER_TEMPLATE_PAGE } = require("./const");
 const { deltaToPlainText } = require("./delta_operations");
 
 const { exec } = require("child_process");
@@ -62,6 +63,119 @@ function createDocumentHeader(docName) {
     }),
     new Paragraph({ children: [new TextRun({ text: "" })] }),
   ];
+}
+
+function convertDeltaToDocx(deltaData) {
+  const paragraphs = [];
+  const footnotes = new Map();
+  let currentParagraph = [];
+  
+  // First pass: collect footnote content
+  deltaData.forEach(op => {
+      if (op.attributes && op.attributes['footnote-row']) {
+          const footnoteData = op.attributes['footnote-row'];
+          footnotes.set(footnoteData.index, footnoteData.content);
+      }
+  });
+  
+  // Process each operation in the delta
+  deltaData.forEach((op, index) => {
+      // Skip footnote dividers and footnote rows
+      if (op.insert && typeof op.insert === 'object') {
+          if (op.insert['footnote-divider']) {
+              return; // Skip footnote dividers
+          }
+          if (op.insert['footnote-number']) {
+              // Add footnote reference
+              const footnoteId = parseInt(op.insert['footnote-number'].index);
+              currentParagraph.push(new FootnoteReferenceRun(footnoteId));
+              return;
+          }
+      }
+      
+      // Skip footnote row attributes
+      if (op.attributes && op.attributes['footnote-row']) {
+          return;
+      }
+      
+      if (typeof op.insert === 'string') {
+          const text = op.insert;
+          
+          // Split by newlines to create separate paragraphs
+          const lines = text.split('\n');
+          
+          lines.forEach((line, lineIndex) => {
+              if (line.length > 0) {
+                  // Add text to current paragraph
+                  currentParagraph.push(new TextRun({
+                      text: line
+                  }));
+              }
+              
+              // If there's a newline (except for the last empty line), create a new paragraph
+              if (lineIndex < lines.length - 1) {
+                  if (currentParagraph.length > 0) {
+                      paragraphs.push(new Paragraph({
+                          children: [...currentParagraph]
+                      }));
+                      currentParagraph = [];
+                  } else {
+                      // Empty line, add empty paragraph
+                      paragraphs.push(new Paragraph({}));
+                  }
+              }
+          });
+      }
+  });
+  
+  // Add any remaining content as the last paragraph
+  if (currentParagraph.length > 0) {
+      paragraphs.push(new Paragraph({
+          children: currentParagraph
+      }));
+  }
+  
+  // Create footnotes for the document
+  const docFootnotes = {};
+  footnotes.forEach((content, index) => {
+      docFootnotes[index] = {
+          children: [
+              new Paragraph({
+                  children: [
+                      new TextRun(content)
+                  ]
+              })
+          ]
+      };
+  });
+  
+  // Create the document
+  const doc = new Document({
+      sections: [{
+          properties: {},
+          children: paragraphs
+      }],
+      footnotes: footnotes.size > 0 ? docFootnotes : undefined
+  });
+  
+  return doc;
+}
+
+async function generateDocxFile(deltaData) {
+  try {
+      console.log('Converting Delta data to DOCX...');
+      
+      const doc = convertDeltaToDocx(deltaData);
+      
+      // Generate buffer
+      const buffer = await Packer.toBuffer(doc);
+      
+      return buffer;
+      
+  } catch (error) {
+      console.error('❌ Error generating DOCX file:', error);
+      throw error;
+  }
 }
 
 async function extractFootnotesFromDelta(docName, delta) {
@@ -545,51 +659,6 @@ async function createLineByLineDocx(
   }
 }
 
-/**
- * Convert Markdown to DOCX using Pandoc
- * @param {string} markdown - Markdown content
- * @param {string} outputPath - Path for the output DOCX file
- * @param {boolean} useTemplate - Whether to use the template (default: true)
- * @returns {Promise<Buffer>} - DOCX file as buffer
- */
-async function convertMarkdownToDocx(markdown, outputPath, useTemplate = true) {
-  try {
-    // Ensure uploads directory exists
-    const uploadsDir = path.dirname(outputPath);
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
-    }
-
-    // Create temporary markdown file
-    const tempMarkdownPath = outputPath.replace(".docx", ".md");
-    fs.writeFileSync(tempMarkdownPath, markdown, "utf8");
-
-    // Convert using Pandoc with or without template
-    let pandocCommand;
-    if (useTemplate) {
-      pandocCommand = `pandoc "${tempMarkdownPath}" -o "${outputPath}" --reference-doc="${TEMPLATE_PATH}"`;
-    } else {
-      pandocCommand = `pandoc "${tempMarkdownPath}" -o "${outputPath}"`;
-    }
-
-    await execAsync(pandocCommand);
-
-    // Read the generated DOCX file
-    const docxBuffer = fs.readFileSync(outputPath);
-
-    // Clean up temporary files
-    fs.unlinkSync(tempMarkdownPath);
-    fs.unlinkSync(outputPath);
-
-    console.log(
-      `✅ Successfully converted Markdown to DOCX: ${docxBuffer.length} bytes`
-    );
-    return docxBuffer;
-  } catch (error) {
-    console.error("❌ Error converting Markdown to DOCX:", error);
-    throw error;
-  }
-}
 
 /**
  * Create a mapping between source and translation paragraphs for better alignment
@@ -640,18 +709,16 @@ function createSourceTranslationMapping(
   return mapping;
 }
 
-// Maximum characters per page for DOCX export
-const MAXCHARPERPAGE = 1700; // Adjust this value as needed
 
 /**
- * Create paginated mapping where each page's combined content doesn't exceed MAXCHARPERPAGE
+ * Create paginated mapping where each page's combined content doesn't exceed MAX_CHAR_SOURCE_TRANSLATION_PAGE
  * @param {Array} sourceTranslationMapping - The original source-translation mapping
- * @param {number} maxCharsPerPage - Maximum characters per page (default: MAXCHARPERPAGE)
+ * @param {number} maxCharsPerPage - Maximum characters per page (default: MAX_CHAR_SOURCE_TRANSLATION_PAGE)
  * @returns {Array} - Array of paginated objects with source, translation, and page metadata
  */
 function createPaginatedMapping(
   sourceTranslationMapping,
-  maxCharsPerPage = MAXCHARPERPAGE
+  maxCharsPerPage = MAX_CHAR_SOURCE_TRANSLATION_PAGE
 ) {
   const paginatedPages = [];
   let currentPage = {
@@ -742,7 +809,6 @@ async function createSideBySideDocxTemplate(
       20,
       `Creating template for ${docName} - ${targetLanguage}...`
     );
-
     // Convert deltas to plain text
     const sourceText = deltaToPlainText(sourceDelta);
     const translationText = deltaToPlainText(translationDelta);
@@ -762,20 +828,15 @@ async function createSideBySideDocxTemplate(
     // Create paginated mapping to control content per page
     const paginatedMapping = createPaginatedMapping(
       sourceTranslationMapping,
-      MAXCHARPERPAGE
+      MAX_CHAR_SOURCE_TRANSLATION_PAGE
     );
 
-    const maxParagraphs = Math.max(
-      sourceParagraphs.length,
-      translationParagraphs.length
-    );
 
     // Create pages array with source/translation pairs (clean format)
     const pages = [];
     paginatedMapping.forEach((page, i) => {
       const pageBreak = i >= 0 ? '<w:br w:type="page"/>' : "";
       const pageNumber = page.pageNumber;
-
       pages.push({
         source: page.source,
         translation: page.translation,
@@ -793,13 +854,15 @@ async function createSideBySideDocxTemplate(
         needsAlignment: page.needsAlignment,
         isPartial: page.isPartial,
         charCount: page.totalChars,
-        isWithinLimit: page.totalChars <= MAXCHARPERPAGE,
+        isWithinLimit: page.totalChars <= MAX_CHAR_SOURCE_TRANSLATION_PAGE,
       });
     });
     // Check if template exists
-    if (!fs.existsSync(TEMPLATE_PATH)) {
+    const templatePath = TEMPLATE_MAP[`bo_${targetLanguage}`] || TEMPLATE_PATH;
+    console.log("templatePath :: ", templatePath)
+    if (!fs.existsSync(templatePath)) {
       console.warn(
-        `Template not found at ${TEMPLATE_PATH}, using fallback DOCX`
+        `Template not found at ${templatePath}, using fallback DOCX`
       );
       return createFallbackSideBySideDocxTemplate(pages);
     }
@@ -807,7 +870,7 @@ async function createSideBySideDocxTemplate(
     sendProgress(progressStreams, progressId, 50, "Processing template...");
 
     // Read the template file
-    const templateContent = fs.readFileSync(TEMPLATE_PATH);
+    const templateContent = fs.readFileSync(templatePath);
 
     // Use docxtemplater to populate the template
     const zip = new PizZip(templateContent);
@@ -817,7 +880,7 @@ async function createSideBySideDocxTemplate(
       doc = new Docxtemplater(zip, {
         paragraphLoop: true,
         linebreaks: true,
-        nullGetter: () => "", // Return empty string for null values
+        nullGetter: () => "",
       });
     } catch (templateError) {
       console.error("Template parsing error:", templateError);
@@ -831,20 +894,18 @@ async function createSideBySideDocxTemplate(
       totalPages: pages.length,
       pages: pages,
       paginationInfo: {
-        maxCharsPerPage: MAXCHARPERPAGE,
+        maxCharsPerPage: MAX_CHAR_SOURCE_TRANSLATION_PAGE,
         totalOriginalParagraphs: sourceTranslationMapping.length,
         totalPaginatedPages: paginatedMapping.length,
         averageCharsPerPage:
           pages.length > 0
             ? pages.reduce((sum, page) => sum + page.totalChars, 0) /
               pages.length
-            : 0,
+            : 0
       },
     };
-
     sendProgress(progressStreams, progressId, 70, "Rendering template...");
 
-    // Render the template with data
     try {
       doc.render(templateData);
     } catch (renderError) {
@@ -881,7 +942,7 @@ async function createSideBySideDocxTemplate(
 
 /**
  * Create paginated pages for single text content.
- * Groups paragraphs into pages until MAXCHARPERPAGE is reached.
+ * Groups paragraphs into pages until MAX_CHAR_PER_TEMPLATE_PAGE is reached.
  *
  * @param {string[]} paragraphs - Array of text paragraphs
  * @param {number} maxCharsPerPage - Maximum characters per page
@@ -889,7 +950,7 @@ async function createSideBySideDocxTemplate(
  */
 function createPagination(
   paragraphs,
-  maxCharsPerPage = MAXCHARPERPAGE
+  maxCharsPerPage = MAX_CHAR_PER_TEMPLATE_PAGE
 ) {
   const paginatedPages = [];
   let currentPage = {
@@ -946,7 +1007,7 @@ function createPagination(
  * @param {string} progressId - Progress tracking ID
  * @returns {Promise<Buffer>} - The DOCX file as a buffer
  */
-async function createSourceOnlyDocxTemplate(docName, sourceDelta, progressId) {
+async function createDocxTemplate(docName, language, sourceDelta, progressId) {
   try {
     sendProgress(
       progressStreams,
@@ -957,22 +1018,21 @@ async function createSourceOnlyDocxTemplate(docName, sourceDelta, progressId) {
 
     // Convert delta to plain text
     const sourceText = deltaToPlainText(sourceDelta);
-
     // Split by paragraphs
     const sourceParagraphs = sourceText.split(/\n+/).filter((p) => p.trim());
 
     // Paginate source text
-    const paginatedMapping = createPagination(sourceParagraphs, MAXCHARPERPAGE);
+    const paginatedPages = createPagination(sourceParagraphs, MAX_CHAR_PER_TEMPLATE_PAGE);
     // Convert to pages array for template
-    const pages = paginatedMapping.map((page, i) => {
+    const pages = paginatedPages.map((page, i) => {
       const pageBreak = i >= 0 ? '<w:br w:type="page"/>' : "";
       const pageNumber = page.pageNumber;
       return {
         source: page.source,
         translation: "", // always empty
-        isLast: i === paginatedMapping.length - 1,
+        isLast: i === paginatedPages.length - 1,
         pageBreak,
-        needsPageBreak: false,
+        needsPageBreak: i > 0 && i < paginatedPages.length - 1,
         tibetanPageMarker: pageNumber % 2 === 1 ? "༄༅། །" : "",
         isOddPage: pageNumber % 2 === 1,
         // Metadata
@@ -982,9 +1042,10 @@ async function createSourceOnlyDocxTemplate(docName, sourceDelta, progressId) {
       };
     });
     // Check if template exists
-    if (!fs.existsSync(TEMPLATE_PATH)) {
+    const templatePath = TEMPLATE_MAP[language] || TEMPLATE_PATH;
+    if (!fs.existsSync(templatePath)) {
       console.warn(
-        `Template not found at ${TEMPLATE_PATH}, using fallback DOCX`
+        `Template not found at ${templatePath}, using fallback DOCX`
       );
       return createFallbackSideBySideDocxTemplate(pages);
     }
@@ -992,7 +1053,7 @@ async function createSourceOnlyDocxTemplate(docName, sourceDelta, progressId) {
     sendProgress(progressStreams, progressId, 50, "Processing template...");
 
     // Read the template file
-    const templateContent = fs.readFileSync(TEMPLATE_PATH);
+    const templateContent = fs.readFileSync(templatePath);
 
     const zip = new PizZip(templateContent);
     let doc;
@@ -1013,14 +1074,15 @@ async function createSourceOnlyDocxTemplate(docName, sourceDelta, progressId) {
       totalPages: pages.length,
       pages: pages,
       paginationInfo: {
-        maxCharsPerPage: MAXCHARPERPAGE,
+        maxCharsPerPage: MAX_CHAR_PER_TEMPLATE_PAGE,
         totalOriginalParagraphs: sourceParagraphs.length,
-        totalPaginatedPages: paginatedMapping.length,
+        totalPaginatedPages: paginatedPages.length,
       },
     };
 
     sendProgress(progressStreams, progressId, 70, "Rendering template...");
-
+    // console.log("template data ",templateData)
+    // console.log("template content ",templateContent)
     try {
       doc.render(templateData);
     } catch (renderError) {
@@ -1494,9 +1556,9 @@ module.exports = {
   createDocxBuffer,
   createSideBySideDocx,
   createLineByLineDocx,
-  convertMarkdownToDocx,
+  generateDocxFile,
   createSideBySideDocxTemplate,
-  createSourceOnlyDocxTemplate,
+  createDocxTemplate,
   createPageViewDocxBuffer,
   createFallbackSideBySideDocxTemplate,
   createSourceTranslationMapping,

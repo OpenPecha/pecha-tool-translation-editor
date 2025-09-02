@@ -9,9 +9,9 @@ const {
   createDocxBuffer,
   createSideBySideDocx,
   createLineByLineDocx,
-  convertMarkdownToDocx,
   createSideBySideDocxTemplate,
-  createSourceOnlyDocxTemplate,
+  createDocxTemplate,
+  generateDocxFile,
 } = require("../utils/docx");
 const {
   generateMarkdownWithFootnotes,
@@ -615,7 +615,6 @@ router.get("/:id/export", authenticate, async (req, res) => {
 
       // Check if project exists and user has permission
       const project = await getProjectWithDocuments(id, req.user.id);
-
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
@@ -686,7 +685,6 @@ router.get("/:id/export", authenticate, async (req, res) => {
                 translationContent,
                 progressId
               );
-              console.log(combinedDocx);
               const fileName = `${rootDoc.name}_${translation.language}_docx_template.docx`;
               archive.append(combinedDocx, { name: fileName });
 
@@ -702,8 +700,9 @@ router.get("/:id/export", authenticate, async (req, res) => {
 
           // Also create a source-only document if there are no translations to process
           if (translationsToProcess.length === 0) {
-            const sourceOnlyDocx = await createSourceOnlyDocxTemplate(
+            const sourceOnlyDocx = await createDocxTemplate(
               rootDoc.name,
+              rootDoc.language,
               rootDocContent,
               progressId
             );
@@ -745,7 +744,6 @@ router.get("/:id/export", authenticate, async (req, res) => {
 
       // Check if project exists and user has permission
       const project = await getProjectWithDocuments(id, req.user.id);
-
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
@@ -795,35 +793,7 @@ router.get("/:id/export", authenticate, async (req, res) => {
 
         const rootDocContent = await getDocumentContent(rootDoc.id);
         if (rootDocContent) {
-          // Extract footnotes from root document
-          const rootFootnotes = await extractFootnotesFromDelta(rootDocContent);
-
-          // Check if Pandoc is available
-          const pandocAvailable = await isPandocAvailable();
-
-          let docx;
-          if (pandocAvailable && rootFootnotes.length > 0) {
-            // Generate Markdown with footnotes
-            const markdown = generateMarkdownWithFootnotes(
-              rootDocContent,
-              rootFootnotes
-            );
-
-            // Create temporary file path
-            const tempDocxPath = path.join(
-              __dirname,
-              "..",
-              "uploads",
-              `temp_${rootDoc.name}_${Date.now()}.docx`
-            );
-
-            // Convert Markdown to DOCX using Pandoc without template
-            docx = await convertMarkdownToDocx(markdown, tempDocxPath, false);
-          } else {
-            // Fallback to simple DOCX creation
-            docx = await createDocxBuffer(rootDoc.name, rootDocContent);
-          }
-
+          let docx = await generateDocxFile(rootDocContent);
           archive.append(docx, { name: `${rootDoc.name}.docx` });
         }
         processedDocs++;
@@ -839,44 +809,7 @@ router.get("/:id/export", authenticate, async (req, res) => {
 
           const translationContent = await getDocumentContent(translation.id);
           if (translationContent) {
-            // Extract footnotes from translation document
-            const translationFootnotes = await extractFootnotesFromDelta(
-              translationContent
-            );
-
-            // Check if Pandoc is available
-            const pandocAvailable = await isPandocAvailable();
-
-            let translationDocx;
-            if (pandocAvailable && translationFootnotes.length > 0) {
-              // Generate Markdown with footnotes
-              const markdown = generateMarkdownWithFootnotes(
-                translationContent,
-                translationFootnotes
-              );
-              // Create temporary file path
-              const tempDocxPath = path.join(
-                __dirname,
-                "..",
-                "uploads",
-                `temp_${rootDoc.name}_${
-                  translation.language
-                }_${Date.now()}.docx`
-              );
-
-              // Convert Markdown to DOCX using Pandoc without template
-              translationDocx = await convertMarkdownToDocx(
-                markdown,
-                tempDocxPath,
-                false
-              );
-            } else {
-              // Fallback to simple DOCX creation
-              translationDocx = await createDocxBuffer(
-                `${rootDoc.name}_${translation.language}`,
-                translationContent
-              );
-            }
+            let translationDocx = await generateDocxFile(translationContent);
 
             archive.append(translationDocx, {
               name: `${rootDoc.name}_${translation.language}.docx`,
@@ -959,8 +892,9 @@ router.get("/:id/export", authenticate, async (req, res) => {
         const rootDocContent = await getDocumentContent(rootDoc.id);
         if (rootDocContent) {
           // Create pecha template DOCX for root document
-          const pechaDocx = await createSourceOnlyDocxTemplate(
+          const pechaDocx = await createDocxTemplate(
             rootDoc.name,
+            rootDoc.language,
             rootDocContent,
             progressId
           );
@@ -982,8 +916,9 @@ router.get("/:id/export", authenticate, async (req, res) => {
           const translationContent = await getDocumentContent(translation.id);
           if (translationContent) {
             // Create pecha template DOCX for translation
-            const translationPechaDocx = await createSourceOnlyDocxTemplate(
+            const translationPechaDocx = await createDocxTemplate(
               `${rootDoc.name}_${translation.language}`,
+              translation.language,
               translationContent,
               progressId
             );

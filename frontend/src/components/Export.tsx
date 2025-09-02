@@ -387,6 +387,7 @@ function ExportButton({
                                   ? 'border-red-500 animate-pulse shadow-md shadow-red-200' 
                                   : ''
                               }`}
+                              onClick={() => console.log("translations :: ", translations)}
                             >
                               <SelectValue placeholder="Select translation..." />
                             </SelectTrigger>
