@@ -11,7 +11,7 @@ const {
   createLineByLineDocx,
   convertMarkdownToDocx,
   createSideBySideDocxTemplate,
-  createSourceOnlyDocxTemplate,
+  createDocxTemplate,
 } = require("../utils/docx");
 const {
   generateMarkdownWithFootnotes,
@@ -615,7 +615,6 @@ router.get("/:id/export", authenticate, async (req, res) => {
 
       // Check if project exists and user has permission
       const project = await getProjectWithDocuments(id, req.user.id);
-
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
@@ -686,7 +685,6 @@ router.get("/:id/export", authenticate, async (req, res) => {
                 translationContent,
                 progressId
               );
-              console.log(combinedDocx);
               const fileName = `${rootDoc.name}_${translation.language}_docx_template.docx`;
               archive.append(combinedDocx, { name: fileName });
 
@@ -702,8 +700,9 @@ router.get("/:id/export", authenticate, async (req, res) => {
 
           // Also create a source-only document if there are no translations to process
           if (translationsToProcess.length === 0) {
-            const sourceOnlyDocx = await createSourceOnlyDocxTemplate(
+            const sourceOnlyDocx = await createDocxTemplate(
               rootDoc.name,
+              rootDoc.language,
               rootDocContent,
               progressId
             );
@@ -745,7 +744,6 @@ router.get("/:id/export", authenticate, async (req, res) => {
 
       // Check if project exists and user has permission
       const project = await getProjectWithDocuments(id, req.user.id);
-
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
@@ -959,8 +957,9 @@ router.get("/:id/export", authenticate, async (req, res) => {
         const rootDocContent = await getDocumentContent(rootDoc.id);
         if (rootDocContent) {
           // Create pecha template DOCX for root document
-          const pechaDocx = await createSourceOnlyDocxTemplate(
+          const pechaDocx = await createDocxTemplate(
             rootDoc.name,
+            rootDoc.language,
             rootDocContent,
             progressId
           );
@@ -982,8 +981,9 @@ router.get("/:id/export", authenticate, async (req, res) => {
           const translationContent = await getDocumentContent(translation.id);
           if (translationContent) {
             // Create pecha template DOCX for translation
-            const translationPechaDocx = await createSourceOnlyDocxTemplate(
+            const translationPechaDocx = await createDocxTemplate(
               `${rootDoc.name}_${translation.language}`,
+              translation.language,
               translationContent,
               progressId
             );
