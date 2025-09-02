@@ -79,54 +79,56 @@ function convertDeltaToDocx(deltaData) {
   });
   
   // Process each operation in the delta
-  deltaData.forEach((op, index) => {
-      // Skip footnote dividers and footnote rows
-      if (op.insert && typeof op.insert === 'object') {
-          if (op.insert['footnote-divider']) {
-              return; // Skip footnote dividers
-          }
-          if (op.insert['footnote-number']) {
-              // Add footnote reference
-              const footnoteId = parseInt(op.insert['footnote-number'].index);
-              currentParagraph.push(new FootnoteReferenceRun(footnoteId));
-              return;
-          }
-      }
-      
-      // Skip footnote row attributes
-      if (op.attributes && op.attributes['footnote-row']) {
-          return;
-      }
-      
-      if (typeof op.insert === 'string') {
-          const text = op.insert;
-          
-          // Split by newlines to create separate paragraphs
-          const lines = text.split('\n');
-          
-          lines.forEach((line, lineIndex) => {
-              if (line.length > 0) {
-                  // Add text to current paragraph
-                  currentParagraph.push(new TextRun({
-                      text: line
-                  }));
-              }
-              
-              // If there's a newline (except for the last empty line), create a new paragraph
-              if (lineIndex < lines.length - 1) {
-                  if (currentParagraph.length > 0) {
-                      paragraphs.push(new Paragraph({
-                          children: [...currentParagraph]
-                      }));
-                      currentParagraph = [];
-                  } else {
-                      // Empty line, add empty paragraph
-                      paragraphs.push(new Paragraph({}));
-                  }
-              }
-          });
-      }
-  });
+  for (let index = 0; index < deltaData.length; index++) {
+    const op = deltaData[index];
+    
+    // Break if footnote divider is encountered
+    if (op.insert && typeof op.insert === 'object') {
+        if (op.insert['footnote-divider']) {
+            continue; // Break out of the loop
+        }
+        if (op.insert['footnote-number']) {
+            // Add footnote reference
+            const footnoteId = parseInt(op.insert['footnote-number'].index);
+            currentParagraph.push(new FootnoteReferenceRun(footnoteId));
+            continue;
+        }
+    }
+    
+    // Skip footnote row attributes
+    if (op.attributes && op.attributes['footnote-row']) {
+        continue;
+    }
+    
+    if (typeof op.insert === 'string') {
+        const text = op.insert;
+        
+        // Split by newlines to create separate paragraphs
+        const lines = text.split('\n');
+        
+        lines.forEach((line, lineIndex) => {
+            if (line.length > 0) {
+                // Add text to current paragraph
+                currentParagraph.push(new TextRun({
+                    text: line
+                }));
+            }
+            
+            // If there's a newline (except for the last empty line), create a new paragraph
+            if (lineIndex < lines.length - 1) {
+                if (currentParagraph.length > 0) {
+                    paragraphs.push(new Paragraph({
+                        children: [...currentParagraph]
+                    }));
+                    currentParagraph = [];
+                } else {
+                    // Empty line, add empty paragraph
+                    paragraphs.push(new Paragraph({}));
+                }
+            }
+        });
+    }
+}
   
   // Add any remaining content as the last paragraph
   if (currentParagraph.length > 0) {
@@ -161,7 +163,7 @@ function convertDeltaToDocx(deltaData) {
   return doc;
 }
 
-async function generateDocxFile(deltaData) {
+async function generateDocxBuffer(deltaData) {
   try {
       console.log('Converting Delta data to DOCX...');
       
@@ -1553,10 +1555,9 @@ async function createFallbackSideBySideDocxTemplate(pages) {
 }
 
 module.exports = {
-  createDocxBuffer,
   createSideBySideDocx,
   createLineByLineDocx,
-  generateDocxFile,
+  generateDocxBuffer,
   createSideBySideDocxTemplate,
   createDocxTemplate,
   createPageViewDocxBuffer,
