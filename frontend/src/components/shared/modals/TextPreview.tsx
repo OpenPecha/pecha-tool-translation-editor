@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle, AlertCircle, FileText, Languages } from "lucide-react";
+import { CheckCircle, AlertCircle } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { createDocument } from "@/api/document";
 import { ModalFooter, ErrorDisplay } from "@/components/shared/modals";
@@ -73,53 +71,10 @@ export function TextPreview({
     createTranslationMutation.mutate();
   };
 
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-  };
-
-  const getWordCount = (text: string): number => {
-    return text.trim().split(/\s+/).length;
-  };
-
-  const getLineCount = (text: string): number => {
-    return text.split("\n").length;
-  };
 
   return (
     <div className="space-y-6">
       <ErrorDisplay error={error} />
-
-      {/* File Information */}
-      <Card className="border-blue-200 bg-blue-50">
-        <CardContent className="pt-4">
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0">
-              <FileText className="h-6 w-6 text-blue-600" />
-            </div>
-            <div className="flex-1 space-y-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <h3 className="font-medium text-blue-900">{file.name}</h3>
-                <Badge variant="outline" className="text-xs">
-                  {formatFileSize(file.size)}
-                </Badge>
-              </div>
-
-              <div className="flex flex-wrap gap-4 text-sm text-blue-700">
-                <div className="flex items-center gap-1">
-                  <Languages className="h-4 w-4" />
-                  <span>Language: {language}</span>
-                </div>
-                <div>Words: {getWordCount(fileContent)}</div>
-                <div>Lines: {getLineCount(fileContent)}</div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Content Preview */}
       <div className="space-y-3">

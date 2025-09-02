@@ -1,8 +1,6 @@
-import { Label } from "@/components/ui/label";
 import { memo, useCallback } from "react";
 import { languages } from "@/utils/Constants";
 import { useTranslate } from "@tolgee/react";
-import { ChevronDown } from "lucide-react";
 import { SearchableDropdown } from "./SearchableDropdown";
 
 function SelectLanguage({
@@ -26,18 +24,16 @@ function SelectLanguage({
   }));
 
   return (
-    <div className="space-y-3">
-    
-
-          <SearchableDropdown
-            label={t("common.language")}
-            placeholder="Select a language..."
-            options={languageOptions}
-            value={selectedLanguage}
-            onChange={handleChange}
-            loading={false}
-            error={""}
-          />
+    <div className="space-y-2">
+      <SearchableDropdown
+        label={t("common.language")}
+        placeholder="Select a language..."
+        options={languageOptions}
+        value={selectedLanguage}
+        onChange={handleChange}
+        loading={false}
+        error={""}
+      />
     </div>
   );
 }
