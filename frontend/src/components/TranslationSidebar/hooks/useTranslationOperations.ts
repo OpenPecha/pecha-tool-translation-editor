@@ -161,8 +161,7 @@ export const useTranslationOperations = ({
           const newResults = event.batch_results.map((result, batchIndex) => {
             // Get the segment-specific line numbers using the current segment index
             const segmentIndex = currentSegmentIndexRef.current + batchIndex;
-            const segmentLineNumbers =
-              (segmentLineMappings && segmentLineMappings[segmentIndex]) || null;
+            const segmentLineNumbers = segmentLineMappings?.[segmentIndex] || null;
 
             return {
               id: `${event.batch_id}-${batchIndex}-${Date.now()}`,

@@ -7,10 +7,10 @@ import {
   Plus,
   Copy,
   Check,
-  BookOpen,
   AlertTriangle,
 } from "lucide-react";
 import { useEditor } from "@/contexts/EditorContext";
+import GlossaryChatbot from "./GlossaryChatbot";
 
 
 interface TranslationResult {
@@ -164,8 +164,8 @@ const TranslationControls: React.FC<TranslationControlsProps> = ({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div 
-                  className="text-xs text-gray-700 font-mono cursor-pointer hover:bg-gray-100 p-1 rounded transition-colors" 
+                <button 
+                  className="text-xs text-gray-700 font-mono cursor-pointer hover:bg-gray-100 p-1 rounded transition-colors w-full text-left" 
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -174,9 +174,10 @@ const TranslationControls: React.FC<TranslationControlsProps> = ({
                   onMouseDown={(e) => {
                     e.preventDefault(); // Prevent selection change on mouse down
                   }}
+                  type="button"
                 >
                   {truncatedPreview}
-                </div>
+                </button>
               </TooltipTrigger>
               <TooltipContent className="max-w-md max-h-32 p-3 bg-white border border-gray-200 shadow-lg text-xs overflow-hidden">
                 <div className="relative max-h-24 overflow-y-auto">
@@ -291,33 +292,15 @@ const TranslationControls: React.FC<TranslationControlsProps> = ({
             Object.keys(inconsistentTerms).length === 0) && (
             <div className="flex items-center justify-center pt-1 border-t border-gray-100 space-y-1">
               <div className="flex gap-1">
-                {/* Extract & Analyze Button - Hide when glossary is loaded */}
+                {/* Glossary Chatbot - Hide when glossary is loaded */}
                 {glossaryTerms.length === 0 && (
-                  <Button
-                    onClick={onStartGlossaryAndInconsistencyAnalysis}
-                    disabled={
-                      isExtractingGlossary ||
-                      isAnalyzingStandardization ||
-                      translationResults.length === 0
-                    }
-                    variant="outline"
-                    size="sm"
-                    className="h-6 px-2 text-xs text-purple-600 border-purple-300 hover:bg-purple-50"
-                  >
-                    {isExtractingGlossary || isAnalyzingStandardization ? (
-                      <>
-                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                        {isExtractingGlossary
-                          ? "Extracting..."
-                          : "Analyzing..."}
-                      </>
-                    ) : (
-                      <>
-                        <BookOpen className="w-3 h-3 mr-1" />
-                        Extract & Analyze
-                      </>
-                    )}
-                  </Button>
+                  <GlossaryChatbot
+                    onStartGlossaryExtraction={onStartGlossaryAndInconsistencyAnalysis}
+                    isExtractingGlossary={isExtractingGlossary}
+                    isAnalyzingStandardization={isAnalyzingStandardization}
+                    translationResults={translationResults}
+                    disabled={translationResults.length === 0}
+                  />
                 )}
 
                 {/* Check Consistency Button - Show only when glossary exists but inconsistencies don't */}

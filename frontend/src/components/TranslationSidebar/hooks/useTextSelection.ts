@@ -80,10 +80,18 @@ export const useTextSelection = () => {
     setSelectedTextLineNumbers(null);
   };
 
+  const clearUISelection = () => {
+    // Clear only the visual selection, keep line numbers for replace functionality
+    setSelectedText("");
+    setActiveSelectedEditor(null);
+    // Keep selectedTextLineNumbers intact
+  };
+
   return {
     selectedText,
     activeSelectedEditor,
     selectedTextLineNumbers,
     clearSelection,
+    clearUISelection,
   };
 };

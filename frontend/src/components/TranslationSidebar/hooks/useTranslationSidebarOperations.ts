@@ -24,7 +24,7 @@ export const useTranslationSidebarOperations = ({
   const { quillEditors, scrollToLineNumber } = useEditor();
 
   // Text selection hook
-  const { selectedText, activeSelectedEditor, selectedTextLineNumbers, clearSelection } =
+  const { selectedText, activeSelectedEditor, selectedTextLineNumbers, clearSelection, clearUISelection } =
     useTextSelection();
 
   // Translation results hook
@@ -76,6 +76,9 @@ export const useTranslationSidebarOperations = ({
     selectedText,
     selectedTextLineNumbers,
     onStreamComplete: () => {
+      // Clear UI selection but keep line numbers for replace functionality
+      clearUISelection();
+      
       if (config.extractGlossary && translationResults.length > 0) {
         startGlossaryExtraction();
       }
@@ -210,6 +213,7 @@ export const useTranslationSidebarOperations = ({
     activeSelectedEditor,
     selectedTextLineNumbers,
     clearSelection,
+    clearUISelection,
 
     // Translation state
     isTranslating,
