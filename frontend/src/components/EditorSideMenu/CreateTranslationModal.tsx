@@ -10,10 +10,8 @@ import {
   UploadMethodTabs,
   TabContentWrapper,
   TextPreview,
-  FormSection,
   type UploadMethod,
 } from "@/components/shared/modals";
-import { DEFAULT_LANGUAGE_SELECTED } from "@/config";
 import { OpenPechaTranslationLoader } from "./OpenPechaTranslationLoader";
 
 interface CreateTranslationModalProps {
@@ -27,7 +25,7 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
   onClose,
   refetchTranslations,
 }) => {
-  const [language, setLanguage] = useState(DEFAULT_LANGUAGE_SELECTED);
+  const [language, setLanguage] = useState<string>("");
   const [uploadMethod, setUploadMethod] = useState<UploadMethod>("empty");
   const [translationId, setTranslationId] = useState<string | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -64,63 +62,63 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
       variant="fixed"
       size="lg"
     >
-      <div className="space-y-6">
+      <div className="space-y-8">
         {!showPreview ? (
-          <>
-            {uploadMethod !== "openpecha" && <FormSection
-              title="Language Selection"
-              description="Choose the target language for your translation"
-            >
-              <SelectLanguage
-                selectedLanguage={language}
-                setSelectedLanguage={setLanguage}
-              />
-            </FormSection>}
-              <FormSection
-                title="Upload Method"
-                description="Choose how you want to create your translation"
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <UploadMethodTabs
+                activeMethod={uploadMethod}
+                onMethodChange={setUploadMethod}
+                availableMethods={["empty", "file", "openpecha"]}
               >
-                <UploadMethodTabs
-                  activeMethod={uploadMethod}
-                  onMethodChange={setUploadMethod}
-                  availableMethods={["empty", "file", "openpecha"]}
-                >
-                  <TabContentWrapper value="empty">
-                    <EmptyDocumentCreator
-                      language={language}
-                      rootId={rootId}
-                      onSuccess={setTranslationId}
-                      refetchTranslations={refetchTranslations}
-                    />
-                  </TabContentWrapper>
-
-                  <TabContentWrapper value="file">
-                    <TextUploader
-                      isRoot={false}
-                      isPublic={false}
+                {uploadMethod !== "openpecha" && (
+                  <div className="mb-6">
+                    <SelectLanguage
                       selectedLanguage={language}
-                      setRootId={setTranslationId}
-                      rootId={rootId}
-                      refetchTranslations={refetchTranslations}
-                      previewMode={true}
-                      onFileLoaded={handleFileLoaded}
+                      setSelectedLanguage={setLanguage}
                     />
-                  </TabContentWrapper>
+                  </div>
+                )}
+                
+                <TabContentWrapper value="empty">
+                  <EmptyDocumentCreator
+                    language={language}
+                    rootId={rootId}
+                    onSuccess={setTranslationId}
+                    refetchTranslations={refetchTranslations}
+                  />
+                </TabContentWrapper>
 
-                  <TabContentWrapper value="openpecha">
-                    <OpenPechaTranslationLoader 
+                <TabContentWrapper value="file">
+                  <TextUploader
+                    isRoot={false}
+                    isPublic={false}
+                    selectedLanguage={language}
+                    setRootId={setTranslationId}
+                    rootId={rootId}
+                    refetchTranslations={refetchTranslations}
+                    previewMode={true}
+                    onFileLoaded={handleFileLoaded}
+                    disable={!language || language === ""}
+                  />
+                </TabContentWrapper>
+
+                <TabContentWrapper value="openpecha">
+                  <OpenPechaTranslationLoader 
                     rootId={rootId} 
                     onSuccess={setTranslationId} 
-                    refetchTranslations={refetchTranslations} />
-                  </TabContentWrapper>
-                </UploadMethodTabs>
-              </FormSection>
-          </>
+                    refetchTranslations={refetchTranslations} 
+                  />
+                </TabContentWrapper>
+              </UploadMethodTabs>
+            </div>
+          </div>
         ) : (
-          <FormSection
-            title="Translation Preview"
-            description="Review your uploaded content before creating the translation"
-          >
+          <div className="space-y-4">
+            <div className="border-b border-gray-100 pb-4">
+              <h3 className="text-lg font-medium text-gray-900">Translation Preview</h3>
+              <p className="text-sm text-gray-600 mt-1">Review your uploaded content before creating the translation</p>
+            </div>
             <TextPreview
               file={uploadedFile!}
               fileContent={fileContent}
@@ -130,7 +128,7 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
               onSuccess={handlePreviewSuccess}
               refetchTranslations={refetchTranslations}
             />
-          </FormSection>
+          </div>
         )}
       </div>
     </BaseModal>
@@ -189,36 +187,42 @@ const EmptyDocumentCreator = ({
   });
 
   const handleCreateEmptyDocument = () => {
+    if (!language) {
+      setError("Please select a language first");
+      return;
+    }
     setError("");
     setIsCreating(true);
     createEmptyTranslationMutation.mutate();
   };
 
+  const isDisabled = !language || isCreating;
+
   return (
     <div className="space-y-6">
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-          <div className="flex items-center gap-2 text-red-800">
-            <span className="text-sm">⚠️ {error}</span>
+        <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+          <div className="flex items-center gap-2 text-red-700">
+            <span className="text-sm">{error}</span>
           </div>
         </div>
       )}
 
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-          <span className="text-2xl">📄</span>
+      <div className="flex flex-col items-center justify-center py-8 text-center">
+        <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center mb-4">
+          <span className="text-xl">📄</span>
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
+        <h3 className="text-base font-medium text-gray-900 mb-2">
           Create Empty Translation
         </h3>
-        <p className="text-gray-600 max-w-sm mb-6">
+        <p className="text-gray-500 text-sm max-w-sm mb-6">
           Start with a blank document and add your translation content manually.
         </p>
 
         <Button
           onClick={handleCreateEmptyDocument}
-          disabled={isCreating}
-          className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+          disabled={isDisabled}
+          className="px-6 py-2 bg-slate-900 hover:bg-slate-800 disabled:bg-gray-300 disabled:text-gray-500 text-white transition-all duration-200 font-medium"
         >
           {isCreating ? (
             <div className="flex items-center gap-2">
@@ -229,6 +233,12 @@ const EmptyDocumentCreator = ({
             "Create Empty Document"
           )}
         </Button>
+        
+        {!language && (
+          <p className="text-xs text-amber-600 mt-2">
+            Select a language above to continue
+          </p>
+        )}
       </div>
     </div>
   );

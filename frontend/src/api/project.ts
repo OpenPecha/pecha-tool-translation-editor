@@ -410,7 +410,8 @@ export const downloadProjectDocuments = async (
   projectId: string,
   exportFormat: string,
   documentId?: string,
-  progressId?: string
+  progressId?: string,
+  translationId?: string
 ) => {
   try {
     const queryParams = new URLSearchParams({ type: exportFormat });
@@ -419,6 +420,9 @@ export const downloadProjectDocuments = async (
     }
     if (progressId) {
       queryParams.append("progressId", progressId);
+    }
+    if (translationId) {
+      queryParams.append("translationId", translationId);
     }
 
     const response = await fetch(

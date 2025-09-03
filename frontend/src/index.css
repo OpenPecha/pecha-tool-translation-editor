@@ -240,7 +240,7 @@ body {
 
 /* Button should always be above gutters */
 button[aria-label="Close translation view"] {
-  z-index: 9999 !important;
+  z-index: 99 !important;
 }
 
 

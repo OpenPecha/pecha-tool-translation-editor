@@ -185,6 +185,9 @@ async function getProjectWithDocuments(id, userId) {
     where: { id },
     include: {
       roots: {
+        where: {
+          isRoot: true,
+        },
         include: {
           comments: true,
           footnotes: true,
