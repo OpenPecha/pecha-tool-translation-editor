@@ -1231,15 +1231,15 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
   return (
     <div
       data-translation-sidebar
-      className={`h-full flex border-l border-gray-200 bg-white transition-all duration-300 ease-in-out ${
+      className={`h-full flex  bg-white transition-all duration-300 ease-in-out ${
         isSidebarCollapsed ? "w-12" : "w-96"
       }`}
     >
       {/* Main Translation Panel */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col border-l border-gray-200  overflow-hidden">
         {/* Collapsed State - Toggle Button Only */}
         {isSidebarCollapsed ? (
-          <div className="h-full flex flex-col items-center justify-start pt-4 px-1">
+          <div className="h-full  flex-col items-center justify-start pt-4 px-1">
             <Button
               onClick={() => setIsSidebarCollapsed(false)}
               variant="ghost"
