@@ -135,7 +135,6 @@ function ExportButton({
     setExportMode(value);
     // Reset translation selection when switching away from with_translation
     if (value !== "with_translation") {
-      setSelectedTranslation("all");
       setShowTranslationError(false);
     }
     // Set default format based on mode
@@ -480,6 +479,22 @@ function ExportButton({
               ))}
             </RadioGroup>
           </div>
+        )}
+
+        {/* MS Word Compatibility Message for Pecha Templates */}
+        {(exportFormat === "pecha-template" || exportFormat === "single-pecha-templates") && (
+          <Card className="bg-blue-50 border-blue-200 !p-3">
+            <CardContent>
+              <div className="flex items-start space-x-2 text-sm text-blue-800">
+                <HelpCircle className="w-4 h-4 mt-0.5 text-blue-600" />
+                <div>
+                    <div className="text-blue-700">
+                    Pecha template exports are compatible with Microsoft Word only.
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* Preview Card */}
