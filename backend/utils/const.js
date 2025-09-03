@@ -6,7 +6,7 @@ const TEMPLATE_BO_SA_PATH = path.join(__dirname, "..", "static", "template_bo_sa
 const MAX_CHAR_SOURCE_TRANSLATION_PAGE = 1400;
 
 /** Max characters per template page */
-const MAX_CHAR_PER_TEMPLATE_PAGE = 1500;
+const MAX_CHAR_PER_TEMPLATE_PAGE = 1300;
 
 
 const TEMPLATE_MAP = {

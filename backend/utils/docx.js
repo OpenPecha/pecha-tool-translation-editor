@@ -85,7 +85,7 @@ function convertDeltaToDocx(deltaData) {
     // Break if footnote divider is encountered
     if (op.insert && typeof op.insert === 'object') {
         if (op.insert['footnote-divider']) {
-            continue; // Break out of the loop
+            break; // Break out of the loop
         }
         if (op.insert['footnote-number']) {
             // Add footnote reference
@@ -97,7 +97,7 @@ function convertDeltaToDocx(deltaData) {
     
     // Skip footnote row attributes
     if (op.attributes && op.attributes['footnote-row']) {
-        continue;
+        break;
     }
     
     if (typeof op.insert === 'string') {
@@ -1034,7 +1034,7 @@ async function createDocxTemplate(docName, language, sourceDelta, progressId) {
         translation: "", // always empty
         isLast: i === paginatedPages.length - 1,
         pageBreak,
-        needsPageBreak: i > 0 && i < paginatedPages.length - 1,
+        needsPageBreak: i > 0,
         tibetanPageMarker: pageNumber % 2 === 1 ? "༄༅། །" : "",
         isOddPage: pageNumber % 2 === 1,
         // Metadata
