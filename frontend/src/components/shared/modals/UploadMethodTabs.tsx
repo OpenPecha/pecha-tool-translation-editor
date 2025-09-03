@@ -37,20 +37,22 @@ export function UploadMethodTabs({
     empty: {
       value: "empty",
       label: "Empty Document",
+      icon: <span className="text-base">📄</span>
     },
     file: {
       value: "file",
       label: t("common.file"),
-      icon: <File size={14}/>
+      icon: <File size={16} className="text-gray-600"/>
     },
     openpecha: {
       value: "openpecha",
       label: t("common.openpecha"),
-      icon: <MdApi size={14}/>
+      icon: <MdApi size={16} className="text-gray-600"/>
     },
     ai: {
       value: "ai",
       label: "AI Generate",
+      icon: <span className="text-base">✨</span>
     },
   };
 
@@ -65,7 +67,7 @@ export function UploadMethodTabs({
       defaultValue={visibleTabs[0].value}
     >
       <TabsList
-        className="before:bg-border relative mb-3 h-auto w-full gap-0.5 bg-transparent p-0 before:absolute before:inset-x-0 before:bottom-0 before:h-px"
+        className="relative h-auto w-full gap-1 bg-gray-50 p-1 rounded-lg"
         style={{ gridTemplateColumns: `repeat(${visibleTabs.length}, 1fr)` }}
       >
         {visibleTabs.map((tab) => (
@@ -73,13 +75,19 @@ export function UploadMethodTabs({
             key={tab.value}
             value={tab.value}
             disabled={tab.disabled}
-            className="bg-muted w-full flex gap-2 overflow-hidden rounded-b-none border-x border-t py-2 data-[state=active]:z-10 data-[state=active]:shadow-none "
-       
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-3 text-sm font-medium transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-slate-900 data-[state=active]:border data-[state=active]:border-slate-200 text-gray-600 hover:text-gray-800 rounded-md"
           >
-            {tab.icon}
-            {tab.label}
+            <span className={`transition-colors duration-200 ${tab.value === activeMethod ? 'text-slate-900' : 'text-gray-600'}`}>
+              {tab.icon}
+            </span>
+            <span className="hidden sm:inline">{tab.label}</span>
+            <span className="sm:hidden">
+              <span className={`transition-colors duration-200 ${tab.value === activeMethod ? 'text-slate-900' : 'text-gray-600'}`}>
+                {tab.icon}
+              </span>
+            </span>
             {tab.comingSoon && (
-              <span className="ml-1 text-xs text-orange-500 font-normal">
+              <span className="ml-1 text-xs text-amber-500 font-normal">
                 (Soon)
               </span>
             )}
@@ -87,7 +95,7 @@ export function UploadMethodTabs({
         ))}
       </TabsList>
 
-      <div className="mt-6">{children}</div>
+      <div className="mt-4">{children}</div>
     </Tabs>
   );
 }
@@ -104,7 +112,7 @@ export function TabContentWrapper({
   className,
 }: TabContentWrapperProps) {
   return (
-    <TabsContent value={value} className={cn("space-y-4 min-h-[300px]", className)}>
+    <TabsContent value={value} className={cn("space-y-4 min-h-[280px] bg-white rounded-lg border border-slate-200 p-6 shadow-sm", className)}>
       {children}
     </TabsContent>
   );

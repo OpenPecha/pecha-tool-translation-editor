@@ -64,6 +64,13 @@ const TextUploader = ({
     // Clear any previous file size errors
     setFileSizeError("");
 
+    // Check if language is selected first
+    if (!selectedLanguage || selectedLanguage === "") {
+      setFileSizeError("Please select a language before uploading files.");
+      e.target.value = "";
+      return;
+    }
+
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
 
@@ -114,14 +121,29 @@ const TextUploader = ({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
+  const isLanguageDisabled = !selectedLanguage || selectedLanguage === "";
+  const isFullyDisabled = disable || uploadMutation.isPending || uploadMutation.isSuccess || isLanguageDisabled;
+
   return (
     <div className="space-y-4">
+      {/* Language validation warning */}
+      {isLanguageDisabled && (
+        <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
+          <div className="flex items-center gap-2 text-amber-700">
+            <AlertCircle className="h-4 w-4" />
+            <span className="text-sm font-medium">Please select a language above to upload files</span>
+          </div>
+        </div>
+      )}
+
       {!file && (
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <label
               htmlFor="text-file"
-              className="text-sm font-medium text-gray-700"
+              className={`text-sm font-medium ${
+                isLanguageDisabled ? "text-gray-400" : "text-gray-700"
+              }`}
             >
               Upload {isRoot ? "Root" : "Translation"} Text (.txt)
             </label>
@@ -136,13 +158,17 @@ const TextUploader = ({
               type="file"
               accept=".txt"
               onChange={handleFileChange}
-              disabled={
-                disable || uploadMutation.isPending || uploadMutation.isSuccess
-              }
-              className="cursor-pointer border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+              disabled={isFullyDisabled}
+              className={`cursor-pointer transition-colors ${
+                isLanguageDisabled 
+                  ? "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed" 
+                  : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+              }`}
             />
             <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-              <Upload className="h-4 w-4 text-gray-400" />
+              <Upload className={`h-4 w-4 ${
+                isLanguageDisabled ? "text-gray-300" : "text-gray-400"
+              }`} />
             </div>
           </div>
         </div>

@@ -335,7 +335,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
           onValueChange={(value) => setActiveTab(value as any)}
           className="flex-1 overflow-hidden"
         >
-          <TabsList className="grid w-full grid-cols-2 mx-3 mt-2">
+          <TabsList className="grid w-full grid-cols-2 gap-1">
             <TabsTrigger value="share">Share</TabsTrigger>
             <TabsTrigger value="export">Export</TabsTrigger>
           </TabsList>

@@ -6,12 +6,11 @@ const path = require("path");
 const crypto = require("crypto");
 const { PrismaClient } = require("@prisma/client");
 const {
-  createDocxBuffer,
   createSideBySideDocx,
   createLineByLineDocx,
   createSideBySideDocxTemplate,
   createDocxTemplate,
-  generateDocxFile,
+  generateDocxBuffer,
 } = require("../utils/docx");
 const {
   generateMarkdownWithFootnotes,
@@ -793,7 +792,7 @@ router.get("/:id/export", authenticate, async (req, res) => {
 
         const rootDocContent = await getDocumentContent(rootDoc.id);
         if (rootDocContent) {
-          let docx = await generateDocxFile(rootDocContent);
+          let docx = await generateDocxBuffer(rootDocContent);
           archive.append(docx, { name: `${rootDoc.name}.docx` });
         }
         processedDocs++;
@@ -804,15 +803,15 @@ router.get("/:id/export", authenticate, async (req, res) => {
             progressStreams,
             progressId,
             Math.round((processedDocs / totalDocs) * 90) + 5,
-            `Processing ${rootDoc.name} - ${translation.language}...`
+            `Processing ${translation.name} - ${translation.language}...`
           );
 
           const translationContent = await getDocumentContent(translation.id);
           if (translationContent) {
-            let translationDocx = await generateDocxFile(translationContent);
+            let translationDocx = await generateDocxBuffer(translationContent);
 
             archive.append(translationDocx, {
-              name: `${rootDoc.name}_${translation.language}.docx`,
+              name: `${translation.name}_${translation.language}.docx`,
             });
           }
           processedDocs++;
@@ -910,7 +909,7 @@ router.get("/:id/export", authenticate, async (req, res) => {
             progressStreams,
             progressId,
             Math.round((processedDocs / totalDocs) * 90) + 5,
-            `Processing ${rootDoc.name} - ${translation.language} as pecha template...`
+            `Processing ${translation.name} - ${translation.language} as pecha template...`
           );
 
           const translationContent = await getDocumentContent(translation.id);
@@ -923,7 +922,7 @@ router.get("/:id/export", authenticate, async (req, res) => {
               progressId
             );
 
-            const fileName = `${rootDoc.name}_${translation.language}_pecha_template.docx`;
+            const fileName = `${translation.name}_${translation.language}_pecha_template.docx`;
             archive.append(translationPechaDocx, { name: fileName });
           }
           processedDocs++;
@@ -985,7 +984,7 @@ router.get("/:id/export", authenticate, async (req, res) => {
         const rootDocContent = await getDocumentContent(rootDoc.id);
         if (rootDocContent) {
           // Add root document to the zip
-          const rootDocx = await createDocxBuffer(rootDoc.name, rootDocContent);
+          const rootDocx = await generateDocxBuffer(rootDocContent);
           archive.append(rootDocx, { name: `${rootDoc.name}.docx` });
         }
 
@@ -994,12 +993,12 @@ router.get("/:id/export", authenticate, async (req, res) => {
           const translationContent = await getDocumentContent(translation.id);
           if (translationContent) {
             // Add translation document to the zip
-            const translationDocx = await createDocxBuffer(
-              `${rootDoc.name}_${translation.language}`,
+            const translationDocx = await generateDocxBuffer(
+              `${translation.name}_${translation.language}`,
               translationContent
             );
             archive.append(translationDocx, {
-              name: `${rootDoc.name}_${translation.language}.docx`,
+              name: `${translation.name}_${translation.language}.docx`,
             });
           }
         }
