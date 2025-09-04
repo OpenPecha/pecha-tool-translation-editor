@@ -192,7 +192,7 @@ function CommentInitialize({
           <Button
             disabled={isDisabled || commentMutation.isPending}
             onClick={addComment}
-            className="px-4 py-2 rounded-full cursor-pointer bg-blue-500 text-white hover:bg-blue-600"
+            className="px-4 py-2 rounded-full cursor-pointer bg-secondary-500 text-white hover:bg-secondary-600"
           >
             {commentMutation.isPending ? "Saving..." : "Comment"}
           </Button>

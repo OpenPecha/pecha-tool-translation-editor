@@ -167,7 +167,7 @@ function Comments() {
               {/* Thread header */}
               <div
                 className={`cursor-pointer p-2 mb-2 rounded ${
-                  isSelected ? "bg-blue-50" : "hover:bg-gray-50"
+                  isSelected ? "bg-secondary-50" : "hover:bg-gray-50"
                 }`}
                 onClick={() => handleThreadSelect(threadId)}
               >

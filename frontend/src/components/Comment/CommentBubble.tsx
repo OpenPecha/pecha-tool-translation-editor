@@ -183,7 +183,7 @@ const CommentBubble = ({
           {isSuggestion && (
             <ContentEditableDiv
               ref={suggestionInputRef}
-              className="w-full border cursor-text rounded-[18px] px-2 py-1 mt-2 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-500    border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border cursor-text rounded-[18px] px-2 py-1 mt-2 empty:before:content-[attr(data-placeholder)] empty:before:text-gray-500    border-gray-300 focus:outline-none focus:ring-2 focus:ring-secondary-500"
               placeholder="Add a suggestion..."
             />
           )}
@@ -207,7 +207,7 @@ const CommentBubble = ({
               <Button
                 disabled={commentMutation.isPending}
                 onClick={addComment}
-                className="px-4 py-2 rounded-full cursor-pointer bg-blue-500 text-white hover:bg-blue-600"
+                className="px-4 py-2 rounded-full cursor-pointer bg-secondary-500 text-white hover:bg-secondary-600"
               >
                 {commentMutation.isPending ? "Saving..." : "Reply"}
               </Button>

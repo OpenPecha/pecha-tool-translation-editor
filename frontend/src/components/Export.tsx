@@ -483,12 +483,12 @@ function ExportButton({
 
         {/* MS Word Compatibility Message for Pecha Templates */}
         {(exportFormat === "pecha-template" || exportFormat === "single-pecha-templates") && (
-          <Card className="bg-blue-50 border-blue-200 !p-3">
+          <Card className="bg-secondary-50 border-secondary-200 !p-3">
             <CardContent>
-              <div className="flex items-start space-x-2 text-sm text-blue-800">
-                <HelpCircle className="w-4 h-4 mt-0.5 text-blue-600" />
+              <div className="flex items-start space-x-2 text-sm text-secondary-800">
+                <HelpCircle className="w-4 h-4 mt-0.5 text-secondary-600" />
                 <div>
-                    <div className="text-blue-700">
+                    <div className="text-secondary-700">
                     Pecha template exports are compatible with Microsoft Word only.
                   </div>
                 </div>

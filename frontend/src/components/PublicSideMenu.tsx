@@ -376,7 +376,7 @@ function PublicFootnotes({ documentId }: { documentId: string }) {
               title="Click to highlight text in document"
             >
               <div className="flex items-start gap-2">
-                <sup className="text-blue-600 font-medium text-sm mt-1">
+                <sup className="text-secondary-600 font-medium text-sm mt-1">
                   {index + 1}
                 </sup>
                 <div className="text-sm text-gray-800 leading-relaxed">

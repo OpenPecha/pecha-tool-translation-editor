@@ -26,7 +26,7 @@ const Callback: React.FC = () => {
         <h2 className="text-2xl font-semibold mb-4">
           Processing your login...
         </h2>
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondary-600 mx-auto"></div>
       </div>
     </div>
   );

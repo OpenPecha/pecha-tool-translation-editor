@@ -172,12 +172,12 @@ function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
 
   return (
     <div
-      className={`px-2 py-2 border-b hover:bg-gray-100 ${isCurrentVersion ? "bg-blue-100" : ""
+      className={`px-2 py-2 border-b hover:bg-gray-100 ${isCurrentVersion ? "bg-secondary-100" : ""
         }`}
     >
       <div className="flex justify-between items-center">
         <div
-          className={`flex items-center gap-1 ${isCurrentVersion ? "font-semibold text-blue-600" : ""
+          className={`flex items-center gap-1 ${isCurrentVersion ? "font-semibold text-secondary-600" : ""
             }`}
         >
           {version.label}
@@ -223,7 +223,7 @@ function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
       </div>
 
       <div
-        className={`text-xs mt-1 ${isCurrentVersion ? "text-blue-600" : "text-gray-500"
+        className={`text-xs mt-1 ${isCurrentVersion ? "text-secondary-600" : "text-gray-500"
           }`}
       >
         {version?.user?.username || version?.user?.name || "System"} •{" "}

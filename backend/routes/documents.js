@@ -888,7 +888,7 @@ router.post("/:id/permissions", authenticate, async (req, res) => {
 // Update document's root relationship and root status
 router.patch("/:id", authenticate, async (req, res) => {
   try {
-    const { rootId, isRoot, translations, identifier, name } = req.body;
+    const { rootId, isRoot, translations, identifier, name, language } = req.body;
     const documentId = req.params.id;
 
     // Check if the document exists
@@ -918,11 +918,19 @@ router.patch("/:id", authenticate, async (req, res) => {
       });
     }
 
-    // If only name is provided, just update the name
-    if (name && Object.keys(req.body).length === 1) {
+    // If only name and/or language is provided, just update those fields
+    const simpleUpdateFields = ['name', 'language', 'content'];
+    const requestKeys = Object.keys(req.body);
+    const isSimpleUpdate = requestKeys.every(key => simpleUpdateFields.includes(key));
+    
+    if (isSimpleUpdate && (name || language)) {
+      const updateData = {};
+      if (name) updateData.name = name;
+      if (language) updateData.language = language;
+      
       const updatedDocument = await prisma.doc.update({
         where: { id: documentId },
-        data: { name },
+        data: updateData,
       });
 
       return res.json({
@@ -999,6 +1007,8 @@ router.patch("/:id", authenticate, async (req, res) => {
       identifier: identifier || document.identifier,
       // Update name if provided
       name: name || document.name,
+      // Update language if provided
+      language: language || document.language,
     };
 
     // Update the document and its translations in a transaction

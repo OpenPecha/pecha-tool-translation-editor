@@ -6,19 +6,13 @@ import {
   Globe,
   Lock,
   Copy,
-  UserPlus,
-  ChevronDown,
-  Settings,
   Trash2,
   CheckCircle,
-  Search,
   Send,
-  FileText,
   AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -27,25 +21,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+  Card
 } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Switch } from "@/components/ui/switch";
-import { useAuth } from "@/auth/use-auth-hook";
-import { useTranslate } from "@tolgee/react";
 import ExportButton from "./Export";
 import {
   getProjectShareInfo,
@@ -54,8 +34,6 @@ import {
   updateCollaboratorAccess,
   removeCollaborator,
   searchUsers,
-  type ProjectShareInfo,
-  type Collaborator,
   type User,
 } from "@/api/project";
 
@@ -90,8 +68,6 @@ const ShareModal: React.FC<ShareModalProps> = ({
   const [copied, setCopied] = useState(false);
 
   const queryClient = useQueryClient();
-  const { currentUser } = useAuth();
-  const { t } = useTranslate();
 
   // Fetch project sharing information
   const { data: shareInfo, isLoading } = useQuery({
@@ -284,7 +260,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
   const getAccessLevelColor = (level: string) => {
     switch (level) {
       case "viewer":
-        return "bg-blue-100 text-blue-800";
+        return "bg-secondary-100 text-secondary-800";
       case "editor":
         return "bg-green-100 text-green-800";
       default:
@@ -297,7 +273,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg p-6 w-full max-w-md">
           <div className="flex items-center justify-center">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-secondary-600"></div>
             <span className="ml-2 text-gray-600">
               Loading sharing options...
             </span>
@@ -319,7 +295,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-3 border-b">
           <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-blue-600" />
+            <Users className="h-4 w-4 text-secondary-600" />
             <h2 className="text-base font-semibold">Share "{projectName}"</h2>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose}>
@@ -370,7 +346,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
                         />
                         {isSearching && (
                           <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-secondary-600"></div>
                           </div>
                         )}
                       </div>
@@ -590,7 +566,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
                         generateShareableLink(shareData.rootDocument) || ""
                       }
                       readOnly
-                      className="text-xs h-8 bg-gray-50 border-gray-200 text-gray-700 cursor-default select-all focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      className="text-xs h-8 bg-gray-50 border-gray-200 text-gray-700 cursor-default select-all focus:ring-1 focus:ring-secondary-500 focus:border-secondary-500"
                       onFocus={(e) => e.target.select()}
                     />
                     <Button

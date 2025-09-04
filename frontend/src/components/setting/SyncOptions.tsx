@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
-import TagOptions from "./TagOptions";
+import TagOptions from "../TagOptions";
 import {
   useTableOfContentSyncStore,
   useTableOfContentOpenStore,
@@ -21,6 +21,10 @@ function SyncOptions({
   const { openAll } = useTableOfContentOpenStore();
 
   const options = [
+    { value: "none", 
+      label: "No Sync", 
+      description: "No synchronization" 
+    },
     {
       value: "scroll",
       label: "Scroll Sync",
@@ -35,8 +39,7 @@ function SyncOptions({
       value: "table",
       label: "Table Sync",
       description: "Synchronize based on table of contents",
-    },
-    { value: "none", label: "No Sync", description: "No synchronization" },
+    }
   ];
 
   const getSelectedOption = () => {
@@ -77,7 +80,7 @@ function SyncOptions({
         {/* Custom Select Button */}
         <button
           type="button"
-          className="flex items-center justify-between w-full px-4 py-2 text-left bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="flex items-center justify-between w-full px-4 py-2 text-left bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500"
           onClick={() => setIsOpen(!isOpen)}
         >
           {renderButtonContent()}
@@ -96,7 +99,7 @@ function SyncOptions({
                   key={option.value}
                   className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${
                     syncMode === option.value
-                      ? "bg-blue-50 text-blue-700"
+                      ? "bg-secondary-50 text-secondary-700"
                       : "text-gray-700"
                   }`}
                   onClick={() =>
@@ -110,7 +113,7 @@ function SyncOptions({
                       <p className="font-medium">{option.label}</p>
                     </div>
                     {syncMode === option.value && (
-                      <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                      <div className="w-2 h-2 bg-secondary-600 rounded-full"></div>
                     )}
                   </div>
                 </li>

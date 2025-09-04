@@ -16,7 +16,7 @@ function OverlayLoading({ isLoading }: OverlayLoadingProps) {
       }}
       className="absolute inset-0 flex flex-col items-center justify-center z-30"
     >
-      <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 mb-4"></div>
+      <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-secondary-500 mb-4"></div>
     </div>
   );
 }

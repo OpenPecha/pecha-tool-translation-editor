@@ -20,7 +20,7 @@ function TagOptions({
               type="radio"
               id="line-number-sync"
               name="sync-type"
-              className="form-radio h-4 w-4 text-blue-600"
+              className="form-radio h-4 w-4 text-secondary-600"
               checked={syncType === "lineNumber"}
               onChange={() => setSyncType("lineNumber")}
               aria-labelledby="sync-method-label line-number-label"

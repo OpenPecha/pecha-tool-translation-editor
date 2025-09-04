@@ -30,7 +30,7 @@ const Logout: React.FC = () => {
         <div className="space-y-4">
           <Link
             to="/login"
-            className="inline-block w-full px-6 py-3 bg-blue-600 text-white font-medium rounded-lg shadow hover:bg-blue-700 transition duration-200"
+            className="inline-block w-full px-6 py-3 bg-secondary-600 text-white font-medium rounded-lg shadow hover:bg-secondary-700 transition duration-200"
           >
             Sign In Again
           </Link>

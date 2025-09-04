@@ -58,7 +58,7 @@ export function ModalFooter({
         className={cn(
           "px-6 py-2 transition-colors",
           confirmVariant === "default" &&
-            "bg-blue-600 hover:bg-blue-700 text-white"
+            "bg-secondary-600 hover:bg-secondary-700 text-white"
         )}
       >
         {confirmLoading ? (

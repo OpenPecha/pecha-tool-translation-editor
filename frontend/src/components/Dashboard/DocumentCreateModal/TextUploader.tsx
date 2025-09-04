@@ -162,7 +162,7 @@ const TextUploader = ({
               className={`cursor-pointer transition-colors ${
                 isLanguageDisabled 
                   ? "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed" 
-                  : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  : "border-gray-300 focus:border-secondary-500 focus:ring-secondary-500"
               }`}
             />
             <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
@@ -176,9 +176,9 @@ const TextUploader = ({
 
       {file && !previewMode && (
         <div className="space-y-3">
-          <div className="flex justify-between items-center p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex justify-between items-center p-3 bg-secondary-50 border border-secondary-200 rounded-lg">
             <div className="flex items-center gap-2">
-              <FileText className="h-4 w-4 text-blue-500" />
+              <FileText className="h-4 w-4 text-secondary-500" />
               <span className="text-sm">
                 Selected file: <span className="font-medium">{file.name}</span>
               </span>

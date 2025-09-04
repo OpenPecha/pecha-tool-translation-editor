@@ -24,9 +24,42 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --primary-color: #3498db;
-  --primary-hover: #2980b9;
-  --secondary-color: #21374d;
+
+   /* New Design System - Primary Colors */
+   --color-primary-50: #f1eff5;
+   --color-primary-100: #ccb4f7;
+   --color-primary-200: #a881f1;
+   --color-primary-300: #854deb;
+   --color-primary-400: #6119e6;
+   --color-primary-500: #4b14b2;
+   --color-primary-600: #360e7e;
+   --color-primary-700: #20084b;
+   --color-primary-800: #0a0317;
+   
+   /* New Design System - Secondary Colors */
+   --color-secondary-50: #eff5f5;
+   --color-secondary-100: #b4f1f7;
+   --color-secondary-200: #81e8f1;
+   --color-secondary-300: #4ddeeb;
+   --color-secondary-400: #19d4e6;
+   --color-secondary-500: #14a5b2;
+   --color-secondary-600: #0e757e;
+   --color-secondary-700: #08454b;
+   --color-secondary-800: #031517;
+   
+   /* New Design System - Neutral Colors */
+   --color-neutral-50: #f8fafc;
+   --color-neutral-100: #f1f5f9;
+   --color-neutral-200: #e2e8f0;
+   --color-neutral-300: #cbd5e1;
+   --color-neutral-400: #94a3b8;
+   --color-neutral-500: #64748b;
+   --color-neutral-600: #475569;
+   --color-neutral-700: #334155;
+   --color-neutral-800: #1e293b;
+
+
+
   --background-color: #f5f5f5;
   --card-bg: white;
   --text-color: #333;
@@ -73,7 +106,6 @@
   --font-monlam: monlam, sans-serif ;
   --font-monlam-2: monlam-2, sans-serif;
   --font-google-sans: 'google-sans', sans-serif;
-  --primary-color: rgba(18,223,236,0.1);
 }
 .ql-container.font-monlam{
   font-family: var(--font-monlam) !important; 
@@ -162,6 +194,40 @@ body {
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+
+    /* New Design System - Primary Colors */
+    --color-primary-50: #f1eff5;
+    --color-primary-100: #ccb4f7;
+    --color-primary-200: #a881f1;
+    --color-primary-300: #854deb;
+    --color-primary-400: #6119e6;
+    --color-primary-500: #4b14b2;
+    --color-primary-600: #360e7e;
+    --color-primary-700: #20084b;
+    --color-primary-800: #0a0317;
+    
+    /* New Design System - Secondary Colors */
+    --color-secondary-50: #eff5f5;
+    --color-secondary-100: #b4f1f7;
+    --color-secondary-200: #81e8f1;
+    --color-secondary-300: #4ddeeb;
+    --color-secondary-400: #19d4e6;
+    --color-secondary-500: #14a5b2;
+    --color-secondary-600: #0e757e;
+    --color-secondary-700: #08454b;
+    --color-secondary-800: #031517;
+    
+    /* New Design System - Neutral Colors */
+    --color-neutral-50: #f8fafc;
+    --color-neutral-100: #f1f5f9;
+    --color-neutral-200: #e2e8f0;
+    --color-neutral-300: #cbd5e1;
+    --color-neutral-400: #94a3b8;
+    --color-neutral-500: #64748b;
+    --color-neutral-600: #475569;
+    --color-neutral-700: #334155;
+    --color-neutral-800: #1e293b;
 }
 
 @layer base {

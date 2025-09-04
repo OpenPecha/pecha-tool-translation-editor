@@ -358,7 +358,7 @@ export function OpenPechaTranslationLoader({
                 </div>
                 <div className="flex-1 space-y-2">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-medium text-blue-900">
+                        <h3 className="font-medium text-secondary-900">
                           {extractTitle(
                             expressions.find((exp: Expression) => exp.id === selectedExpressionId)?.title,
                             selectedExpressionId
@@ -369,7 +369,7 @@ export function OpenPechaTranslationLoader({
                         </Badge>
                       </div>
 
-                      <div className="flex flex-wrap gap-4 text-sm text-blue-700">
+                      <div className="flex flex-wrap gap-4 text-sm text-secondary-700">
                         <div className="flex items-center gap-1">
                           <Languages className="h-4 w-4" />
                           <span>Language: {expressions.find((exp: Expression) => exp.id === selectedExpressionId)?.language}</span>
@@ -410,7 +410,7 @@ export function OpenPechaTranslationLoader({
           <Button
             onClick={handleCreateTranslation}
             disabled={isCreating}
-            className="px-8 py-2 bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+            className="px-8 py-2 bg-secondary-600 hover:bg-secondary-700 text-white transition-colors"
           >
             {isCreating ? (
               <div className="flex items-center gap-2">

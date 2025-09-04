@@ -10,14 +10,14 @@ export default function Footer() {
         <div className="flex items-center justify-between gap-4">
           <p className="text-center text-sm text-gray-500">
             Powered by{" "}
-            <a href="https://openpecha.org/" className=" text-blue-500 ">
+            <a href="https://openpecha.org/" className=" text-secondary-500 ">
               <img src={OpenPecha} alt="OpenPecha" className="w-4 h-4 inline" />{" "}
               OpenPecha
             </a>
           </p>
           <Link
             to="/help"
-            className="text-sm flex items-center gap-2 hover:text-blue-800 hover:underline font-medium transition-colors"
+            className="text-sm flex items-center gap-2 hover:text-secondary-800 hover:underline font-medium transition-colors"
             title="Get help and documentation"
           >
             <HelpCircle className="w-4 h-4" /> Help

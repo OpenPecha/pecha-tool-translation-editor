@@ -281,7 +281,7 @@ function markDiff(oldDelta, newDelta) {
     } else if (op.retain) {
       // For retained content
       if (op.attributes) {
-        // There are attribute changes - mark with light blue
+        // There are attribute changes - mark with light secondary
         result.ops.push({
           retain: op.retain,
           attributes: {
