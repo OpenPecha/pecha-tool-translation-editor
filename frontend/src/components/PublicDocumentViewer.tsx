@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useRef, useState } from "react";
+import React, { memo, useCallback, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, AlertCircle, Globe, Eye, FileText } from "lucide-react";
@@ -18,6 +18,7 @@ import { IoIosArrowForward } from "react-icons/io";
 
 import DocumentEditor from "./DocumentEditor";
 import PublicSideMenu from "./PublicSideMenu";
+import SettingsButton from "./SettingsButton";
 
 interface PublicDocumentViewerProps {
   documentId?: string;
@@ -44,7 +45,7 @@ const PublicDocumentViewer: React.FC<PublicDocumentViewerProps> = ({
   const documentId = propDocumentId || paramDocumentId;
 
   // Use URL parameters for selected translation
-  const { selectedTranslationId, setSelectedTranslationId, clearSelectedTranslationId } = useTranslationSidebarParams();
+  const { selectedTranslationId, setSelectedTranslationId } = useTranslationSidebarParams();
 
   // Handle translation selection
   const handleSelectTranslation = useCallback(
@@ -87,7 +88,7 @@ const PublicDocumentViewer: React.FC<PublicDocumentViewerProps> = ({
     ensurePortalContainer("navbar");
     ensurePortalContainer("toolbar-container");
     ensurePortalContainer("counter");
-    ensurePortalContainer("sync-option");
+    ensurePortalContainer("settings");
 
     return () => {
       // Cleanup on unmount
@@ -95,7 +96,7 @@ const PublicDocumentViewer: React.FC<PublicDocumentViewerProps> = ({
         "navbar",
         "toolbar-container",
         "counter",
-        "sync-option",
+        "settings",
       ];
       containers.forEach((id) => {
         const element = window.document.getElementById(id);
@@ -161,11 +162,7 @@ const PublicDocumentViewer: React.FC<PublicDocumentViewerProps> = ({
     );
   }
 
-  // Create a project object similar to DocumentWrapper
-  const project = {
-    id: documentData?.rootProjectId,
-    name: documentData?.rootProject?.name || "Public Document",
-  };
+
 
   return (
     <EditorProvider>
@@ -175,11 +172,14 @@ const PublicDocumentViewer: React.FC<PublicDocumentViewerProps> = ({
           {createPortal(
             <PublicNavbar
               document={documentData}
-              project={project}
               onBackToApp={handleBackToApp}
               selectedTranslationId={selectedTranslationId}
             />,
             window.document.getElementById("navbar")!
+          )}
+          {createPortal(
+            <SettingsButton />,
+            window.document.getElementById("settings")!
           )}
 
           {/* Main editor container - exactly like DocumentWrapper */}
@@ -243,10 +243,9 @@ const PublicTranslationEditor: React.FC<{
 // Custom navbar for public view
 const PublicNavbar: React.FC<{
   document: any;
-  project: any;
   onBackToApp: () => void;
   selectedTranslationId: string | null;
-}> = ({ document, project, onBackToApp, selectedTranslationId }) => {
+}> = ({ document, onBackToApp, selectedTranslationId }) => {
   const { isAuthenticated } = useAuth();
   const { currentDoc: translationDoc } = useCurrentDoc(
     selectedTranslationId || undefined,

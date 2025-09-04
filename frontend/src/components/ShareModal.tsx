@@ -6,19 +6,13 @@ import {
   Globe,
   Lock,
   Copy,
-  UserPlus,
-  ChevronDown,
-  Settings,
   Trash2,
   CheckCircle,
-  Search,
   Send,
-  FileText,
   AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -27,25 +21,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+  Card
 } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Switch } from "@/components/ui/switch";
-import { useAuth } from "@/auth/use-auth-hook";
-import { useTranslate } from "@tolgee/react";
 import ExportButton from "./Export";
 import {
   getProjectShareInfo,
@@ -54,8 +34,6 @@ import {
   updateCollaboratorAccess,
   removeCollaborator,
   searchUsers,
-  type ProjectShareInfo,
-  type Collaborator,
   type User,
 } from "@/api/project";
 
@@ -90,8 +68,6 @@ const ShareModal: React.FC<ShareModalProps> = ({
   const [copied, setCopied] = useState(false);
 
   const queryClient = useQueryClient();
-  const { currentUser } = useAuth();
-  const { t } = useTranslate();
 
   // Fetch project sharing information
   const { data: shareInfo, isLoading } = useQuery({

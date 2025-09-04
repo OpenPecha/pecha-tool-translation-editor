@@ -1,25 +1,17 @@
 import React, { useState } from "react";
-import { Settings, Languages } from "lucide-react";
+import { Languages } from "lucide-react";
 import SelectTranslation from "./SelectTranslation";
 import { Button } from "@/components/ui/button";
 import { IoIosArrowForward } from "react-icons/io";
-import SettingsPanel from "./Settings";
 
 type MenuOption =
   | "translations"
-  | "settings"
   | "main"
   | "comments"
   | "commentary"
   | "footnotes";
 
-function SideMenu({
-  documentId,
-  isEditable = true,
-}: {
-  readonly documentId: string;
-  readonly isEditable?: boolean;
-}) {
+function SideMenu() {
   const [currentView, setCurrentView] = useState<MenuOption>("main");
   const reset = () => {
     setCurrentView("main");
@@ -33,13 +25,6 @@ function SideMenu({
             <SelectTranslation />
           </InMenuWrapper>
         );
-      case "settings":
-        return (
-          <InMenuWrapper onBackClick={reset}>
-            <SettingsPanel />
-          </InMenuWrapper>
-        );
-
 
       default:
         return (
@@ -49,12 +34,6 @@ function SideMenu({
               title="translations"
             >
               <Languages size={16} />
-            </MenuButton>
-            <MenuButton
-              onClick={() => setCurrentView("settings")}
-              title={"settings"}
-            >
-              <Settings size={16} />
             </MenuButton>
           </div>
         );

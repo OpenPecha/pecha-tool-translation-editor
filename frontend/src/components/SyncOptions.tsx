@@ -21,6 +21,10 @@ function SyncOptions({
   const { openAll } = useTableOfContentOpenStore();
 
   const options = [
+    { value: "none", 
+      label: "No Sync", 
+      description: "No synchronization" 
+    },
     {
       value: "scroll",
       label: "Scroll Sync",
@@ -35,8 +39,7 @@ function SyncOptions({
       value: "table",
       label: "Table Sync",
       description: "Synchronize based on table of contents",
-    },
-    { value: "none", label: "No Sync", description: "No synchronization" },
+    }
   ];
 
   const getSelectedOption = () => {

@@ -346,7 +346,7 @@ const Editor = ({
             
           </div>
           {createPortal(
-            <div className="flex gap-1 items-center">
+            <div className="flex gap-1 items-center text-sm text-gray-500 hover:text-gray-900">
               <div id={`${counterId}`} className="leading-[normal]">
                 0
               </div>

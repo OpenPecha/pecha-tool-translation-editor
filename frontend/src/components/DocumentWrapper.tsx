@@ -1,15 +1,14 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useCurrentDoc } from "@/hooks/useCurrentDoc";
 import { EditorProvider } from "@/contexts/EditorContext";
 import { useParams } from "react-router-dom";
 import DocumentEditor from "./DocumentEditor";
 import SideMenu from "./EditorSideMenu/Sidemenu";
-import MenuDrawer from "./MenuDrawer";
+import SettingsButton from "./SettingsButton";
 import Navbar from "./Navbar";
 import { useDevToolsStatus } from "@/hooks/useDevToolStatus";
 import { createPortal } from "react-dom";
 import { IoIosArrowForward } from "react-icons/io";
-import { useQuery } from "@tanstack/react-query";
 import TranslationSidebar from "./TranslationSidebar";
 import { useTranslationSidebarParams } from "@/hooks/useQueryParams";
 import Split from "react-split";
@@ -21,13 +20,10 @@ function DocumentsWrapper() {
   useDevToolsStatus();
 
   const { currentDoc, isEditable } = useCurrentDoc(id);
-  const { selectedTranslationId, setSelectedTranslationId, clearSelectedTranslationId } = useTranslationSidebarParams();
+  const { selectedTranslationId, clearSelectedTranslationId } = useTranslationSidebarParams();
   const [splitPosition, setSplitPosition] = useState<number>(40);
   
-  // Handle translation selection with proper cleanup
-  const handleSelectTranslation = (translationId: string | null) => {
-    setSelectedTranslationId(translationId);
-  };
+
   const project = {
     id: currentDoc?.rootProjectId || currentDoc?.rootProject?.id || "",
     name: currentDoc?.rootProject?.name || "Project",
@@ -39,11 +35,10 @@ function DocumentsWrapper() {
         <Navbar project={project} />,
         document.getElementById("navbar")!
       )}
-      {selectedTranslationId &&
-        createPortal(
-          <MenuDrawer rootId={id!} translationId={selectedTranslationId} />,
-          document.getElementById("sync-option")!
-        )}
+      {createPortal(
+        <SettingsButton />,
+        document.getElementById("settings")!
+      )}
 
       {/* Main editor container - uses CSS Grid for better layout control */}
       <div className="grid grid-rows-[1fr] h-full">
@@ -54,15 +49,12 @@ function DocumentsWrapper() {
             <>
               {!selectedTranslationId ? (
                 <>
-                  <DocumentEditor
-                    docId={id}
-                    isEditable={isEditable}
-                    currentDoc={currentDoc}
-                  />
-                  <SideMenu
-                    documentId={id!}
-                    isEditable={isEditable}
-                  />
+                    <DocumentEditor
+                      docId={id}
+                      isEditable={isEditable}
+                      currentDoc={currentDoc}
+                    />
+                  <SideMenu />
                 </>
               ) : (
                 <div className="relative h-full w-full group">
@@ -117,7 +109,6 @@ function DocumentsWrapper() {
                       <TranslationEditor
                         selectedTranslationId={selectedTranslationId}
                         isEditable={isEditable}
-                        handleSelectTranslation={handleSelectTranslation}
                       />
                   </Split>
                 </div>
@@ -133,35 +124,23 @@ function DocumentsWrapper() {
 function TranslationEditor({
   selectedTranslationId,
   isEditable,
-  handleSelectTranslation,
 }: {
   readonly selectedTranslationId: string;
   readonly isEditable: boolean;
-  readonly handleSelectTranslation: (translationId: string | null) => void;
 }) {
   const { currentDoc } = useCurrentDoc(selectedTranslationId);
-  
-
-  // Extract text content from document for translation
-  const getDocumentText = () => {
-    if (currentDoc?.currentVersion?.content?.ops) {
-      return currentDoc.currentVersion.content.ops
-        .filter((op: any) => typeof op.insert === "string")
-        .map((op: any) => op.insert)
-        .join("");
-    }
-    return "";
-  };
 
   return (
     <div className="h-full flex w-full">
       {/* Translation Editor */}
       <div className="flex-1 h-full translation-editor-container">
-        <DocumentEditor
-          docId={selectedTranslationId}
-          isEditable={isEditable}
-          currentDoc={currentDoc}
-        />
+        {currentDoc && (
+          <DocumentEditor
+            docId={selectedTranslationId}
+            isEditable={isEditable}
+            currentDoc={currentDoc}
+          />
+        )}
       </div>
       
       {/* Translation Sidebar - Sticky */}
