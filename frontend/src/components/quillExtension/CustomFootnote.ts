@@ -15,14 +15,43 @@ class CollapsibleFootnoteSection extends FootnoteSection {
       header.style.cursor = "pointer";
       header.setAttribute("contenteditable", "false"); // Make header not editable
 
-      header.addEventListener("click", () => {
+      // Handler to toggle collapse
+      const toggleCollapse = (e?: Event) => {
         domNode.classList.toggle("collapsed");
-
-
         header.innerText = domNode.classList.contains("collapsed")
           ? "Footnotes"
           : "Footnotes";
+        if (e) e.stopPropagation();
+      };
+
+      header.addEventListener("click", toggleCollapse);
+
+      // Handler to close if click outside
+      const handleClickOutside = (event: MouseEvent) => {
+        if (!domNode.contains(event.target as Node)) {
+          if (!domNode.classList.contains("collapsed")) {
+            domNode.classList.add("collapsed");
+            header.innerText = "Footnotes";
+          }
+        }
+      };
+
+      // Attach the event listener to the document
+      document.addEventListener("mousedown", handleClickOutside);
+
+      // Clean up the event listener when the section is removed from DOM
+      // (MutationObserver is used to detect removal)
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.removedNodes.forEach((removed) => {
+            if (removed === domNode) {
+              document.removeEventListener("mousedown", handleClickOutside);
+              observer.disconnect();
+            }
+          });
+        });
       });
+      observer.observe(domNode.parentNode || document.body, { childList: true });
 
       domNode.insertBefore(header, domNode.firstChild);
     }
