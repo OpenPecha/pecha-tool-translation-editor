@@ -136,17 +136,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
             {/* API Credentials Tab */}
             {isAuthenticated && <TabsContent value="apiCredentials" className="mt-4">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">
-                    {t("settings.apiKeys", "API Keys")}
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-4">
-                    {t("settings.apiKeysDescription", "Manage your API credentials for external services.")}
-                  </p>
-                </div>
                 <ApiCredentials />
-              </div>
             </TabsContent>}
 
             {/* Account Settings Tab */}
