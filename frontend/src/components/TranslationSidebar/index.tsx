@@ -111,10 +111,10 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
 
             {isTranslating && (
               <div className="mt-4 flex flex-col items-center space-y-2">
-                <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
-                <div className="w-1 bg-blue-200 rounded-full overflow-hidden">
+                <Loader2 className="w-4 h-4 text-secondary-500 animate-spin" />
+                <div className="w-1 bg-secondary-200 rounded-full overflow-hidden">
                   <div
-                    className="w-1 bg-blue-500 rounded-full transition-all duration-300"
+                    className="w-1 bg-secondary-500 rounded-full transition-all duration-300"
                     style={{ height: `${Math.max(progressPercent, 5)}px` }}
                   />
                 </div>
@@ -241,11 +241,11 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
 
                 {/* Translation Progress - Bottom */}
                 {isTranslating && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-2 mt-4">
+                  <div className="bg-secondary-50 border border-secondary-200 rounded-lg p-3 space-y-2 mt-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
-                        <span className="text-sm font-medium text-blue-800">
+                        <Loader2 className="w-4 h-4 text-secondary-600 animate-spin" />
+                        <span className="text-sm font-medium text-secondary-800">
                           Translating...
                         </span>
                       </div>
@@ -253,19 +253,19 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
                         onClick={stopTranslation}
                         variant="outline"
                         size="sm"
-                        className="h-6 w-6 p-0 text-blue-600 hover:bg-blue-100"
+                        className="h-6 w-6 p-0 text-secondary-600 hover:bg-secondary-100"
                       >
                         <Square className="w-3 h-3" />
                       </Button>
                     </div>
                     <div className="space-y-1">
-                      <div className="w-full bg-blue-200 rounded-full h-2">
+                      <div className="w-full bg-secondary-200 rounded-full h-2">
                         <div
-                          className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
+                          className="bg-secondary-600 h-2 rounded-full transition-all duration-300 ease-out"
                           style={{ width: `${progressPercent}%` }}
                         ></div>
                       </div>
-                      <p className="text-xs text-blue-600">{currentStatus}</p>
+                      <p className="text-xs text-secondary-600">{currentStatus}</p>
                     </div>
                   </div>
                 )}

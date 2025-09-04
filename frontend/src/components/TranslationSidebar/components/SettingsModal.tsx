@@ -78,8 +78,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader className="space-y-3">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Settings className="w-4 h-4 text-blue-600" />
+            <div className="w-8 h-8 bg-secondary-100 rounded-lg flex items-center justify-center">
+              <Settings className="w-4 h-4 text-secondary-600" />
             </div>
             <div>
               <DialogTitle className="text-lg font-semibold">
@@ -269,7 +269,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                     }
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-secondary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary-600"></div>
                 </label>
               </div>
             </div>

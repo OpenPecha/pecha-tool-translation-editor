@@ -45,7 +45,7 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
 }) => {
   if (view === "list") {
     return (
-      <div className="flex items-center py-2 px-1 border-b border-gray-200 hover:bg-blue-50 transition-all rounded-md">
+      <div className="flex items-center py-2 px-1 border-b border-gray-200 hover:bg-secondary-50 transition-all rounded-md">
         <div className="flex-shrink-0 mr-4">
           <img
             alt="icon"
@@ -118,10 +118,10 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
         <div className="flex items-center mt-2 justify-between">
           <div className="flex item-center">
             {hasDocument && (
-              <div className="bg-blue-100 p-2 rounded-full flex gap-1 items-center mx-1">
-                <FileText size={16} className="text-blue-500" />
+              <div className="bg-secondary-100 p-2 rounded-full flex gap-1 items-center mx-1">
+                <FileText size={16} className="text-secondary-500" />
                 {documentCount > 0 && (
-                  <span className=" text-xs font-medium text-blue-700">
+                  <span className=" text-xs font-medium text-secondary-700">
                     {documentCount}
                   </span>
                 )}

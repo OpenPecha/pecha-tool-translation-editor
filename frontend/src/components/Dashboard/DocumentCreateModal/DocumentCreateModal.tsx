@@ -23,7 +23,7 @@ export type AvailableMethodType = {
 // Helper function for step indicator styling
 function getStepIndicatorClass(step: number, currentStep: number): string {
   if (step === currentStep) {
-    return "bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-200";
+    return "bg-secondary-600 text-white border-secondary-600 shadow-lg shadow-secondary-200";
   } else if (step < currentStep) {
     return "bg-green-600 text-white border-green-600 shadow-lg shadow-green-200";
   } else {
@@ -116,9 +116,9 @@ function MethodSelection({
                 }
               }}
               className={cn(
-                "w-full p-6 border-2 rounded-lg text-left transition-all hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500",
+                "w-full p-6 border-2 rounded-lg text-left transition-all hover:shadow-md focus:outline-none focus:ring-2 focus:ring-secondary-500",
                 selectedMethod === method.type
-                  ? "border-blue-500 bg-blue-50"
+                  ? "border-secondary-500 bg-secondary-50"
                   : "border-gray-200 hover:border-gray-300"
               )}
             >
@@ -127,7 +127,7 @@ function MethodSelection({
                   className={cn(
                     "p-3 rounded-lg",
                     selectedMethod === method.type
-                      ? "bg-blue-600 text-white"
+                      ? "bg-secondary-600 text-white"
                       : "bg-gray-100 text-gray-600"
                   )}
                 >
@@ -230,7 +230,7 @@ function DocumentCreateModal() {
   const trigger = (
     <button
       type="button"
-      className="border w-46 rounded-xl p-6 flex items-center justify-center hover:border-blue-400 hover:shadow-lg cursor-pointer mb-12 bg-white shadow-sm transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className="border w-46 rounded-xl p-6 flex items-center justify-center hover:border-secondary-400 hover:shadow-lg cursor-pointer mb-12 bg-white shadow-sm transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-secondary-500"
       onClick={handleCreateButtonClick}
     >
       <div className="flex flex-col items-center justify-center">
@@ -267,7 +267,7 @@ function DocumentCreateModal() {
               <Input
                 id="projectName"
                 value={projectName}
-                className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                className="w-full border-gray-300 focus:border-secondary-500 focus:ring-secondary-500"
                 onChange={(e) => setProjectName(e.target.value)}
                 placeholder={t(`projects.enterProjectName`)}
                 autoFocus
@@ -349,7 +349,7 @@ function DocumentCreateModal() {
               <Button
                 onClick={handleNext}
                 disabled={!canGoNext()}
-                className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700"
+                className="flex items-center space-x-2 bg-secondary-600 hover:bg-secondary-700"
               >
                 <span>Next</span>
                 <ChevronRight size={16} />

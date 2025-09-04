@@ -68,7 +68,7 @@ const VersionControls = ({
             className={`px-2 border rounded flex-grow text-xs transition-colors ${
               createVersionError 
                 ? "border-red-500 focus:border-red-500" 
-                : "border-gray-300 focus:border-blue-500"
+                : "border-gray-300 focus:border-secondary-500"
             }`}
             disabled={isCreatingVersion}
             aria-invalid={!!createVersionError}

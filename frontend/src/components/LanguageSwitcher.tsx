@@ -35,11 +35,11 @@ const LanguageSwitcher = () => {
         onValueChange={setLang}
         disabled={isLoading}
       >
-        <SelectTrigger className="flex-1 bg-white border-2 border-gray-200 rounded-lg shadow-sm hover:border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:hover:border-gray-500 disabled:opacity-50 disabled:cursor-not-allowed">
+        <SelectTrigger className="flex-1 bg-white border-2 border-gray-200 rounded-lg shadow-sm hover:border-gray-300 focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500 transition-all duration-200 dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:hover:border-gray-500 disabled:opacity-50 disabled:cursor-not-allowed">
           <div className="flex items-center space-x-2 gap-2">
             {isLoading ? (
               <div className="flex items-center space-x-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-secondary-500"></div>
                 <span className="text-sm text-gray-500">Loading...</span>
               </div>
             ) : (
@@ -55,7 +55,7 @@ const LanguageSwitcher = () => {
             <SelectItem
               key={language.code}
               value={language.code}
-              className="cursor-pointer hover:bg-blue-50 dark:hover:bg-gray-700 focus:bg-blue-50 dark:focus:bg-gray-700 transition-colors duration-150"
+              className="cursor-pointer hover:bg-secondary-50 dark:hover:bg-gray-700 focus:bg-secondary-50 dark:focus:bg-gray-700 transition-colors duration-150"
             >
               <div className="flex items-center space-x-3 py-1">
                 <span className="text-lg">{language?.flag}</span>

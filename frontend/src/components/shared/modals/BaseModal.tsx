@@ -45,13 +45,22 @@ export function BaseModal({
       <>
         {trigger}
         {open && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
+          <div 
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4"
+            onClick={(e) => {
+              // Only close if clicking the backdrop itself
+              if (e.target === e.currentTarget) {
+                handleClose();
+              }
+            }}
+          >
             <div
               className={cn(
                 "bg-white rounded-xl shadow-2xl w-full border border-gray-200 max-h-[90vh] overflow-hidden",
                 sizeClasses[size],
                 className
               )}
+              onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gray-50/50">
                 <h2 className="text-xl font-semibold text-gray-800">{title}</h2>

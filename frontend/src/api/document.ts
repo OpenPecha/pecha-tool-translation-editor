@@ -170,6 +170,7 @@ export const deleteDocument = async (id: string) => {
 interface UpdateDocumentParams {
   name?: string;
   content?: Op[];
+  language?: string;
 }
 
 /**

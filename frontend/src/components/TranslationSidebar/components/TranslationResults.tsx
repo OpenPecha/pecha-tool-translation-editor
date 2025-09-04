@@ -122,7 +122,7 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
               {/* Line Numbers Display */}
               {formatLineNumbers(result) && (
                 <span 
-                  className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded cursor-pointer hover:bg-gray-200 hover:text-blue-600 transition-colors"
+                  className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded cursor-pointer hover:bg-gray-200 hover:text-secondary-600 transition-colors"
                   onClick={() => {
                     if (!result.lineNumbers) return;
                     const lineRanges = Object.entries(result.lineNumbers);
@@ -141,7 +141,7 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
                 onClick={() => onInsertResult({...result, translatedText: getCurrentText(result)})}
                 variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0 hover:bg-blue-200 transition-colors"
+                className="h-6 w-6 p-0 hover:bg-secondary-200 transition-colors"
                 title="Insert translation at line position"
                 disabled={!result.lineNumbers || Object.keys(result.lineNumbers).length === 0}
               >
@@ -207,7 +207,7 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
             </div>
 
             {/* Translation Text */}
-            <div className="border-l-4 border-blue-300 pl-3">
+            <div className="border-l-4 border-secondary-300 pl-3">
               <div className="text-xs text-gray-500 mb-1 font-medium flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span>Translation:</span>
@@ -235,7 +235,7 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
                     const changes = countChanges(result.previousTranslatedText, result.translatedText);
                     return (
                       <div className="flex items-center gap-1">
-                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                        <span className="text-xs bg-secondary-100 text-secondary-700 px-2 py-0.5 rounded-full">
                           Updated
                         </span>
                         {changes.additions > 0 && (

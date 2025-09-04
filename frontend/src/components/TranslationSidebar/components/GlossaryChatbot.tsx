@@ -51,7 +51,7 @@ const GlossaryChatbot: React.FC<GlossaryChatbotProps> = ({
 
   // Show the chatbot asking directly
   return (
-    <div className="relative bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-3 shadow-sm">
+    <div className="relative bg-gradient-to-r from-purple-50 to-secondary-50 border border-purple-200 rounded-lg p-3 shadow-sm">
       {/* Close button */}
       <button
         onClick={handleNoClick}

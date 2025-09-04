@@ -425,10 +425,10 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({
 
       // Toggle between highlight and slightly dimmed
       if (blinkCount % 2 === 0) {
-        spanElement.style.backgroundColor = "#1d4ed8"; // Darker blue
+        spanElement.style.backgroundColor = "#1d4ed8"; // Darker secondary
         spanElement.style.transform = "scale(1.05)";
       } else {
-        spanElement.style.backgroundColor = "#3b82f6"; // Original blue
+        spanElement.style.backgroundColor = "#3b82f6"; // Original secondary
         spanElement.style.transform = "scale(1.1)";
       }
       blinkCount++;

@@ -68,7 +68,7 @@ const Navbar = ({ project }: NavbarProps) => {
         ) : (
           <Button
             onClick={handleAuth0Login}
-            className="px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg shadow hover:bg-blue-600 transition"
+            className="px-4 py-2 bg-secondary-500 text-white text-sm font-medium rounded-lg shadow hover:bg-secondary-600 transition"
           >
             Login
           </Button>
@@ -120,7 +120,7 @@ function ProjectNameInput({ project }: { readonly project: Project }) {
       <EditableText
         initialText={project.name}
         onSave={handleSave}
-        className="text-md text-gray-500 hover:text-gray-700 transition capitalize hover:outline hover:outline-gray-300"
+        className="text-md text-gray-500  hover:text-gray-700 transition capitalize hover:outline hover:outline-gray-300"
         placeholder="Project name"
       />
     </div>
@@ -138,10 +138,10 @@ export function NavMenuList({
       <Button
         onClick={permissionsOpen}
         variant="outline"
-        className="flex items-center gap-1.5 text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200 rounded-full px-3 py-1 h-auto"
+        className="flex items-center gap-1.5 text-sm bg-secondary-50 hover:bg-secondary-100 text-secondary-700 border-secondary-200 rounded-full px-3 py-1 h-auto"
         aria-label="Share document"
       >
-        <BiShare className="text-blue-600" />
+        <BiShare className="text-secondary-600" />
         <span className="capitalize leading-[normal]">{t("common.share")}</span>
       </Button>
     </div>

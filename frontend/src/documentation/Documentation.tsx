@@ -33,7 +33,7 @@ const LoadingIframe = ({ src, title }: { src: string; title: string }) => {
       {isLoading && (
         <div className="absolute inset-0 bg-gray-50 flex items-center justify-center z-10">
           <div className="flex flex-col items-center gap-4">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+            <Loader2 className="h-8 w-8 animate-spin text-secondary-500" />
             <p className="text-gray-600">Loading documentation for ..</p>
           </div>
         </div>
@@ -101,7 +101,7 @@ function Documentation() {
                 onClick={() => handleTabChange("getting-started")}
                 className={`flex items-center gap-3 w-full justify-start p-3 rounded-lg transition-colors ${
                   activeTab === "getting-started"
-                    ? "bg-blue-50 text-blue-700"
+                    ? "bg-secondary-50 text-secondary-700"
                     : "hover:bg-gray-50"
                 }`}
               >
@@ -112,7 +112,7 @@ function Documentation() {
                 onClick={() => handleTabChange("projects")}
                 className={`flex items-center gap-3 w-full justify-start p-3 rounded-lg transition-colors ${
                   activeTab === "projects"
-                    ? "bg-blue-50 text-blue-700"
+                    ? "bg-secondary-50 text-secondary-700"
                     : "hover:bg-gray-50"
                 }`}
               >
@@ -123,7 +123,7 @@ function Documentation() {
                 onClick={() => handleTabChange("translations")}
                 className={`flex items-center gap-3 w-full justify-start p-3 rounded-lg transition-colors ${
                   activeTab === "translations"
-                    ? "bg-blue-50 text-blue-700"
+                    ? "bg-secondary-50 text-secondary-700"
                     : "hover:bg-gray-50"
                 }`}
               >
@@ -134,7 +134,7 @@ function Documentation() {
                 onClick={() => handleTabChange("versions")}
                 className={`flex items-center gap-3 w-full justify-start p-3 rounded-lg transition-colors ${
                   activeTab === "versions"
-                    ? "bg-blue-50 text-blue-700"
+                    ? "bg-secondary-50 text-secondary-700"
                     : "hover:bg-gray-50"
                 }`}
               >
@@ -145,7 +145,7 @@ function Documentation() {
                 onClick={() => handleTabChange("comments")}
                 className={`flex items-center gap-3 w-full justify-start p-3 rounded-lg transition-colors ${
                   activeTab === "comments"
-                    ? "bg-blue-50 text-blue-700"
+                    ? "bg-secondary-50 text-secondary-700"
                     : "hover:bg-gray-50"
                 }`}
               >
@@ -156,7 +156,7 @@ function Documentation() {
                 onClick={() => handleTabChange("collaboration")}
                 className={`flex items-center gap-3 w-full justify-start p-3 rounded-lg transition-colors ${
                   activeTab === "collaboration"
-                    ? "bg-blue-50 text-blue-700"
+                    ? "bg-secondary-50 text-secondary-700"
                     : "hover:bg-gray-50"
                 }`}
               >
@@ -167,7 +167,7 @@ function Documentation() {
                 onClick={() => handleTabChange("export")}
                 className={`flex items-center gap-3 w-full justify-start p-3 rounded-lg transition-colors ${
                   activeTab === "export"
-                    ? "bg-blue-50 text-blue-700"
+                    ? "bg-secondary-50 text-secondary-700"
                     : "hover:bg-gray-50"
                 }`}
               >
@@ -252,8 +252,8 @@ function Documentation() {
                         Quick Start Guide
                       </h3>
                       <div className="space-y-3">
-                        <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                          <div className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
+                        <div className="flex items-start gap-3 p-3 bg-secondary-50 rounded-lg">
+                          <div className="bg-secondary-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
                             1
                           </div>
                           <div>
@@ -268,8 +268,8 @@ function Documentation() {
                           </div>
                         </div>
 
-                        <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                          <div className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
+                        <div className="flex items-start gap-3 p-3 bg-secondary-50 rounded-lg">
+                          <div className="bg-secondary-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
                             2
                           </div>
                           <div>
@@ -280,8 +280,8 @@ function Documentation() {
                           </div>
                         </div>
 
-                        <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                          <div className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
+                        <div className="flex items-start gap-3 p-3 bg-secondary-50 rounded-lg">
+                          <div className="bg-secondary-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
                             3
                           </div>
                           <div>
@@ -294,8 +294,8 @@ function Documentation() {
                           </div>
                         </div>
 
-                        <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                          <div className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
+                        <div className="flex items-start gap-3 p-3 bg-secondary-50 rounded-lg">
+                          <div className="bg-secondary-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
                             4
                           </div>
                           <div>

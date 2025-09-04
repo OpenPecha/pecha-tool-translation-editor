@@ -13,7 +13,7 @@ const Progress: React.FC<ProgressProps> = ({
     className={`relative h-2 w-full overflow-hidden rounded-full bg-gray-100 ${className}`}
   >
     <div
-      className="h-full bg-blue-500 transition-all"
+      className="h-full bg-secondary-500 transition-all"
       style={{ width: `${value ?? 0}%` }}
     />
   </div>

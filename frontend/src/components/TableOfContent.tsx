@@ -215,7 +215,7 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
             >
               <HiArrowLeft className="w-5 h-5" />
             </button>
-            <BookOpen className="mr-2 text-blue-600" size={20} />
+            <BookOpen className="mr-2 text-secondary-600" size={20} />
             <h2 className="text-lg font-semibold text-gray-700">
               {t("documents.toc")}
             </h2>
@@ -400,7 +400,7 @@ const Toc = React.memo(function Toc({
               " py-1.5 rounded-md transition-colors",
               isNested && `ml-${(heading.level - 1) * 3}`,
               isActive
-                ? "bg-blue-50 text-blue-700 border-r-2 border-blue-500 pr-2"
+                ? "bg-secondary-50 text-secondary-700 border-r-2 border-secondary-500 pr-2"
                 : "hover:bg-gray-100"
             )}
             style={{
@@ -413,7 +413,7 @@ const Toc = React.memo(function Toc({
             >
               {hasChildren && (
                 <button
-                  className="mr-2 flex items-center justify-center w-5 h-5 rounded-sm hover:bg-blue-200 text-blue-700"
+                  className="mr-2 flex items-center justify-center w-5 h-5 rounded-sm hover:bg-secondary-200 text-secondary-700"
                   onClick={(e) => toggleExpand(heading.id, e)}
                   aria-label={
                     isExpanded ? "Collapse section" : "Expand section"
@@ -429,7 +429,7 @@ const Toc = React.memo(function Toc({
               )}
               {!hasChildren && (
                 <button
-                  className="mr-2 flex items-center justify-center w-5 h-5 rounded-sm hover:bg-blue-200 text-blue-700"
+                  className="mr-2 flex items-center justify-center w-5 h-5 rounded-sm hover:bg-secondary-200 text-secondary-700"
                   type="button"
                 >
                   <Dot />

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { GrDocument } from "react-icons/gr";
 import { Trash2 } from "lucide-react";
 import { Translation } from "../../DocumentWrapper";
@@ -9,6 +9,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteDocument, updateDocument } from "@/api/document";
 import { useParams } from "react-router-dom";
 import { FaSpinner } from "react-icons/fa";
+import { languages } from "@/utils/Constants";
 
 import { useTranslationSidebarParams } from "@/hooks/useQueryParams";
 
@@ -32,6 +33,12 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
       queryKey: [`translations-${rootId}`],
     });
 
+  // Helper function to get language info
+  const getLanguageInfo = (languageCode: string) => {
+    const languageInfo = languages.find(lang => lang.code === languageCode);
+    return languageInfo || { code: languageCode, name: languageCode, flag: '📄' };
+  };
+
   const deleteTranslationMutation = useMutation({
     mutationFn: (translationId: string) => deleteDocument(translationId),
     onSuccess: () => {
@@ -52,29 +59,32 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
     },
   });
 
-  // Set up mutation for updating document title
-  const updateTitleMutation = useMutation({
-    mutationFn: async (data: { id: string; name: string }) => {
+  // Set up mutation for updating document
+  const updateDocumentMutation = useMutation({
+    mutationFn: async (data: { id: string; name?: string; language?: string }) => {
       if (!id) throw new Error("Document ID not found");
-      // Update the document name instead of the identifier
-      return await updateDocument(data.id, {
-        name: data.name,
-        content: undefined,
-      });
+      // Update the document name and/or language
+      const updateData: any = { content: undefined };
+      if (data.name !== undefined) updateData.name = data.name;
+      if (data.language !== undefined) updateData.language = data.language;
+      
+      return await updateDocument(data.id, updateData);
     },
     onSuccess: () => {
       // Invalidate and refetch document data and translations
       refetchTranslations();
     },
     onError: (error) => {
-      console.error("Failed to update document title:", error);
-      // Revert to original title on error
+      console.error("Failed to update document:", error);
     },
   });
 
-  const onEdit = (translationId: string, name: string) => {
+  const onEdit = (translationId: string, name?: string, language?: string) => {
     // Implement edit functionality here
-    updateTitleMutation.mutate({ id: translationId, name });
+    const updateData: { id: string; name?: string; language?: string } = { id: translationId };
+    if (name !== undefined) updateData.name = name;
+    if (language !== undefined) updateData.language = language;
+    updateDocumentMutation.mutate(updateData);
   };
   const onDelete = (translationId: string, event: React.MouseEvent) => {
     event.stopPropagation();
@@ -95,23 +105,18 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
 
     return formatTimeAgo(translation.updatedAt);
   };
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const isDeleting = deleteTranslationMutation.isPending;
-  const isUpdating = updateTitleMutation.isPending;
+  const isUpdating = updateDocumentMutation.isPending;
   const disabled = isDeleting || isUpdating;
   return (
     <div key={translation.id} className="flex flex-col w-full">
       <div className="flex items-center w-full">
-        <div
-          role="button"
-          tabIndex={0}
+        <button
+          type="button"
           onClick={() => {
-            // Only allow selection if translation is completed
-            if (!disabled) {
-              setSelectedTranslationId(translation.id);
-            }
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !disabled) {
+            // Only allow selection if translation is completed and modal is not open
+            if (!disabled && !isModalOpen) {
               setSelectedTranslationId(translation.id);
             }
           }}
@@ -121,7 +126,7 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
               : "cursor-pointer hover:bg-gray-100"
           }`}
           aria-label={`Open translation ${translation.id}`}
-          aria-disabled={disabled}
+          disabled={disabled}
         >
           <div className="relative flex items-center">
             <GrDocument
@@ -130,27 +135,30 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
               className="flex-shrink-0"
             />
             <div className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-gray-700 capitalize">
-              {translation.language}
+              {getLanguageInfo(translation.language).flag}
             </div>
           </div>
           <div className="flex-1 overflow-hidden">
             <div className="flex justify-between gap-2">
               <div className="truncate">{translation.name}</div>
             </div>
-            <div className="text-xs text-gray-500 capitalize flex items-center">
-              {renderStatusIndicator()}
+            <div className="text-xs text-gray-500 flex items-center gap-1">
+              <span className="capitalize">{getLanguageInfo(translation.language).name}</span>
+              <span>•</span>
+              <span>{renderStatusIndicator()}</span>
             </div>
           </div>
           {isDeleting || isUpdating ? (
             <FaSpinner className="animate-spin" />
           ) : (
             <TranslationMenu
-              initialValue={translation.name}
-              onEdit={(name) => onEdit(translation.id, name)}
+              translation={translation}
+              onEdit={(name, language) => onEdit(translation.id, name, language)}
               onDelete={(e) => onDelete(translation.id, e)}
+              onModalOpenChange={setIsModalOpen}
             />
           )}
-        </div>
+        </button>
       </div>
 
     </div>

@@ -137,7 +137,7 @@ function VersionDiff({ onClose }: VersionDiffProps) {
         <div className="flex-1 bg-white p-6 overflow-y-auto">
           {isDiffLoading ? (
             <div className="flex flex-col items-center justify-center mt-20">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-secondary-600 mb-4"></div>
               <div className="text-gray-500">
                 Loading version differences...
               </div>
@@ -162,7 +162,7 @@ function VersionDiff({ onClose }: VersionDiffProps) {
                   key={version.id}
                   className={`p-4 flex flex-col  border-b w-full cursor-pointer ${
                     version.id === selectedVersionId
-                      ? "bg-blue-50"
+                      ? "bg-secondary-50"
                       : "hover:bg-gray-50"
                   }`}
                   onClick={() => setSelectedVersionId(version.id)}
@@ -171,7 +171,7 @@ function VersionDiff({ onClose }: VersionDiffProps) {
                     <div className="flex items-center">
                       <span>{version.label}</span>
                       {isDiffLoading && version.id === selectedVersionId && (
-                        <div className="ml-2 animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                        <div className="ml-2 animate-spin rounded-full h-4 w-4 border-b-2 border-secondary-600"></div>
                       )}
                     </div>
                     <p className="text-sm text-gray-500">

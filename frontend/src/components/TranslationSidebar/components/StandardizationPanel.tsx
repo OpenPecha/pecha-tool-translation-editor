@@ -339,7 +339,7 @@ const StandardizationPanel: React.FC<StandardizationPanelProps> = ({
 
             {/* Apply Status */}
             {isApplyingStandardization && (
-              <div className="text-xs text-blue-600 bg-blue-50 border border-blue-200 rounded p-2">
+              <div className="text-xs text-secondary-600 bg-secondary-50 border border-secondary-200 rounded p-2">
                 {applyStandardizationStatus}
               </div>
             )}
@@ -473,8 +473,8 @@ const StandardizationPanel: React.FC<StandardizationPanelProps> = ({
 
         {/* Apply Status */}
         {isApplyingStandardization && (
-          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-800 font-medium">
+          <div className="mt-3 p-3 bg-secondary-50 border border-secondary-200 rounded-lg">
+            <p className="text-sm text-secondary-800 font-medium">
               {applyStandardizationStatus}
             </p>
           </div>

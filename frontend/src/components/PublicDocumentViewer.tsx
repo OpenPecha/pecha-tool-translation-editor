@@ -262,7 +262,7 @@ const PublicNavbar: React.FC<{
       <div className="max-w-7xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <FileText className="h-6 w-6 text-blue-600" />
+            <FileText className="h-6 w-6 text-secondary-600" />
             <div>
               <h1 className="text-lg font-semibold text-gray-900">
                 {displayDocument?.name || "Document"}
