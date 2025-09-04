@@ -18,7 +18,7 @@ import { IoIosArrowForward } from "react-icons/io";
 
 import DocumentEditor from "./DocumentEditor";
 import PublicSideMenu from "./PublicSideMenu";
-import SettingsButton from "./SettingsButton";
+import SettingsButton from "./setting/SettingsButton";
 
 interface PublicDocumentViewerProps {
   documentId?: string;

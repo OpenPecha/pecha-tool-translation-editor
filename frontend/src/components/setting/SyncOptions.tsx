@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
-import TagOptions from "./TagOptions";
+import TagOptions from "../TagOptions";
 import {
   useTableOfContentSyncStore,
   useTableOfContentOpenStore,

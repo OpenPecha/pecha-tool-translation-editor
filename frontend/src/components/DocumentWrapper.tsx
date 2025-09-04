@@ -4,7 +4,7 @@ import { EditorProvider } from "@/contexts/EditorContext";
 import { useParams } from "react-router-dom";
 import DocumentEditor from "./DocumentEditor";
 import SideMenu from "./EditorSideMenu/Sidemenu";
-import SettingsButton from "./SettingsButton";
+import SettingsButton from "./setting/SettingsButton";
 import Navbar from "./Navbar";
 import { useDevToolsStatus } from "@/hooks/useDevToolStatus";
 import { createPortal } from "react-dom";

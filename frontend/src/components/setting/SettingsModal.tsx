@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useTranslate } from "@tolgee/react";
 import SyncOptions from "./SyncOptions";
-import ApiCredentials from "./EditorSideMenu/ApiCredentials";
+import ApiCredentials from "./ApiCredentials";
 import { useEditor } from "@/contexts/EditorContext";
 import useScrollHook from "@/hooks/useScrollHook";
 import { useTranslationSidebarParams } from "@/hooks/useQueryParams";
