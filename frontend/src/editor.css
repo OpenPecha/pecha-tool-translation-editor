@@ -9,6 +9,13 @@
     width: 4ch;
     margin-right:5px;
   }
+  .hide-line-numbers .line-numbers {
+    display: none !important;
+  }
+  
+  .show-line-numbers .line-numbers {
+    display: block;
+  }
   .line-number {
     position: absolute;
     cursor: pointer;
@@ -34,17 +41,30 @@
   }
   .ql-editor {
     padding:0 !important;
-    padding-inline: 16px !important;
-    background-color: white;
+    background-color: var(--editor-background-color, white);
     border: 0 !important;
-    line-height: normal;
+    font-size: var(--root-editor-font-size, 1rem);
+    font-family: var(--root-editor-font-family, 'google-sans');
+    line-height: var(--root-editor-line-height, 1.5);
     /* padding-bottom: 100px !important; */
     counter-reset: footnote-counter;
     height: 100%;
     overflow-y: auto;
   }
+  .hide-line-numbers .ql-editor {
+    padding-left: 5px !important;
+  }
+  /* Translation Editor Specific Styles */
+  .translation-editor-container .ql-editor {
+    font-size: var(--translation-editor-font-size, 1rem);
+    font-family: var(--translation-editor-font-family, 'google-sans');
+    line-height: var(--translation-editor-line-height, 1.5);
+  }
+  .hide-line-numbers .translation-editor-container .ql-editor {
+    padding-left: 5px !important;
+  }
   .ql-editor::selection{
-    background-color: rgba(66, 133, 244, 0.4)
+    background-color: var(--selection-highlight-color, rgba(66, 133, 244, 0.4));
   }
   .ql-formats button{
     padding: 10px;
@@ -263,12 +283,6 @@
     transition: none !important;
   }
 }
-
-
-
-
-
-
 
 /* Fixed footnote positioning for translation editor with overflow-auto */
 .translation-editor-container .footnote-view-container {

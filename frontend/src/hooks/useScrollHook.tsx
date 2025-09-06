@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 function useScrollHook(quill1: Quill, quill2: Quill) {
   const ignoreScrollEvents = useRef(false);
   const lastClickY = useRef<number | null>(null);
-  const [syncMode, setSyncMode] = useState<"scroll" | "click" | "none">("none");
+  const [syncMode, setSyncMode] = useState<"scroll" | "click" | "table" | "none">("none");
   const [syncType, setSyncType] = useState<"heading" | "lineNumber">(
     "lineNumber"
   );
