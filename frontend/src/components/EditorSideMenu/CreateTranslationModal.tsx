@@ -103,7 +103,7 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
                   />
                 </TabContentWrapper>
 
-                <TabContentWrapper value="openpecha">
+                <TabContentWrapper value="openpecha" >
                   <OpenPechaTranslationLoader 
                     rootId={rootId} 
                     onSuccess={setTranslationId} 
