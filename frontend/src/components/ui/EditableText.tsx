@@ -88,7 +88,7 @@ const EditableText: React.FC<EditableTextProps> = ({
           disabled={disabled || isLoading}
           placeholder={placeholder}
           className={`${className} 
-           ${isTibetan ? 'font-monlam' : "font-google-sans"}
+           ${isTibetan ? 'font-monlam text-xs leading-[normal]' : "font-google-sans"}
           ${
             isLoading ? 'opacity-50 cursor-not-allowed' : ''
           }`}
