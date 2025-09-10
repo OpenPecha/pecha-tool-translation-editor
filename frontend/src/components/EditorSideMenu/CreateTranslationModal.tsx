@@ -209,24 +209,24 @@ const EmptyDocumentCreator = ({
       )}
 
       <div className="flex flex-col items-center justify-center py-8 text-center">
-        <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center mb-4">
+        <div className="w-12 h-12 bg-neutral-50 dark:bg-neutral-700 rounded-lg flex items-center justify-center mb-4">
           <span className="text-xl">📄</span>
         </div>
-        <h3 className="text-base font-medium text-gray-900 mb-2">
+        <h3 className="text-base font-medium text-neutral-900 dark:text-neutral-300 mb-2">
           Create Empty Translation
         </h3>
-        <p className="text-gray-500 text-sm max-w-sm mb-6">
+        <p className="text-neutral-500 dark:text-neutral-400 text-sm max-w-sm mb-6">
           Start with a blank document and add your translation content manually.
         </p>
 
         <Button
           onClick={handleCreateEmptyDocument}
           disabled={isDisabled}
-          className="px-6 py-2 bg-slate-900 hover:bg-slate-800 disabled:bg-gray-300 disabled:text-gray-500 text-white transition-all duration-200 font-medium"
+          className="px-6 py-2 bg-neutral-900 hover:bg-neutral-800 disabled:bg-gray-300 disabled:text-neutral-500 text-white transition-all duration-200 font-medium"
         >
           {isCreating ? (
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-neutral-300/30 border-t-neutral-300 rounded-full animate-spin" />
               Creating...
             </div>
           ) : (
@@ -235,7 +235,7 @@ const EmptyDocumentCreator = ({
         </Button>
         
         {!language && (
-          <p className="text-xs text-amber-600 mt-2">
+          <p className="text-xs text-neutral-600 mt-2">
             Select a language above to continue
           </p>
         )}
