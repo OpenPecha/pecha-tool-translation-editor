@@ -47,7 +47,8 @@ export function UploadMethodTabs({
     openpecha: {
       value: "openpecha",
       label: t("common.openpecha"),
-      icon: <MdApi size={16} className="text-gray-600"/>
+      icon: <MdApi size={16} className="text-gray-600"/>,
+      disabled: true,
     },
     ai: {
       value: "ai",
@@ -86,7 +87,7 @@ export function UploadMethodTabs({
                 {tab.icon}
               </span>
             </span>
-            {tab.comingSoon && (
+            {tab.comingSoon || tab.disabled   && (
               <span className="ml-1 text-xs text-amber-500 font-normal">
                 (Soon)
               </span>

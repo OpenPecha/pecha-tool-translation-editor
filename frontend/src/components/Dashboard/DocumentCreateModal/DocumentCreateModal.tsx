@@ -17,6 +17,7 @@ export type UploadMethod = "file" | "openpecha";
 export type AvailableMethodType = {
   type: UploadMethod;
   label: string;
+  isDisabled?: boolean;
 }
 
 // Helper function for step indicator styling
@@ -106,6 +107,7 @@ function MethodSelection({
           return (
             <button
               key={method.type}
+              disabled={method.isDisabled}
               type="button"
               onClick={() => onMethodSelect(method.type)}
               onKeyDown={(e) => {
@@ -115,7 +117,7 @@ function MethodSelection({
                 }
               }}
               className={cn(
-                "w-full p-6 border-2 rounded-lg text-left transition-all hover:shadow-md focus:outline-none focus:ring-2 focus:ring-secondary-500",
+                "w-full p-6 border-2 rounded-lg text-left transition-all hover:shadow-md focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-secondary-500",
                 selectedMethod === method.type
                   ? "border-secondary-500 bg-neutral-50 dark:bg-neutral-700"
                   : "border-gray-200 hover:border-gray-300"
@@ -134,7 +136,7 @@ function MethodSelection({
                 </div>
                 <div className="flex-1">
                   <h4 className="font-medium text-neutral-900 dark:text-neutral-300 mb-1">
-                    {config.title}
+                    {config.title} {method.isDisabled && <span className="text-gray-400 text-sm">(Coming Soon)</span>}
                   </h4>
                   <p className="text-sm text-neutral-600 dark:text-neutral-500">{config.description}</p>
                 </div>
@@ -222,8 +224,8 @@ function DocumentCreateModal() {
   };
 
   const availableMethods: AvailableMethodType[] = [
-    { type: "file", label: t("common.file") },
-    { type: "openpecha", label: t("common.openpecha") },
+    { type: "file", label: t("common.file") , isDisabled: false},
+    { type: "openpecha", label: t("common.openpecha") , isDisabled: true},
   ];
 
   const trigger = (
