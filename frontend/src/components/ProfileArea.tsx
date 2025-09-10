@@ -5,6 +5,7 @@ import { useTranslate } from "@tolgee/react";
 import { useCurrentLanguage } from "@/contexts/TolgeeContext";
 import { MdKeyboardArrowDown, MdLogout } from "react-icons/md";
 import LanguageSwitcher from "./LanguageSwitcher";
+import ThemeToggle from "./ThemeToggle";
 
 function ProfileArea() {
   const [isOpen, setIsOpen] = useState(false);
@@ -83,14 +84,15 @@ function ProfileArea() {
           currentLanguage === "bo" && "font-monlam-2 !text-xs"
         } absolute right-0 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-50`}
       >
-        {/* Logout Button */}
-        <div className="px-4 pt-2 flex flex-col gap-2">
+        {/* Settings and Logout */}
+        <div className="px-4 pt-2 flex flex-col gap-3">
           <LanguageSwitcher />
+          <ThemeToggle />
           <button
             onClick={onLogout}
-            className="w-max px-2 py-1 flex items-center self-end shadow-md  text-sm gap-2 bg-secondary-100 hover:bg-secondary-200 cursor-pointer dark:hover:bg-red-900/20 rounded-lg transition-colors duration-150"
+            className="w-max px-2 py-1 flex items-center self-end shadow-md  text-sm gap-2 bg-secondary-100 hover:bg-secondary-200 dark:bg-secondary-500 dark:text-secondary-500 dark:hover:bg-secondary-600 cursor-pointer dark:hover:bg-red-900/20 rounded-lg transition-colors duration-150"
           >
-            <MdLogout /> <span>{t("auth.logout")}</span>
+            <MdLogout className="w-4 h-4 text-neutral-500 dark:text-neutral-300"/> <span className="text-sm text-neutral-500 dark:text-neutral-300">{t("auth.logout")}</span>
           </button>
         </div>
       </div>

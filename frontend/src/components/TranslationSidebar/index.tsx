@@ -74,7 +74,7 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
   return (
     <div
       data-translation-sidebar
-      className={`h-full flex  bg-white transition-all duration-300 ease-in-out ${
+      className={`h-full flex bg-neutral-50 dark:bg-neutral-800 transition-all duration-300 ease-in-out ${
         isSidebarCollapsed ? "w-12" : "w-96"
       }`}
     >
@@ -96,7 +96,7 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
             >
               <Languages className="w-5 h-5" />
               {selectedText && (
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full animate-pulse" />
               )}
             </Button>
 
@@ -142,10 +142,10 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
                 className="w-6 h-6 rounded-md hover:bg-gray-100"
                 title="Collapse Translation Panel"
               >
-                <ChevronRight className="w-3 h-3" />
+                <ChevronRight className="w-3 h-3 text-neutral-800 dark:text-neutral-100" />
               </Button>
 
-              <h3 className="text-sm font-medium text-gray-900">Translation</h3>
+              <h3 className="text-sm font-medium text-neutral-800 dark:text-neutral-100">Translation</h3>
 
               <div className="flex items-center gap-1">
                 {translationResults.length > 0 && (
@@ -153,7 +153,7 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
                     onClick={resetTranslations}
                     variant="ghost"
                     size="icon"
-                    className="w-6 h-6 rounded-md hover:bg-gray-100 hover:text-red-600"
+                    className="w-6 h-6 rounded-md hover:bg-neutral-100 hover:text-red-600"
                     title="Clear Translation Results"
                   >
                     <Trash2 className="w-3 h-3" />
@@ -241,11 +241,11 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
 
                 {/* Translation Progress - Bottom */}
                 {isTranslating && (
-                  <div className="bg-secondary-50 border border-secondary-200 rounded-lg p-3 space-y-2 mt-4">
+                  <div className="bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-300 rounded-lg p-3 space-y-2 mt-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Loader2 className="w-4 h-4 text-secondary-600 animate-spin" />
-                        <span className="text-sm font-medium text-secondary-800">
+                        <span className="text-sm font-medium text-neutral-800 dark:text-neutral-100">
                           Translating...
                         </span>
                       </div>
@@ -253,19 +253,19 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
                         onClick={stopTranslation}
                         variant="outline"
                         size="sm"
-                        className="h-6 w-6 p-0 text-secondary-600 hover:bg-secondary-100"
+                        className="h-6 w-6 p-0 text-secondary-600 hover:bg-neutral-100 dark:hover:bg-neutral-800"
                       >
                         <Square className="w-3 h-3" />
                       </Button>
                     </div>
                     <div className="space-y-1">
-                      <div className="w-full bg-secondary-200 rounded-full h-2">
+                      <div className="w-full bg-secondary-200 dark:bg-neutral-800 rounded-full h-2">
                         <div
                           className="bg-secondary-600 h-2 rounded-full transition-all duration-300 ease-out"
                           style={{ width: `${progressPercent}%` }}
                         ></div>
                       </div>
-                      <p className="text-xs text-secondary-600">{currentStatus}</p>
+                      <p className="text-xs text-secondary-600 dark:text-neutral-100">{currentStatus}</p>
                     </div>
                   </div>
                 )}
@@ -298,7 +298,7 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
                 {!isTranslating &&
                   translationResults.length === 0 &&
                   !error && (
-                    <div className="flex-1 flex items-center justify-center text-gray-400">
+                    <div className="flex-1 flex items-center justify-center text-neutral-400 dark:text-neutral-400">
                       <div className="text-center">
                         <Languages className="w-8 h-8 mx-auto mb-2 opacity-50" />
                         <p className="text-sm">Select text to translate</p>

@@ -77,7 +77,7 @@ const NavSidebar = () => {
   return (
     <>
       <button
-        className="p-2 rounded-full hover:bg-gray-100 h-fit transition-colors"
+        className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 h-fit transition-colors"
         onClick={openSidebar}
       >
         <Menu size={20} />
@@ -95,7 +95,7 @@ const NavSidebar = () => {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed top-0 left-0 z-50 h-full w-[280px] bg-white border-r shadow-lg transform transition-transform duration-300 ease-in-out",
+          "fixed top-0 left-0 z-50 h-full w-[280px] bg-neutral-50 dark:bg-neutral-800 border-r shadow-lg transform transition-transform duration-300 ease-in-out",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -135,7 +135,7 @@ const NavSidebar = () => {
           {/* Sidebar footer */}
           <div className="p-4 border-t space-y-2">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-500">© 2025 Pecha.Tools</p>
+              <p className="text-sm text-neutral-700 dark:text-neutral-300">© 2025 Pecha.Tools</p>
             
             </div>
           </div>

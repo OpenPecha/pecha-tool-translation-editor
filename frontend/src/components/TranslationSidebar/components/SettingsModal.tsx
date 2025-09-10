@@ -69,7 +69,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         <Button
           variant="ghost"
           size="icon"
-          className="w-6 h-6 rounded-md hover:bg-gray-100"
+          className="w-6 h-6 rounded-md"
           title="Translation Settings"
         >
           <Settings className="w-3 h-3" />
@@ -85,7 +85,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               <DialogTitle className="text-lg font-semibold">
                 Translation Settings
               </DialogTitle>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm mt-1">
                 Configure your translation preferences
               </p>
             </div>
@@ -95,8 +95,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         <div className="space-y-6 py-4">
           {/* Core Settings */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
-              <Globe className="w-4 h-4 text-gray-600" />
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <Globe className="w-4 h-4" />
               Core Settings
             </div>
 
@@ -104,7 +104,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               {/* Target Language */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium flex items-center gap-2">
-                  <Languages className="w-3 h-3 text-gray-500" />
+                  <Languages className="w-3 h-3" />
                   Target Language
                 </Label>
                 <Select
@@ -129,7 +129,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               {/* Text Type */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium flex items-center gap-2">
-                  <FileText className="w-3 h-3 text-gray-500" />
+                  <FileText className="w-3 h-3" />
                   Content Type
                 </Label>
                 <Select
@@ -155,8 +155,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
           {/* AI Settings */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
-              <Bot className="w-4 h-4 text-gray-600" />
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <Bot className="w-4 h-4" />
               AI Configuration
             </div>
 
@@ -164,7 +164,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               {/* Model */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium flex items-center gap-2">
-                  <Bot className="w-3 h-3 text-gray-500" />
+                  <Bot className="w-3 h-3" />
                   AI Model
                 </Label>
                 <Select
@@ -192,7 +192,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                   htmlFor="batch-size"
                   className="text-sm font-medium flex items-center gap-2"
                 >
-                  <Hash className="w-3 h-3 text-gray-500" />
+                  <Hash className="w-3 h-3" />
                   Batch Size
                 </Label>
                 <Input
@@ -206,7 +206,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                   }
                   className="h-9"
                 />
-                <p className="text-xs text-gray-500">
+                <p className="text-xs">
                   Lines processed per batch (1-10)
                 </p>
               </div>
@@ -215,8 +215,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
           {/* Custom Instructions */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
-              <MessageSquare className="w-4 h-4 text-gray-600" />
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <MessageSquare className="w-4 h-4" />
               Custom Instructions
             </div>
 
@@ -225,7 +225,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 htmlFor="user-rules"
                 className="text-sm font-medium flex items-center gap-2"
               >
-                <MessageSquare className="w-3 h-3 text-gray-500" />
+                <MessageSquare className="w-3 h-3" />
                 Translation Guidelines
               </Label>
               <Textarea
@@ -235,7 +235,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 onChange={(e) => onConfigChange("userRules", e.target.value)}
                 className="min-h-[80px] resize-none"
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs">
                 Provide additional context or specific rules for better
                 translation quality
               </p>
@@ -244,8 +244,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
           {/* Glossary Settings */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
-              <BookOpen className="w-4 h-4 text-gray-600" />
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <BookOpen className="w-4 h-4" />
               Glossary Extraction
             </div>
 
@@ -253,10 +253,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label className="text-sm font-medium flex items-center gap-2">
-                    <Lightbulb className="w-3 h-3 text-gray-500" />
+                    <Lightbulb className="w-3 h-3" />
                     Auto-extract Glossary
                   </Label>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs">
                     Automatically extract key terms after translation
                   </p>
                 </div>

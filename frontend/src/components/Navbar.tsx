@@ -120,7 +120,7 @@ function ProjectNameInput({ project }: { readonly project: Project }) {
       <EditableText
         initialText={project.name}
         onSave={handleSave}
-        className="text-md text-gray-500  hover:text-gray-700 transition capitalize hover:outline hover:outline-gray-300"
+        className="text-md text-gray-500 dark:text-neutral-300 hover:text-gray-700 transition capitalize hover:outline hover:outline-gray-300"
         placeholder="Project name"
       />
     </div>
@@ -138,10 +138,10 @@ export function NavMenuList({
       <Button
         onClick={permissionsOpen}
         variant="outline"
-        className="flex items-center gap-1.5 text-sm bg-secondary-50 hover:bg-secondary-100 text-secondary-700 border-secondary-200 rounded-full px-3 py-1 h-auto"
+        className="flex items-center gap-1.5 text-sm bg-secondary-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 hover:bg-secondary-100 text-secondary-700 dark:text-neutral-300 border-secondary-200 rounded-full px-3 py-1 h-auto"
         aria-label="Share document"
       >
-        <BiShare className="text-secondary-600" />
+        <BiShare className="text-secondary-600 dark:text-neutral-300" />
         <span className="capitalize leading-[normal]">{t("common.share")}</span>
       </Button>
     </div>

@@ -18,9 +18,9 @@ export function FormSection({
     <div className={cn("space-y-4", className)}>
       {title && (
         <div className="space-y-1">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+          <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-300">{title}</h3>
           {description && (
-            <p className="text-sm text-gray-600">{description}</p>
+            <p className="text-sm text-neutral-600 dark:text-neutral-500">{description}</p>
           )}
         </div>
       )}

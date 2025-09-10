@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
-import TagOptions from "../TagOptions";
+import TagOptions from "./TagOptions";
 import {
   useTableOfContentSyncStore,
   useTableOfContentOpenStore,
@@ -50,14 +50,14 @@ function SyncOptions({
     if (syncMode === "none") {
       return (
         <div className="flex flex-col">
-          <span className="font-medium text-gray-500">Select sync option</span>
+          <span className="font-medium">Select sync option</span>
         </div>
       );
     } else {
       const selected = getSelectedOption();
       return (
         <div className="flex flex-col">
-          <span className="font-medium text-gray-700">{selected?.label}</span>
+          <span className="font-medium">{selected?.label}</span>
         </div>
       );
     }
@@ -75,12 +75,12 @@ function SyncOptions({
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4 bg-gray-100 rounded-lg">
+    <div className="flex flex-col gap-4 p-4 bg-neutral-100 dark:bg-neutral-700 rounded-lg">
       <div className="relative">
         {/* Custom Select Button */}
         <button
           type="button"
-          className="flex items-center justify-between w-full px-4 py-2 text-left bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500"
+          className="flex items-center justify-between w-full px-4 py-2 text-left bg-white border border-gray-300 rounded-md shadow-sm hover:bg-neutral-50 bg-neutral-100 dark:bg-neutral-700 dark:hover:bg-neutral-600 focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500"
           onClick={() => setIsOpen(!isOpen)}
         >
           {renderButtonContent()}
@@ -92,15 +92,15 @@ function SyncOptions({
         </button>
         {/* Dropdown Menu */}
         {isOpen && (
-          <div className="mt-1 z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg">
+          <div className="mt-1 z-10 w-full bg-neutral-100 dark:bg-neutral-700 border border-gray-300 rounded-md shadow-lg">
             <ul className="py-1 overflow-auto text-base">
               {options.map((option) => (
                 <li
                   key={option.value}
                   className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${
                     syncMode === option.value
-                      ? "bg-secondary-50 text-secondary-700"
-                      : "text-gray-700"
+                      ? "bg-secondary-50 dark:bg-secondary-700 text-secondary-700 dark:text-secondary-300"
+                      : ""
                   }`}
                   onClick={() =>
                     handleSyncModeChange(

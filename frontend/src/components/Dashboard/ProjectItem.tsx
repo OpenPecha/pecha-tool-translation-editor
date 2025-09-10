@@ -45,7 +45,7 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
 }) => {
   if (view === "list") {
     return (
-      <div className="flex items-center py-2 px-1 border-b border-gray-200 hover:bg-secondary-50 transition-all rounded-md">
+      <div className="flex items-center py-2 px-1 border-b border-gray-200 dark:border-neutral-500 hover:bg-secondary-50 hover:dark:bg-neutral-700 transition-all rounded-md">
         <div className="flex-shrink-0 mr-4">
           <img
             alt="icon"
@@ -78,17 +78,17 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
             )}
           </div>
           {subtitle && (
-            <p className="text-xs text-gray-500 truncate leading-[normal]">
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate leading-[normal]">
               {subtitle}
             </p>
           )}
         </div>
 
-        <div className="flex-shrink-0 text-sm text-gray-500 mx-4 w-36 text-right">
+        <div className="flex-shrink-0 text-sm text-neutral-500 dark:text-neutral-400 mx-4 w-36 text-right">
           {owner ?? "—"}
         </div>
 
-        <div className="flex-shrink-0 text-sm text-gray-500 w-36">{date}</div>
+        <div className="flex-shrink-0 text-sm text-neutral-500 dark:text-neutral-400 w-36">{date}</div>
 
         <div className="flex-shrink-0 ml-2">
           <ProjectItemDropdownMenu
@@ -191,7 +191,7 @@ function ProjectItemDropdownMenu({
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <button
-          className="p-3  hover:bg-gray-200 rounded-lg"
+          className="p-3 rounded-lg"
           onClick={handleOpenClick}
         >
           <MoreVertical size={16} className="text-gray-500" />

@@ -31,7 +31,7 @@ const ProjectList = () => {
     <div className="flex flex-1 flex-col h-[100vh] overflow-y-scroll ">
       <div className="pt-10 px-6">
         <div className="max-w-5xl mx-auto">
-          <h1 className="text-lg font-medium mb-6 text-gray-700">
+          <h1 className="text-lg font-medium mb-6">
             {t(`projects.startNewProject`)}
           </h1>
           <DocumentCreateModal />
@@ -85,7 +85,7 @@ const ProjectsGrid = ({
   return (
     <div className="mb-8 ">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-base font-medium text-gray-700">
+        <h2 className="text-base font-medium text-neutral-700 dark:text-neutral-200">
           {t("projects.yourproject")}
         </h2>
         <div className="flex items-center gap-2">
@@ -104,7 +104,7 @@ const ProjectsGrid = ({
             {view === "list" ? (
               <button
                 title="grid view"
-                className="rounded-full cursor-pointer h-8 w-8 flex justify-center items-center hover:bg-gray-200 "
+                className="rounded-full cursor-pointer h-8 w-8 flex justify-center items-center hover:bg-neutral-200 "
                 onClick={() => setView("grid")}
               >
                 <span className="sr-only">Grid view</span>
@@ -120,7 +120,7 @@ const ProjectsGrid = ({
             ) : (
               <button
                 onClick={() => setView("list")}
-                className="rounded-full cursor-pointer h-8 w-8 flex justify-center items-center hover:bg-gray-200 "
+                className="rounded-full cursor-pointer h-8 w-8 flex justify-center items-center hover:bg-neutral-200 "
               >
                 <span className="sr-only">List view</span>
                 <svg
@@ -178,7 +178,7 @@ const PaginationControls = ({
       >
         Previous
       </Button>
-      <span className="text-sm text-gray-700">
+      <span className="text-sm text-neutral-700 dark:text-neutral-200">
         Page {page} of {totalPages}
       </span>
       <Button

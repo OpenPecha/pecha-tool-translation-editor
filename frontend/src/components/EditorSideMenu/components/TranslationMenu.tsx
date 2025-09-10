@@ -50,18 +50,18 @@ const TranslationMenu: React.FC<TranslationMenuProps> = ({
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
-          className="w-40 bg-white border shadow-lg"
+          className="w-40 bg-neutral-50 dark:bg-neutral-800 border shadow-lg"
         >
           <DropdownMenuItem
             onClick={handleEditClick}
-            className="flex items-center gap-2 cursor-pointer hover:bg-gray-50"
+            className="flex items-center gap-2 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800"
           >
             <Edit className="h-4 w-4" />
             <span>Edit</span>
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={(e) => onDelete(e)}
-            className="flex items-center gap-2 cursor-pointer hover:bg-red-50 text-red-600"
+            className="flex items-center gap-2 cursor-pointer text-red-600 dark:text-red-400"
           >
             <Trash2 className="h-4 w-4" />
             <span>Delete</span>

@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTranslate } from "@tolgee/react";
+import { useTheme } from "@/hooks/useTheme";
 import { 
   Eye, Type, Palette, 
   RotateCcw, Minus, Plus 
@@ -19,14 +20,19 @@ const DisplaySettings: React.FC<{}> = ({}) => {
     updateTranslationTypography,
     resetToDefaults 
   } = useDisplaySettings();
-  const backgroundColorOptions = [
-    { value: "#ffffff", label: "White", preview: "#ffffff" },
-    { value: "#fefefe", label: "Off-White", preview: "#fefefe" },
-    { value: "#f8f9fa", label: "Light Gray", preview: "#f8f9fa" },
-    { value: "#f5f5f0", label: "Cream", preview: "#f5f5f0" },
-    { value: "#eaeaea", label: "Soft Gray", preview: "#eaeaea" },
-    { value: "#fdf6e3", label: "Solarized Light", preview: "#fdf6e3" },
-  ];
+  const {theme} = useTheme();
+  const isDark = theme === "dark";
+
+  const backgroundColorOptions = isDark ? [
+    { value: "#40474F", label: "Dark Gray", preview: "#40474F" },
+    { value: "#353D46", label: "Charcoal Gray", preview: "#353D46" },
+    { value: "#586674", label: "Slate Gray", preview: "#586674" }
+  ] : [
+    { value: "#f8fafc", label: "Light Blue Gray", preview: "#f8fafc" },
+    { value: "#fffea6", label: "Pale Yellow", preview: "#fffea6" },
+    { value: "#a2cbf5", label: "Light Sky Blue", preview: "#a2cbf5" },
+  ]
+  
   
 
   const fontFamilyOptions = [
@@ -44,91 +50,99 @@ const DisplaySettings: React.FC<{}> = ({}) => {
   }> = ({ title, typography, onUpdate }) => {
     console.log(typography);
     return (
-    <div className="space-y-4 p-4 border border-gray-200 rounded-lg">
-      <h4 className="text-sm font-medium text-gray-900">{title}</h4>
-      
-      <div className="grid grid-cols-1 gap-4">
-        <div>
-          <Label className="text-sm font-medium mb-2 block">
-            {t("settings.fontFamily", "Font Family")}
-          </Label>
-          <Select
-            value={typography.fontFamily}
-            onValueChange={(value: TypographySettings["fontFamily"]) =>
-              onUpdate("fontFamily", value)
-            }
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {fontFamilyOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div>
-          <Label className="text-sm font-medium mb-2 block">
-            {t("settings.fontSize", "Font Size")} ({typography.fontSize}rem)
-          </Label>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onUpdate("fontSize", Math.max(0.8, typography.fontSize - 0.1))}
-              disabled={typography.fontSize <= 0.8}
+      <div className="space-y-3 p-3 border border-gray-100 rounded">
+        <div className="text-xs uppercase">{title}</div>
+        
+        <div className="space-y-3">
+          {/* Font Family - Compact Select */}
+          <div className="flex items-center justify-start space-x-2 mb-1">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs text-gray-500">Font</span>
+            </div>
+            <Select
+              value={typography.fontFamily}
+              onValueChange={(value: TypographySettings["fontFamily"]) =>
+                onUpdate("fontFamily", value)
+              }
             >
-              <Minus className="w-3 h-3" />
-            </Button>
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {fontFamilyOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value} className="text-xs">
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+  
+          {/* Font Size - Inline Controls */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs text-gray-500">Size</span>
+              <span className="text-xs text-gray-400 font-mono">{typography.fontSize}rem</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
+                onClick={() => onUpdate("fontSize", Math.max(0.8, typography.fontSize - 0.1))}
+                disabled={typography.fontSize <= 0.8}
+              >
+                <Minus className="w-3 h-3" />
+              </Button>
+              <Input
+                type="range"
+                min="0.8"
+                max="2.0"
+                step="0.1"
+                value={typography.fontSize}
+                onChange={(e) => onUpdate("fontSize", parseFloat(e.target.value))}
+                className="flex-1 h-2"
+              />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
+                onClick={() => onUpdate("fontSize", Math.min(2.0, typography.fontSize + 0.1))}
+                disabled={typography.fontSize >= 2.0}
+              >
+                <Plus className="w-3 h-3" />
+              </Button>
+            </div>
+          </div>
+  
+          {/* Line Height - Simple Slider */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs text-gray-500">Line Height</span>
+              <span className="text-xs text-gray-400 font-mono">{typography.lineHeight}</span>
+            </div>
             <Input
               type="range"
-              min="0.8"
+              min="1.2"
               max="2.0"
               step="0.1"
-              value={typography.fontSize}
-              onChange={(e) => onUpdate("fontSize", parseFloat(e.target.value))}
-              className="flex-1"
+              value={typography.lineHeight}
+              onChange={(e) => onUpdate("lineHeight", parseFloat(e.target.value))}
+              className="w-full h-2"
             />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onUpdate("fontSize", Math.min(2.0, typography.fontSize + 0.1))}
-              disabled={typography.fontSize >= 2.0}
-            >
-              <Plus className="w-3 h-3" />
-            </Button>
           </div>
         </div>
-
-        <div>
-          <Label className="text-sm font-medium mb-2 block">
-            {t("settings.lineHeight", "Line Height")} ({typography.lineHeight})
-          </Label>
-          <Input
-            type="range"
-            min="1.2"
-            max="2.0"
-            step="0.1"
-            value={typography.lineHeight}
-            onChange={(e) => onUpdate("lineHeight", parseFloat(e.target.value))}
-            className="w-full"
-          />
-        </div>
       </div>
-    </div>
-  )};
+    );
+  };
 
 
   return (
     <div className="space-y-6">
       {/* Line Numbers & Visual Elements */}
       <div className="space-y-4">
-        <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
-          <Eye className="w-4 h-4 text-gray-600" />
+        <div className="flex items-center gap-2 text-sm font-medium">
+          <Eye className="w-4 h-4" />
           {t("settings.visualElements", "Visual Elements")}
         </div>
         
@@ -148,8 +162,8 @@ const DisplaySettings: React.FC<{}> = ({}) => {
 
       {/* Colors & Themes */}
       <div className="space-y-4">
-        <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
-          <Palette className="w-4 h-4 text-gray-600" />
+        <div className="flex items-center gap-2 text-sm font-medium">
+          <Palette className="w-4 h-4" />
           {t("settings.colorsThemes", "Colors & Themes")}
         </div>
 
@@ -165,7 +179,7 @@ const DisplaySettings: React.FC<{}> = ({}) => {
                   onClick={() => updateSetting("editorBackgroundColor", option.value)}
                   className={`p-2 border rounded-md text-xs hover:border-gray-400 transition-colors ${
                     settings.editorBackgroundColor === option.value
-                      ? "border-blue-500 bg-blue-50"
+                      ? "border-blue-500 bg-neutral-50 dark:bg-neutral-800"
                       : "border-gray-200"
                   }`}
                 >
@@ -195,8 +209,8 @@ const DisplaySettings: React.FC<{}> = ({}) => {
 
       {/* Typography */}
       <div className="space-y-4">
-        <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
-          <Type className="w-4 h-4 text-gray-600" />
+        <div className="flex items-center gap-2 text-sm font-medium">
+          <Type className="w-4 h-4" />
           {t("settings.typography", "Typography")}
         </div>
 

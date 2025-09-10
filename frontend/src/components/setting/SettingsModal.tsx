@@ -59,7 +59,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <SettingsIcon size={20} />
@@ -68,8 +68,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         </DialogHeader>
         
         <div className="mt-4">
-          <Tabs defaultValue="display" className="w-full">
+          <Tabs defaultValue="sync" className="w-full">
             <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="sync" className="flex items-center gap-2">
+                <Monitor size={16} />
+                <span>{t("settings.sync", "Sync")}</span>
+              </TabsTrigger>
               <TabsTrigger value="display" className="flex items-center gap-2">
                 <Monitor size={16} />
                 <span>{t("settings.display", "Display")}</span>
@@ -86,22 +90,31 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             
 
             {/* Display Settings Tab */}
+            <TabsContent value="sync" className="mt-4">
+              <div className="space-y-4"> 
+              <div>
+                  <h3 className="text-lg font-semibold mb-2">
+                    {t("settings.sync", "Sync Settings")}
+                  </h3>
+                  <p className="text-sm mb-4">
+                    {t("settings.syncDescription", "Customize the synchronization behavior of the editor.")}
+                  </p>
+                </div>
+              <SyncOptions
+                syncMode={syncMode}
+                setSyncMode={setSyncMode}
+                syncType={syncType}
+                setSyncType={setSyncType}
+              />
+              </div>
+            </TabsContent>
             <TabsContent value="display" className="mt-4">
               <div className="space-y-4">
                 <div>
                   <h3 className="text-lg font-semibold mb-2">
                     {t("settings.display", "Display Settings")}
                   </h3>
-                  <p className="text-sm text-gray-600 mb-4">
-                    {t("settings.displayDescription", "Customize the appearance and behavior of the editor.")}
-                  </p>
                 </div>
-                <SyncOptions
-                    syncMode={syncMode}
-                    setSyncMode={setSyncMode}
-                    syncType={syncType}
-                    setSyncType={setSyncType}
-                  />
                 <DisplaySettings/>
               </div>
             </TabsContent>

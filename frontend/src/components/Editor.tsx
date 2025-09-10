@@ -327,7 +327,7 @@ const Editor = ({
           <div className="flex flex-col flex-1 relative overflow-hidden">
             <div
               ref={editorRef}
-              className={`editor-content flex-1 pb-1 w-full overflow-y-auto`}
+              className={`editor-content flex-1 pb-1 w-full overflow-y-auto bg-editor-bg`}
               style={{
                 fontFamily: isTibetan ? "Monlam" : "google-sans-regular",
                 fontSize: isTibetan?"1rem":"1.3rem",
@@ -345,7 +345,7 @@ const Editor = ({
             
           </div>
           {createPortal(
-            <div className="flex gap-1 items-center text-sm text-gray-500 hover:text-gray-900">
+            <div className="flex gap-1 items-center text-sm text-gray-500 dark:text-neutral-300 hover:text-gray-900">
               <div id={`${counterId}`} className="leading-[normal]">
                 0
               </div>

@@ -10,7 +10,7 @@ class CollapsibleFootnoteSection extends FootnoteSection {
     if (!domNode.querySelector(".footnote-toggle")) {
       
       const header = document.createElement("div");
-      header.className = "footnote-toggle";
+      header.className = "footnote-toggle bg-neutral-100 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-100 hover:bg-neutral-200 dark:hover:bg-neutral-600";
       header.innerText = "Footnotes";
       header.style.cursor = "pointer";
       header.setAttribute("contenteditable", "false"); // Make header not editable

@@ -53,18 +53,18 @@ const HeaderDropdown = ({
         tabIndex={0}
       >
         {value === "" ? "Normal" : `H${value}`}
-        <span className="text-gray-500" aria-hidden="true">
+        <span className="text-neutral-500 dark:text-neutral-300" aria-hidden="true">
           ▾
         </span>
       </div>
       {open && (
         <ul
-          className="absolute mt-1 border bg-white shadow z-50 w-full max-h-60 overflow-y-auto rounded"
+          className="absolute mt-1 border bg-neutral-50 dark:bg-neutral-800 shadow z-50 w-full max-h-60 overflow-y-auto rounded"
           role="listbox"
         >
           <li
-            className={`px-3 py-1 hover:bg-gray-100 cursor-pointer ${
-              value === "" ? "bg-gray-100" : ""
+            className={`px-3 py-1 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer ${
+              value === "" ? "bg-neutral-100 dark:bg-neutral-800" : ""
             }`}
             onClick={() => handleSelect("")}
             role="option"
@@ -76,8 +76,8 @@ const HeaderDropdown = ({
           {levels.map((level) => (
             <li
               key={level}
-              className={`px-3 py-1 hover:bg-gray-100 cursor-pointer ${
-                value === level ? "bg-gray-100" : ""
+              className={`px-3 py-1 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer ${
+                value === level ? "bg-neutral-100 dark:bg-neutral-800" : ""
               }`}
               onClick={() => handleSelect(level)}
               role="option"

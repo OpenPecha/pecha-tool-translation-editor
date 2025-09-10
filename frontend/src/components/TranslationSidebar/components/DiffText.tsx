@@ -11,7 +11,7 @@ const DiffText: React.FC<DiffTextProps> = ({ oldText, newText, truncated = false
   const differences = diffWords(oldText, newText);
   
   return (
-    <div className="whitespace-pre-wrap font-sans">
+    <div className="whitespace-pre-wrap font-sans bg-neutral-50 dark:bg-neutral-800">
       {differences.map((part, index) => {
         if (part.removed) {
           return (

@@ -98,7 +98,7 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
       return (
         <>
           <Trash2 className="h-3 w-3 mr-1 animate-pulse text-red-500" />
-          <span className="text-red-500">Deleting...</span>
+          <span className="text-red-500 dark:text-red-400">Deleting...</span>
         </>
       );
     }
@@ -122,8 +122,8 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
           }}
           className={`flex flex-1 items-center gap-2 p-2 rounded-md w-full text-left flex-grow ${
             disabled
-              ? "opacity-70 cursor-not-allowed bg-gray-50"
-              : "cursor-pointer hover:bg-gray-100"
+              ? "opacity-70 cursor-not-allowed bg-neutral-100 dark:bg-neutral-800"
+              : "cursor-pointer hover:bg-neutral-200 dark:hover:bg-neutral-700"
           }`}
           aria-label={`Open translation ${translation.id}`}
           disabled={disabled}

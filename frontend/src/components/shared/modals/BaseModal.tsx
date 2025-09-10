@@ -56,21 +56,21 @@ export function BaseModal({
           >
             <div
               className={cn(
-                "bg-white rounded-xl shadow-2xl w-full border border-gray-200 max-h-[90vh] overflow-hidden",
+                "bg-neutral-50 dark:bg-neutral-800 rounded-xl shadow-2xl w-full border border-gray-200 max-h-[90vh] overflow-hidden",
                 sizeClasses[size],
                 className
               )}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gray-50/50">
-                <h2 className="text-xl font-semibold text-gray-800">{title}</h2>
+              <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-neutral-50 dark:bg-neutral-800">
+                <h2 className="text-xl font-semibold text-neutral-800 dark:text-neutral-200">{title}</h2>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleClose}
-                  className="rounded-full h-8 w-8 p-0 hover:bg-gray-200 transition-colors"
+                  className="rounded-full h-8 w-8 p-0 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
                 >
-                  <X className="h-4 w-4 text-gray-500" />
+                  <X className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
                 </Button>
               </div>
               <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">

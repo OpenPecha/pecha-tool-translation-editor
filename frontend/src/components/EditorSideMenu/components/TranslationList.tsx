@@ -11,7 +11,7 @@ const TranslationList: React.FC<TranslationListProps> = ({
 }) => {
   if (translations.length === 0) {
     return (
-      <p className="text-sm text-gray-500 italic">No translations available</p>
+      <p className="text-sm text-neutral-500 dark:text-neutral-400 italic">No translations available</p>
     );
   }
 

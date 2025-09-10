@@ -216,7 +216,7 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
               <HiArrowLeft className="w-5 h-5" />
             </button>
             <BookOpen className="mr-2 text-secondary-600" size={20} />
-            <h2 className="text-lg font-semibold text-gray-700">
+            <h2 className="text-lg font-semibold">
               {t("documents.toc")}
             </h2>
           </div>
@@ -401,7 +401,7 @@ const Toc = React.memo(function Toc({
               isNested && `ml-${(heading.level - 1) * 3}`,
               isActive
                 ? "bg-secondary-50 text-secondary-700 border-r-2 border-secondary-500 pr-2"
-                : "hover:bg-gray-100"
+                : "hover:bg-neutral-100 dark:hover:bg-neutral-700"
             )}
             style={{
               fontSize: 10,

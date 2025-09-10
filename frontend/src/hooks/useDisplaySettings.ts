@@ -84,7 +84,7 @@ export function useDisplaySettings() {
     const root = document.documentElement;
     
     // Set CSS custom properties for global access
-    root.style.setProperty('--editor-background-color', settings.editorBackgroundColor);
+    root.style.setProperty('--color-editor-background', settings.editorBackgroundColor);
     root.style.setProperty('--selection-highlight-color', settings.selectionHighlightColor);
     
     // Root Editor Typography

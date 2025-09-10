@@ -204,7 +204,7 @@ const ApiCredentials: React.FC = () => {
           <Button
             onClick={() => setIsAdding(true)}
             size="sm"
-            className="flex items-center gap-1"
+            className="flex items-center gap-1 bg-neutral-50 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-300"
           >
             <Plus size={16} />
             Add
@@ -302,7 +302,7 @@ const ApiCredentials: React.FC = () => {
       )}
 
       {!isAdding && !isEditing && credentials && credentials.length === 0 && (
-        <div className="text-center p-4 border rounded-md bg-gray-50">
+        <div className="text-center p-4 border rounded-md bg-neutral-100 dark:bg-neutral-700">
           <Key className="mx-auto h-8 w-8 text-gray-500 mb-2" />
           <p className="text-gray-500">No API credentials added yet</p>
           <Button
