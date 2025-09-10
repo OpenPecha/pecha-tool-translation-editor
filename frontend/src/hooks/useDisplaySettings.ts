@@ -23,7 +23,7 @@ export interface DisplaySettings {
 
 export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = {
   showLineNumbers: true,
-  editorBackgroundColor: "#ffffff",
+  editorBackgroundColor: "rgb(248, 250, 252)",
   selectionHighlightColor: "rgba(66, 133, 244, 0.4)",
   rootEditorTypography: {
     fontFamily: "monlam",
@@ -76,7 +76,15 @@ export function useDisplaySettings() {
   };
 
   const resetToDefaults = () => {
-    setSettings(DEFAULT_DISPLAY_SETTINGS);
+    const darkColorBackground= "rgb(64, 71, 79)"
+    const root = document.documentElement;
+    const isDark = root.classList.contains('dark');
+    if(isDark){
+      DEFAULT_DISPLAY_SETTINGS.editorBackgroundColor = darkColorBackground;
+      setSettings(DEFAULT_DISPLAY_SETTINGS);
+    }else{
+      setSettings(DEFAULT_DISPLAY_SETTINGS);
+    }
   };
 
   // Apply CSS custom properties for dynamic styling
@@ -122,7 +130,7 @@ export function useDisplaySettings() {
     resetToDefaults,
     // Convenience getters
     showLineNumbers: settings.showLineNumbers,
-    editorBackgroundColor: settings.editorBackgroundColor,
+    editorBackgroundColorLight: settings.editorBackgroundColorLight,
     selectionHighlightColor: settings.selectionHighlightColor,
     rootEditorTypography: settings.rootEditorTypography,
     translationEditorTypography: settings.translationEditorTypography,

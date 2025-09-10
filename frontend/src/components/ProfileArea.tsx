@@ -53,7 +53,7 @@ function ProfileArea() {
       {/* Profile Button */}
       <button
         onClick={toggleDropdown}
-        className="flex font-google-sans items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:ring-offset-2"
+        className="flex font-google-sans items-center space-x-2 px-3 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:ring-offset-2"
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
@@ -63,15 +63,15 @@ function ProfileArea() {
           size={36}
         />
         <div className="hidden sm:flex flex-col items-start">
-          <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+          <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
             {currentUser?.name}
           </span>
-          <span className="text-xs text-gray-500 dark:text-gray-400">
+          <span className="text-xs text-neutral-500 dark:text-neutral-400">
             {currentUser?.email}
           </span>
         </div>
         <MdKeyboardArrowDown
-          className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${
+          className={`w-5 h-5 text-neutral-500 transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
           }`}
         />
@@ -82,7 +82,7 @@ function ProfileArea() {
         style={{ display: isOpen ? "block" : "none" }}
         className={` ${
           currentLanguage === "bo" && "font-monlam-2 !text-xs"
-        } absolute right-0 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-50`}
+        } absolute right-0 w-80 bg-white dark:bg-neutral-800 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 py-2 z-50`}
       >
         {/* Settings and Logout */}
         <div className="px-4 pt-2 flex flex-col gap-3">
@@ -90,7 +90,7 @@ function ProfileArea() {
           <ThemeToggle />
           <button
             onClick={onLogout}
-            className="w-max px-2 py-1 flex items-center self-end shadow-md  text-sm gap-2 bg-secondary-100 hover:bg-secondary-200 dark:bg-secondary-500 dark:text-secondary-500 dark:hover:bg-secondary-600 cursor-pointer dark:hover:bg-red-900/20 rounded-lg transition-colors duration-150"
+            className="w-max px-2 py-1 flex items-center self-end shadow-md  text-sm gap-2 bg-secondary-100 hover:bg-secondary-200 dark:bg-secondary-600 dark:text-secondary-500 dark:hover:bg-secondary-600 cursor-pointer  rounded-lg transition-colors duration-150"
           >
             <MdLogout className="w-4 h-4 text-neutral-500 dark:text-neutral-300"/> <span className="text-sm text-neutral-500 dark:text-neutral-300">{t("auth.logout")}</span>
           </button>

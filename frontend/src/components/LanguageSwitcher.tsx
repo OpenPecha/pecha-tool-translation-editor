@@ -35,7 +35,7 @@ const LanguageSwitcher = () => {
         onValueChange={setLang}
         disabled={isLoading}
       >
-        <SelectTrigger className="flex-1 bg-white border-2 border-gray-200 rounded-lg shadow-sm hover:border-gray-300 focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500 transition-all duration-200 dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:hover:border-gray-500 disabled:opacity-50 disabled:cursor-not-allowed">
+        <SelectTrigger className="flex-1 bg-white border-2 border-neutral-200 rounded-lg shadow-sm hover:border-neutral-300 focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500 transition-all duration-200 dark:bg-neutral-800 dark:border-neutral-600 dark:text-white dark:hover:border-neutral-500 disabled:opacity-50 disabled:cursor-not-allowed">
           <div className="flex items-center space-x-2 gap-2">
             {isLoading ? (
               <div className="flex items-center space-x-2">
@@ -50,17 +50,17 @@ const LanguageSwitcher = () => {
             )}
           </div>
         </SelectTrigger>
-        <SelectContent className="bg-white border border-gray-200 rounded-lg shadow-xl dark:bg-gray-800 dark:border-gray-600">
+        <SelectContent className="bg-white border border-neutral-200 rounded-lg shadow-xl dark:bg-neutral-800 dark:border-neutral-600">
           {i18n_languages.map((language) => (
             <SelectItem
               key={language.code}
               value={language.code}
-              className="cursor-pointer hover:bg-secondary-50 dark:hover:bg-gray-700 focus:bg-secondary-50 dark:focus:bg-gray-700 transition-colors duration-150"
+              className="cursor-pointer hover:bg-secondary-50 dark:hover:bg-neutral-700 focus:bg-secondary-50 dark:focus:bg-neutral-700 transition-colors duration-150"
             >
               <div className="flex items-center space-x-3 py-1">
                 <span className="text-lg">{language?.flag}</span>
                 <div className="flex flex-col">
-                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
                     {language.name}
                   </span>
                 </div>

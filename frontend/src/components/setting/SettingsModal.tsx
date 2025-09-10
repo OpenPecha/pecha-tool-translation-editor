@@ -89,15 +89,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             </TabsList>
             
 
-            {/* Display Settings Tab */}
             <TabsContent value="sync" className="mt-4">
-              <div className="space-y-4"> 
+              <div className="gap-2 space-y-4 justify-between items-center"> 
               <div>
-                  <h3 className="text-lg font-semibold mb-2">
-                    {t("settings.sync", "Sync Settings")}
-                  </h3>
-                  <p className="text-sm mb-4">
-                    {t("settings.syncDescription", "Customize the synchronization behavior of the editor.")}
+          
+                  <p className="text-sm ">
+                    {t("settings.syncDescription", "synchronization behavior of the editor.")}
                   </p>
                 </div>
               <SyncOptions

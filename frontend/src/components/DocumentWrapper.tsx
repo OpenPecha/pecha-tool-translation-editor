@@ -156,30 +156,30 @@ function Loader({ show }: { show: boolean }) {
   if (!show) return null;
 
   return (
-    <div className="absolute inset-0 flex bg-white/80 z-50">
+    <div className="absolute inset-0 flex bg-white/80 dark:bg-neutral-900/80 z-50">
       {/* Main content skeleton */}
       <div className="flex-1 p-6 space-y-4">
-        <div className="h-10 bg-gray-200 rounded-md animate-pulse w-3/4 mb-8"></div>
-        <div className="h-6 bg-gray-200 rounded-md animate-pulse w-full"></div>
-        <div className="h-6 bg-gray-200 rounded-md animate-pulse w-5/6"></div>
-        <div className="h-6 bg-gray-200 rounded-md animate-pulse w-4/6"></div>
-        <div className="h-6 bg-gray-200 rounded-md animate-pulse w-5/6"></div>
-        <div className="h-6 bg-gray-200 rounded-md animate-pulse w-3/6"></div>
-        <div className="h-64 bg-gray-200 rounded-md animate-pulse w-full mt-6"></div>
-        <div className="h-24 bg-gray-200 rounded-md animate-pulse w-full mt-4"></div>
+        <div className="h-10 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-3/4 mb-8"></div>
+        <div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-full"></div>
+        <div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-5/6"></div>
+        <div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-4/6"></div>
+        <div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-5/6"></div>
+        <div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-3/6"></div>
+        <div className="h-64 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-full mt-6"></div>
+        <div className="h-24 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-full mt-4"></div>
       </div>
 
       {/* Sidebar skeleton */}
-      <div className="w-20 h-full border-r border-gray-200 p-4 space-y-4">
-        <div className="h-8 bg-gray-200 rounded-md animate-pulse w-3/4"></div>
-        <div className="h-4 bg-gray-200 rounded-md animate-pulse w-5/6 mt-6"></div>
-        <div className="h-4 bg-gray-200 rounded-md animate-pulse w-4/6 mt-2"></div>
-        <div className="h-4 bg-gray-200 rounded-md animate-pulse w-5/6 mt-2"></div>
-        <div className="h-4 bg-gray-200 rounded-md animate-pulse w-3/6 mt-2"></div>
+      <div className="w-20 h-full border-r border-neutral-200 dark:border-neutral-700 p-4 space-y-4">
+        <div className="h-8 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-3/4"></div>
+        <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-5/6 mt-6"></div>
+        <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-4/6 mt-2"></div>
+        <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-5/6 mt-2"></div>
+        <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-3/6 mt-2"></div>
         <div className="mt-8 space-y-3">
-          <div className="h-10 bg-gray-200 rounded-md animate-pulse w-full"></div>
-          <div className="h-10 bg-gray-200 rounded-md animate-pulse w-full"></div>
-          <div className="h-10 bg-gray-200 rounded-md animate-pulse w-full"></div>
+          <div className="h-10 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-full"></div>
+          <div className="h-10 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-full"></div>
+          <div className="h-10 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-full"></div>
         </div>
       </div>
     </div>

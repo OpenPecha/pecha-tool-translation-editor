@@ -1,22 +1,23 @@
-import { useState } from "react";
-import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import TagOptions from "./TagOptions";
 import {
   useTableOfContentSyncStore,
   useTableOfContentOpenStore,
 } from "@/stores/tableOfContentStore";
+
+type SyncMode = "scroll" | "click" | "none" | "table";
+type SyncType = "heading" | "lineNumber";
+
 function SyncOptions({
   syncMode,
   setSyncMode,
   syncType,
   setSyncType,
 }: {
-  readonly syncMode: "scroll" | "click" | "none" | "table";
-  readonly setSyncMode: (mode: "scroll" | "click" | "none" | "table") => void;
-  readonly syncType: "heading" | "lineNumber";
-  readonly setSyncType: (type: "heading" | "lineNumber") => void;
+  readonly syncMode: SyncMode;
+  readonly setSyncMode: (mode: SyncMode) => void;
+  readonly syncType: SyncType;
+  readonly setSyncType: (type: SyncType) => void;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
   const { setSynced } = useTableOfContentSyncStore();
   const { openAll } = useTableOfContentOpenStore();
 
@@ -42,90 +43,48 @@ function SyncOptions({
     }
   ];
 
-  const getSelectedOption = () => {
-    return options.find((option) => option.value === syncMode);
-  };
-
-  const renderButtonContent = () => {
-    if (syncMode === "none") {
-      return (
-        <div className="flex flex-col">
-          <span className="font-medium">Select sync option</span>
-        </div>
-      );
-    } else {
-      const selected = getSelectedOption();
-      return (
-        <div className="flex flex-col">
-          <span className="font-medium">{selected?.label}</span>
-        </div>
-      );
-    }
-  };
-
-  const handleSyncModeChange = (
-    mode: "scroll" | "click" | "none" | "table"
-  ) => {
+  const handleSyncModeChange = (mode: SyncMode) => {
     setSyncMode(mode);
     setSynced(mode === "table");
     if (mode === "table") {
       openAll();
     }
-    setIsOpen(false);
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4 bg-neutral-100 dark:bg-neutral-700 rounded-lg">
-      <div className="relative">
-        {/* Custom Select Button */}
-        <button
-          type="button"
-          className="flex items-center justify-between w-full px-4 py-2 text-left bg-white border border-gray-300 rounded-md shadow-sm hover:bg-neutral-50 bg-neutral-100 dark:bg-neutral-700 dark:hover:bg-neutral-600 focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          {renderButtonContent()}
-          {isOpen ? (
-            <FaChevronUp className="w-4 h-4 text-gray-500" />
-          ) : (
-            <FaChevronDown className="w-4 h-4 text-gray-500" />
-          )}
-        </button>
-        {/* Dropdown Menu */}
-        {isOpen && (
-          <div className="mt-1 z-10 w-full bg-neutral-100 dark:bg-neutral-700 border border-gray-300 rounded-md shadow-lg">
-            <ul className="py-1 overflow-auto text-base">
-              {options.map((option) => (
-                <li
-                  key={option.value}
-                  className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${
-                    syncMode === option.value
-                      ? "bg-secondary-50 dark:bg-secondary-700 text-secondary-700 dark:text-secondary-300"
-                      : ""
-                  }`}
-                  onClick={() =>
-                    handleSyncModeChange(
-                      option.value as "scroll" | "click" | "none" | "table"
-                    )
-                  }
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">{option.label}</p>
-                    </div>
-                    {syncMode === option.value && (
-                      <div className="w-2 h-2 bg-secondary-600 rounded-full"></div>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+    <div className="flex  gap-4 rounded-lg">
+      <div className="flex w-full items-center justify-between ">
+        {options.map((option) => (
+          <label
+            key={option.value}
+            htmlFor={`sync-${option.value}`}
+            aria-label={`${option.label}: ${option.description}`}
+            className="flex items-center space-x-3 cursor-pointer rounded-md  hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+          >
+            <input
+              type="radio"
+              id={`sync-${option.value}`}
+              name="syncMode"
+              value={option.value}
+              checked={syncMode === option.value}
+              onChange={() =>
+                handleSyncModeChange(option.value as SyncMode)
+              }
+              className="h-4 w-4 text-secondary-600 focus:ring-secondary-500 border-gray-300"
+            />
+            <div className="flex-1">
+              <div className="font-medium text-gray-900 dark:text-gray-100">
+                {option.label}
+              </div>
+              {/* <div className="text-sm text-gray-500 dark:text-gray-400">
+                {option.description}
+              </div> */}
+            </div>
+          </label>
+        ))}
       </div>
 
-      {syncMode !== "none" && syncMode !== "table" && !isOpen && (
-        <TagOptions syncType={syncType} setSyncType={setSyncType} />
-      )}
+    
     </div>
   );
 }

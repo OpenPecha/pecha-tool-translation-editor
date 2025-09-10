@@ -21,7 +21,12 @@ const DisplaySettings: React.FC<{}> = ({}) => {
     resetToDefaults 
   } = useDisplaySettings();
   const {theme} = useTheme();
-  const isDark = theme === "dark";
+  function isHtmlTagDark() {
+    if (typeof document === "undefined") return false;
+    const html = document.documentElement;
+    return html.classList.contains("dark");
+  }
+  const isDark = theme === "dark" || isHtmlTagDark();
 
   const backgroundColorOptions = isDark ? [
     { value: "#40474F", label: "Dark Gray", preview: "#40474F" },
@@ -50,14 +55,14 @@ const DisplaySettings: React.FC<{}> = ({}) => {
   }> = ({ title, typography, onUpdate }) => {
     console.log(typography);
     return (
-      <div className="space-y-3 p-3 border border-gray-100 rounded">
+      <div className="space-y-3 p-3  border border-neutral-100 dark:border-neutral-700 rounded-lg">
         <div className="text-xs uppercase">{title}</div>
         
         <div className="space-y-3">
           {/* Font Family - Compact Select */}
           <div className="flex items-center justify-start space-x-2 mb-1">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-gray-500">Font</span>
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">Font</span>
             </div>
             <Select
               value={typography.fontFamily}
@@ -81,8 +86,8 @@ const DisplaySettings: React.FC<{}> = ({}) => {
           {/* Font Size - Inline Controls */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-gray-500">Size</span>
-              <span className="text-xs text-gray-400 font-mono">{typography.fontSize}rem</span>
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">Size</span>
+              <span className="text-xs text-neutral-400 dark:text-neutral-500 font-mono">{typography.fontSize}rem</span>
             </div>
             <div className="flex items-center space-x-2">
               <Button
@@ -118,8 +123,8 @@ const DisplaySettings: React.FC<{}> = ({}) => {
           {/* Line Height - Simple Slider */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-gray-500">Line Height</span>
-              <span className="text-xs text-gray-400 font-mono">{typography.lineHeight}</span>
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">Line Height</span>
+              <span className="text-xs text-neutral-400 dark:text-neutral-500 font-mono">{typography.lineHeight}</span>
             </div>
             <Input
               type="range"
