@@ -55,7 +55,7 @@ const VersionControls = ({
     setShowVersionDiff(true);
   };
   return (
-    <div className="p-4 border rounded bg-white shadow-md w-72">
+    <div className="p-4 border rounded bg-neutral-50 dark:bg-neutral-800 shadow-md w-72">
       {/* Manual Versioning Section */}
       <div className="mb-4">
         <form onSubmit={handleCreateSnapshot} className="flex gap-2">

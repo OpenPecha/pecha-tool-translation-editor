@@ -85,22 +85,22 @@ const GlossaryDisplay: React.FC<GlossaryDisplayProps> = ({
   return (
     <div
       ref={glossaryRef}
-      className="bg-purple-50 border border-purple-200 rounded-lg px-2 py-1 space-y-3"
+      className="bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-300 rounded-lg px-2 py-1 space-y-3"
     >
       {/* Header with collapse toggle */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {isExtractingGlossary ? (
-            <Loader2 className="w-4 h-4 text-purple-600 animate-spin" />
+            <Loader2 className="w-4 h-4 text-primary-600 dark:text-primary-200 animate-spin" />
           ) : (
-            <BookOpen className="w-4 h-4 text-purple-600" />
+            <BookOpen className="w-4 h-4 text-primary-600 dark:text-primary-200" />
           )}
-          <span className="text-sm font-medium text-purple-800">
+          <span className="text-sm font-medium text-neutral-800 dark:text-neutral-100">
             {isExtractingGlossary
               ? "Extracting Glossary..."
               : "Extracted Glossary"}
           </span>
-          <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
+          <span className="text-xs bg-neutral-100 dark:bg-neutral-600 text-neutral-800 dark:text-neutral-100 px-2 py-1 rounded-full">
             {glossaryTerms.length} terms
           </span>
         </div>
@@ -110,7 +110,7 @@ const GlossaryDisplay: React.FC<GlossaryDisplayProps> = ({
               onClick={onRetryGlossaryExtraction}
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0 text-purple-600 hover:bg-purple-100 transition-colors"
+              className="h-6 w-6 p-0 text-primary-600 dark:text-primary-200 hover:bg-primary-100 transition-colors"
               title="Re-extract glossary"
             >
               <RefreshCw className="w-3 h-3" />
@@ -121,10 +121,10 @@ const GlossaryDisplay: React.FC<GlossaryDisplayProps> = ({
               onClick={onCopyGlossaryTerms}
               variant="ghost"
               size="sm"
-              className={`h-6 w-6 p-0 hover:bg-purple-100 transition-colors ${
+              className={`h-6 w-6 p-0 hover:bg-primary-100 transition-colors ${
                 copiedItems.has("glossary-copy")
                   ? "bg-green-100 text-green-600"
-                  : "text-purple-600"
+                  : "text-primary-600 dark:text-primary-200"
               }`}
               title={
                 copiedItems.has("glossary-copy")
@@ -144,7 +144,7 @@ const GlossaryDisplay: React.FC<GlossaryDisplayProps> = ({
               onClick={() => setIsCollapsed(!isCollapsed)}
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0 text-purple-600 hover:bg-purple-100"
+              className="h-6 w-6 p-0 text-primary-600 dark:text-primary-200 hover:bg-primary-100"
               title={
                 isCollapsed ? "Show glossary terms" : "Hide glossary terms"
               }
@@ -165,24 +165,24 @@ const GlossaryDisplay: React.FC<GlossaryDisplayProps> = ({
           {glossaryTerms.map((term, index) => (
             <div
               key={`${term.source_term}-${index}`}
-              className="bg-white border border-purple-200 rounded-md p-2 space-y-1"
+              className="bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-300 rounded-md p-2 space-y-1"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-gray-800">
+                  <div className="text-sm font-medium text-neutral-800 dark:text-neutral-100">
                     {term.source_term}
                   </div>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-neutral-800 dark:text-neutral-100">
                     {term.translated_term}
                   </div>
                   {term.context && (
-                    <div className="text-xs text-gray-500 italic mt-1">
+                    <div className="text-xs text-neutral-800 dark:text-neutral-100 italic mt-1">
                       {term.context}
                     </div>
                   )}
                 </div>
                 {term.frequency && term.frequency > 1 && (
-                  <div className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
+                  <div className="text-xs bg-neutral-100 dark:bg-neutral-600 text-neutral-800 dark:text-neutral-100 px-2 py-1 rounded-full">
                     ×{term.frequency}
                   </div>
                 )}

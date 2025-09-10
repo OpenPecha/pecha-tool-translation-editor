@@ -9,6 +9,13 @@
     width: 4ch;
     margin-right:5px;
   }
+  .hide-line-numbers .line-numbers {
+    display: none !important;
+  }
+  
+  .show-line-numbers .line-numbers {
+    display: block;
+  }
   .line-number {
     position: absolute;
     cursor: pointer;
@@ -34,17 +41,31 @@
   }
   .ql-editor {
     padding:0 !important;
-    padding-inline: 16px !important;
-    background-color: white;
+    /* background-color: var(--editor-background-color, white); */
     border: 0 !important;
-    line-height: normal;
+    font-size: var(--root-editor-font-size, 1rem);
+    font-family: var(--root-editor-font-family, 'google-sans');
+    line-height: var(--root-editor-line-height, 1.5);
     /* padding-bottom: 100px !important; */
     counter-reset: footnote-counter;
     height: 100%;
     overflow-y: auto;
+    padding: 10px !important;
+  }
+  .hide-line-numbers .ql-editor {
+    padding-left: 5px !important;
+  }
+  /* Translation Editor Specific Styles */
+  .translation-editor-container .ql-editor {
+    font-size: var(--translation-editor-font-size, 1rem);
+    font-family: var(--translation-editor-font-family, 'google-sans');
+    line-height: var(--translation-editor-line-height, 1.5);
+  }
+  .hide-line-numbers .translation-editor-container .ql-editor {
+    padding-left: 5px !important;
   }
   .ql-editor::selection{
-    background-color: rgba(66, 133, 244, 0.4)
+    background-color: var(--selection-highlight-color, rgba(66, 133, 244, 0.4));
   }
   .ql-formats button{
     padding: 10px;
@@ -59,7 +80,7 @@
   }
 .ql-formats button:hover{
   border-radius: 4px;
-  background-color: rgb(221, 221, 221);
+  background-color: var(--color-neutral-700);
 }
   .ql-toolbar.ql-snow{
     border: none !important;
@@ -67,7 +88,6 @@
     padding-block: 5px !important;
     height: auto !important;
     transition: all 0.3s ease !important;
-    background-color: rgb(240, 243, 248) !important;
     /* Apply curved borders */
     border-top-left-radius: 75px;
     border-bottom-left-radius: 75px;
@@ -87,6 +107,9 @@
     width: fit-content;
   }
 
+  .ql-snow .ql-picker-label {
+    color: var(--text-color);
+  }
 .ql-editor section {
     background-color: rgba(200, 200, 200, 0.1);
     border-left: 3px solid #4a90e2;
@@ -122,12 +145,29 @@
     font-size: 1.4rem !important;
     display: block;
   }
-  
 
 
-
-   .ql-snow.ql-toolbar button:hover, .ql-snow .ql-toolbar button:hover, .ql-snow.ql-toolbar button:focus, .ql-snow .ql-toolbar button:focus, .ql-snow.ql-toolbar button.ql-active, .ql-snow .ql-toolbar button.ql-active, .ql-snow.ql-toolbar .ql-picker-label:hover, .ql-snow .ql-toolbar .ql-picker-label:hover, .ql-snow.ql-toolbar .ql-picker-label.ql-active, .ql-snow .ql-toolbar .ql-picker-label.ql-active, .ql-snow.ql-toolbar .ql-picker-item:hover, .ql-snow .ql-toolbar .ql-picker-item:hover, .ql-snow.ql-toolbar .ql-picker-item.ql-selected, .ql-snow .ql-toolbar .ql-picker-item.ql-selected {
-    color: black !important;
+   .ql-snow.ql-toolbar button:hover, 
+   .ql-snow .ql-toolbar button:hover, 
+   .ql-snow.ql-toolbar button:focus, 
+   .ql-snow .ql-toolbar button:focus, 
+   .ql-snow.ql-toolbar button.ql-active, 
+   .ql-snow .ql-toolbar button.ql-active, 
+   .ql-snow.ql-toolbar .ql-picker-label:hover, 
+   .ql-snow .ql-toolbar .ql-picker-label:hover, 
+   .ql-snow.ql-toolbar .ql-picker-label.ql-active, 
+   .ql-snow .ql-toolbar .ql-picker-label.ql-active, 
+   .ql-snow.ql-toolbar .ql-picker-item:hover, 
+   .ql-snow .ql-toolbar .ql-picker-item:hover, 
+   .ql-snow.ql-toolbar .ql-picker-item.ql-selected, 
+   .ql-snow .ql-toolbar .ql-picker-item.ql-selected {
+    color: var(--text-color) !important;
+}
+.ql-picker-options{
+  background-color: var(--background) !important;
+}
+.ql-picker-options .ql-picker-item{
+  color: var(--text-color) !important;
 }
 #create-button:hover {
   color: #fff !important;
@@ -264,12 +304,6 @@
   }
 }
 
-
-
-
-
-
-
 /* Fixed footnote positioning for translation editor with overflow-auto */
 .translation-editor-container .footnote-view-container {
   position: absolute;
@@ -317,7 +351,7 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: rgba(255, 255, 255, 0.95);
+    background-color: var(--muted);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     max-height: 180px;
@@ -327,8 +361,6 @@
     position:sticky;
     top:0;
     margin: 0 !important;
-    background-color: #f3f4f6;
-    border-radius: 0.5rem 0.5rem 0 0;
     border: none;    
     padding:0.2rem 0.5rem !important;
     width: 100%;
@@ -339,13 +371,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    color: gray;
     font-family: "Poppins",Georgia, 'Times New Roman', Times, serif;
   }
-  
-  .footnote-toggle:hover {
-    background-color: #e5e7eb;
-  }
+
   
   .footnote-toggle::after {
     content: "▼";
@@ -362,11 +390,10 @@
   .footnote-row {
     margin: 0 0 16px 0;
     padding: 0;
-    background: transparent;
+    background-color: var(--color-muted);
     border: none;
     font-size: 12px;
     line-height: 1.6;
-    color: #6b7280;
     transition: color 0.2s ease;
   }
   
@@ -406,11 +433,11 @@
     background: rgba(0, 0, 0, 0.15);
   }
   
-  .footnote-row:hover {
+  /* .footnote-row:hover {
     color: #374151;
   }
   
   .footnote-row:hover::before {
     background: #e5e7eb;
     color: #6b7280;
-  }
+  } */

@@ -29,7 +29,7 @@ const LanguageSwitcher = () => {
 
   return (
     <div className="flex items-center gap-2">
-      <p className="text-sm text-gray-500">{t("common.language")}</p>
+      <p className="text-sm">{t("common.language")}</p>
       <Select
         value={currentLanguage}
         onValueChange={setLang}
@@ -40,7 +40,7 @@ const LanguageSwitcher = () => {
             {isLoading ? (
               <div className="flex items-center space-x-2">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-secondary-500"></div>
-                <span className="text-sm text-gray-500">Loading...</span>
+                <span className="text-sm">Loading...</span>
               </div>
             ) : (
               <>

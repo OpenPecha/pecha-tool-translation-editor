@@ -340,7 +340,7 @@ function ExportButton({
       <div className="flex flex-col w-full gap-2 ">
         {/* Export Mode Selection */}
         <div className="space-y-2">
-          <div className="text-sm font-medium text-gray-900">
+          <div className="text-sm font-medium text-neutral-800 dark:text-neutral-100">
             {t("export.exportMode")}
           </div>
           <RadioGroup
@@ -362,12 +362,12 @@ function ExportButton({
                     <div className="flex-1">
                       <Label
                         htmlFor={mode.value}
-                        className="text-sm font-medium text-gray-900 cursor-pointer"
+                        className="text-sm font-medium text-neutral-800 dark:text-neutral-100 cursor-pointer"
                       >
                         {mode.label}
                       </Label>
                       {mode.value === "single" ? (
-                        <p className="text-sm text-gray-500 mt-1">
+                        <p className="text-sm text-neutral-800 dark:text-neutral-100 mt-1">
                           Export all documents as individual files
                         </p>
                       ) : (
@@ -429,7 +429,7 @@ function ExportButton({
         {/* Format Options based on selected mode */}
         {formatOptions.length > 0 && (
           <div className="mb-4">
-            <div className="text-sm font-medium text-gray-900 mb-2">
+            <div className="text-sm font-medium text-neutral-800 dark:text-neutral-100 mb-2">
               {t("export.exportFormat")}
             </div>
             <RadioGroup
@@ -440,7 +440,7 @@ function ExportButton({
               {formatOptions.map((option) => (
                 <div
                   key={option.value}
-                  className="flex items-start space-x-3 px-3 py-1 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex items-start space-x-3 px-3 py-1 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                 >
                   <RadioGroupItem value={option.value} id={option.value} />
                   <Label
@@ -448,12 +448,12 @@ function ExportButton({
                     className="cursor-pointer flex-1"
                   >
                     <div>
-                      <div className="font-medium text-gray-700 flex items-center gap-2">
+                      <div className="font-medium text-neutral-800 dark:text-neutral-100 flex items-center gap-2">
                         {option.label}
                         {option?.img && (
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-help" />
+                              <HelpCircle className="w-4 h-4 text-neutral-800 dark:text-neutral-100 hover:text-neutral-600 cursor-help" />
                             </TooltipTrigger>
                             <TooltipContent side="right" className="max-w-xs">
                               <div className="p-2">
@@ -462,7 +462,7 @@ function ExportButton({
                                   alt={`${option.label} Preview`}
                                   className="w-64 h-40 object-contain rounded mb-2"
                                 />
-                                <div className="text-xs text-gray-500 text-center">
+                                <div className="text-xs text-neutral-800 dark:text-neutral-100 text-center">
                                   {option.label} Layout
                                 </div>
                               </div>
@@ -470,7 +470,7 @@ function ExportButton({
                           </Tooltip>
                         )}
                       </div>
-                      <div className="text-sm text-gray-500 mt-1">
+                      <div className="text-sm text-neutral-800 dark:text-neutral-100 mt-1">
                         {option.description}
                       </div>
                     </div>
@@ -483,7 +483,7 @@ function ExportButton({
 
         {/* MS Word Compatibility Message for Pecha Templates */}
         {(exportFormat === "pecha-template" || exportFormat === "single-pecha-templates") && (
-          <Card className="bg-secondary-50 border-secondary-200 !p-3">
+          <Card className="bg-secondary-50 dark:bg-neutral-800 border-secondary-200 dark:border-neutral-400 !p-3">
             <CardContent>
               <div className="flex items-start space-x-2 text-sm text-secondary-800">
                 <HelpCircle className="w-4 h-4 mt-0.5 text-secondary-600" />
@@ -498,9 +498,9 @@ function ExportButton({
         )}
 
         {/* Preview Card */}
-        <Card className="bg-gray-50 border-gray-200 !p-2">
+        <Card className="bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-400 !p-2">
           <CardContent className="capitalize">
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <div className="flex items-center space-x-2 text-sm text-neutral-800 dark:text-neutral-100">
               <BookOpen className="w-4 h-4" />
               <span>
                 Selected:{" "}
@@ -523,7 +523,7 @@ function ExportButton({
 
         <Button
           onClick={exportZip}
-          className="w-full py-6 text-base font-medium transition-all hover:shadow-md"
+          className="w-full py-6 text-base font-medium transition-all hover:shadow-md text-neutral-800 dark:text-neutral-100 bg-neutral-50 dark:bg-neutral-700 border-neutral-200 dark:border-neutral-400"
           disabled={isPending || isExporting}
         >
           <Download className="w-5 h-5 mr-2" />
@@ -535,7 +535,7 @@ function ExportButton({
                     {exportProgress > 0 ? `${exportProgress}%` : "Preparing..."}
                   </span>
                   {exportMessage && (
-                    <span className="text-xs text-gray-500 mt-1">
+                      <span className="text-xs text-neutral-800 dark:text-neutral-100 mt-1">
                       {exportMessage}
                     </span>
                   )}
@@ -547,7 +547,7 @@ function ExportButton({
               )}
             </div>
           ) : (
-            <span className="capitalize">{t("common.download")}</span>
+            <span className="capitalize text-neutral-800 dark:text-neutral-100">{t("common.download")}</span>
           )}
         </Button>
       </div>

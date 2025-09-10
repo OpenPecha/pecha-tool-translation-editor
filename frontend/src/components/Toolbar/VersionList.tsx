@@ -87,18 +87,18 @@ function VersionList({ handleViewAll }: { handleViewAll: () => void }) {
 
   return (
     <>
-      <div className="versions-list">
+      <div className="versions-list bg-neutral-50 dark:bg-neutral-800">
         <div className="flex  items-center">
           <span className="font-bold mb-2 text-xs flex-1">Versions</span>
           <span
-            className="text-xs text-gray-500 hover:text-gray-700 cursor-pointer hover:underline"
+            className="text-xs text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100 cursor-pointer hover:underline"
             onClick={handleViewAll}
           >
             View all
           </span>
         </div>
         {versions.length === 0 ? (
-          <p className="text-gray-500">No saved versions yet</p>
+          <p className="text-neutral-700 dark:text-neutral-300">No saved versions yet</p>
         ) : (
           <div className="max-h-60 overflow-y-auto border">
             {versions.map((version: Version) => (
@@ -172,12 +172,12 @@ function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
 
   return (
     <div
-      className={`px-2 py-2 border-b hover:bg-gray-100 ${isCurrentVersion ? "bg-secondary-100" : ""
+      className={`px-2 py-2 border-b hover:bg-neutral-100 dark:hover:bg-neutral-700 ${isCurrentVersion ? "bg-secondary-100 dark:bg-neutral-700 dark:text-neutral-50" : ""
         }`}
     >
       <div className="flex justify-between items-center">
         <div
-          className={`flex items-center gap-1 ${isCurrentVersion ? "font-semibold text-secondary-600" : ""
+          className={`flex items-center gap-1 ${isCurrentVersion ? "font-semibold text-secondary-600 dark:text-neutral-50" : ""
             }`}
         >
           {version.label}
@@ -189,7 +189,7 @@ function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
             <button
               onClick={handleLoad}
               disabled={isLoading}
-              className="px-2 py-1 rounded text-sm bg-gray-200 hover:bg-gray-300"
+              className="px-2 py-1 rounded text-sm bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700"
             >
               {isLoading ? (
                 <FaSpinner className="animate-spin" />
@@ -207,7 +207,7 @@ function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
             <button
               onClick={handleDelete}
               disabled={!canDelete}
-              className={`px-2 py-1 rounded text-sm ${canDelete ? "bg-red-100 hover:bg-red-200" : "invisible"
+              className={`px-2 py-1 rounded text-sm ${canDelete ? "bg-red-100 hover:bg-red-200 dark:bg-red-800 dark:hover:bg-red-700" : "invisible"
                 }`}
             >
               {isDeleting ? (
@@ -217,13 +217,13 @@ function EachVersion({ version, onDeleteClick, isDeleting }: EachVersionProps) {
               )}
             </button>
           ) : (
-            <div className="px-2 py-1 w-8"></div>
+            <div className="px-2 py-1 w-8 dark:bg-neutral-800"></div>
           )}
         </div>
       </div>
 
       <div
-        className={`text-xs mt-1 ${isCurrentVersion ? "text-secondary-600" : "text-gray-500"
+        className={`text-xs mt-1 ${isCurrentVersion ? "text-secondary-600" : "text-neutral-700 dark:text-neutral-300"
           }`}
       >
         {version?.user?.username || version?.user?.name || "System"} •{" "}

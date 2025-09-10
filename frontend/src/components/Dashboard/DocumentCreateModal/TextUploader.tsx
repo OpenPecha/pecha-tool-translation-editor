@@ -142,12 +142,12 @@ const TextUploader = ({
             <label
               htmlFor="text-file"
               className={`text-sm font-medium ${
-                isLanguageDisabled ? "text-gray-400" : "text-gray-700"
+                isLanguageDisabled ? "text-neutral-400 dark:text-neutral-500" : "text-neutral-700 dark:text-neutral-300"
               }`}
             >
               Upload {isRoot ? "Root" : "Translation"} Text (.txt)
             </label>
-            <div className="flex items-center gap-1 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+            <div className="flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-700 px-2 py-1 rounded">
               <FileText className="h-3 w-3" />
               <span>Max {MAX_FILE_SIZE_MB}MB</span>
             </div>
@@ -176,13 +176,13 @@ const TextUploader = ({
 
       {file && !previewMode && (
         <div className="space-y-3">
-          <div className="flex justify-between items-center p-3 bg-secondary-50 border border-secondary-200 rounded-lg">
+          <div className="flex justify-between items-center p-3 bg-secondary-50 border border-secondary-200 rounded-lg bg-neutral-50 dark:bg-neutral-700">
             <div className="flex items-center gap-2">
-              <FileText className="h-4 w-4 text-secondary-500" />
-              <span className="text-sm">
+              <FileText className="h-4 w-4 text-neutral-800 dark:text-neutral-400" />
+              <span className="text-sm text-neutral-800 dark:text-neutral-400">
                 Selected file: <span className="font-medium">{file.name}</span>
               </span>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">
                 ({formatFileSize(file.size)})
               </span>
             </div>
@@ -240,7 +240,7 @@ const TextUploader = ({
                 Uploaded successfully
               </div>
               <textarea
-                className="w-full border border-gray-300 rounded-lg p-3 text-sm font-monlam leading-relaxed bg-gray-50"
+                className="w-full border border-gray-300 rounded-lg p-3 text-sm font-monlam leading-relaxed bg-gray-50 dark:bg-neutral-700"
                 rows={10}
                 readOnly
                 value={fileContent}

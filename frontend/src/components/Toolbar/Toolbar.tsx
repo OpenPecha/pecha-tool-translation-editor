@@ -191,6 +191,7 @@ const Toolbar = ({
         position: "relative",
         margin: "0 auto",
       }}
+      className="bg-neutral-100 dark:bg-neutral-800 rounded-full"
     >
       <div className="flex items-center flex-1 h-full self-center">
         <span className="ql-formats" style={isEnabledStyle}>
@@ -269,7 +270,7 @@ const Toolbar = ({
         {openHistory && (
           <div
             ref={versionRef}
-            className="absolute bg-gray-100 z-50 top-10 right-0"
+            className="absolute bg-neutral-50 dark:bg-neutral-800 z-50 top-10 right-0"
           >
             <QuillVersionControls
               openHistory={openHistory}
@@ -366,14 +367,14 @@ const EditableDocumentName: React.FC<{
   };
 
   return (
-    <div className="flex items-center gap-2 px-2 py-1 bg-gray-50 rounded-2xl border">
-      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="flex items-center gap-2 px-2 py-1 bg-neutral-50 dark:bg-neutral-800 rounded-2xl border">
+      <svg className="w-4 h-4 text-neutral-800 dark:text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
       <EditableText
         initialText={documentName}
         onSave={handleSave}
-        className="text-sm font-medium text-gray-700 max-w-[200px] truncate focus:outline-none"
+        className="text-sm font-medium text-neutral-800 dark:text-neutral-300 max-w-[200px] truncate focus:outline-none"
         placeholder="Document name"
       />
     </div>

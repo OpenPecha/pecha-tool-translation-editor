@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import Quill from "quill";
 import Toolbar from "./Toolbar/Toolbar";
 import "quill/dist/quill.snow.css";
@@ -14,9 +14,7 @@ import { updateContentDocument } from "@/api/document";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import CommentBubble from "./Comment/CommentBubble";
 import { createPortal } from "react-dom";
-import FootnoteView from "./Footnote/FootnoteView";
 import { useTranslate } from "@tolgee/react";
-import emitter from "@/services/eventBus";
 import { useUmamiTracking, getUserContext } from "@/hooks/use-umami-tracking";
 import { useAuth } from "@/auth/use-auth-hook";
 import SkeletonLoader from "./SkeletonLoader";
@@ -24,6 +22,7 @@ import { footnoteKeyboardBindings } from "quill-footnote";
 import { CustomFootnoteModule } from "./quillExtension/CustomFootnote";
 import type { Document } from "@/hooks/useCurrentDoc";
 import { checkIsTibetan } from "@/lib/isTibetan";
+import { useDisplaySettings } from "@/hooks/useDisplaySettings";
 
 quill_import();
 
@@ -55,8 +54,12 @@ const Editor = ({
   const { t } = useTranslate();
   const { currentUser } = useAuth();
   const { trackDocumentOpened, trackDocumentSaved } = useUmamiTracking();
-  const [isContentLoaded, setIsContentLoaded] = useState(false);
-
+  
+  // Get display settings
+  const { 
+    showLineNumbers,
+  } = useDisplaySettings();
+  
   // Track document opening
   useEffect(() => {
     if (documentId && currentDoc) {
@@ -282,13 +285,7 @@ const Editor = ({
         quillRef.current?.setContents(content || []);
         setIsTibetan(checkIsTibetan(quillRef.current?.getText() || ""));
         // Set content loaded after a brief delay to ensure rendering is complete
-        setTimeout(() => {
-          setIsContentLoaded(true);
-        }, 100);
       }, 0);
-    } else if (quillRef.current && content.length === 0) {
-      // If no content to load, mark as loaded
-      setIsContentLoaded(true);
     }
     return () => {
       if (saveTimeoutRef.current) {
@@ -321,14 +318,16 @@ const Editor = ({
       <div className="relative w-full flex flex-1 h-full ">
         <TableOfContent documentId={documentId} />
         <div className="editor-container w-full flex flex-1  relative max-w-6xl mx-auto  ">
-          <LineNumberVirtualized
-            editorRef={editorRef}
-            documentId={documentId}
-          />
+          {showLineNumbers && (
+            <LineNumberVirtualized
+              editorRef={editorRef}
+              documentId={documentId}
+            />
+          )}
           <div className="flex flex-col flex-1 relative overflow-hidden">
             <div
               ref={editorRef}
-              className={`editor-content flex-1 pb-1 w-full overflow-y-auto`}
+              className={`editor-content flex-1 pb-1 w-full overflow-y-auto bg-editor-bg`}
               style={{
                 fontFamily: isTibetan ? "Monlam" : "google-sans-regular",
                 fontSize: isTibetan?"1rem":"1.3rem",
@@ -346,7 +345,7 @@ const Editor = ({
             
           </div>
           {createPortal(
-            <div className="flex gap-1 items-center text-sm text-gray-500 hover:text-gray-900">
+            <div className="flex gap-1 items-center text-sm text-gray-500 dark:text-neutral-300 hover:text-gray-900">
               <div id={`${counterId}`} className="leading-[normal]">
                 0
               </div>

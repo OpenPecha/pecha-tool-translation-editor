@@ -33,7 +33,7 @@ function SideMenu() {
               onClick={() => setCurrentView("translations")}
               title="translations"
             >
-              <Languages size={16} />
+              <Languages size={16} className="text-neutral-800 dark:text-neutral-100"/>
             </MenuButton>
           </div>
         );

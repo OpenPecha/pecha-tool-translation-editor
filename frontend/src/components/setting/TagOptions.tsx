@@ -10,7 +10,7 @@ function TagOptions({
       <div className="mb-3">
         <label
           id="sync-method-label"
-          className="text-sm font-medium text-gray-700 mb-2 block"
+          className="text-sm font-medium mb-2 block"
         >
           Sync Method
         </label>
@@ -25,12 +25,12 @@ function TagOptions({
               onChange={() => setSyncType("lineNumber")}
               aria-labelledby="sync-method-label line-number-label"
             />
-            <span id="line-number-label" className="ml-2 text-sm text-gray-700">
+            <span id="line-number-label" className="ml-2 text-sm">
               Line Number
             </span>
           </label>
         </div>
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs mt-1">
           {syncType === "heading"
             ? "Sync by matching heading types and their positions"
             : "Sync by matching line positions between documents"}

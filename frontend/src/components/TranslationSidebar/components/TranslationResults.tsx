@@ -113,16 +113,16 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
   return (
     <div className="space-y-4">
       {translationResults.map((result, index) => (
-        <div key={result.id} className="bg-gray-50 rounded-lg p-3 space-y-2">
+        <div key={result.id} className="bg-neutral-50 dark:bg-neutral-700 rounded-lg p-3 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-neutral-800 dark:text-neutral-100">
               {new Date(result.timestamp).toLocaleTimeString()}
             </span>
             <div className="flex items-center gap-2">
               {/* Line Numbers Display */}
               {formatLineNumbers(result) && (
                 <span 
-                  className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded cursor-pointer hover:bg-gray-200 hover:text-secondary-600 transition-colors"
+                  className="text-xs text-neutral-800 dark:text-neutral-100 bg-neutral-100 dark:bg-neutral-600 px-2 py-1 rounded cursor-pointer hover:bg-gray-200 hover:text-secondary-600 transition-colors"
                   onClick={() => {
                     if (!result.lineNumbers) return;
                     const lineRanges = Object.entries(result.lineNumbers);
@@ -182,14 +182,14 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
           <div className="space-y-2">
             {/* Source Text */}
             <div className="border-l-4 border-gray-300 pl-3">
-              <div className="text-xs text-gray-500 mb-1 font-medium flex items-center justify-between">
-                <span>Source:</span>
+              <div className="text-xs text-neutral-700 dark:text-neutral-100 mb-1 font-medium flex items-center justify-between">
+                <span className="text-neutral-800 dark:text-neutral-300">Source:</span>
                 {shouldShowExpandButton(result.originalText) && (
                   <Button
                     onClick={() => onToggleItemExpansion(index)}
                     variant="ghost"
                     size="sm"
-                    className="h-5 w-5 p-0 text-gray-400 hover:text-gray-600"
+                    className="h-5 w-5 p-0 text-neutral-800 dark:text-neutral-100 hover:text-gray-600"
                   >
                     {expandedItems.has(index) ? (
                       <ChevronUp className="w-3 h-3" />
@@ -199,7 +199,7 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
                   </Button>
                 )}
               </div>
-              <div className="text-sm text-gray-600 leading-relaxed">
+              <div className="text-sm text-neutral-800 dark:text-neutral-100 leading-relaxed">
                 {expandedItems.has(index)
                   ? result.originalText
                   : truncateText(result.originalText)}
@@ -208,9 +208,9 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
 
             {/* Translation Text */}
             <div className="border-l-4 border-secondary-300 pl-3">
-              <div className="text-xs text-gray-500 mb-1 font-medium flex items-center justify-between">
+              <div className="text-xs text-neutral-700 dark:text-neutral-100 mb-1 font-medium flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span>Translation:</span>
+                  <span className="text-neutral-800 dark:text-neutral-300">Translation:</span>
                   {editedTexts[result.id] && (() => {
                     const changes = countChanges(result.translatedText, editedTexts[result.id]);
                     return (
@@ -262,7 +262,7 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
                       onClick={() => onToggleItemExpansion(index)}
                       variant="ghost"
                       size="sm"
-                      className="h-5 w-5 p-0 text-gray-400 hover:text-gray-600"
+                      className="h-5 w-5 p-0 text-neutral-800 dark:text-neutral-100 hover:text-gray-600"
                     >
                       {expandedItems.has(index) ? (
                         <ChevronUp className="w-3 h-3" />
@@ -275,7 +275,7 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
               </div>
 
               {/* Show translation with diff highlighting if updated, otherwise show regular translation or edit mode */}
-              <div className="text-sm leading-relaxed text-gray-800">
+              <div className="text-sm leading-relaxed text-neutral-800 dark:text-neutral-100">
                 {editingId === result.id ? (
                   // Edit mode: Show textarea with save/cancel buttons
                   <div className="space-y-2">
@@ -325,7 +325,7 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
                     tabIndex={editingId === null || editingId === result.id ? 0 : -1}
                     className={`rounded p-1 -m-1 transition-colors ${
                       editingId === null || editingId === result.id 
-                        ? 'cursor-pointer hover:bg-gray-50' 
+                        ? 'cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800' 
                         : 'cursor-not-allowed opacity-50'
                     }`}
                     title={
@@ -403,7 +403,7 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
                     tabIndex={editingId === null || editingId === result.id ? 0 : -1}
                     className={`whitespace-pre-wrap font-sans rounded p-1 -m-1 transition-colors ${
                       editingId === null || editingId === result.id 
-                        ? 'cursor-pointer hover:bg-gray-50' 
+                        ? 'cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800' 
                         : 'cursor-not-allowed opacity-50'
                     }`}
                     title={

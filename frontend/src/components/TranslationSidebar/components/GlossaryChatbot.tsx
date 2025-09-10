@@ -51,7 +51,7 @@ const GlossaryChatbot: React.FC<GlossaryChatbotProps> = ({
 
   // Show the chatbot asking directly
   return (
-    <div className="relative bg-gradient-to-r from-purple-50 to-secondary-50 border border-purple-200 rounded-lg p-3 shadow-sm">
+    <div className="relative bg-neutral-50 dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-300 rounded-lg p-3 shadow-sm">
       {/* Close button */}
       <button
         onClick={handleNoClick}
@@ -67,8 +67,8 @@ const GlossaryChatbot: React.FC<GlossaryChatbotProps> = ({
           <MessageSquare className="w-3 h-3 text-purple-600" />
         </div>
         <div className="flex-1">
-          <p className="text-xs text-gray-800 leading-relaxed">
-            Great! I found <span className="font-medium text-purple-600">{translationResults.length}</span> translation{translationResults.length > 1 ? 's' : ''}. 
+          <p className="text-xs text-neutral-800 dark:text-neutral-100 leading-relaxed">
+            Great! I found <span className="font-medium text-primary-600 dark:text-primary-200">{translationResults.length}</span> translation{translationResults.length > 1 ? 's' : ''}. 
             Would you like me to extract a glossary and check for terminology consistency?
           </p>
         </div>
@@ -80,7 +80,7 @@ const GlossaryChatbot: React.FC<GlossaryChatbotProps> = ({
           onClick={handleNoClick}
           variant="outline"
           size="sm"
-          className="h-6 px-3 text-xs text-gray-600 border-gray-300 hover:bg-white"
+          className="h-6 px-3 text-xs text-neutral-800 dark:text-neutral-100 border-neutral-300 hover:bg-white"
         >
           Not now
         </Button>
@@ -88,7 +88,7 @@ const GlossaryChatbot: React.FC<GlossaryChatbotProps> = ({
           onClick={handleYesClick}
           variant="outline"
           size="sm"
-          className="h-6 px-3 text-xs text-purple-600 border-purple-300 hover:bg-purple-100 bg-white"
+          className="h-6 px-3 text-xs text-primary-600 dark:text-primary-200 border-primary-300 hover:bg-primary-100 bg-white"
         >
           <BookOpen className="w-3 h-3 mr-1" />
           Yes, please!

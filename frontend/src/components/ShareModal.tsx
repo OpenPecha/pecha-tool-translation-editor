@@ -289,13 +289,13 @@ const ShareModal: React.FC<ShareModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col"
+        className="bg-neutral-50 dark:bg-neutral-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-3 border-b">
+        <div className="flex items-center justify-between p-3 border-b border-neutral-200 dark:border-neutral-800">
           <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-secondary-600" />
+            <Users className="h-4 w-4 text-secondary-600 dark:text-neutral-100" />
             <h2 className="text-base font-semibold">Share "{projectName}"</h2>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose}>
@@ -311,7 +311,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
           onValueChange={(value) => setActiveTab(value as any)}
           className="flex-1 overflow-hidden"
         >
-          <TabsList className="grid w-full grid-cols-2 gap-1">
+          <TabsList className="grid w-full grid-cols-2 gap-1 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-400">
             <TabsTrigger value="share">Share</TabsTrigger>
             <TabsTrigger value="export">Export</TabsTrigger>
           </TabsList>
@@ -411,7 +411,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
 
                 {/* Owner */}
                 {owner && (
-                  <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                  <div className="flex items-center gap-2 p-2 bg-neutral-50 dark:bg-neutral-700 rounded">
                     <Avatar className="h-6 w-6">
                       <AvatarImage src={owner.picture} />
                       <AvatarFallback className="text-xs">
@@ -422,13 +422,13 @@ const ShareModal: React.FC<ShareModalProps> = ({
                       <p className="font-medium text-xs truncate">
                         {owner.username}
                       </p>
-                      <p className="text-xs text-gray-600 truncate">
+                      <p className="text-xs text-neutral-800 dark:text-neutral-100 truncate">
                         {owner.email}
                       </p>
                     </div>
                     <Badge
                       variant="outline"
-                      className="bg-orange-50 text-orange-700 border-orange-200 text-xs px-2 py-0"
+                      className="bg-orange-50 text-orange-700 border-orange-200 dark:border-neutral-300 text-xs px-2 py-0"
                     >
                       Owner
                     </Badge>
@@ -455,7 +455,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
                           <p className="font-medium text-xs truncate">
                             {collaborator.user.username}
                           </p>
-                          <p className="text-xs text-gray-600 truncate">
+                          <p className="text-xs text-neutral-800 dark:text-neutral-100 truncate">
                             {collaborator.user.email}
                           </p>
                         </div>
@@ -515,11 +515,11 @@ const ShareModal: React.FC<ShareModalProps> = ({
               </div>
 
             {/* General Access Section - Enhanced */}
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3">
+            <div className="bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-400 rounded-lg p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Globe className="h-4 w-4 text-gray-600" />
-                  <span className="text-sm font-medium text-gray-800">General access</span>
+                  <Globe className="h-4 w-4 text-neutral-800 dark:text-neutral-100" />
+                  <span className="text-sm font-medium text-neutral-800 dark:text-neutral-100">General access</span>
                 </div>
                 {shareData?.isOwner && (
                   <Select
@@ -566,7 +566,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
                         generateShareableLink(shareData.rootDocument) || ""
                       }
                       readOnly
-                      className="text-xs h-8 bg-gray-50 border-gray-200 text-gray-700 cursor-default select-all focus:ring-1 focus:ring-secondary-500 focus:border-secondary-500"
+                      className="text-xs h-8 bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-400 text-neutral-800 dark:text-neutral-100 cursor-default select-all focus:ring-1 focus:ring-secondary-500 focus:border-secondary-500"
                       onFocus={(e) => e.target.select()}
                     />
                     <Button
@@ -578,7 +578,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
                         );
                         if (link) copyToClipboard(link);
                       }}
-                      className="h-8 px-3 shrink-0 hover:bg-gray-100"
+                      className="h-8 px-3 shrink-0 hover:bg-neutral-100 dark:hover:bg-neutral-800"
                       title="Copy link"
                     >
                       <Copy className="h-3 w-3 mr-1" />
@@ -591,7 +591,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
               {(error || success) && (
                 <div className="text-sm">
                   {error && (
-                    <div className="flex items-center gap-2 text-red-700 bg-red-50 border border-red-200 p-3 rounded-md">
+                    <div className="flex items-center gap-2 text-red-700 bg-red-50 dark:bg-red-800 border border-red-200 dark:border-red-400 p-3 rounded-md">
                       <AlertTriangle className="h-4 w-4 flex-shrink-0" />
                       <span className="text-sm">{error}</span>
                     </div>

@@ -204,13 +204,13 @@ const StandardizationPanel: React.FC<StandardizationPanelProps> = ({
     return (
       <div
         ref={standardizationRef}
-        className="border-l-4 border-orange-300 bg-orange-50 px-2 py-1 space-y-3"
+        className="border-l-4 border-orange-300 bg-orange-50 dark:bg-neutral-600 px-2 py-1 space-y-3"
       >
         {/* Header with collapse toggle */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-orange-600" />
-            <span className="text-sm font-medium text-orange-800">
+            <span className="text-sm font-medium text-orange-800 dark:text-neutral-100">
               {Object.keys(inconsistentTerms).length} inconsistent terms found
             </span>
           </div>
@@ -255,9 +255,9 @@ const StandardizationPanel: React.FC<StandardizationPanelProps> = ({
                 ref={(el) => {
                   itemRefs.current[index] = el;
                 }}
-                className="bg-white border border-orange-200 rounded p-3 space-y-2"
+                className="bg-neutral-50 dark:bg-neutral-800 border border-orange-200 dark:border-neutral-300 rounded p-3 space-y-2"
               >
-                <div className="text-sm font-medium text-gray-800">
+                <div className="text-sm font-medium text-neutral-800 dark:text-neutral-100">
                   {item.sourceTerm}
                 </div>
 
@@ -289,8 +289,8 @@ const StandardizationPanel: React.FC<StandardizationPanelProps> = ({
                         className={`px-2 py-1 text-xs rounded-full border transition-colors ${
                           standardizationSelections[item.sourceTerm] ===
                           translation
-                            ? "bg-orange-100 border-orange-300 text-orange-700"
-                            : "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200"
+                            ? "bg-orange-100 dark:bg-neutral-600 border-orange-300 text-orange-700 dark:text-neutral-100"
+                            : "bg-gray-100 dark:bg-neutral-600 border-gray-300 text-gray-700 hover:bg-gray-200 dark:text-neutral-300"
                         }`}
                       >
                         {translation}
@@ -309,7 +309,7 @@ const StandardizationPanel: React.FC<StandardizationPanelProps> = ({
                   disabled={
                     isApplyingStandardization || isAnalyzingStandardization
                   }
-                  className="flex-1 bg-orange-600 hover:bg-orange-700 text-white h-8 text-sm"
+                  className="flex-1 bg-orange-600 hover:bg-orange-700 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-white h-8 text-sm"
                 >
                   {isApplyingStandardization ? (
                     <>

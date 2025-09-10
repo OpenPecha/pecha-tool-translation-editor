@@ -157,7 +157,7 @@ const TranslationControls: React.FC<TranslationControlsProps> = ({
     <div className="border-t border-gray-200 p-3 space-y-3">
       {/* Selected Text Preview */}
       {selectedText && (
-        <div className="bg-gray-50 border border-gray-200 rounded-md p-2">
+        <div className="bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md p-2">
         
 
           {/* Truncated Preview with Tooltip */}
@@ -165,7 +165,7 @@ const TranslationControls: React.FC<TranslationControlsProps> = ({
             <Tooltip>
               <TooltipTrigger asChild>
                 <button 
-                  className="text-xs text-gray-700 font-mono cursor-pointer hover:bg-gray-100 p-1 rounded transition-colors w-full text-left" 
+                  className="text-xs text-neutral-800 dark:text-neutral-50 font-mono cursor-pointer hover:bg-gray-100 p-1 rounded transition-colors w-full text-left" 
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -193,7 +193,7 @@ const TranslationControls: React.FC<TranslationControlsProps> = ({
 
       {/* Batch Actions or Standardization Progress */}
       {translationResults.length > 0 && !isTranslating && (
-        <div className="bg-white border border-gray-200 rounded-lg p-3 space-y-2">
+        <div className="bg-neutral-50 dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-700 rounded-lg p-3 space-y-2">
           {isApplyingStandardization ? (
             /* Standardization Progress Display */
             <div className="space-y-3">
@@ -238,7 +238,7 @@ const TranslationControls: React.FC<TranslationControlsProps> = ({
           ) : (
             /* Normal Batch Actions */
             <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-neutral-800 dark:text-neutral-100">
                 {translationResults.length} translation
                 {translationResults.length > 1 ? "s" : ""}
               </span>
