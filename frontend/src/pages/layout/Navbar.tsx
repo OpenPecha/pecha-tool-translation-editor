@@ -6,8 +6,14 @@ import { useAuth } from "@/auth/use-auth-hook";
 import AppLauncher from "@/components/Applauncher";
 import DocIcon from "@/assets/doc_icon.png";
 import ProfileArea from "@/components/ProfileArea";
+import { useTolgee } from "@tolgee/react";
 const Navbar = () => {
   const { login, isAuthenticated } = useAuth();
+  const tolgee = useTolgee();
+  const currentLanguage = tolgee.getLanguage();
+  console.log("currentLanguage", tolgee.getAllRecords())
+
+
   return (
     <nav className="  px-6 py-2 flex justify-between items-center">
       <div className="flex gap-2">

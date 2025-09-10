@@ -57,6 +57,8 @@ const tolgee = Tolgee()
     defaultLanguage: getStoredLanguage(),
     fallbackLanguage: "en",
   });
+
+
 // Context type definition
 interface TolgeeContextType {
   currentLanguage: Language;

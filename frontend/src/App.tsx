@@ -79,13 +79,13 @@ function AppContent() {
 
 function App() {
   return (
+        <TolgeeProvider>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TolgeeProvider>
           <AppContent />
-        </TolgeeProvider>
       </AuthProvider>
     </QueryClientProvider>
+        </TolgeeProvider>
   );
 }
 
