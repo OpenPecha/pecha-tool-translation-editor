@@ -62,7 +62,7 @@ const DisplaySettings: React.FC<{}> = ({}) => {
           {/* Font Family - Compact Select */}
           <div className="flex items-center justify-start space-x-2 mb-1">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-neutral-500 dark:text-neutral-400">Font</span>
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">{t("settings.fontFamily", "Font")}</span>
             </div>
             <Select
               value={typography.fontFamily}
@@ -86,7 +86,7 @@ const DisplaySettings: React.FC<{}> = ({}) => {
           {/* Font Size - Inline Controls */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-neutral-500 dark:text-neutral-400">Size</span>
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">{t("settings.size", "Size")}</span>
               <span className="text-xs text-neutral-400 dark:text-neutral-500 font-mono">{typography.fontSize}rem</span>
             </div>
             <div className="flex items-center space-x-2">
@@ -123,7 +123,7 @@ const DisplaySettings: React.FC<{}> = ({}) => {
           {/* Line Height - Simple Slider */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-neutral-500 dark:text-neutral-400">Line Height</span>
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">{t("settings.lineHeight", "Line Height")}</span>
               <span className="text-xs text-neutral-400 dark:text-neutral-500 font-mono">{typography.lineHeight}</span>
             </div>
             <Input

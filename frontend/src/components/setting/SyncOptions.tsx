@@ -1,4 +1,4 @@
-import TagOptions from "./TagOptions";
+import { useTranslate } from "@tolgee/react";
 import {
   useTableOfContentSyncStore,
   useTableOfContentOpenStore,
@@ -20,26 +20,26 @@ function SyncOptions({
 }) {
   const { setSynced } = useTableOfContentSyncStore();
   const { openAll } = useTableOfContentOpenStore();
-
+  const { t } = useTranslate();
   const options = [
     { value: "none", 
-      label: "No Sync", 
-      description: "No synchronization" 
+      label: t("settings.noSync", "No Sync"), 
+      description: t("settings.noSyncDescription", "No synchronization") 
     },
     {
       value: "scroll",
-      label: "Scroll Sync",
-      description: "Synchronize based on scrolling",
+      label: t("settings.scrollSync", "Scroll Sync"),
+      description: t("settings.scrollSyncDescription", "Synchronize based on scrolling"),
     },
     {
       value: "click",
-      label: "Click Sync",
-      description: "Synchronize based on clicking",
+      label: t("settings.clickSync", "Click Sync"),
+      description: t("settings.clickSyncDescription", "Synchronize based on clicking"),
     },
     {
       value: "table",
-      label: "Table Sync",
-      description: "Synchronize based on table of contents",
+      label: t("settings.tableSync", "Table Sync"),
+      description: t("settings.tableSyncDescription", "Synchronize based on table of contents"),
     }
   ];
 

@@ -81,12 +81,12 @@ function MethodSelection({
     file: {
       icon: <File size={24} />,
       title: t("common.file"),
-      description: "Upload a file from your computer",
+      description: t("projects.uploadAFileFromYourComputer"),
     },
     openpecha: {
       icon: <TbApi  size={24} />,
       title: t("common.openpecha"),
-      description: "Import from OpenPecha repository",
+      description: t("projects.importFromOpenPechaRepository"),
     },
   };
 
@@ -94,10 +94,10 @@ function MethodSelection({
     <div className="space-y-4">
       <div className="text-center mb-6">
         <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-400 mb-2">
-          Choose Input Method
+          {t(`projects.chooseInputMethod`)}
         </h3>
         <p className="text-sm text-neutral-600 dark:text-neutral-500">
-          Select how you want to create your project
+          {t(`projects.selectHowYouWantToCreateYourProject`)}
         </p>
       </div>
 
@@ -252,10 +252,10 @@ function DocumentCreateModal() {
           <div className="space-y-6">
             <div className="text-center mb-6">
               <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-400 mb-2">
-                Project Details
+                {t(`projects.projectDetails`)}
               </h3>
               <p className="text-sm text-neutral-600 dark:text-neutral-500">
-                Enter a name for your new project
+                {t(`projects.enterProjectName`)}
               </p>
             </div>
             <div className="space-y-4">
@@ -343,7 +343,7 @@ function DocumentCreateModal() {
               className="flex items-center space-x-2"
             >
               <ChevronLeft size={16} />
-              <span>Previous</span>
+              <span>{t(`common.previous`)}</span>
             </Button>
 
             {currentStep < totalSteps ? (
@@ -352,7 +352,7 @@ function DocumentCreateModal() {
                 disabled={!canGoNext()}
                 className="flex items-center space-x-2 bg-secondary-600 hover:bg-secondary-700 hover:dark:bg-secondary-500"
               >
-                <span>Next</span>
+                <span>{t(`common.next`)}</span>
                 <ChevronRight size={16} />
               </Button>
             ) : (
@@ -364,10 +364,10 @@ function DocumentCreateModal() {
                 {isCreating ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>Creating...</span>
+                    <span>{t("common.creating")}</span>
                   </>
                 ) : (
-                  <span>Create Project</span>
+                  <span>{t("modal.createProject")}</span>
                 )}
               </Button>
             )}

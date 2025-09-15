@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Trash2, Edit, Plus, Key, Check, X, Eye, EyeOff } from "lucide-react";
+import { useTranslate } from "@tolgee/react";
 
 const ApiCredentials: React.FC = () => {
   const queryClient = useQueryClient();
@@ -33,7 +34,7 @@ const ApiCredentials: React.FC = () => {
     text: string;
     type: "success" | "error";
   } | null>(null);
-
+  const { t } = useTranslate();
   // Fetch API credentials
   const {
     data: credentials,
@@ -187,19 +188,19 @@ const ApiCredentials: React.FC = () => {
   };
 
   if (isLoading) {
-    return <div className="p-4">Loading API credentials...</div>;
+    return <div className="p-4">{t("settings.loadingApiCredentials", "Loading API credentials...")}</div>;
   }
 
   if (error) {
     return (
-      <div className="p-4 text-red-500">Error loading API credentials</div>
+      <div className="p-4 text-red-500">{t("settings.errorLoadingApiCredentials", "Error loading API credentials")}</div>
     );
   }
 
   return (
     <div className="p-4 space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">API Credentials</h2>
+        <h2 className="text-xl font-semibold">{t("settings.apiCredentials", "API Credentials")}</h2>
         {!isAdding && !isEditing && (
           <Button
             onClick={() => setIsAdding(true)}
@@ -207,7 +208,7 @@ const ApiCredentials: React.FC = () => {
             className="flex items-center gap-1 bg-neutral-50 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-300"
           >
             <Plus size={16} />
-            Add
+            {t("common.add", "Add")}
           </Button>
         )}
       </div>
@@ -230,13 +231,13 @@ const ApiCredentials: React.FC = () => {
           className="space-y-3 border p-3 rounded-md"
         >
           <div>
-            <Label htmlFor="provider">Provider</Label>
+            <Label htmlFor="provider">{t("settings.provider", "Provider")}</Label>
             <Select
               value={formData.provider}
               onValueChange={handleProviderChange}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select a provider" />
+                <SelectValue placeholder={t("settings.selectProvider", "Select a provider")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="openai">OpenAI</SelectItem>
@@ -249,7 +250,7 @@ const ApiCredentials: React.FC = () => {
           </div>
 
           <div>
-            <Label htmlFor="apiKey">API Key</Label>
+            <Label htmlFor="apiKey">{t("settings.apiKey", "API Key")}</Label>
             <div className="relative">
               <Input
                 id="apiKey"
@@ -257,7 +258,7 @@ const ApiCredentials: React.FC = () => {
                 type={showApiKey ? "text" : "password"}
                 value={formData.apiKey}
                 onChange={handleInputChange}
-                placeholder="Enter your API key"
+                placeholder={t("settings.enterApiKey", "Enter your API key")}
                 className="w-full pr-10"
               />
               <button
@@ -271,7 +272,7 @@ const ApiCredentials: React.FC = () => {
             {isEditing && (
               <p className="text-xs text-gray-500 mt-1">
                 {formData.apiKey
-                  ? "Leave unchanged to keep current key"
+                  ? t("settings.leaveUnchanged", "Leave unchanged to keep current key")
                   : "Loading key..."}
               </p>
             )}
@@ -286,7 +287,7 @@ const ApiCredentials: React.FC = () => {
               className="flex items-center gap-1"
             >
               <X size={16} />
-              Cancel
+              {t("common.cancel", "Cancel")}
             </Button>
             <Button
               type="submit"
@@ -295,7 +296,7 @@ const ApiCredentials: React.FC = () => {
               disabled={createMutation.isPending || updateMutation.isPending}
             >
               <Check size={16} />
-              {isEditing ? "Update" : "Save"}
+              {isEditing ? t("common.update", "Update") : t("common.save", "Save")}
             </Button>
           </div>
         </form>
@@ -304,14 +305,14 @@ const ApiCredentials: React.FC = () => {
       {!isAdding && !isEditing && credentials && credentials.length === 0 && (
         <div className="text-center p-4 border rounded-md bg-neutral-100 dark:bg-neutral-700">
           <Key className="mx-auto h-8 w-8 text-gray-500 mb-2" />
-          <p className="text-gray-500">No API credentials added yet</p>
+          <p className="text-gray-500">{t("settings.noApiCredentialsAddedYet", "No API credentials added yet")}</p>
           <Button
             onClick={() => setIsAdding(true)}
             variant="outline"
             size="sm"
             className="mt-2"
           >
-            Add your first API credential
+            {t("settings.addYourFirstApiCredential", "Add your first API credential")}
           </Button>
         </div>
       )}
@@ -328,7 +329,7 @@ const ApiCredentials: React.FC = () => {
                   {credential.provider}
                 </div>
                 <div className="text-sm text-gray-500">
-                  Added on {new Date(credential.createdAt).toLocaleDateString()}
+                  {t("settings.addedOn", "Added on")} {new Date(credential.createdAt).toLocaleDateString()}
                 </div>
               </div>
               <div className="flex gap-2">

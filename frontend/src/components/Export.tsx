@@ -32,56 +32,7 @@ export type ExportFormat =
   | "page-view"
   | "single-pecha-templates";
 
-const ExportModeOptions: {
-  label: string;
-  value: ExportMode;
-  formatOptions: {
-    label: string;
-    value: ExportFormat;
-    img?: string;
-    description: string;
-  }[];
-}[] = [
-  {
-    label: "Single",
-    value: "single",
-    formatOptions: [
-      {
-        label: "Page View",
-        value: "page-view",
-        description: "View in page view",
-      },
-      {
-        label: "Pecha Template",
-        value: "single-pecha-templates",
-        description: "Use Microsoft Word to open the template",
-      },
-    ],
-  },
-  {
-    label: "With Translation",
-    value: "with_translation",
-    formatOptions: [
-      {
-        label: "Side by Side",
-        value: "side-by-side",
-        img: "/previews/side-by-side.png",
-        description: "Source and translation in columns",
-      },
-      {
-        label: "Line by Line",
-        value: "line-by-line",
-        img: "/previews/line-by-line.png",
-        description: "Alternating source and translation lines",
-      },
-      {
-        label: "Pecha template",
-        value: "pecha-template",
-        description: "Use Microsoft Word to open the template",
-      },
-    ],
-  },
-];
+
 
 function ExportButton({
   projectId,
@@ -104,6 +55,56 @@ function ExportButton({
   // Fetch available translations for the root document
   const { translations, loading: translationsLoading } = useCurrentDocTranslations(rootId);
   
+  const ExportModeOptions: {
+    label: string;
+    value: ExportMode;
+    formatOptions: {
+      label: string;
+      value: ExportFormat;
+      img?: string;
+      description: string;
+    }[];
+  }[] = [
+    {
+      label: t("export.single"),
+      value: "single",
+      formatOptions: [
+        {
+          label: t("export.pageView"),
+          value: "page-view",
+          description: t("export.viewInPageView"),
+        },
+        {
+          label: t("export.pechaTemplate"),
+          value: "single-pecha-templates",
+          description: t("export.useMicrosoftWordToOpenTemplate"),
+        },
+      ],
+    },
+    {
+      label: t("export.withTranslation"),
+      value: "with_translation",
+      formatOptions: [
+        {
+          label: t("export.sideBySide"),
+          value: "side-by-side",
+          img: "/previews/side-by-side.png",
+          description: t("export.sourceAndTranslationInColumns"),
+        },
+        {
+          label: t("export.lineByLine"),
+          value: "line-by-line",
+          img: "/previews/line-by-line.png",
+          description: t("export.alternatingSourceAndTranslationLines"),
+        },
+        {
+          label: t("export.pechaTemplate"),
+          value: "pecha-template",
+          description: t("export.useMicrosoftWordToOpenTemplate"),
+        },
+      ],
+    },
+  ];
   // Handle translation selection logic
   useEffect(() => {
     if (translations && translations.length > 0) {
@@ -368,7 +369,7 @@ function ExportButton({
                       </Label>
                       {mode.value === "single" ? (
                         <p className="text-sm text-neutral-800 dark:text-neutral-100 mt-1">
-                          Export all documents as individual files
+                          {t("export.exportAllDocumentsAsIndividualFiles")}
                         </p>
                       ) : (
                         // Translation Dropdown replaces the description text for with_translation mode
@@ -388,12 +389,12 @@ function ExportButton({
                               }`}
                               onClick={() => console.log("translations :: ", translations)}
                             >
-                              <SelectValue placeholder="Select translation..." />
+                              <SelectValue placeholder={t("export.selectTranslation")} />
                             </SelectTrigger>
                             <SelectContent>
                               {/* Default "All translations" option */}
                               {translations && translations.length > 1 && (
-                                <SelectItem value="all">All translations</SelectItem>
+                                <SelectItem value="all">{t("export.allTranslations")}</SelectItem>
                               )}
                               
                               {/* Individual translation options */}
@@ -405,7 +406,7 @@ function ExportButton({
                                 ))
                               ) : (
                                 <SelectItem value="none" disabled>
-                                  {translationsLoading ? "Loading..." : "No translations found"}
+                                  {translationsLoading ? t("common.loading") : t("export.noTranslationsFound")}
                                 </SelectItem>
                               )}
                             </SelectContent>
@@ -413,7 +414,7 @@ function ExportButton({
                           {/* Error message for no translations */}
                           {showTranslationError && (
                             <p className="text-red-500 text-xs mt-1 animate-fade-in">
-                              Please add translations before exporting with translation mode
+                              {t("export.pleaseAddTranslationsBeforeExportingWithTranslationMode")}
                             </p>
                           )}
                         </div>
@@ -463,7 +464,7 @@ function ExportButton({
                                   className="w-64 h-40 object-contain rounded mb-2"
                                 />
                                 <div className="text-xs text-neutral-800 dark:text-neutral-100 text-center">
-                                  {option.label} Layout
+                                  {option.label} {t("export.layout")}
                                 </div>
                               </div>
                             </TooltipContent>
@@ -489,7 +490,7 @@ function ExportButton({
                 <HelpCircle className="w-4 h-4 mt-0.5 text-secondary-600" />
                 <div>
                     <div className="text-secondary-700">
-                    Pecha template exports are compatible with Microsoft Word only.
+                    {t("export.pechaTemplateExportsAreCompatibleWithMicrosoftWordOnly")}
                   </div>
                 </div>
               </div>
@@ -503,7 +504,7 @@ function ExportButton({
             <div className="flex items-center space-x-2 text-sm text-neutral-800 dark:text-neutral-100">
               <BookOpen className="w-4 h-4" />
               <span>
-                Selected:{" "}
+                {t("export.selected")}:{" "}
                 {
                   ExportModeOptions.find((mode) => mode.value === exportMode)
                     ?.label

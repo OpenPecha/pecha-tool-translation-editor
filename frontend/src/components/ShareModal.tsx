@@ -36,6 +36,7 @@ import {
   searchUsers,
   type User,
 } from "@/api/project";
+import { useTranslate } from "@tolgee/react";
 
 interface ShareModalProps {
   projectId: string;
@@ -66,7 +67,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [copied, setCopied] = useState(false);
-
+  const { t } = useTranslate();
   const queryClient = useQueryClient();
 
   // Fetch project sharing information
@@ -296,7 +297,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
         <div className="flex items-center justify-between p-3 border-b border-neutral-200 dark:border-neutral-800">
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-secondary-600 dark:text-neutral-100" />
-            <h2 className="text-base font-semibold">Share "{projectName}"</h2>
+            <h2 className="text-base font-semibold">{t("common.share")} "{projectName}"</h2>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-4 w-4" />
@@ -312,8 +313,8 @@ const ShareModal: React.FC<ShareModalProps> = ({
           className="flex-1 overflow-hidden"
         >
           <TabsList className="grid w-full grid-cols-2 gap-1 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-400">
-            <TabsTrigger value="share">Share</TabsTrigger>
-            <TabsTrigger value="export">Export</TabsTrigger>
+            <TabsTrigger value="share">{t("common.share")}</TabsTrigger>
+            <TabsTrigger value="export">{t("export.export")}</TabsTrigger>
           </TabsList>
 
           {/* Share Tab */}
@@ -325,7 +326,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
               <div className="pb-2">
                 <div className="flex items-center gap-2 text-sm">
                   <Users className="h-4 w-4" />
-                  People with Access
+                  {t("share.peopleWithAccess")}
                 </div>
               </div>
               <div className="space-y-2">
@@ -335,7 +336,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
                     <div className="flex gap-2">
                       <div className="flex-1 relative">
                         <Input
-                          placeholder="Add people by email..."
+                          placeholder={t("share.addPeopleByEmail")}
                           value={email}
                           onChange={(e) => {
                             setEmail(e.target.value);
@@ -359,8 +360,8 @@ const ShareModal: React.FC<ShareModalProps> = ({
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="viewer">Viewer</SelectItem>
-                          <SelectItem value="editor">Editor</SelectItem>
+                          <SelectItem value="viewer">{t("share.viewer")}</SelectItem>
+                          <SelectItem value="editor">{t("share.editor")}</SelectItem>
                         </SelectContent>
                       </Select>
 
@@ -430,7 +431,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
                       variant="outline"
                       className="bg-orange-50 text-orange-700 border-orange-200 dark:border-neutral-300 text-xs px-2 py-0"
                     >
-                      Owner
+                      {t("share.owner")}
                     </Badge>
                   </div>
                 )}
@@ -476,8 +477,8 @@ const ShareModal: React.FC<ShareModalProps> = ({
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="viewer">Viewer</SelectItem>
-                                <SelectItem value="editor">Editor</SelectItem>
+                                <SelectItem value="viewer">{t("share.viewer")}</SelectItem>
+                                <SelectItem value="editor">{t("share.editor")}</SelectItem>
                               </SelectContent>
                             </Select>
                             <Button
@@ -509,7 +510,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
                 {collaborators.length === 0 && (
                   <div className="text-center py-4 text-gray-500">
                     <Users className="h-8 w-8 mx-auto mb-1 text-gray-300" />
-                    <p className="text-xs">No collaborators yet</p>
+                    <p className="text-xs">{t("share.noCollaboratorsYet")}</p>
                   </div>
                 )}
               </div>
@@ -519,7 +520,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Globe className="h-4 w-4 text-neutral-800 dark:text-neutral-100" />
-                  <span className="text-sm font-medium text-neutral-800 dark:text-neutral-100">General access</span>
+                  <span className="text-sm font-medium text-neutral-800 dark:text-neutral-100">{t("share.generalAccess")}</span>
                 </div>
                 {shareData?.isOwner && (
                   <Select
@@ -536,13 +537,13 @@ const ShareModal: React.FC<ShareModalProps> = ({
                       <SelectItem value="private">
                         <div className="flex items-center gap-2">
                           <Lock className="h-3 w-3" />
-                          <span>Private</span>
+                          <span>{t("share.private")}</span>
                         </div>
                       </SelectItem>
                       <SelectItem value="public">
                         <div className="flex items-center gap-2">
                           <Globe className="h-3 w-3" />
-                          <span>Public</span>
+                          <span>{t("share.public")}</span>
                         </div>
                       </SelectItem>
                     </SelectContent>
@@ -550,7 +551,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
                 )}
                 {!shareData?.isOwner && (
                   <Badge variant="outline" className="text-sm h-8 px-3">
-                    {shareData?.isPublic ? "Public" : "Private"}
+                    {shareData?.isPublic ? t("share.public") : t("share.private")}
                   </Badge>
                 )}
               </div>
@@ -579,7 +580,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
                         if (link) copyToClipboard(link);
                       }}
                       className="h-8 px-3 shrink-0 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                      title="Copy link"
+                      title={t("share.copyLink")}
                     >
                       <Copy className="h-3 w-3 mr-1" />
                     </Button>
