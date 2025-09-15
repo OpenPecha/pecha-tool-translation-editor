@@ -40,7 +40,7 @@ const LanguageSwitcher = () => {
             {isLoading ? (
               <div className="flex items-center space-x-2">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-secondary-500"></div>
-                <span className="text-sm">Loading...</span>
+                <span className="text-sm">{t("common.loading")}</span>
               </div>
             ) : (
               <>

@@ -6,6 +6,7 @@ import {
   performStreamingTranslation,
   TranslationStreamEvent,
 } from "@/api/translate";
+import { useTranslate } from "@tolgee/react";
 
 export interface TranslationConfig {
   targetLanguage: TargetLanguage;
@@ -54,7 +55,7 @@ export const useTranslationOperations = ({
   // Refs
   const abortControllerRef = useRef<AbortController | null>(null);
   const currentSegmentIndexRef = useRef<number>(0);
-
+  const { t } = useTranslate();
   // Helper functions
   const updateProgress = (percent: number | null, text: string) => {
     if (percent !== null) {
@@ -221,7 +222,7 @@ export const useTranslationOperations = ({
     const capturedLineNumbers = selectedTextLineNumbers;
 
     setIsTranslating(true);
-    setCurrentStatus("Initializing...");
+    setCurrentStatus(t("translation.initializing"));
     setProgressPercent(0);
     setError(null);
 

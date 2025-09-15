@@ -34,7 +34,7 @@ const ThemeToggle = () => {
 
   return (
     <div className="flex items-center gap-2">
-      <p className="text-sm">{t('theme.title', 'Theme')}</p>
+      <p className="text-sm">{t('theme.theme', 'Theme')}</p>
       <Select
         value={theme}
         onValueChange={(value: Theme) => setTheme(value)}

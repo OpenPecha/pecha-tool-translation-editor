@@ -46,7 +46,7 @@ export function ModalFooter({
         type="button"
         variant="outline"
         onClick={onCancel}
-        className="px-6 py-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+        className="px-6 py-2 border-gray-300 transition-colors"
       >
         {cancelText || t("common.cancel")}
       </Button>

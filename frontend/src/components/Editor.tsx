@@ -202,7 +202,7 @@ const Editor = ({
         counter: { container: `#${counterId}`, unit: "character" },
       },
       readOnly: !isEditable,
-      placeholder: "Start collaborating...",
+      placeholder: t("editor.startCollaborating") as string,
       // className is not a valid Quill option, apply these styles to the container instead
     });
 

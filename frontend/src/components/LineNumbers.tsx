@@ -5,10 +5,12 @@ import { useEditor } from "@/contexts/EditorContext";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { FaBookmark, FaChevronUp, FaChevronDown } from "react-icons/fa";
 import { createPortal } from "react-dom";
+import { useTranslate } from "@tolgee/react";
 
 const offsetTop = 0;
 
 const LineNumberVirtualized = ({ editorRef, documentId }) => {
+  const { t } = useTranslate();
   const lineNumbersRef = useRef<HTMLDivElement>(null);
   const [lineNumbers, setLineNumbers] = useState<
     Array<{
@@ -299,12 +301,12 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
         isactive &&
         createPortal(
           <div className="z-10 flex items-center  gap-2">
-            Bookmark
+            {t("common.bookmark")}
             {bookmarks.length > 1 && (
               <button
                 onClick={handleScrollToPrevBookmark}
-                title="Previous bookmark"
-                className=" text-gray-500 rounded-l "
+                title={t("common.previousBookmark")}
+                className="rounded-l "
               >
                 <FaChevronUp />
               </button>
@@ -314,16 +316,16 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
                 null,
                 bookmarks[currentBookmarkIndex]
               )}
-              title="Go to current bookmark"
-              className=" text-gray-500  "
+              title={t("common.goToCurrentBookmark")}
+              className="  "
             >
               <FaBookmark />
             </button>
             {bookmarks.length > 0 && (
               <button
                 onClick={handleScrollToNextBookmark}
-                title="Next bookmark"
-                className=" text-gray-500 rounded-r "
+                title={t("common.nextBookmark")}
+                className=" rounded-r "
               >
                 <FaChevronDown />
               </button>
@@ -355,7 +357,7 @@ const LineNumberVirtualized = ({ editorRef, documentId }) => {
               className={
                 bookmarks.includes(lineNum.number)
                   ? "bg-amber-100 font-medium text-amber-900 border-l-2 text-right w-full border-amber-500"
-                  : "hover:bg-gray-100 text-right w-full"
+                  : "hover:bg-gray-100 text-right w-full dark:hover:bg-neutral-700"
               }
             >
               {lineNum.number}
