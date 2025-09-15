@@ -8,7 +8,7 @@ import ProjectItem from "./ProjectItem";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Project, deleteProject, updateProject } from "@/api/project";
 import formatTimeAgo from "@/lib/formatTimeAgo";
-
+import { useTranslate } from "@tolgee/react";
 import { useUmamiTracking } from "@/hooks/use-umami-tracking";
 import { getUserContext } from "@/hooks/use-umami-tracking";
 import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
@@ -19,6 +19,7 @@ interface EachProjectProps {
 }
 
 export default function EachProject({ project, view }: EachProjectProps) {
+  const { t } = useTranslate();
   const [showEditModal, setShowEditModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -123,7 +124,7 @@ export default function EachProject({ project, view }: EachProjectProps) {
           subtitle={
             project.roots && project.roots.length > 0
               ? project.roots[0].name
-              : "No root document"
+              : t("projects.noRootDocument")
           }
           date={formatTimeAgo(project.updatedAt)}
           hasDocument={project.roots ? project.roots.length > 0 : false}
@@ -131,7 +132,7 @@ export default function EachProject({ project, view }: EachProjectProps) {
           hasSharedUsers={false}
           owner={
             project.ownerId === currentUser?.id
-              ? "Me"
+              ? t("projects.me")
               : project.owner?.username ?? ""
           }
           hasPermission={hasPermission}
@@ -164,9 +165,9 @@ export default function EachProject({ project, view }: EachProjectProps) {
         open={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onConfirm={confirmDelete}
-        title="Delete Project"
-        message="Are you sure you want to delete this project? This action cannot be undone."
-        confirmText="Delete"
+        title={t("projects.deleteProject")}
+        message={t("projects.deleteProjectMessage")}
+        confirmText={t("projects.deleteProjectConfirmText")}
         loading={deleteProjectMutation.isPending}
       />
     </>

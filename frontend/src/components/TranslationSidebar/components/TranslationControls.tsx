@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useEditor } from "@/contexts/EditorContext";
 import GlossaryChatbot from "./GlossaryChatbot";
+import { useTranslate } from "@tolgee/react";
 
 
 interface TranslationResult {
@@ -78,7 +79,7 @@ const TranslationControls: React.FC<TranslationControlsProps> = ({
   onStartStandardizationAnalysis,
 }) => {
   const { getQuill } = useEditor();
-
+  const { t } = useTranslate();
   // Helper function to extract start and end line numbers from selectedTextLineNumbers
   const getLineRange = (lineNumbers: Record<string, { from: number; to: number }> | null): { startLine: number; endLine: number } | null => {
     if (!lineNumbers) return null;
@@ -201,7 +202,7 @@ const TranslationControls: React.FC<TranslationControlsProps> = ({
                 <div className="flex items-center gap-2">
                   <Loader2 className="w-4 h-4 text-secondary-600 animate-spin" />
                   <span className="text-sm font-medium text-gray-900">
-                    Applying Standardization
+                    {t("translation.applyingStandardization")}
                   </span>
                 </div>
                 {standardizationProgress && (
@@ -239,7 +240,7 @@ const TranslationControls: React.FC<TranslationControlsProps> = ({
             /* Normal Batch Actions */
             <div className="flex items-center justify-between">
               <span className="text-xs text-neutral-800 dark:text-neutral-100">
-                {translationResults.length} translation
+                {translationResults.length} {t("translation.translation")}
                 {translationResults.length > 1 ? "s" : ""}
               </span>
               <div className="flex gap-1">
@@ -252,14 +253,14 @@ const TranslationControls: React.FC<TranslationControlsProps> = ({
                       ? "bg-green-100 text-green-600 border-green-300"
                       : ""
                   }`}
-                  title={copiedItems.has("copy-all") ? "Copied!" : "Copy All"}
+                  title={copiedItems.has("copy-all") ? t("translation.copied") : t("translation.copyAll")}
                 >
                   {copiedItems.has("copy-all") ? (
                     <Check className="w-3 h-3 mr-1" />
                   ) : (
                     <Copy className="w-3 h-3 mr-1" />
                   )}
-                  {copiedItems.has("copy-all") ? "Copied!" : "Copy All"}
+                  {copiedItems.has("copy-all") ? t("translation.copied") : t("translation.copyAll")}
                 </Button>
                 <Button
                   onClick={onOverwriteAllResults}
@@ -272,8 +273,8 @@ const TranslationControls: React.FC<TranslationControlsProps> = ({
                   }`}
                   title={
                     copiedItems.has("overwrite-feedback")
-                      ? "Overwritten!"
-                      : "Overwrite at specific line numbers"
+                      ? t("translation.overwritten")
+                      : t("translation.overwriteAtSpecificLineNumbers")
                   }
                 >
                   {copiedItems.has("overwrite-feedback") ? (
@@ -281,7 +282,7 @@ const TranslationControls: React.FC<TranslationControlsProps> = ({
                   ) : (
                     <Plus className="w-3 h-3 mr-1" />
                   )}
-                  {copiedItems.has("overwrite-feedback") ? "Overwritten!" : "Overwrite All"}
+                  {copiedItems.has("overwrite-feedback") ? t("translation.overwritten") : t("translation.overwriteAll")}
                 </Button>
               </div>
             </div>
@@ -321,12 +322,12 @@ const TranslationControls: React.FC<TranslationControlsProps> = ({
                       {isAnalyzingStandardization ? (
                         <>
                           <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                          Analyzing...
+                          {t("translation.analyzing")}
                         </>
                       ) : (
                         <>
                           <AlertTriangle className="w-3 h-3 mr-1" />
-                          Check Consistency
+                          {t("translation.checkConsistency")}
                         </>
                       )}
                     </Button>
@@ -347,12 +348,12 @@ const TranslationControls: React.FC<TranslationControlsProps> = ({
         {isTranslating ? (
           <>
             <Loader2 className="w-3 h-3 mr-2 animate-spin" />
-            Translating...
+            {t("translation.translating")}
           </>
         ) : (
           <>
             <Play className="w-3 h-3 mr-2" />
-            Translate
+            {t("translation.translate")}
           </>
         )}
       </Button>

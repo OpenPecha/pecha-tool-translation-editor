@@ -10,7 +10,7 @@ import { deleteDocument, updateDocument } from "@/api/document";
 import { useParams } from "react-router-dom";
 import { FaSpinner } from "react-icons/fa";
 import { languages } from "@/utils/Constants";
-
+import { useTranslate } from "@tolgee/react";
 import { useTranslationSidebarParams } from "@/hooks/useQueryParams";
 
 interface TranslationItemProps {
@@ -24,7 +24,7 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
   const { id } = useParams();
   const rootId = id as string;
   const { setSelectedTranslationId } = useTranslationSidebarParams();
-
+  const { t } = useTranslate();
 
 
   // Helper function to render the status indicator
@@ -47,13 +47,13 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
       // Clear the deleting state
     },
     onError: (error) => {
-      console.error("Error deleting translation:", error);
+      console.error(t("translation.errorDeletingTranslation"), error);
       // Clear the deleting state on error too
       window.alert(
         `Error: ${
           error instanceof Error
             ? error.message
-            : "Failed to delete translation"
+            : t("translation.failedToDeleteTranslation")
         }`
       );
     },
@@ -75,7 +75,7 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
       refetchTranslations();
     },
     onError: (error) => {
-      console.error("Failed to update document:", error);
+      console.error(t("translation.failedToUpdateDocument"), error);
     },
   });
 
@@ -88,7 +88,7 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
   };
   const onDelete = (translationId: string, event: React.MouseEvent) => {
     event.stopPropagation();
-    if (window.confirm("Are you sure you want to delete this translation?")) {
+    if (window.confirm(t("translation.areYouSureYouWantToDeleteThisTranslation"))) {
       // Set the deleting state before starting the mutation
       deleteTranslationMutation.mutate(translationId);
     }
@@ -98,7 +98,7 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
       return (
         <>
           <Trash2 className="h-3 w-3 mr-1 animate-pulse text-red-500" />
-          <span className="text-red-500 dark:text-red-400">Deleting...</span>
+          <span className="text-red-500 dark:text-red-400">{t("translation.deleting")}</span>
         </>
       );
     }

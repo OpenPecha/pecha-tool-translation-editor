@@ -133,7 +133,7 @@ const TextUploader = ({
         <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
           <div className="flex items-center gap-2 text-amber-700">
             <AlertCircle className="h-4 w-4" />
-            <span className="text-sm font-medium">Please select a language above to upload files</span>
+            <span className="text-sm font-medium">{t("translation.pleaseSelectLanguageAboveToUploadFiles")}</span>
           </div>
         </div>
       )}
@@ -152,7 +152,7 @@ const TextUploader = ({
             </label>
             <div className="flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-700 px-2 py-1 rounded">
               <FileText className="h-3 w-3" />
-              <span>Max {MAX_FILE_SIZE_MB}MB</span>
+              <span>{t("translation.max")} {MAX_FILE_SIZE_MB}MB</span>
             </div>
           </div>
           <div className="relative">
@@ -183,7 +183,7 @@ const TextUploader = ({
             <div className="flex items-center gap-2">
               <FileText className="h-4 w-4 text-neutral-800 dark:text-neutral-400" />
               <span className="text-sm text-neutral-800 dark:text-neutral-400">
-                Selected file: <span className="font-medium">{file.name}</span>
+                {t("translation.selectedFile")}: <span className="font-medium">{file.name}</span>
               </span>
               <span className="text-xs text-neutral-500 dark:text-neutral-400">
                 ({formatFileSize(file.size)})
@@ -194,7 +194,7 @@ const TextUploader = ({
               onClick={handleReset}
               className="text-red-600 text-xs underline hover:text-red-800 transition-colors"
             >
-              Remove File
+              {t("translation.removeFile")}
             </button>
           </div>
 
@@ -220,7 +220,7 @@ const TextUploader = ({
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              Uploading...
+              {t("translation.uploading")}
             </div>
           )}
 
@@ -240,14 +240,14 @@ const TextUploader = ({
                     d="M5 13l4 4L19 7"
                   />
                 </svg>
-                Uploaded successfully
+                {t("translation.uploadedSuccessfully")}
               </div>
               <textarea
                 className="w-full border border-gray-300 rounded-lg p-3 text-sm font-monlam leading-relaxed bg-gray-50 dark:bg-neutral-700"
                 rows={10}
                 readOnly
                 value={fileContent}
-                placeholder="File content will appear here..."
+                placeholder={t("translation.fileContentWillAppearHere")}
               />
             </div>
           )}
@@ -261,7 +261,7 @@ const TextUploader = ({
             <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
             <div className="flex-1">
               <h4 className="text-sm font-medium text-red-800 mb-1">
-                File Size Exceeded
+                {t("translation.fileSizeExceeded")}
               </h4>
               <p className="text-sm text-red-700">{fileSizeError}</p>
             </div>
@@ -276,7 +276,7 @@ const TextUploader = ({
             <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
             <div className="flex-1">
               <h4 className="text-sm font-medium text-red-800 mb-1">
-                Upload Failed
+                {t("translation.uploadFailed")}
               </h4>
               <p className="text-sm text-red-700">{errorMessage}</p>
             </div>

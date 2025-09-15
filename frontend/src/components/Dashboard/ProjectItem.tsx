@@ -164,7 +164,6 @@ function ProjectItemDropdownMenu({
   readonly url?: string;
 }) {
   const [open, setOpen] = useState(false);
-
   const handleOpenClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -213,7 +212,7 @@ function ProjectItemDropdownMenu({
           </>
         )}
         <DropdownMenuItem onClick={(e) => handleCloseClick(e, shareDocument)}>
-          <Share2 size={16} /> Share
+          <Share2 size={16} /> {t("common.share")}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleOpenInNewTab}>
           <svg

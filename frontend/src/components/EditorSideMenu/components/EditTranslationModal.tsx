@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { languages } from "@/utils/Constants";
 import { Translation } from "../../DocumentWrapper";
 import { BaseModal } from "@/components/shared/modals";
+import { useTranslate } from "@tolgee/react";
 
 interface EditTranslationModalProps {
   translation: Translation;
@@ -23,7 +24,7 @@ const EditTranslationModal: React.FC<EditTranslationModalProps> = ({
   const [language, setLanguage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-
+  const { t } = useTranslate();
   // Initialize form values when modal opens
   useEffect(() => {
     if (isOpen) {
@@ -86,7 +87,7 @@ const EditTranslationModal: React.FC<EditTranslationModalProps> = ({
     <BaseModal
       open={isOpen}
       onOpenChange={(open) => !open && handleCancel()}
-      title="Edit Translation"
+      title={t("translation.editTranslation")}
       variant="dialog"
       size="sm"
     >
@@ -94,14 +95,14 @@ const EditTranslationModal: React.FC<EditTranslationModalProps> = ({
         <div className="space-y-4">
           <div>
             <label htmlFor="edit-translation-name" className="text-sm font-medium text-gray-700 block mb-2">
-              Translation Name
+              {t("translation.translationName")}
             </label>
             <Input
               id="edit-translation-name"
               ref={inputRef}
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Enter translation name"
+              placeholder={t("translation.enterTranslationName")}
               disabled={isSubmitting}
               className="w-full"
             />
@@ -109,11 +110,11 @@ const EditTranslationModal: React.FC<EditTranslationModalProps> = ({
 
           <div>
             <label htmlFor="edit-translation-language" className="text-sm font-medium text-gray-700 block mb-2">
-              Language
+              {t("translation.language")}
             </label>
             <Select value={language} onValueChange={setLanguage} disabled={isSubmitting}>
               <SelectTrigger id="edit-translation-language" className="w-full">
-                <SelectValue placeholder="Select language" />
+                <SelectValue placeholder={t("translation.selectLanguage")} />
               </SelectTrigger>
               <SelectContent>
                 {languages.map((lang) => (
@@ -136,7 +137,7 @@ const EditTranslationModal: React.FC<EditTranslationModalProps> = ({
             onClick={handleCancel}
             disabled={isSubmitting}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             type="submit"
@@ -146,10 +147,10 @@ const EditTranslationModal: React.FC<EditTranslationModalProps> = ({
             {isSubmitting ? (
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Saving...
+                {t("translation.saving")}
               </div>
             ) : (
-              "Save Changes"
+              t("common.saveChanges")
             )}
           </Button>
         </div>

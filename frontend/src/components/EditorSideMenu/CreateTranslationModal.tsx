@@ -116,8 +116,8 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
         ) : (
           <div className="space-y-4">
             <div className="border-b border-gray-100 pb-4">
-              <h3 className="text-lg font-medium text-gray-900">Translation Preview</h3>
-              <p className="text-sm text-gray-600 mt-1">Review your uploaded content before creating the translation</p>
+              <h3 className="text-lg font-medium">{t("translation.translationPreview")}</h3>
+              <p className="text-sm mt-1">{t("translation.reviewYourTranslation")}</p>
             </div>
             <TextPreview
               file={uploadedFile!}
@@ -148,7 +148,7 @@ const EmptyDocumentCreator = ({
 }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string>("");
-
+  const { t } = useTranslate();
   const createEmptyTranslationMutation = useMutation({
     mutationFn: async () => {
       const formData = new FormData();
@@ -213,10 +213,10 @@ const EmptyDocumentCreator = ({
           <span className="text-xl">📄</span>
         </div>
         <h3 className="text-base font-medium text-neutral-900 dark:text-neutral-300 mb-2">
-          Create Empty Translation
+          {t("translation.createEmptyTranslation")}
         </h3>
         <p className="text-neutral-500 dark:text-neutral-400 text-sm max-w-sm mb-6">
-          Start with a blank document and add your translation content manually.
+          {t("translation.startWithBlankDocument")}
         </p>
 
         <Button
@@ -227,16 +227,16 @@ const EmptyDocumentCreator = ({
           {isCreating ? (
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 border-2 border-neutral-300/30 border-t-neutral-300 rounded-full animate-spin" />
-              Creating...
+              {t("translation.creating")}
             </div>
           ) : (
-            "Create Empty Document"
+            t("translation.createEmptyDocument")
           )}
         </Button>
         
         {!language && (
           <p className="text-xs text-neutral-600 mt-2">
-            Select a language above to continue
+            {t("translation.selectLanguageAboveToContinue")}
           </p>
         )}
       </div>

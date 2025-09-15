@@ -9,7 +9,7 @@ import {
   RefreshCw,
   Loader2,
 } from "lucide-react";
-
+import { useTranslate } from "@tolgee/react";
 interface GlossaryTerm {
   source_term: string;
   translated_term: string;
@@ -36,7 +36,7 @@ const GlossaryDisplay: React.FC<GlossaryDisplayProps> = ({
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const glossaryRef = useRef<HTMLDivElement>(null);
-
+  const { t } = useTranslate();
   // Helper function to scroll within the container instead of the entire page
   const scrollToGlossary = useCallback(() => {
     if (!glossaryRef.current || !scrollContainerRef?.current) return;
@@ -97,11 +97,11 @@ const GlossaryDisplay: React.FC<GlossaryDisplayProps> = ({
           )}
           <span className="text-sm font-medium text-neutral-800 dark:text-neutral-100">
             {isExtractingGlossary
-              ? "Extracting Glossary..."
-              : "Extracted Glossary"}
+              ? t("glossaryDisplay.extractingGlossary")
+              : t("glossaryDisplay.extractedGlossary")}
           </span>
           <span className="text-xs bg-neutral-100 dark:bg-neutral-600 text-neutral-800 dark:text-neutral-100 px-2 py-1 rounded-full">
-            {glossaryTerms.length} terms
+            {glossaryTerms.length} {t("glossaryDisplay.terms")}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -111,7 +111,7 @@ const GlossaryDisplay: React.FC<GlossaryDisplayProps> = ({
               variant="ghost"
               size="sm"
               className="h-6 w-6 p-0 text-primary-600 dark:text-primary-200 hover:bg-primary-100 transition-colors"
-              title="Re-extract glossary"
+              title={t("glossaryDisplay.reExtractGlossary")}
             >
               <RefreshCw className="w-3 h-3" />
             </Button>
@@ -129,7 +129,7 @@ const GlossaryDisplay: React.FC<GlossaryDisplayProps> = ({
               title={
                 copiedItems.has("glossary-copy")
                   ? "Copied!"
-                  : "Copy Glossary Terms"
+                  : t("glossaryDisplay.copyGlossaryTerms")
               }
             >
               {copiedItems.has("glossary-copy") ? (
@@ -146,7 +146,7 @@ const GlossaryDisplay: React.FC<GlossaryDisplayProps> = ({
               size="sm"
               className="h-6 w-6 p-0 text-primary-600 dark:text-primary-200 hover:bg-primary-100"
               title={
-                isCollapsed ? "Show glossary terms" : "Hide glossary terms"
+                isCollapsed ? t("glossaryDisplay.showGlossaryTerms") : t("glossaryDisplay.hideGlossaryTerms")
               }
             >
               {isCollapsed ? (

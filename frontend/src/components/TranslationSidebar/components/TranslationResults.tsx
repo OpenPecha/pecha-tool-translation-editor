@@ -5,6 +5,7 @@ import { TbReplaceFilled } from "react-icons/tb";
 import DiffText from "./DiffText";
 import { useEditor } from "@/contexts/EditorContext";
 import { diffWords } from "diff";
+import { useTranslate } from "@tolgee/react";
 
 interface TranslationResult {
   id: string;
@@ -58,7 +59,7 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
 }) => {
 
   const { scrollToLineNumber } = useEditor();
-
+  const { t } = useTranslate();
   // Get the current text to use (edited or original)
   const getCurrentText = (result: TranslationResult): string => {
     // If currently editing this result, use the current edit text
@@ -90,7 +91,7 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
     // Use the first line range from this specific result
     const [lineKey, range] = lineRanges[0];
     const lineNumber = parseInt(lineKey);
-    return `Line: ${lineNumber}(${range.from}-${range.to})`;
+    return `${t("translation.line")} ${lineNumber}(${range.from}-${range.to})`;
   };
 
   const countChanges = (oldText: string, newText: string): { additions: number; deletions: number } => {
@@ -183,7 +184,7 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
             {/* Source Text */}
             <div className="border-l-4 border-gray-300 pl-3">
               <div className="text-xs text-neutral-700 dark:text-neutral-100 mb-1 font-medium flex items-center justify-between">
-                <span className="text-neutral-800 dark:text-neutral-300">Source:</span>
+                <span className="text-neutral-800 dark:text-neutral-300">{t("translation.source")}</span>
                 {shouldShowExpandButton(result.originalText) && (
                   <Button
                     onClick={() => onToggleItemExpansion(index)}
@@ -210,13 +211,13 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
             <div className="border-l-4 border-secondary-300 pl-3">
               <div className="text-xs text-neutral-700 dark:text-neutral-100 mb-1 font-medium flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-neutral-800 dark:text-neutral-300">Translation:</span>
+                  <span className="text-neutral-800 dark:text-neutral-300">{t("translation.translation")}:</span>
                   {editedTexts[result.id] && (() => {
                     const changes = countChanges(result.translatedText, editedTexts[result.id]);
                     return (
                       <div className="flex items-center gap-1">
                         <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">
-                          Edited
+                          {t("translation.edited")}
                         </span>
                         {changes.additions > 0 && (
                           <span className="text-xs bg-green-100 text-green-800 px-1.5 py-0.5 rounded font-medium">
@@ -236,7 +237,7 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
                     return (
                       <div className="flex items-center gap-1">
                         <span className="text-xs bg-secondary-100 text-secondary-700 px-2 py-0.5 rounded-full">
-                          Updated
+                          {t("translation.updated")}
                         </span>
                         {changes.additions > 0 && (
                           <span className="text-xs bg-green-100 text-green-800 px-1.5 py-0.5 rounded font-medium">
@@ -283,7 +284,7 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
                       value={editedText}
                       onChange={(e) => onEditTextChange(e.target.value)}
                       className="w-full p-2 border border-gray-300 rounded text-sm resize-vertical min-h-[80px] font-sans"
-                      placeholder="Edit translation..."
+                      placeholder={t("translation.editTranslation")}
                       autoFocus
                     />
                     <div className="flex gap-2 justify-end">
@@ -294,7 +295,7 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
                         className="h-6 text-xs bg-green-600 hover:bg-green-700 text-white"
                       >
                         <Save className="w-3 h-3 mr-1" />
-                        Save
+                        {t("common.save")}
                       </Button>
                       <Button
                         onClick={onCancelEditing}
@@ -303,7 +304,7 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
                         className="h-6 text-xs"
                       >
                         <X className="w-3 h-3 mr-1" />
-                        Cancel
+                        {t("common.cancel")}
                       </Button>
                     </div>
                   </div>
@@ -330,8 +331,8 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
                     }`}
                     title={
                       editingId === null || editingId === result.id 
-                        ? "Click to edit translation" 
-                        : "Another translation is being edited"
+                        ? t("translation.clickToEditTranslation") 
+                        : t("translation.anotherTranslationIsBeingEdited")
                     }
                   >
                     <DiffText
@@ -369,8 +370,8 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
                     }`}
                     title={
                       editingId === null || editingId === result.id 
-                        ? "Click to edit translation" 
-                        : "Another translation is being edited"
+                        ? t("translation.clickToEditTranslation") 
+                        : t("translation.anotherTranslationIsBeingEdited")
                     }
                   >
                     <DiffText
@@ -408,8 +409,8 @@ const TranslationResults: React.FC<TranslationResultsProps> = ({
                     }`}
                     title={
                       editingId === null || editingId === result.id 
-                        ? "Click to edit translation" 
-                        : "Another translation is being edited"
+                        ? t("translation.clickToEditTranslation") 
+                        : t("translation.anotherTranslationIsBeingEdited")
                     }
                   >
                     {expandedItems.has(index)

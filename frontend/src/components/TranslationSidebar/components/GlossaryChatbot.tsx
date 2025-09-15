@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { BookOpen, MessageSquare, X, Loader2 } from "lucide-react";
+import { useTranslate } from "@tolgee/react";
 
 interface GlossaryChatbotProps {
   onStartGlossaryExtraction: () => void;
@@ -18,7 +19,7 @@ const GlossaryChatbot: React.FC<GlossaryChatbotProps> = ({
   disabled = false,
 }) => {
   const [isDismissed, setIsDismissed] = useState(false);
-
+  const { t } = useTranslate();
   const handleYesClick = () => {
     setIsDismissed(true);
     onStartGlossaryExtraction();
@@ -37,7 +38,7 @@ const GlossaryChatbot: React.FC<GlossaryChatbotProps> = ({
             <Loader2 className="w-3 h-3 text-purple-600 animate-spin" />
           </div>
           <p className="text-xs text-purple-800 leading-relaxed">
-            {isExtractingGlossary ? "Extracting glossary terms..." : "Analyzing consistency..."}
+            {isExtractingGlossary ? t("glossaryChatbot.extractingGlossaryTerms") : t("glossaryChatbot.analyzingConsistency")}
           </p>
         </div>
       </div>
@@ -56,7 +57,7 @@ const GlossaryChatbot: React.FC<GlossaryChatbotProps> = ({
       <button
         onClick={handleNoClick}
         className="absolute top-1 right-1 w-4 h-4 rounded-full hover:bg-white/50 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
-        title="Dismiss"
+        title={t("glossaryChatbot.dismiss")}
       >
         <X className="w-3 h-3" />
       </button>
@@ -68,8 +69,9 @@ const GlossaryChatbot: React.FC<GlossaryChatbotProps> = ({
         </div>
         <div className="flex-1">
           <p className="text-xs text-neutral-800 dark:text-neutral-100 leading-relaxed">
-            Great! I found <span className="font-medium text-primary-600 dark:text-primary-200">{translationResults.length}</span> translation{translationResults.length > 1 ? 's' : ''}. 
-            Would you like me to extract a glossary and check for terminology consistency?
+            {/* Great! I found <span className="font-medium text-primary-600 dark:text-primary-200">{translationResults.length}</span> translation{translationResults.length > 1 ? 's' : ''}. 
+            Would you like me to extract a glossary and check for terminology consistency? */}
+            {t("glossaryChatbot.foundTranslations", { count: translationResults.length })} {t("glossaryChatbot.extractGlossaryQuestion")}
           </p>
         </div>
       </div>
@@ -82,7 +84,7 @@ const GlossaryChatbot: React.FC<GlossaryChatbotProps> = ({
           size="sm"
           className="h-6 px-3 text-xs text-neutral-800 dark:text-neutral-100 border-neutral-300 hover:bg-white"
         >
-          Not now
+          {t("glossaryChatbot.notNow")}
         </Button>
         <Button
           onClick={handleYesClick}
@@ -91,7 +93,7 @@ const GlossaryChatbot: React.FC<GlossaryChatbotProps> = ({
           className="h-6 px-3 text-xs text-primary-600 dark:text-primary-200 border-primary-300 hover:bg-primary-100 bg-white"
         >
           <BookOpen className="w-3 h-3 mr-1" />
-          Yes, please!
+          {t("glossaryChatbot.yesPlease")}
         </Button>
       </div>
     </div>

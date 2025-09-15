@@ -6,12 +6,12 @@ import { fetchTools } from "@/api/workspace/tools";
 import { useUmamiTracking } from "@/hooks/use-umami-tracking";
 import { getUserContext } from "@/hooks/use-umami-tracking";
 import { useAuth } from "@/auth/use-auth-hook";
-
+import { useTranslate } from "@tolgee/react";
 const NavSidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { currentUser } = useAuth();
   const { trackSidebarToggled, trackPageVisit } = useUmamiTracking();
-
+  const { t } = useTranslate();
   const closeSidebar = () => {
     setIsOpen(false);
     trackSidebarToggled("nav_sidebar", false, getUserContext(currentUser));
@@ -63,13 +63,13 @@ const NavSidebar = () => {
   const navItems = [
     {
       iconComponent: Home,
-      name: "Workspace",
+      name: t("common.workspace"),
       link: "https://workspace.pecha.tools",
     },
     ...toolList,
     {
       iconComponent: Globe2Icon,
-      name: "Forum",
+      name: t("common.forum"),
       link: "https://forum.openpecha.org",
     },
   ];

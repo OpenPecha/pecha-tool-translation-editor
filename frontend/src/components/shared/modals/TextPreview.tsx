@@ -79,11 +79,11 @@ export function TextPreview({
       {/* Content Preview */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-medium text-gray-900">Content Preview</h3>
+          <h3 className="text-lg font-medium">{t("translation.contentPreview")}</h3>
           {fileContent.trim() && (
             <div className="flex items-center gap-1 text-green-600">
               <CheckCircle className="h-4 w-4" />
-              <span className="text-sm">Content loaded</span>
+              <span className="text-sm">{t("translation.contentLoaded")}</span>
             </div>
           )}
         </div>
@@ -93,13 +93,13 @@ export function TextPreview({
           rows={12}
           readOnly
           className="font-monlam resize-none border-gray-300 bg-gray-50 text-sm leading-relaxed"
-          placeholder="File content will appear here..."
+          placeholder={t("translation.fileContentWillAppearHere")}
         />
 
         {!fileContent.trim() && (
           <div className="flex items-center gap-2 text-amber-600 text-sm">
             <AlertCircle className="h-4 w-4" />
-            <span>No content found in the file</span>
+            <span>{t("translation.noContentFoundInTheFile")}</span>
           </div>
         )}
       </div>
@@ -111,7 +111,7 @@ export function TextPreview({
         confirmDisabled={!fileContent.trim() || !language}
         confirmLoading={createTranslationMutation.isPending}
         confirmText={t("translation.createTranslation")}
-        cancelText="Back to Upload"
+        cancelText={t("translation.backToUpload")}
       />
     </div>
   );

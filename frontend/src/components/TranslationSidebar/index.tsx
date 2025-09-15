@@ -11,6 +11,7 @@ import TranslationControls from "./components/TranslationControls";
 
 // Import the master hook
 import { useTranslationSidebarOperations } from "./hooks/useTranslationSidebarOperations";
+import { useTranslate } from "@tolgee/react";
 
 const TranslationSidebar: React.FC<{ documentId: string }> = ({
   documentId,
@@ -70,7 +71,7 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
 
   // Local state for settings modal
   const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
-
+  const { t } = useTranslate();
   return (
     <div
       data-translation-sidebar
@@ -104,8 +105,8 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
               className="mt-4"
               style={{ writingMode: "vertical-rl", textOrientation: "mixed" }}
             >
-              <span className="text-xs text-gray-500 font-medium">
-                Translate
+              <span className="text-xs font-medium">
+                {t("translation.translate")}
               </span>
             </div>
 
@@ -140,12 +141,12 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
                 variant="ghost"
                 size="icon"
                 className="w-6 h-6 rounded-md hover:bg-gray-100"
-                title="Collapse Translation Panel"
+                title={t("translation.collapseTranslationPanel")}
               >
                 <ChevronRight className="w-3 h-3 text-neutral-800 dark:text-neutral-100" />
               </Button>
 
-              <h3 className="text-sm font-medium text-neutral-800 dark:text-neutral-100">Translation</h3>
+              <h3 className="text-sm font-medium text-neutral-800 dark:text-neutral-100">{t("translation.translation")}</h3>
 
               <div className="flex items-center gap-1">
                 {translationResults.length > 0 && (
@@ -154,7 +155,7 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
                     variant="ghost"
                     size="icon"
                     className="w-6 h-6 rounded-md hover:bg-neutral-100 hover:text-red-600"
-                    title="Clear Translation Results"
+                    title={t("translation.clearTranslationResults")}
                   >
                     <Trash2 className="w-3 h-3" />
                   </Button>
@@ -190,7 +191,7 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
                       </div>
                       <div className="flex-1">
                         <p className="text-sm text-red-800 font-medium">
-                          Error
+                          {t("common.error")}
                         </p>
                         <p className="text-sm text-red-600 mt-1">{error}</p>
                         <div className="flex gap-2 mt-2">
@@ -203,7 +204,7 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
                             size="sm"
                             className="h-6 text-xs text-red-700 border-red-300 hover:bg-red-50"
                           >
-                            Retry
+                            {t("translation.retry")}
                           </Button>
                           <Button
                             onClick={() => setError(null)}
@@ -211,7 +212,7 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
                             size="sm"
                             className="h-6 text-xs text-red-600"
                           >
-                            Dismiss
+                            {t("translation.dismiss")}
                           </Button>
                         </div>
                       </div>
@@ -246,7 +247,7 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
                       <div className="flex items-center gap-2">
                         <Loader2 className="w-4 h-4 text-secondary-600 animate-spin" />
                         <span className="text-sm font-medium text-neutral-800 dark:text-neutral-100">
-                          Translating...
+                          {t("translation.translating")}
                         </span>
                       </div>
                       <Button
@@ -301,7 +302,7 @@ const TranslationSidebar: React.FC<{ documentId: string }> = ({
                     <div className="flex-1 flex items-center justify-center text-neutral-400 dark:text-neutral-400">
                       <div className="text-center">
                         <Languages className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                        <p className="text-sm">Select text to translate</p>
+                        <p className="text-sm">{t("translation.selectTextToTranslate")}</p>
                       </div>
                     </div>
                   )}
