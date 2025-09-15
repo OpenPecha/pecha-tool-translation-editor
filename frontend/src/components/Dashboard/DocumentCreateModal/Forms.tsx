@@ -10,6 +10,7 @@ import {
   FormSection,
 } from "@/components/shared/modals";
 import { DEFAULT_LANGUAGE_SELECTED } from "@/config";
+import { useTranslate } from "@tolgee/react";
 
 export type SelectedPechaType = {
   id: string;
@@ -36,6 +37,7 @@ export function NewPechaForm({
     null
   );
   const queryClient = useQueryClient();
+  const { t } = useTranslate();
 
   // Notify parent about validation state
   const isValid = !!(rootId && selectedLanguage && selectedLanguage !== "");
@@ -102,8 +104,8 @@ export function NewPechaForm({
 
           {rootId && (
             <FormSection
-              title="Additional Information"
-              description="Provide extra metadata for your document (optional)"
+              title={t("projects.additionalInformation")}
+              description={t("projects.ExtraMetadata")}
             >
               <MetaDataInput
                 setMetadata={setMetadata}

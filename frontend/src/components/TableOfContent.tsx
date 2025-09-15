@@ -262,7 +262,7 @@ const Toc = React.memo(function Toc({
 }: TocProps) {
   const { getQuill, quillEditors } = useEditor();
   const quill = getQuill(documentId);
-
+  const { t } = useTranslate();
   const scrollToHeading = useCallback(
     (id: string) => {
       if (!quill) return;
@@ -383,7 +383,7 @@ const Toc = React.memo(function Toc({
 
   if (!headings.length) {
     return (
-      <div className="text-sm italic text-gray-500">No headings found</div>
+      <div className="text-sm italic text-gray-500">{t("editor.noHeadingsFound")}</div>
     );
   }
 

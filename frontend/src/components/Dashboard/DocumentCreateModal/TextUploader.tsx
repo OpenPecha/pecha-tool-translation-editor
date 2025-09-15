@@ -4,6 +4,7 @@ import { QueryObserverResult, useMutation } from "@tanstack/react-query";
 import { createDocument } from "@/api/document";
 import { MAX_FILE_SIZE, MAX_FILE_SIZE_MB } from "@/utils/Constants";
 import { AlertCircle, FileText, Upload } from "lucide-react";
+import { useTranslate } from "@tolgee/react";
 
 const TextUploader = ({
   isRoot,
@@ -29,6 +30,7 @@ const TextUploader = ({
   const [file, setFile] = useState<File | null>(null);
   const [fileContent, setFileContent] = useState<string>("");
   const [fileSizeError, setFileSizeError] = useState<string>("");
+  const { t } = useTranslate();
 
   const uploadMutation = useMutation({
     mutationFn: async (file: File) => {
@@ -145,7 +147,8 @@ const TextUploader = ({
                 isLanguageDisabled ? "text-neutral-400 dark:text-neutral-500" : "text-neutral-700 dark:text-neutral-300"
               }`}
             >
-              Upload {isRoot ? "Root" : "Translation"} Text (.txt)
+              {/* Upload {isRoot ? t(`pecha.root`) : t(`pecha.translation`)} Text (.txt) */}
+              {t('upload_text', { type: isRoot ? t('pecha.root') : t('pecha.translation') })}
             </label>
             <div className="flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-700 px-2 py-1 rounded">
               <FileText className="h-3 w-3" />

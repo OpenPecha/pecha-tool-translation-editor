@@ -37,6 +37,7 @@ import {
   TextType,
   ModelName,
 } from "@/api/translate";
+import { useTranslate } from "@tolgee/react";
 
 interface TranslationConfig {
   targetLanguage: TargetLanguage;
@@ -63,6 +64,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   onOpenChange,
   onConfigChange,
 }) => {
+  const {t} = useTranslate();
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
@@ -70,7 +72,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           variant="ghost"
           size="icon"
           className="w-6 h-6 rounded-md"
-          title="Translation Settings"
+          title={t("translation.translationSettings")}
         >
           <Settings className="w-3 h-3" />
         </Button>
@@ -83,10 +85,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
             <div>
               <DialogTitle className="text-lg font-semibold">
-                Translation Settings
+                {t("translation.translationSettings")}
               </DialogTitle>
               <p className="text-sm mt-1">
-                Configure your translation preferences
+                {t("translation.configureTranslationPreferences")}
               </p>
             </div>
           </div>
@@ -97,7 +99,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-sm font-medium">
               <Globe className="w-4 h-4" />
-              Core Settings
+              {t("translation.coreSettings")}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -105,7 +107,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               <div className="space-y-2">
                 <Label className="text-sm font-medium flex items-center gap-2">
                   <Languages className="w-3 h-3" />
-                  Target Language
+                  {t("translation.targetLanguage")}
                 </Label>
                 <Select
                   value={config.targetLanguage}
@@ -130,7 +132,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               <div className="space-y-2">
                 <Label className="text-sm font-medium flex items-center gap-2">
                   <FileText className="w-3 h-3" />
-                  Content Type
+                  {t("translation.contentType")}
                 </Label>
                 <Select
                   value={config.textType}
@@ -157,7 +159,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-sm font-medium">
               <Bot className="w-4 h-4" />
-              AI Configuration
+              {t("translation.aiConfiguration")}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -165,7 +167,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               <div className="space-y-2">
                 <Label className="text-sm font-medium flex items-center gap-2">
                   <Bot className="w-3 h-3" />
-                  AI Model
+                  {t("translation.aiModel")}
                 </Label>
                 <Select
                   value={config.modelName}
@@ -193,7 +195,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                   className="text-sm font-medium flex items-center gap-2"
                 >
                   <Hash className="w-3 h-3" />
-                  Batch Size
+                  {t("translation.batchSize")}
                 </Label>
                 <Input
                   id="batch-size"
@@ -207,7 +209,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                   className="h-9"
                 />
                 <p className="text-xs">
-                  Lines processed per batch (1-10)
+                  {t("translation.linesProcessedPerBatch")}
                 </p>
               </div>
             </div>
@@ -217,7 +219,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-sm font-medium">
               <MessageSquare className="w-4 h-4" />
-              Custom Instructions
+              {t("translation.customInstructions")}
             </div>
 
             <div className="space-y-2">
@@ -226,7 +228,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 className="text-sm font-medium flex items-center gap-2"
               >
                 <MessageSquare className="w-3 h-3" />
-                Translation Guidelines
+                {t("translation.translationGuidelines")}
               </Label>
               <Textarea
                 id="user-rules"
@@ -236,8 +238,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 className="min-h-[80px] resize-none"
               />
               <p className="text-xs">
-                Provide additional context or specific rules for better
-                translation quality
+                {t("translation.translationGuidelinesDescription")}
               </p>
             </div>
           </div>
@@ -246,7 +247,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-sm font-medium">
               <BookOpen className="w-4 h-4" />
-              Glossary Extraction
+              {t("translation.glossaryExtraction")}
             </div>
 
             <div className="space-y-3">
@@ -254,10 +255,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 <div className="space-y-0.5">
                   <Label className="text-sm font-medium flex items-center gap-2">
                     <Lightbulb className="w-3 h-3" />
-                    Auto-extract Glossary
+                    {t("translation.autoExtractGlossary")}
                   </Label>
                   <p className="text-xs">
-                    Automatically extract key terms after translation
+                    {t("translation.automaticallyExtractKeyTermsAfterTranslation")}
                   </p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">

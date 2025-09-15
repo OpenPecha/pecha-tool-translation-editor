@@ -12,6 +12,7 @@ import {
   ErrorDisplay,
 } from "@/components/shared/modals";
 import { Label } from "@/components/ui/label";
+import { useTranslate } from "@tolgee/react";
 
 // Types for OpenPecha data structures
 interface Expression {
@@ -55,7 +56,7 @@ export function OpenPechaTextLoader({
   const [segmentationData, setSegmentationData] = useState<Array<{[key: string]: unknown}> | null>(null);
 
   const queryClient = useQueryClient();
-
+  const { t } = useTranslate();
   // Validation state
   const isValid = !!(
     selectedExpressionId && 
@@ -309,8 +310,8 @@ export function OpenPechaTextLoader({
 
       {/* Expression Selection */}
         <SearchableDropdown
-          label="Pecha"
-          placeholder="Search and select a pecha..."
+          label={t("openPecha.pecha")}
+          placeholder={t("openPecha.searchPecha")}
           options={expressionOptions}
           value={selectedExpressionId}
           onChange={setSelectedExpressionId}
@@ -323,8 +324,8 @@ export function OpenPechaTextLoader({
       {selectedExpressionId && (
         <div className="flex-1">
           <SearchableDropdown
-            label="Version"
-            placeholder="Select a version..."
+            label={t("openPecha.version")}
+            placeholder={t("openPecha.selectVersion")}
             options={manifestationOptions}
             value={selectedManifestationId}
             onChange={setSelectedManifestationId}
@@ -338,8 +339,8 @@ export function OpenPechaTextLoader({
       {selectedManifestationId && segmentationOptions.length > 0 && (
         <div className="flex-1">
           <SearchableDropdown
-            label="Segmentation Type"
-            placeholder="Select segmentation..."
+            label={t("openPecha.segmentationType")}
+            placeholder={t("openPecha.selectSegmentation")}
             options={segmentationOptions}
             value={selectedSegmentationId}
             onChange={setSelectedSegmentationId}
@@ -349,8 +350,8 @@ export function OpenPechaTextLoader({
 
      {selectedExpressionId && selectedManifestationId && segmentationOptions.length === 0 && (
         <div className="flex flex-1 flex-col space-y-2">
-            <Label className="text-sm font-medium text-gray-700">Segmentation Type</Label>
-            <p className="flex flex-1 text-sm text-red-500 items-center">No segmentation available</p>
+            <Label className="text-sm font-medium text-gray-700">{t("openPecha.segmentationType")}</Label>
+            <p className="flex flex-1 text-sm text-red-500 items-center">{t("openPecha.noSegmentationAvailable")}</p>
         </div>
       )}
       </div>
@@ -363,7 +364,7 @@ export function OpenPechaTextLoader({
               <CardContent className="py-6">
                 <div className="flex items-center justify-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Loading text content...</span>
+                  <span>{t("openPecha.loadingTextContent")}</span>
                 </div>
               </CardContent>
             </Card>
@@ -372,7 +373,7 @@ export function OpenPechaTextLoader({
               <CardContent className="pt-4">
                 <div className="flex items-center gap-2 text-red-600">
                   <AlertCircle className="h-4 w-4" />
-                  <span>Error loading text: {textContentError.message}</span>
+                  <span>{t("openPecha.errorLoadingText")}: {textContentError.message}</span>
                 </div>
               </CardContent>
             </Card>
@@ -382,10 +383,10 @@ export function OpenPechaTextLoader({
               {/* Content Preview */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium text-gray-900">Content Preview</h3>
+                  <h3 className="text-lg font-medium text-gray-900">{t("openPecha.contentPreview")}</h3>
                   <div className="flex items-center gap-1 text-green-600">
                     <CheckCircle className="h-4 w-4" />
-                    <span className="text-sm">Content loaded</span>
+                    <span className="text-sm">{t("openPecha.contentLoaded")}</span>
                   </div>
                 </div>
                 <div className="flex-1 space-y-2">
@@ -397,19 +398,19 @@ export function OpenPechaTextLoader({
                           )}
                         </h3>
                         <Badge variant="outline" className="text-xs">
-                          {segmentationData ? 'Segmented' : 'Full Text'}
+                          {segmentationData ? t("openPecha.segmented") : t("openPecha.fullText")}
                         </Badge>
                       </div>
 
                       <div className="flex flex-wrap gap-4 text-sm text-secondary-700">
                         <div className="flex items-center gap-1">
                           <Languages className="h-4 w-4" />
-                          <span>Language: {expressions.find((exp: Expression) => exp.id === selectedExpressionId)?.language}</span>
+                          <span>{t("common.language")}: {expressions.find((exp: Expression) => exp.id === selectedExpressionId)?.language}</span>
                         </div>
-                        <div>Words: {getWordCount(processedText)}</div>
-                        <div>Lines: {getLineCount(processedText)}</div>
+                        <div>{t("common.words")}: {getWordCount(processedText)}</div>
+                        <div>{t("common.lines")}: {getLineCount(processedText)}</div>
                         {segmentationData && (
-                          <div>Segments: {segmentationData.segments.length}</div>
+                          <div>{t("common.segments")}: {segmentationData.segments.length}</div>
                         )}
                       </div>
                     </div>
@@ -419,7 +420,7 @@ export function OpenPechaTextLoader({
                   rows={12}
                   readOnly
                   className="font-monlam resize-none border-gray-300 bg-gray-50 text-sm leading-relaxed"
-                  placeholder="Processed text will appear here..."
+                  placeholder={t("openPecha.processedTextWillAppearHere")}
                 />
               </div>
             </div>
@@ -428,7 +429,7 @@ export function OpenPechaTextLoader({
               <CardContent className="pt-6">
                 <div className="text-center text-gray-500">
                   <AlertCircle className="mx-auto h-8 w-8 mb-2" />
-                  <p>No text content available</p>
+                  <p>{t("openPecha.noTextContentAvailable")}</p>
                 </div>
               </CardContent>
             </Card>
