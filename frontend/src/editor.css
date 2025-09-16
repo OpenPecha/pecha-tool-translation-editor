@@ -342,6 +342,7 @@
     pointer-events: none;
     text-decoration: none;
     cursor: default;
+    color: var(--color-footnote-number);
     vertical-align: super;
     font-family: Georgia, 'Times New Roman', Times, serif;
     letter-spacing: 1px;
@@ -406,7 +407,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #1a73e8;
+    color: var(--color-footnote-number);
     font-size: 8px;
     font-weight: 500;
     width: 20px;

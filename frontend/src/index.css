@@ -101,6 +101,7 @@
   --font-monlam: 'monlam', sans-serif;
   --color-editor-background: #f8fafc;
   --color-footnote-background: #738596;
+  --color-footnote-number: #1a73e8;
 }
 
 
@@ -161,6 +162,7 @@ body {
   --sidebar-ring: oklch(0.552 0.016 285.938);
   --color-editor-background: #40474F;
   --color-footnote-background: #0b77f2;
+  --color-footnote-number: #A2CBF5;
 }
 
 @theme inline {
@@ -201,7 +203,7 @@ body {
   --color-sidebar-ring: var(--sidebar-ring);
   --color-editor-bg: var(--color-editor-background);
   --color-footnote-bg: var(--color-footnote-background);
-
+  --color-footnote-number: var(--color-footnote-number);
     /* New Design System - Primary Colors */
     --color-primary-50: #f1eff5;
     --color-primary-100: #ccb4f7;

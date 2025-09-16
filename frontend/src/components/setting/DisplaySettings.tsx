@@ -29,13 +29,13 @@ const DisplaySettings: React.FC<{}> = ({}) => {
   const isDark = theme === "dark" || isHtmlTagDark();
 
   const backgroundColorOptions = isDark ? [
-    { value: "#40474F", label: "Dark Gray", preview: "#40474F" },
-    { value: "#353D46", label: "Charcoal Gray", preview: "#353D46" },
-    { value: "#586674", label: "Slate Gray", preview: "#586674" }
+    { value: "#40474F", label: t("color.darkGray", "Dark Gray"), preview: "#40474F" },
+    { value: "#353D46", label: t("color.charcoalGray", "Charcoal Gray"), preview: "#353D46" },
+    { value: "#586674", label: t("color.slateGray", "Slate Gray"), preview: "#586674" }
   ] : [
-    { value: "#f8fafc", label: "Light Blue Gray", preview: "#f8fafc" },
-    { value: "#fffea6", label: "Pale Yellow", preview: "#fffea6" },
-    { value: "#a2cbf5", label: "Light Sky Blue", preview: "#a2cbf5" },
+    { value: "#f8fafc", label: t("color.lightBlueGray", "Light Blue Gray"), preview: "#f8fafc" },
+    { value: "#fffea6", label: t("color.paleYellow", "Pale Yellow"), preview: "#fffea6" },
+    { value: "#a2cbf5", label: t("color.lightSkyBlue", "Light Sky Blue"), preview: "#a2cbf5" },
   ]
   
   
