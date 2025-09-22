@@ -3,6 +3,7 @@ import { Languages } from "lucide-react";
 import SelectTranslation from "./SelectTranslation";
 import { Button } from "@/components/ui/button";
 import { IoIosArrowForward } from "react-icons/io";
+import { cn } from "@/lib/utils";
 
 type MenuOption =
   | "translations"
@@ -81,15 +82,24 @@ function InMenuWrapper({
   readonly onBackClick: () => void;
 }) {
   return (
-    <div className="h-full flex group relative  w-full">
+    <div className="h-full flex group relative w-full">
       {/* Line container */}
       <div className="relative h-full">
-        {/* Vertical Line (hidden by default, shows on hover) */}
-        <div className="absolute left-1/2 top-0 h-full w-px bg-gray-300 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+        {/* Vertical Line (hidden by default, shows on hover except on mobile) */}
+        <div className="absolute left-1/2 top-0 h-full w-px bg-gray-300 transform -translate-x-1/2 
+          opacity-100 
+          sm:opacity-0 sm:group-hover:opacity-100 
+          transition-opacity duration-200" 
+        />
 
-        {/* Arrow (hidden by default, shows on hover) */}
+        {/* Arrow (always visible on mobile, only on hover on desktop) */}
         <div
-          className="absolute bg-white border rounded-full p-2 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 cursor-pointer text-gray-700 text-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          className={cn(
+            "absolute bg-white border rounded-full p-2 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 cursor-pointer text-gray-700 text-xl",
+            "opacity-100", // always visible on mobile
+            "sm:opacity-0 sm:group-hover:opacity-100", // only on hover for sm and up
+            "transition-opacity duration-200"
+          )}
           onClick={onBackClick}
         >
           <IoIosArrowForward />
