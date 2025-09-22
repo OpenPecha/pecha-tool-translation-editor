@@ -88,16 +88,16 @@ function InMenuWrapper({
         {/* Vertical Line (hidden by default, shows on hover except on mobile) */}
         <div className="absolute left-1/2 top-0 h-full w-px bg-gray-300 transform -translate-x-1/2 
           opacity-100 
-          sm:opacity-0 sm:group-hover:opacity-100 
+          sm:opacity-0 sm:group-hover:opacity-100 sm:group-hover/content:opacity-100
           transition-opacity duration-200" 
         />
 
         {/* Arrow (always visible on mobile, only on hover on desktop) */}
         <div
           className={cn(
-            "absolute bg-white border rounded-full p-2 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 cursor-pointer text-gray-700 text-xl",
+            "absolute bg-white border rounded-full p-2 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 cursor-pointer text-gray-700 text-xl z-10",
             "opacity-100", // always visible on mobile
-            "sm:opacity-0 sm:group-hover:opacity-100", // only on hover for sm and up
+            "sm:opacity-0 sm:group-hover:opacity-100 sm:group-hover/content:opacity-100", // only on hover for sm and up, shows on gutter OR content hover
             "transition-opacity duration-200"
           )}
           onClick={onBackClick}
@@ -107,7 +107,7 @@ function InMenuWrapper({
       </div>
 
       {/* Content area */}
-      <div className="p-4 w-full">{children}</div>
+      <div className="group/content p-4 w-full">{children}</div>
     </div>
   );
 }

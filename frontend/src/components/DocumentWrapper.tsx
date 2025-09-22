@@ -62,7 +62,7 @@ function DocumentsWrapper() {
                 <div className="relative h-full w-full group">
                   {/* Close button positioned dynamically in the middle of the gutter */}
                   <button
-                    className="absolute bg-neutral-50 dark:bg-neutral-600 border-2 border-gray-300 cursor-pointer rounded-full p-2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-neutral-700 dark:text-neutral-300 text-xl opacity-100 sm:opacity-0 sm:group-hover:opacity-100 duration-200 shadow-lg hover:shadow-xl hover:border-gray-400 transition-opacity"
+                    className="absolute bg-neutral-50 dark:bg-neutral-600 border-2 border-gray-300 cursor-pointer rounded-full p-2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-neutral-700 dark:text-neutral-300 text-xl opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-hover/translation:opacity-100 duration-200 shadow-lg hover:shadow-xl hover:border-gray-400 transition-opacity z-10"
                     style={{ left: isMobile ? "97%" : `${splitPosition}%` }}
                     onClick={() => clearSelectedTranslationId()}
                     aria-label="Close translation view"
@@ -108,10 +108,12 @@ function DocumentsWrapper() {
                       />
                     
                     {/* Translation Editor + Sidebar */}
-                      <TranslationEditor
-                        selectedTranslationId={selectedTranslationId}
-                        isEditable={isEditable}
-                      />
+                      <div className="group/translation h-full w-full">
+                        <TranslationEditor
+                          selectedTranslationId={selectedTranslationId}
+                          isEditable={isEditable}
+                        />
+                      </div>
                   </Split>
                 </div>
               )}
