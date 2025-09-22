@@ -8,6 +8,7 @@ import ProjectItem from "./ProjectItem";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Project, deleteProject, updateProject } from "@/api/project";
 import formatTimeAgo from "@/lib/formatTimeAgo";
+import { formatDateByCategory, type TimeCategory } from "@/lib/dateUtils";
 import { useTranslate } from "@tolgee/react";
 import { useUmamiTracking } from "@/hooks/use-umami-tracking";
 import { getUserContext } from "@/hooks/use-umami-tracking";
@@ -16,9 +17,10 @@ import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 interface EachProjectProps {
   readonly project: Project;
   readonly view: "grid" | "list";
+  readonly timeCategory?: TimeCategory;
 }
 
-export default function EachProject({ project, view }: EachProjectProps) {
+export default function EachProject({ project, view, timeCategory }: EachProjectProps) {
   const { t } = useTranslate();
   const [showEditModal, setShowEditModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -116,6 +118,12 @@ export default function EachProject({ project, view }: EachProjectProps) {
     project.roots && project.roots.length > 0
       ? `/documents/${project.roots[0]?.id}`
       : "#";
+  
+  // Format date based on time category or fallback to relative time
+  const formattedDate = timeCategory 
+    ? formatDateByCategory(project.updatedAt, timeCategory)
+    : formatTimeAgo(project.updatedAt);
+  
   return (
     <>
       <Link to={url} className=" " onClick={handleProjectClick}>
@@ -126,7 +134,7 @@ export default function EachProject({ project, view }: EachProjectProps) {
               ? project.roots[0].name
               : t("projects.noRootDocument")
           }
-          date={formatTimeAgo(project.updatedAt)}
+          date={formattedDate}
           hasDocument={project.roots ? project.roots.length > 0 : false}
           documentCount={documentCount}
           hasSharedUsers={false}
