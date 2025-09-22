@@ -13,6 +13,8 @@ import TranslationSidebar from "./TranslationSidebar";
 import { useTranslationSidebarParams } from "@/hooks/useQueryParams";
 import Split from "react-split";
 
+
+import isMobile from "@/lib/isMobile";
 export type { Translation } from "@/hooks/useCurrentDoc";
 
 function DocumentsWrapper() {
@@ -78,9 +80,9 @@ function DocumentsWrapper() {
                     gutterAlign="center"
                     snapOffset={30}
                     dragInterval={1}
-                    direction="horizontal"
+                    direction={isMobile?"vertical":"horizontal"}
                     cursor="col-resize"
-                    className="h-full flex w-full"
+                  className={`split-pane h-full flex w-full overflow-hidden ${isMobile?"flex-col":"flex-row"}`}
                     gutterStyle={() => ({
                       backgroundColor: '#e5e7eb',
                       border: '1px solid #d1d5db',
@@ -144,9 +146,12 @@ function TranslationEditor({
       </div>
       
       {/* Translation Sidebar - Sticky */}
-      <div className="h-full overflow-y-auto sticky top-0">
+      {
+!isMobile &&
+       <div className="h-full overflow-y-auto sticky top-0">
         <TranslationSidebar documentId={selectedTranslationId!} />
       </div>
+}
     </div>
   );
 }
@@ -159,27 +164,27 @@ function Loader({ show }: { show: boolean }) {
     <div className="absolute inset-0 flex bg-white/80 dark:bg-neutral-900/80 z-50">
       {/* Main content skeleton */}
       <div className="flex-1 p-6 space-y-4">
-        <div className="h-10 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-3/4 mb-8"></div>
-        <div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-full"></div>
-        <div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-5/6"></div>
-        <div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-4/6"></div>
-        <div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-5/6"></div>
-        <div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-3/6"></div>
-        <div className="h-64 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-full mt-6"></div>
-        <div className="h-24 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-full mt-4"></div>
+        <div className="h-10 bg-neutral-200 dark:bg-neutral-600 rounded-md animate-pulse w-3/4 mb-8"></div>
+        <div className="h-6 bg-neutral-200 dark:bg-neutral-600 rounded-md animate-pulse w-full"></div>
+        <div className="h-6 bg-neutral-200 dark:bg-neutral-600 rounded-md animate-pulse w-5/6"></div>
+        <div className="h-6 bg-neutral-200 dark:bg-neutral-600 rounded-md animate-pulse w-4/6"></div>
+        <div className="h-6 bg-neutral-200 dark:bg-neutral-600 rounded-md animate-pulse w-5/6"></div>
+        <div className="h-6 bg-neutral-200 dark:bg-neutral-600 rounded-md animate-pulse w-3/6"></div>
+        <div className="h-64 bg-neutral-200 dark:bg-neutral-600 rounded-md animate-pulse w-full mt-6"></div>
+        <div className="h-24 bg-neutral-200 dark:bg-neutral-600 rounded-md animate-pulse w-full mt-4"></div>
       </div>
 
       {/* Sidebar skeleton */}
-      <div className="w-20 h-full border-r border-neutral-200 dark:border-neutral-700 p-4 space-y-4">
-        <div className="h-8 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-3/4"></div>
-        <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-5/6 mt-6"></div>
-        <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-4/6 mt-2"></div>
-        <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-5/6 mt-2"></div>
-        <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-3/6 mt-2"></div>
+      <div className="w-20 h-full border-r border-neutral-200 dark:border-neutral-600 p-4 space-y-4">
+        <div className="h-8 bg-neutral-200 dark:bg-neutral-600 rounded-md animate-pulse w-3/4"></div>
+        <div className="h-4 bg-neutral-200 dark:bg-neutral-600 rounded-md animate-pulse w-5/6 mt-6"></div>
+        <div className="h-4 bg-neutral-200 dark:bg-neutral-600 rounded-md animate-pulse w-4/6 mt-2"></div>
+        <div className="h-4 bg-neutral-200 dark:bg-neutral-600 rounded-md animate-pulse w-5/6 mt-2"></div>
+        <div className="h-4 bg-neutral-200 dark:bg-neutral-600 rounded-md animate-pulse w-3/6 mt-2"></div>
         <div className="mt-8 space-y-3">
-          <div className="h-10 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-full"></div>
-          <div className="h-10 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-full"></div>
-          <div className="h-10 bg-neutral-200 dark:bg-neutral-700 rounded-md animate-pulse w-full"></div>
+          <div className="h-10 bg-neutral-200 dark:bg-neutral-600 rounded-md animate-pulse w-full"></div>
+          <div className="h-10 bg-neutral-200 dark:bg-neutral-600 rounded-md animate-pulse w-full"></div>
+          <div className="h-10 bg-neutral-200 dark:bg-neutral-600 rounded-md animate-pulse w-full"></div>
         </div>
       </div>
     </div>
