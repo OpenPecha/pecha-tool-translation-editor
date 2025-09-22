@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Delete, FileText, MoreVertical, Users, Share2 } from "lucide-react";
+import { FileText, MoreVertical, Users, Share2 } from "lucide-react";
 import DocIcon from "@/assets/doc_icon.png";
 import {
   DropdownMenu,
@@ -46,12 +46,12 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
   if (view === "list") {
     return (
       <div className="flex items-center py-2 px-1 border-b border-gray-200 dark:border-neutral-500 hover:bg-secondary-50 hover:dark:bg-neutral-700 transition-all rounded-md">
-        <div className="flex-shrink-0 mr-4">
+        <div className="flex-shrink-0 mr-4 w-[26px] flex justify-center">
           <img
             alt="icon"
             src={DocIcon}
             width={26}
-            className=" object-contain"
+            className="object-contain"
           />
         </div>
 
@@ -82,15 +82,23 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
               {subtitle}
             </p>
           )}
+          {/* Mobile: Show owner and date below title */}
+          <div className="flex items-center gap-4 mt-1 text-xs text-neutral-500 dark:text-neutral-400 sm:hidden">
+            <span>{owner ?? "—"}</span>
+            <span>•</span>
+            <span>{date}</span>
+          </div>
         </div>
 
-        <div className=" text-sm text-neutral-500 dark:text-neutral-400 mx-4  w--fit md:w-36 text-right">
+        {/* Desktop: Show owner and date in separate columns */}
+        <div className="hidden sm:flex flex-shrink-0 text-sm text-neutral-500 dark:text-neutral-400 mx-4 w-36 text-right">
           {owner ?? "—"}
         </div>
 
-        <div className="flex-shrink-0 text-sm text-neutral-500 dark:text-neutral-400 w-fit md:w-36">{date}</div>
+        <div className="hidden sm:flex flex-shrink-0 text-sm text-neutral-500 dark:text-neutral-400 w-36">{date}</div>
 
-        <div className="flex-shrink-0 ml-2">
+
+        <div className="flex-shrink-0 ml-2 w-[52px] flex justify-center">
           <ProjectItemDropdownMenu
             hasPermission={hasPermission}
             updateDocument={updateDocument}
