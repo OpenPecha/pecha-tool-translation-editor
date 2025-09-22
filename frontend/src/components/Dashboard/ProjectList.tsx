@@ -161,9 +161,9 @@ const ProjectsSection = ({
         
         {/* Project title section - aligned with name column */}
         <div className="flex-grow min-w-0">
-          <h2 className="text-xl font-medium text-neutral-900 dark:text-neutral-100">
+          <span className="text-md md:text-xl font-medium text-neutral-900 dark:text-neutral-100">
             My Projects
-          </h2>
+          </span>
         </div>
 
         {/* Owner Filter Dropdown - aligned with owner column */}
@@ -307,9 +307,9 @@ const ProjectsSection = ({
       {/* Categorized Projects */}
       {categorizedProjects.map((category) => (
         <div key={category.category} className="mb-8">
-          <h3 className="text-sm text-neutral-600 dark:text-neutral-300 mb-3 px-1">
+          <div className=" text-smtext-neutral-600 dark:text-neutral-300 mb-3 px-1">
             {getCategoryTitle(category.category)}
-          </h3>
+          </div>
           <div
             className={`${
               view === "grid"

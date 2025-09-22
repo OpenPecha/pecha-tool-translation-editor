@@ -6,7 +6,7 @@ import { QuillVersionProvider } from "@/contexts/VersionContext";
 import { FootNoteProvider } from "@/contexts/FootNoteContext";
 import type { Document } from "@/hooks/useCurrentDoc";
 
-const RealTimeEditor = ({
+const DocumentEditor = ({
   docId,
   isEditable,
   currentDoc,
@@ -35,4 +35,4 @@ const RealTimeEditor = ({
   );
 };
 
-export default RealTimeEditor;
+export default DocumentEditor;

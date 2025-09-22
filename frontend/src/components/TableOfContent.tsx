@@ -18,6 +18,8 @@ import {
 } from "@/stores/tableOfContentStore";
 import { BookOpen, Dot } from "lucide-react";
 import { useTranslate } from "@tolgee/react";
+import isMobile from "@/lib/isMobile";
+
 
 interface Heading {
   text: string;
@@ -203,7 +205,8 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
 
       <div
         className={cn(
-          "relative inset-y-0 left-0 max-w-64 transition-all duration-300 overflow-hidden ease-in-out z-20",
+          isMobile?"absolute bg-neutral-700 ":"relative"
+          ," inset-y-0 left-0 max-w-64 transition-all duration-300 overflow-hidden ease-in-out z-20",
           isOpen(documentId) ? "translate-x-0" : "-translate-x-full hidden"
         )}
       >

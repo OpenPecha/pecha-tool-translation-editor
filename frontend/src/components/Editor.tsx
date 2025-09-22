@@ -315,9 +315,9 @@ const Editor = ({
         />,
         document.getElementById("toolbar-container")!
       )}
-      <div className="relative w-full flex flex-1 h-full ">
+            <div className="relative w-full flex flex-1 h-full overflow-hidden  ">
         <TableOfContent documentId={documentId} />
-        <div className="editor-container w-full flex flex-1  relative max-w-6xl mx-auto  ">
+        <div className="editor-container w-full h-full flex flex-1  relative max-w-6xl mx-auto  ">
           {showLineNumbers && (
             <LineNumberVirtualized
               editorRef={editorRef}

@@ -55,7 +55,7 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
           />
         </div>
 
-        <div className="flex-grow min-w-0">
+        <div className="flex-grow  w-fit md:w-auto">
           <div className="flex items-center">
             <span className="text-sm font-medium truncate capitalize">
               {title}
@@ -96,6 +96,7 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
         </div>
 
         <div className="hidden sm:flex flex-shrink-0 text-sm text-neutral-500 dark:text-neutral-400 w-36">{date}</div>
+
 
         <div className="flex-shrink-0 ml-2 w-[52px] flex justify-center">
           <ProjectItemDropdownMenu

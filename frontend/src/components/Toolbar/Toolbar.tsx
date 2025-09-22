@@ -14,9 +14,7 @@ import { createPortal } from "react-dom";
 import VersionDiff from "./VersionDiff";
 import Quill from "quill";
 import { useAuth } from "@/auth/use-auth-hook";
-import FootnoteSvg from "@/assets/toolbar/footnote.svg";
-import { FootnoteIcon } from "./ToolbarIcons";
-
+import isMobile from "@/lib/isMobile";
 const isEnabled = !EDITOR_READ_ONLY;
 
 interface ToolbarProps {
@@ -187,11 +185,12 @@ const Toolbar = ({
       style={{
         display: showToolbar && isAuthenticated && isEditable ? "flex" : "none", // Add isEditable check
         opacity: showToolbar && isAuthenticated && isEditable ? 1 : 0, // Add isEditable check
-        width: "94vw",
+        width: !isMobile?"94vw":undefined,
         position: "relative",
-        margin: "0 auto",
+        margin: "5px auto",
+        borderRadius: !isMobile?"75px":undefined,
       }}
-      className="bg-neutral-100 dark:bg-neutral-800 rounded-full"
+  className="bg-neutral-100 dark:bg-neutral-800/40  flex-wrap"
     >
       <div className="flex items-center flex-1 h-full self-center">
         <span className="ql-formats" style={isEnabledStyle}>
@@ -206,12 +205,15 @@ const Toolbar = ({
             <option value="monlam">Monlam</option> {/* Custom font */}
           </select>
         </span>
-        <span className="ql-formats" title="Heading" style={isEnabledStyle}>
+        {
+!isMobile &&
+         <span className="ql-formats" title="Heading" style={isEnabledStyle}>
           <HeaderDropdown
             value={currentHeader}
             onChange={handleHeadingChange}
           />
         </span>
+            }
         {/* <span className="ql-formats" title="Size" style={isEnabledStyle}>
               <select className="ql-size">
                 <option value="small" />
@@ -223,8 +225,13 @@ const Toolbar = ({
         <div className="flex items-center gap-2" style={isEnabledStyle}>
           <span className="ql-formats">
             <button className="ql-bold" title="Bold" />
+            {
+              !isMobile &&
+              <>
             <button className="ql-italic" title="Italic" />
             <button className="ql-underline" title="Underline" />
+              </>
+            }
           </span>
         </div>
         {/* <select className="ql-color"></select> */}
@@ -292,7 +299,9 @@ const Toolbar = ({
             document.getElementById("diff-portal")!
           )}
       </div>
-      <div className="flex items-center gap-3 h-full">
+      {
+!isMobile &&
+        <div className="flex items-center gap-3 h-full">
         {/* Saving indicator */}
         <div className="flex items-center gap-1">
           {synced ? (
@@ -310,6 +319,7 @@ const Toolbar = ({
           <EditableDocumentName documentId={documentId} documentName={documentName} />
         )}
       </div>
+}
     </div>
   );
 };

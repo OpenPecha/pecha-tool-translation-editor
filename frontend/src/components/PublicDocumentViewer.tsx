@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect } from "react";
+import React, { memo, useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, AlertCircle, Globe, Eye, FileText } from "lucide-react";
@@ -15,6 +15,8 @@ import { useCurrentDoc } from "@/hooks/useCurrentDoc";
 import { useTranslationSidebarParams } from "@/hooks/useQueryParams";
 import { createPortal } from "react-dom";
 import { IoIosArrowForward } from "react-icons/io";
+import Split from "react-split";
+import isMobile from "@/lib/isMobile";
 
 import DocumentEditor from "./DocumentEditor";
 import PublicSideMenu from "./PublicSideMenu";
@@ -43,9 +45,10 @@ const PublicDocumentViewer: React.FC<PublicDocumentViewerProps> = ({
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const documentId = propDocumentId || paramDocumentId;
+  const [splitPosition, setSplitPosition] = useState<number>(40);
 
   // Use URL parameters for selected translation
-  const { selectedTranslationId, setSelectedTranslationId } = useTranslationSidebarParams();
+  const { selectedTranslationId, setSelectedTranslationId, clearSelectedTranslationId } = useTranslationSidebarParams();
 
   // Handle translation selection
   const handleSelectTranslation = useCallback(
@@ -153,7 +156,9 @@ const PublicDocumentViewer: React.FC<PublicDocumentViewerProps> = ({
                 className="flex-1"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
+                <span className="hidden md:block">
                 {isAuthenticated ? "Back to Dashboard" : "Go to Login"}
+                </span>
               </Button>
             </div>
           </CardContent>
@@ -185,21 +190,73 @@ const PublicDocumentViewer: React.FC<PublicDocumentViewerProps> = ({
           {/* Main editor container - exactly like DocumentWrapper */}
           <div className="grid grid-rows-[1fr] h-full">
             <div className="relative flex px-2 w-full overflow-hidden">
-              <PublicDocumentEditor
-                docId={documentId}
-                currentDoc={documentData}
-              />
-              {/* Conditionally render side menu or translation editor */}
               {!selectedTranslationId ? (
-                <PublicSideMenu
-                  documentId={documentId!}
-                  onSelectTranslation={handleSelectTranslation}
-                />
+                <>
+                  <PublicDocumentEditor
+                    docId={documentId}
+                    currentDoc={documentData}
+                  />
+                  <PublicSideMenu
+                    documentId={documentId!}
+                    onSelectTranslation={handleSelectTranslation}
+                  />
+                </>
               ) : (
-                <PublicTranslationEditor
-                  selectedTranslationId={selectedTranslationId}
-                  onClose={() => handleSelectTranslation(null)}
-                />
+                <div className="relative h-full w-full group">
+                  {/* Close button positioned dynamically in the middle of the gutter */}
+                  <button
+                    className="absolute bg-neutral-50 dark:bg-neutral-600 border-2 border-gray-300 cursor-pointer rounded-full p-2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-neutral-700 dark:text-neutral-300 text-xl opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-hover/translation:opacity-100 duration-200 shadow-lg hover:shadow-xl hover:border-gray-400 transition-opacity z-10"
+                    style={{ left: isMobile ? "97%" : `${splitPosition}%` }}
+                    onClick={() => clearSelectedTranslationId()}
+                    aria-label="Close translation view"
+                    title="Close translation view"
+                    type="button"
+                  >
+                    <IoIosArrowForward />
+                  </button>
+                  
+                  <Split
+                    sizes={[splitPosition, 100 - splitPosition]}
+                    minSize={[300, 400]}
+                    expandToMin={false}
+                    gutterSize={8}
+                    gutterAlign="center"
+                    snapOffset={30}
+                    dragInterval={1}
+                    direction={isMobile?"vertical":"horizontal"}
+                    cursor="col-resize"
+                    className={`split-pane h-full flex w-full overflow-hidden ${isMobile?"flex-col":"flex-row"}`}
+                    gutterStyle={() => ({
+                      backgroundColor: '#e5e7eb',
+                      border: '1px solid #d1d5db',
+                      cursor: 'col-resize',
+                      position: 'relative',
+                    })}
+                    onDragStart={() => {
+                      document.body.style.cursor = 'col-resize';
+                    }}
+                    onDragEnd={(sizes) => {
+                      document.body.style.cursor = '';
+                      setSplitPosition(sizes[0]);
+                    }}
+                    onDrag={(sizes) => {
+                      setSplitPosition(sizes[0]);
+                    }}
+                  >
+                    {/* Root Editor */}
+                    <PublicDocumentEditor
+                      docId={documentId}
+                      currentDoc={documentData}
+                    />
+                    
+                    {/* Translation Editor */}
+                    <div className="group/translation h-full w-full">
+                      <PublicTranslationEditor
+                        selectedTranslationId={selectedTranslationId}
+                      />
+                    </div>
+                  </Split>
+                </div>
               )}
             </div>
           </div>
@@ -212,26 +269,11 @@ const PublicDocumentViewer: React.FC<PublicDocumentViewerProps> = ({
 // Translation Editor Component for Public View
 const PublicTranslationEditor: React.FC<{
   selectedTranslationId: string;
-  onClose: () => void;
-}> = ({ selectedTranslationId, onClose }) => {
+}> = ({ selectedTranslationId }) => {
   const { currentDoc } = useCurrentDoc(selectedTranslationId);
 
   return (
-    <div className="flex-1 relative w-full flex group">
-      <div className="relative h-full">
-        {/* Vertical Line (hidden by default, shows on hover) */}
-        <div className="absolute left-1/2 top-0 h-full w-px bg-gray-300 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-        {/* Arrow (hidden by default, shows on hover) */}
-        <button
-          className="absolute bg-white border z-[99] cursor-pointer rounded-full p-2 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-700 text-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-          onClick={onClose}
-          aria-label="Close translation view"
-          title="Close translation view"
-          type="button"
-        >
-          <IoIosArrowForward />
-        </button>
-      </div>
+    <div className="h-full w-full">
       <PublicDocumentEditor
         docId={selectedTranslationId}
         currentDoc={currentDoc}
@@ -291,7 +333,10 @@ const PublicNavbar: React.FC<{
 
           <Button onClick={onBackToApp} variant="outline" size="sm">
             <ArrowLeft className="h-4 w-4 mr-2" />
+            <span className="hidden md:block">
+
             {isAuthenticated ? "Back to Dashboard" : "Sign In to Collaborate"}
+            </span>
           </Button>
         </div>
       </div>
