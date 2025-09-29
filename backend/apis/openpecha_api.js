@@ -2,10 +2,10 @@ const API_ENDPOINT = process.env.OPENPECHA_ENDPOINT;
 
 /**
  * Step 1: Fetch list of root expressions (title + id)
- * GET /metadata?type=root
+ * GET /texts?type=root
  */
 async function getExpressions(type) {
-  let url=`${API_ENDPOINT}/metadata`;
+  let url=`${API_ENDPOINT}/texts`;
   if(type){
     url+=`?type=${type}`;
   }
@@ -26,10 +26,10 @@ async function getExpressions(type) {
 
 /**
  * Step 2: Fetch metadata of selected expression
- * GET /metadata/{expression_id}
+ * GET /texts/{text_id}
  */
-async function getExpression(expressionId) {
-  const response = await fetch(`${API_ENDPOINT}/metadata/${expressionId}`, {
+async function getExpression(text_id) {
+  const response = await fetch(`${API_ENDPOINT}/texts/${text_id}`, {
     headers: {
       accept: "application/json",
       "Content-Type": "application/json",
@@ -38,7 +38,7 @@ async function getExpression(expressionId) {
 
   if (!response.ok) {
     throw new Error(
-      `Failed to fetch expression metadata: ${response.statusText}`
+      `Failed to fetch text metadata: ${response.statusText}`
     );
   }
 
@@ -48,11 +48,11 @@ async function getExpression(expressionId) {
 
 /**
  * Step 3: Get list of available manifestations for an expression
- * GET /metadata/{expression_id}/manifestations
+ * GET /texts/{text_id}/instances
  */
-async function getExpressionTexts(expressionId) {
+async function getExpressionTexts(text_id) {
   const response = await fetch(
-    `${API_ENDPOINT}/metadata/${expressionId}/texts`,
+    `${API_ENDPOINT}/texts/${text_id}/instances`,
     {
       headers: {
         accept: "application/json",
@@ -63,7 +63,7 @@ async function getExpressionTexts(expressionId) {
 
   if (!response.ok) {
     throw new Error(
-      `Failed to fetch expression manifestations: ${response.statusText}`
+      `Failed to fetch text instances: ${response.statusText}`
     );
   }
 
@@ -73,10 +73,10 @@ async function getExpressionTexts(expressionId) {
 
 /**
  * Step 4: Fetch serialized text for translation
- * GET /text?id=<manifestation_id>
+ * GET /instances/{instance_id}
  */
-async function getText(textId) {
-  const response = await fetch(`${API_ENDPOINT}/text/${textId}`, {
+async function getText(instanceId) {
+  const response = await fetch(`${API_ENDPOINT}/instances/${instanceId}`, {
     headers: {
       accept: "application/json",
       "Content-Type": "application/json",
@@ -85,7 +85,7 @@ async function getText(textId) {
 
   if (!response.ok) {
     throw new Error(
-      `Failed to fetch manifestation text: ${response.statusText}`
+      `Failed to fetch instance text: ${response.statusText}`
     );
   }
 

@@ -70,10 +70,12 @@ function MethodSelection({
   selectedMethod,
   onMethodSelect,
   availableMethods,
+  onDoubleClick,
 }: {
   readonly selectedMethod: UploadMethod | null;
   readonly onMethodSelect: (method: UploadMethod) => void;
   readonly availableMethods: AvailableMethodType[];
+  readonly onDoubleClick: () => void;
 }) {
   const { t } = useTranslate();
 
@@ -116,6 +118,7 @@ function MethodSelection({
                   onMethodSelect(method.type);
                 }
               }}
+              onDoubleClick={onDoubleClick}
               className={cn(
                 "w-full p-6 border-2 rounded-lg text-left transition-all hover:shadow-md focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-secondary-500",
                 selectedMethod === method.type
@@ -225,7 +228,7 @@ function DocumentCreateModal() {
 
   const availableMethods: AvailableMethodType[] = [
     { type: "file", label: t("common.file") , isDisabled: false},
-    { type: "openpecha", label: t("common.openpecha") , isDisabled: true},
+    { type: "openpecha", label: t("common.openpecha") , isDisabled: false},
   ];
 
   const trigger = (
@@ -283,6 +286,7 @@ function DocumentCreateModal() {
             selectedMethod={selectedMethod}
             onMethodSelect={setSelectedMethod}
             availableMethods={availableMethods}
+            onDoubleClick={handleNext}
           />
         );
 
