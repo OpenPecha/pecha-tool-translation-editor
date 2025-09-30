@@ -78,15 +78,10 @@ export function UploadMethodTabs({
             disabled={tab.disabled}
             className="w-full flex items-center justify-center gap-2 py-2.5 px-3 text-sm font-medium transition-all duration-200 data-[state=active]:bg-white dark:data-[state=active]:bg-neutral-700 data-[state=active]:shadow-sm data-[state=active]:text-slate-900 data-[state=active]:border data-[state=active]:border-slate-200 dark:text-neutral-300 dark:hover:text-neutral-100 rounded-md"
           >
-            <span className={`transition-colors duration-200 ${tab.value === activeMethod ? 'text-neutral-700 dark:text-neutral-200' : 'text-neutral-600 dark:text-neutral-200'}`}>
+            <span className={`hidden md:inline transition-colors duration-200 ${tab.value === activeMethod ? 'text-neutral-700 dark:text-neutral-200' : 'text-neutral-600 dark:text-neutral-200'}`}>
               {tab.icon}
             </span>
-            <span className="hidden sm:inline">{tab.label}</span>
-            <span className="sm:hidden">
-              <span className={`transition-colors duration-200 ${tab.value === activeMethod ? 'text-neutral-700 dark:text-neutral-300' : 'text-gray-600 dark:text-neutral-300'}`}>
-                {tab.icon}
-              </span>
-            </span>
+            <span className="inline">{tab.label}</span>
             {tab.comingSoon || tab.disabled   && (
               <span className="ml-1 text-xs text-amber-500 font-normal">
                 (Soon)
