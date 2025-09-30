@@ -11,7 +11,7 @@ import Documentation from "./documentation/Documentation";
 import PublicDocumentViewer from "./components/PublicDocumentViewer";
 import { injectUmami } from "./analytics";
 import { Layout, SuspenceWithLoadingFallback } from "./pages/layout";
-
+import { UserbackProvider } from "./contexts/UserbackProvider";
 const ProjectList = lazy(() => import("./components/Dashboard/ProjectList"));
 const QuillVersionProvider = lazy(() =>
   import("./contexts/VersionContext").then((module) => ({
@@ -33,17 +33,16 @@ function AppContent() {
   const currentLanguage = useCurrentLanguage();
   return (
     <div
-      className={`flex s flex-col h-full ${
-        currentLanguage === "bo" && "font-monlam-2 !text-md"
-      }`}
+      className={`flex s flex-col h-full ${currentLanguage === "bo" && "font-monlam-2 !text-md"
+        }`}
     >
       <Routes>
         <Route
           path="/"
           element={
-              <Layout>
-                <ProjectList />
-              </Layout>
+            <Layout>
+              <ProjectList />
+            </Layout>
           }
         />
         <Route path="/login" element={<Login />} />
@@ -79,13 +78,15 @@ function AppContent() {
 
 function App() {
   return (
-        <TolgeeProvider>
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
+    <TolgeeProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <UserbackProvider>
           <AppContent />
-      </AuthProvider>
-    </QueryClientProvider>
-        </TolgeeProvider>
+          </UserbackProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </TolgeeProvider>
   );
 }
 
