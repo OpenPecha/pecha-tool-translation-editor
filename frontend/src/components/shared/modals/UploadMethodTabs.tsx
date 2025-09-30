@@ -47,8 +47,7 @@ export function UploadMethodTabs({
     openpecha: {
       value: "openpecha",
       label: t("common.openpecha"),
-      icon: <MdApi size={16} className="text-gray-600"/>,
-      disabled: true,
+      icon: <MdApi size={16} className="text-gray-600"/>
     },
     ai: {
       value: "ai",

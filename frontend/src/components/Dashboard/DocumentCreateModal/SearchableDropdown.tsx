@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,7 @@ export function SearchableDropdown({
 }: SearchableDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const filteredOptions = useMemo(() => {
     if (!searchTerm) return options;
     
@@ -52,11 +52,22 @@ export function SearchableDropdown({
     setSearchTerm("");
   };
 
+  const handleClickOutside = (e: MouseEvent) => {
+    if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      setIsOpen(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <div className="space-y-2">
       <Label className="text-sm font-medium text-neutral-900 dark:text-neutral-300">{label}</Label>
       
-      <div className="relative">
+      <div className="relative" ref={dropdownRef}>
         <Button
           type="button"
           variant="outline"
@@ -67,7 +78,7 @@ export function SearchableDropdown({
           disabled={disabled || loading}
         >
           <span className="truncate">
-            {loading ? "Loading..." : selectedOption ? selectedOption.label : placeholder}
+            {loading ? `Loading ${label}...` : selectedOption ? selectedOption.label : placeholder}
           </span>
           <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
@@ -80,7 +91,7 @@ export function SearchableDropdown({
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400" />
                 <Input
-                  placeholder="Search languages..."
+                  placeholder={`Search ${label}...`}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-9 text-sm border-neutral-200 focus:border-neutral-400 focus:ring-2 focus:ring-neutral-100"

@@ -128,8 +128,8 @@ export function OpenPechaTranslationLoader({
       setSegmentationData(null);
       return;
     }
-
-    const selectedSegmentation = textContent.annotations?.segmentation[selectedSegmentationId];
+    console.log("textContent :::", textContent);
+    const selectedSegmentation = textContent.annotations?.segmentation ? textContent.annotations.segmentation[selectedSegmentationId] : null;
     if (!selectedSegmentation || !Array.isArray(selectedSegmentation)) {
       setProcessedText(textContent.base || "");
       setSegmentationData(null);
