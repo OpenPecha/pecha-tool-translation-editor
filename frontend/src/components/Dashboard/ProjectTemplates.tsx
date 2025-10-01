@@ -2,8 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { AlertCircle, BookOpen, Loader2, Languages } from "lucide-react";
+import { AlertCircle, BookOpen, Loader2 } from "lucide-react";
 import { fetchExpressions, fetchManifestations, fetchTextContent } from "@/api/pecha";
 import { createProject } from "@/api/project";
 import { createDocumentWithContent } from "@/api/document";
@@ -56,10 +55,11 @@ const ProjectTemplates = () => {
     data: expressions = [],
     isLoading: expressionsLoading,
     error: expressionsError,
+    isStale: expressionsStale,
   } = useQuery({
     queryKey: ["template-expressions"],
     queryFn: () => fetchExpressions(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 60 * 60 * 1000,
     select: (data) => data?.slice(0, MAX_TEMPLATES) || [], // Take only first MAX_TEMPLATES
   });
 
@@ -149,7 +149,7 @@ const ProjectTemplates = () => {
   // Create project mutation
   const createProjectMutation = useMutation({
     mutationFn: async (template: TemplateData) => {
-      const projectName = `${extractTitle(template.expression.title)} Template`;
+      const projectName = `${extractTitle(template.expression.title)}`;
       
       // First create the document with the processed text
       const formData = new FormData();
@@ -208,10 +208,6 @@ const ProjectTemplates = () => {
     setError(null); // Clear any previous errors
     setCreatingTemplateId(template.expression.id);
     createProjectMutation.mutate(template);
-  };
-
-  const getWordCount = (text: string): number => {
-    return text.trim().split(/\s+/).length;
   };
 
   const truncateText = (text: string, maxLength: number = 350): string => {
@@ -309,12 +305,6 @@ const ProjectTemplates = () => {
                     <div className={`${template.expression.language === 'bo' ? 'font-monlam py-1' : 'font-google-sans'} font-medium text-sm text-gray-900 dark:text-gray-100 truncate group-hover:text-secondary-600 dark:group-hover:text-secondary-400 transition-colors`}>
                       {title}
                     </div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Languages className="h-3 w-3 text-gray-400" />
-                      <span className="text-[10px] text-gray-500 capitalize">
-                        {template.expression.language}
-                      </span>
-                    </div>
                   </div>
                   {isCreating && (
                     <Loader2 className="h-4 w-4 animate-spin text-secondary-500 flex-shrink-0" />
@@ -323,18 +313,10 @@ const ProjectTemplates = () => {
 
                 {/* Content Preview - Flexible height */}
                 <div className="flex-1 flex flex-col justify-between h-full">
-                    <p className={`text-[6px] text-gray-600 pb-1 dark:text-gray-400 line-clamp-10
+                    <p className={`text-[6px] text-gray-600 pb-1 dark:text-gray-400
                       ${template.expression.language === 'bo' ? 'font-monlam' : 'font-google-sans'}`}>
-                    {truncateText(template.processedText, template.expression.language === 'en' ? 350 : 400)}
+                    {truncateText(template.processedText, template.expression.language === 'en' ? 650 : 700)}
                   </p>
-                  
-                  {/* Stats at bottom */}
-                  <div className="flex items-center justify-between text-[8px] text-gray-500 pt-2 border-t border-gray-200 dark:border-gray-600">
-                    <span>{getWordCount(template.processedText)} {t("common.words", "words")}</span>
-                    <Badge variant="secondary" className="text-[8px]">
-                      {t("template.template", "Template")}
-                    </Badge>
-                  </div>
                 </div>
                 </CardContent>
             </div>
