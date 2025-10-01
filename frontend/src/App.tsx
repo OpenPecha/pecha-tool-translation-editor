@@ -1,7 +1,9 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { lazy } from "react";
 import { AuthProvider } from "./auth/auth-context-provider";
-import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
+import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister'
 import Callback from "./pages/Callback";
 import Login from "./pages/Login";
 import Logout from "./pages/Logout";
@@ -23,9 +25,17 @@ if (import.meta.env.VITE_ENVIRONMENT === "production") {
   injectUmami();
 }
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      gcTime: 1000 * 60 * 60, // 1 hour
+    },
+  },
+})
 
-
+const asyncStoragePersister = createAsyncStoragePersister({
+  storage: window.localStorage,
+});
 
 
 
@@ -79,13 +89,13 @@ function AppContent() {
 function App() {
   return (
     <TolgeeProvider>
-      <QueryClientProvider client={queryClient}>
+      <PersistQueryClientProvider client={queryClient} persistOptions={{ persister: asyncStoragePersister }}>
         <AuthProvider>
           <UserbackProvider>
           <AppContent />
           </UserbackProvider>
         </AuthProvider>
-      </QueryClientProvider>
+      </PersistQueryClientProvider>
     </TolgeeProvider>
   );
 }

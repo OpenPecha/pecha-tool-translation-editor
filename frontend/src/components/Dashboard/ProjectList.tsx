@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
+import ProjectTemplates from "./ProjectTemplates";
 
 const ProjectList = () => {
   const { searchQuery } = useSearchStore();
@@ -32,6 +33,7 @@ const ProjectList = () => {
     queryKey: ["projects", searchQuery],
     initialData: { data: [] },
     queryFn: () => fetchProjects({ searchQuery, page: 1, limit }),
+    staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
   });
   const { data: projects } = data;
@@ -83,11 +85,16 @@ const ProjectList = () => {
   return (
     <div className="flex flex-1 flex-col h-[100vh] overflow-y-scroll">
       <div className="pt-10 px-6">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <h1 className="text-lg font-medium mb-6">
             {t(`projects.startNewProject`)}
           </h1>
-          <DocumentCreateModal />
+          <div className="flex items-start gap-6 mb-12">
+            <DocumentCreateModal />
+            <div className="hidden md:block flex-1">
+              <ProjectTemplates />
+            </div>
+          </div>
         </div>
       </div>
       <div className="px-4 w-full">
