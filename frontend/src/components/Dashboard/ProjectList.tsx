@@ -167,7 +167,7 @@ const ProjectsSection = ({
         
         {/* Project title section - aligned with name column */}
         <div className="flex-grow min-w-0">
-          <span className="text-md md:text-xl font-medium text-neutral-900 dark:text-neutral-100">
+          <span className="text-md md:text-xl font-medium text-neutral-700/80 dark:text-neutral-100">
             My Projects
           </span>
         </div>

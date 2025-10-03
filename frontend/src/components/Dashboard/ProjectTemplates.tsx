@@ -34,6 +34,8 @@ const ProjectTemplates = () => {
     staleTime: 60 * 60 * 1000, // Cache for 1 hour
   });
   // Create project mutation
+
+  console.log(templateData)
   const createProjectMutation = useMutation({
     mutationFn: async (template: TemplateData) => {
       const projectName = template.title;
@@ -159,9 +161,12 @@ const ProjectTemplates = () => {
          <div className="flex gap-4 h-full">
           {templateData.map((template: TemplateData) => {
             const isCreating = creatingTemplateId === template.expression_id;
+            const alternativeTitle = template?.metadata?.alternative_title;
+            const card_title =alternativeTitle.length > 0 ? JSON.stringify(alternativeTitle) : template.title;
             
             return (
               <div
+              title={JSON.stringify(card_title)}
                 key={template.expression_id}
                 className="flex-shrink-0 cursor-pointer group"
                 onClick={() => !isCreating && handleTemplateClick(template)}
@@ -190,7 +195,7 @@ const ProjectTemplates = () => {
                       {template.title}
                     </span>
                   <span className="text-xs text-muted-foreground block">
-                    openpecha template
+                    {template.metadata.type} - {template.metadata.language}
                   </span>
                   </div>
                 </div>
