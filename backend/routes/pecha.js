@@ -2,9 +2,34 @@ const express = require("express");
 const {
   getExpressions,
   getText,
-  getExpressionTexts,
+  getExpressionTexts
 } = require("../apis/openpecha_api");
 const router = express.Router();
+
+// In-memory cache for templates
+const templatesCache = {
+  data: null,
+  timestamp: null,
+  ttl: 60 * 60 * 1000, // 1 hour in milliseconds
+};
+
+// Cache helper functions
+const isCacheValid = () => {
+  if (!templatesCache.data || !templatesCache.timestamp) {
+    return false;
+  }
+  const now = Date.now();
+  return (now - templatesCache.timestamp) < templatesCache.ttl;
+};
+
+const getCachedTemplates = () => {
+  return isCacheValid() ? templatesCache.data : null;
+};
+
+const setCachedTemplates = (data) => {
+  templatesCache.data = data;
+  templatesCache.timestamp = Date.now();
+};
 
 /**
  * GET /pecha/list
@@ -228,5 +253,162 @@ router.get("/text/:id", async (req, res) => {
     });
   }
 });
+
+
+/**
+ * GET /pecha/templates
+ * @summary Get processed template data ready for frontend consumption
+ * @tags Pecha - Pecha document operations
+ * @param {number} limit.query - Number of templates to return (default: 6)
+ * @return {array<object>} 200 - List of processed template data
+ * @return {object} 500 - Server error - Failed to fetch templates
+ * @example response - Example response
+ * [
+ *   {
+ *     "expression_id": "expr_001",
+ *     "manifest_id": "manifest_001",
+ *     "title": "Heart Sutra",
+ *     "text_content": "བཅོམ་ལྡན་འདས་མ་ཤེས་རབ་ཀྱི་ཕ་རོལ་ཏུ་ཕྱིན་པའི་སྙིང་པོ།"
+ *   }
+ * ]
+ */
+router.get("/templates", async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 6;
+    
+    // Check cache first
+    const cachedTemplates = getCachedTemplates();
+    if (cachedTemplates) {
+      console.log("Returning cached templates");
+      const limitedCachedTemplates = cachedTemplates.slice(0, limit);
+      return res.json(limitedCachedTemplates);
+    }
+    
+    console.log("Cache miss - fetching fresh templates");
+    
+    // Step 1: Fetch expressions (root type)
+    const expressions = await getExpressions();
+    const limitedExpressions = expressions.slice(0, limit);
+    
+    // Step 2: For each expression, fetch manifestations and text content
+    const templateData = await Promise.all(
+      limitedExpressions.map(async (expression) => {
+        try {
+          // Get manifestations for this expression
+          const manifestations = await getExpressionTexts(expression.id);
+          if (!manifestations || manifestations.length === 0) {
+            return null;
+          }
+          
+          // Take the first manifestation
+          const manifestation = manifestations[0];
+          
+          // Get text content for this manifestation
+          const textContent = await getText(manifestation.id);
+          if (!textContent) {
+            return null;
+          }
+          
+          // Extract title from expression
+          let title = expression.id; // fallback to expression id
+          if (expression.title) {
+            if (typeof expression.title === 'string') {
+              title = expression.title;
+            } else if (expression.title.bo) {
+              title = expression.title.bo;
+            } else if (expression.title.en) {
+              title = expression.title.en;
+            } else if (Object.keys(expression.title).length > 0) {
+              title = Object.values(expression.title)[0];
+            }
+          }
+          
+          // Process text content using segmentation annotation (same logic as frontend)
+          let text_content = textContent.base || "";
+          
+          // Try to get segmented text if available (same logic as OpenPechaTranslationLoader)
+          const segmentationKeys = Object.keys(textContent.annotations?.segmentation || {});
+          if (segmentationKeys.length > 0) {
+            const firstSegmentationId = segmentationKeys[0];
+            const selectedSegmentation = textContent.annotations.segmentation[firstSegmentationId];
+            
+            if (selectedSegmentation && Array.isArray(selectedSegmentation)) {
+              try {
+                // Process segmented text (same logic as frontend)
+                const segments = selectedSegmentation.map((seg, index) => {
+                  if (seg.Span && typeof seg.Span.start === 'number' && typeof seg.Span.end === 'number') {
+                    const segmentText = textContent.base
+                      .substring(seg.Span.start, seg.Span.end)
+                      .replace(/\n/g, "");
+                    return segmentText;
+                  }
+                  return null;
+                }).filter(Boolean);
+                
+                if (segments.length > 0) {
+                  text_content = segments.join('\n');
+                }
+              } catch (err) {
+                console.error('Error processing segmentation:', err);
+                // Fallback to base text if segmentation fails
+                text_content = textContent.base || "";
+              }
+            }
+          }
+          
+          return {
+            expression_id: expression.id,
+            manifest_id: manifestation.id,
+            title: title,
+            text_content: text_content,
+          };
+        } catch (error) {
+          console.error(`Error processing expression ${expression.id}:`, error);
+          return null;
+        }
+      })
+    );
+    
+    // Filter out null results
+    const validTemplates = templateData.filter(Boolean);
+    
+    // Cache the results for future requests
+    setCachedTemplates(validTemplates);
+    console.log(`Cached ${validTemplates.length} templates`);
+    
+    // Return limited results based on query parameter
+    const limitedTemplates = validTemplates.slice(0, limit);
+    res.json(limitedTemplates);
+  } catch (error) {
+    console.error("Error fetching templates:", error);
+    res.status(500).json({
+      error: "Failed to fetch templates",
+      details: error.message,
+    });
+  }
+});
+
+/**
+ * POST /pecha/templates/cache/clear
+ * @summary Clear the templates cache
+ * @tags Pecha - Pecha document operations
+ * @return {object} 200 - Cache cleared successfully
+ * @return {object} 500 - Server error
+ */
+router.post("/templates/cache/clear", async (req, res) => {
+  try {
+    templatesCache.data = null;
+    templatesCache.timestamp = null;
+    console.log("Templates cache cleared");
+    res.json({ message: "Templates cache cleared successfully" });
+  } catch (error) {
+    console.error("Error clearing templates cache:", error);
+    res.status(500).json({
+      error: "Failed to clear templates cache",
+      details: error.message,
+    });
+  }
+});
+
 
 module.exports = router;

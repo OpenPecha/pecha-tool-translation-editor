@@ -33,9 +33,9 @@ const ProjectList = () => {
     queryKey: ["projects", searchQuery],
     initialData: { data: [] },
     queryFn: () => fetchProjects({ searchQuery, page: 1, limit }),
-    staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
   });
+
   const { data: projects } = data;
   const { t } = useTranslate();
   const { currentUser } = useAuth();
@@ -47,7 +47,6 @@ const ProjectList = () => {
     let filtered = projects;
     if (selectedOwner === "Owned by me") filtered = projects.filter((project: Project) => project.owner?.id === currentUser?.id);
     else if (selectedOwner === "Not owned by me") filtered = projects.filter((project: Project) => project.owner?.id !== currentUser?.id);
-    
     return filtered;
   }, [projects, selectedOwner, currentUser?.id]);
 
@@ -84,14 +83,14 @@ const ProjectList = () => {
 
   return (
     <div className="flex flex-1 flex-col h-[100vh] overflow-y-scroll">
-      <div className="pt-10 px-6">
-        <div className="max-w-6xl mx-auto">
+      <div className="pt-10 px-6  bg-neutral-500/20">
+        <div className="max-w-5xl  mx-auto">
           <h1 className="text-lg font-medium mb-6">
             {t(`projects.startNewProject`)}
           </h1>
-          <div className="flex items-start gap-6 mb-12">
+          <div className="flex items-stretch gap-6 mb-24 h-[200px]">
             <DocumentCreateModal />
-            <div className="hidden md:block flex-1">
+            <div className="hidden md:flex gap-6">
               <ProjectTemplates />
             </div>
           </div>
