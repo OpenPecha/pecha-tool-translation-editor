@@ -1,9 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { lazy } from "react";
 import { AuthProvider } from "./auth/auth-context-provider";
-import { QueryClient } from "@tanstack/react-query";
-import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
-import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister'
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Callback from "./pages/Callback";
 import Login from "./pages/Login";
 import Logout from "./pages/Logout";
@@ -33,9 +31,7 @@ const queryClient = new QueryClient({
   },
 })
 
-const asyncStoragePersister = createAsyncStoragePersister({
-  storage: window.localStorage,
-});
+
 
 
 
@@ -89,13 +85,13 @@ function AppContent() {
 function App() {
   return (
     <TolgeeProvider>
-      <PersistQueryClientProvider client={queryClient} persistOptions={{ persister: asyncStoragePersister }}>
+      <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <UserbackProvider>
           <AppContent />
           </UserbackProvider>
         </AuthProvider>
-      </PersistQueryClientProvider>
+      </QueryClientProvider>
     </TolgeeProvider>
   );
 }

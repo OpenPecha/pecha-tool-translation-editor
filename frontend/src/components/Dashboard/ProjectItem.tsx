@@ -57,7 +57,7 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
 
         <div className="flex-grow  w-fit md:w-auto">
           <div className="flex items-center">
-            <span className="text-sm font-medium truncate capitalize">
+            <span className="text-sm font-monlam-2 font-medium truncate capitalize">
               {title}
             </span>
 
@@ -78,7 +78,7 @@ const ProjectItem: React.FC<ProjectItemProps> = ({
             )}
           </div>
           {subtitle && (
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate leading-[normal]">
+            <p className="text-xs font-monlam-2  text-neutral-500 dark:text-neutral-400 truncate leading-[normal]">
               {subtitle}
             </p>
           )}

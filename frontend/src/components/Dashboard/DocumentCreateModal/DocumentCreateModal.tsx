@@ -232,20 +232,33 @@ function DocumentCreateModal() {
   ];
 
   const trigger = (
-    <button
-      type="button"
-      className="border w-46 rounded-xl p-6 flex items-center justify-center hover:border-secondary-400 dark:hover:border-secondary-600 hover:shadow-lg cursor-pointer mb-12 bg-neutral-50 dark:bg-neutral-700  shadow-sm transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-secondary-500"
-      onClick={handleCreateButtonClick}
-    >
-      <div className="flex flex-col items-center justify-center">
-        <div className="p-4 rounded-full flex items-center justify-center transition-transform group-hover:scale-105">
-          <img src={PlusIcon} width={90} alt="Create project" />
+    <div className="flex-shrink-0 cursor-pointer group" style={{ width: '180px' }}>
+      <div className="space-y-2">
+        <button
+          type="button"
+          className="border-2 bg-white border-dashed border-border hover:border-primary/60 transition-all duration-300 h-[180px] hover:shadow-lg rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-secondary-500"
+          onClick={handleCreateButtonClick}
+        >
+          <div className="p-0 flex flex-col items-center justify-center h-full">
+            <div 
+              className="w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"
+              style={{ background: "var(--gradient-primary)" }}
+            >
+              <img src={PlusIcon} width={50} height={50} alt="Create project" />
+            </div>
+            <p className="text-sm font-medium text-foreground">Blank</p>
+          </div>
+        </button>
+        <div className="space-y-0.5 px-1">
+          <h3 className="text-sm font-medium text-foreground line-clamp-1">
+            {t(`projects.createProject`)}
+          </h3>
+          <p className="text-xs text-muted-foreground">
+            Start from scratch
+          </p>
         </div>
-        <p className="mt-2 text-sm font-medium">
-          {t(`projects.createProject`)}
-        </p>
       </div>
-    </button>
+    </div>
   );
 
   const renderStepContent = () => {

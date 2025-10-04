@@ -108,3 +108,17 @@ export const fetchTextContent = async (textId: string) => {
     throw error;
   }
 };
+
+
+export const fetchTemplates = async (limit: number = 6) => {
+  try {
+    const response = await fetch(`${server_url}/pecha/templates?limit=${limit}`, {
+      headers: getHeaders(),
+    });
+      const data = await response.json();
+      return data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
