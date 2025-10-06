@@ -11,7 +11,6 @@ async function isPandocAvailable() {
     await execAsync("pandoc --version");
     return true;
   } catch (error) {
-    console.log("⚠️ Pandoc not available:", error.message);
     return false;
   }
 }

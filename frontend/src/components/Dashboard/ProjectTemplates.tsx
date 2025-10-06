@@ -35,7 +35,6 @@ const ProjectTemplates = () => {
   });
   // Create project mutation
 
-  console.log(templateData)
   const createProjectMutation = useMutation({
     mutationFn: async (template: TemplateData) => {
       const projectName = template.title;

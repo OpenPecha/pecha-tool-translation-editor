@@ -11,8 +11,6 @@ function sendProgress(progressStreams, progressId, progress, message) {
       progressStreams.delete(progressId);
     }
   } else {
-    console.log(`⚠️ No SSE stream found for progressId: ${progressId}`);
-    console.log(`📊 Available streams:`, Array.from(progressStreams.keys()));
     console.log(`📊 Total streams: ${progressStreams.size}`);
   }
 }
