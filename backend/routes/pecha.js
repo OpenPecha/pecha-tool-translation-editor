@@ -284,11 +284,9 @@ router.get("/templates", async (req, res) => {
       return res.json(limitedCachedTemplates);
     }
     
-    console.log("Cache miss - fetching fresh templates");
     
     // Step 1: Fetch expressions (root type)
     const expressions = await getExpressions();
-    console.log("expressions", expressions);
     const limitedExpressions = expressions.slice(0, limit);
     
     // Step 2: For each expression, fetch manifestations and text content
