@@ -240,11 +240,8 @@ const ApiCredentials: React.FC = () => {
                 <SelectValue placeholder={t("settings.selectProvider", "Select a provider")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="openai">OpenAI</SelectItem>
-                <SelectItem value="google">Google</SelectItem>
-                <SelectItem value="claude">Claude</SelectItem>
-                <SelectItem value="deepl">DeepL</SelectItem>
-                <SelectItem value="gemini">Gemini</SelectItem>
+                <SelectItem value='claude-3-5-sonnet-20241022'>Claude</SelectItem>
+                <SelectItem value='gemini-2.5-pro'>Gemini</SelectItem>
               </SelectContent>
             </Select>
           </div>

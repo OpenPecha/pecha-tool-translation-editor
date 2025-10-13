@@ -250,7 +250,7 @@ export const useTranslationOperations = ({
         texts: textLines,
         target_language: config.targetLanguage,
         text_type: config.textType,
-        model_name: config.modelName,
+        model_name: config.modelName??"claude-3-5-sonnet-20241022",
         batch_size: config.batchSize,
         user_rules: config.userRules,
       };

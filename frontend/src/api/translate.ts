@@ -15,10 +15,7 @@ export type TextType =
   | "commentary"
   | "philosophical treatises";
 export type ModelName =
-  | "claude"
-  | "claude-haiku"
-  | "claude-opus"
-  | "gemini-pro";
+ 'claude-3-5-sonnet-20241022'| 'claude-3-7-sonnet-20250219'| 'claude-sonnet-4-20250514'| 'claude-3-5-haiku-20241022'| 'claude-3-opus-20240229'| 'gemini-2.5-pro'| 'gemini-2.5-flash-thinking'| 'gemini-2.5-flash'
 
 // Constants for easy access to enum values
 export const TARGET_LANGUAGES: TargetLanguage[] = [
@@ -35,10 +32,7 @@ export const TEXT_TYPES: TextType[] = [
   "philosophical treatises",
 ];
 export const MODEL_NAMES: ModelName[] = [
-  "claude",
-  "claude-haiku",
-  "claude-opus",
-  "gemini-pro",
+'claude-3-5-sonnet-20241022', 'claude-3-7-sonnet-20250219', 'claude-sonnet-4-20250514', 'claude-3-5-haiku-20241022', 'claude-3-opus-20240229', 'gemini-2.5-pro', 'gemini-2.5-flash-thinking', 'gemini-2.5-flash'
 ];
 
 export interface StreamTranslationParams {
@@ -397,11 +391,7 @@ export const performStreamingTranslation = async (
     // Validate parameters before starting
     validateTranslationParams(params);
 
-    console.log("Starting streaming translation:", {
-      textCount: params.texts.length,
-      targetLanguage: params.target_language,
-      model: params.model_name || "default",
-    });
+   
 
     const response = await streamTranslation(params, abortController);
     await consumeTranslationStream(
