@@ -178,7 +178,7 @@ const ProjectTemplates = () => {
                     <div className="px-4 pt-6 h-full flex justify-center bg-gradient-to-br from-secondary/30 to-muted/30">
                       <div className=" w-full text-center space-y-3">
                         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                          Template
+                          TEXT
                         </div>
                         <div className="text-[10px] leading-[normal] font-monlam text-foreground/80 line-clamp-4 px-2">
                           {truncateText(template.text_content, 2000)}
