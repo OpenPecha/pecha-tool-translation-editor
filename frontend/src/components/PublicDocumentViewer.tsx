@@ -18,7 +18,7 @@ import { IoIosArrowForward } from "react-icons/io";
 import Split from "react-split";
 import isMobile from "@/lib/isMobile";
 
-import {NormalDocumentEditor} from "./DocumentEditor";
+import DocumentEditor from "./DocumentEditor";
 import PublicSideMenu from "./PublicSideMenu";
 import SettingsButton from "./setting/SettingsButton";
 
@@ -29,7 +29,8 @@ interface PublicDocumentViewerProps {
 const PublicDocumentEditor = memo(
   ({ docId, currentDoc }: { docId: string | undefined; currentDoc: any }) => {
     return (
-      <NormalDocumentEditor
+      <DocumentEditor
+        liveEnabled={false}
         docId={docId}
         isEditable={false}
         currentDoc={currentDoc}
