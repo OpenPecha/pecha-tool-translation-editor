@@ -37,7 +37,6 @@ const Toolbar = ({
   documentName,
 }: ToolbarProps) => {
   const { isAuthenticated } = useAuth();
-
   const versionRef = useRef<HTMLDivElement>(null);
   const [openHistory, setOpenHistory] = useState(false);
   const { getQuill, activeEditor, quillEditors, getElementWithLinenumber } =

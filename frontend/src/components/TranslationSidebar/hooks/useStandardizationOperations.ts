@@ -171,7 +171,6 @@ export const useStandardizationOperations = ({
         break;
 
       case "completion":
-        console.log("Apply standardization completion event:", event);
         setApplyStandardizationStatus("Standardization application completed!");
         setCurrentProcessingIndex(-1); // Reset processing index
         setStandardizationProgress((prev) => ({ ...prev, percentage: 100 }));

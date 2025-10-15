@@ -204,7 +204,7 @@ const YjsProvider = ({ children }: YjsProviderProps) => {
 
     // Add additional event listeners to provider
     provider.on("status", (event: { status: string }) => {
-      console.log("WebSocket status changed:", event.status);
+      console.log("WebSocket status changed:");
     });
 
     // Register this provider in the global tracking array

@@ -66,7 +66,6 @@ export const useTranslationOperations = ({
 
   const addPartialResult = (textNumber: number, translationPreview: string) => {
     // Could be used for showing partial translations as they come in
-    console.log(`Partial result for text ${textNumber}:`, translationPreview);
   };
 
   const onStreamError = (error: string) => {
@@ -157,7 +156,6 @@ export const useTranslationOperations = ({
 
         // Display batch results immediately
         if (event.batch_results && event.batch_results.length > 0) {
-          console.log("Adding batch results:", event.batch_results);
 
           const newResults = event.batch_results.map((result, batchIndex) => {
             // Get the segment-specific line numbers using the current segment index
@@ -188,7 +186,6 @@ export const useTranslationOperations = ({
         break;
 
       case "completion":
-        console.log("Completion event - all batches done"); // Debug
         updateProgress(100, "Translation completed!");
 
         setTimeout(() => {

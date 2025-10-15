@@ -30,6 +30,7 @@ const PublicDocumentEditor = memo(
   ({ docId, currentDoc }: { docId: string | undefined; currentDoc: any }) => {
     return (
       <DocumentEditor
+        liveEnabled={false}
         docId={docId}
         isEditable={false}
         currentDoc={currentDoc}

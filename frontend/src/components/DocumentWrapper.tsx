@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useCurrentDoc } from "@/hooks/useCurrentDoc";
 import { EditorProvider } from "@/contexts/EditorContext";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import DocumentEditor from "./DocumentEditor";
 import SideMenu from "./EditorSideMenu/Sidemenu";
 import SettingsButton from "./setting/SettingsButton";
@@ -12,9 +12,8 @@ import { IoIosArrowForward } from "react-icons/io";
 import TranslationSidebar from "./TranslationSidebar";
 import { useTranslationSidebarParams } from "@/hooks/useQueryParams";
 import Split from "react-split";
-
-
 import isMobile from "@/lib/isMobile";
+import LiveBlockProvider, { useLiveBlockActive } from "@/contexts/LiveBlockProvider";
 export type { Translation } from "@/hooks/useCurrentDoc";
 
 function DocumentsWrapper() {
@@ -24,12 +23,16 @@ function DocumentsWrapper() {
   const { currentDoc, isEditable } = useCurrentDoc(id);
   const { selectedTranslationId, clearSelectedTranslationId } = useTranslationSidebarParams();
   const [splitPosition, setSplitPosition] = useState<number>(40);
-  
 
   const project = {
     id: currentDoc?.rootProjectId || currentDoc?.rootProject?.id || "",
     name: currentDoc?.rootProject?.name || "Project",
   };
+  const roomId1 = useExampleRoomId(id || "root");
+  const isLiveEnabled = useLiveBlockActive(currentDoc);
+  
+  if (!id) return null;
+
   return (
     <EditorProvider>
       {/* Portals for elements that need to be rendered outside the main container */}
@@ -50,15 +53,22 @@ function DocumentsWrapper() {
           ) : (
             <>
               {!selectedTranslationId ? (
+                // Single editor view (no split)
                 <>
-                    <DocumentEditor
-                      docId={id}
-                      isEditable={isEditable}
-                      currentDoc={currentDoc}
-                    />
+                  {currentDoc && (
+                    <LiveBlockProvider roomId={roomId1} enabled={isLiveEnabled}>
+                      <DocumentEditor
+                        liveEnabled={isLiveEnabled}
+                        docId={id}
+                        isEditable={isEditable}
+                        currentDoc={currentDoc}
+                      />
+                    </LiveBlockProvider>
+                  )}
                   <SideMenu />
                 </>
               ) : (
+                // Split view with translation
                 <div className="relative h-full w-full group">
                   {/* Close button positioned dynamically in the middle of the gutter */}
                   <button
@@ -80,9 +90,9 @@ function DocumentsWrapper() {
                     gutterAlign="center"
                     snapOffset={30}
                     dragInterval={1}
-                    direction={isMobile?"vertical":"horizontal"}
+                    direction={isMobile ? "vertical" : "horizontal"}
                     cursor="col-resize"
-                  className={`split-pane h-full flex w-full overflow-hidden ${isMobile?"flex-col":"flex-row"}`}
+                    className={`split-pane h-full flex w-full overflow-hidden ${isMobile ? "flex-col" : "flex-row"}`}
                     gutterStyle={() => ({
                       backgroundColor: '#e5e7eb',
                       border: '1px solid #d1d5db',
@@ -100,20 +110,27 @@ function DocumentsWrapper() {
                       setSplitPosition(sizes[0]);
                     }}
                   >
-                    {/* Root Editor */}
-                      <DocumentEditor
-                        docId={id}
+                    {/* Root Editor - ALWAYS render to keep Split happy */}
+                    <div className="h-full w-full">
+                      {currentDoc && (
+                        <LiveBlockProvider roomId={roomId1} enabled={isLiveEnabled}>
+                          <DocumentEditor
+                            liveEnabled={isLiveEnabled}
+                            docId={id}
+                            isEditable={isEditable}
+                            currentDoc={currentDoc}
+                          />
+                        </LiveBlockProvider>
+                      )}
+                    </div>
+                 
+                    {/* Translation Editor + Sidebar - ALWAYS render to keep Split happy */}
+                    <div className="group/translation h-full w-full">
+                      <TranslationEditor
+                        selectedTranslationId={selectedTranslationId}
                         isEditable={isEditable}
-                        currentDoc={currentDoc}
                       />
-                    
-                    {/* Translation Editor + Sidebar */}
-                      <div className="group/translation h-full w-full">
-                        <TranslationEditor
-                          selectedTranslationId={selectedTranslationId}
-                          isEditable={isEditable}
-                        />
-                      </div>
+                    </div>
                   </Split>
                 </div>
               )}
@@ -133,31 +150,33 @@ function TranslationEditor({
   readonly isEditable: boolean;
 }) {
   const { currentDoc } = useCurrentDoc(selectedTranslationId);
-
+  const isLiveEnabled = useLiveBlockActive(currentDoc);
+  
   return (
     <div className="h-full flex w-full">
       {/* Translation Editor */}
       <div className="flex-1 h-full translation-editor-container">
         {currentDoc && (
-          <DocumentEditor
-            docId={selectedTranslationId}
-            isEditable={isEditable}
-            currentDoc={currentDoc}
-          />
+          <LiveBlockProvider roomId={selectedTranslationId} enabled={isLiveEnabled}>
+            <DocumentEditor
+              liveEnabled={isLiveEnabled}
+              docId={selectedTranslationId}
+              isEditable={isEditable}
+              currentDoc={currentDoc}
+            />
+          </LiveBlockProvider>
         )}
       </div>
       
       {/* Translation Sidebar - Sticky */}
-      {
-!isMobile &&
-       <div className="h-full overflow-y-auto sticky top-0">
-        <TranslationSidebar documentId={selectedTranslationId!} />
-      </div>
-}
+      {!isMobile && (
+        <div className="h-full overflow-y-auto sticky top-0">
+          <TranslationSidebar documentId={selectedTranslationId!} />
+        </div>
+      )}
     </div>
   );
 }
-
 
 function Loader({ show }: { show: boolean }) {
   if (!show) return null;
@@ -191,6 +210,17 @@ function Loader({ show }: { show: boolean }) {
       </div>
     </div>
   );
+}
+
+function useExampleRoomId(roomId: string) {
+  const params = useSearchParams();
+  const exampleId = params[0].get("exampleId");
+
+  const exampleRoomId = useMemo(() => {
+    return exampleId ? `${roomId}-${exampleId}` : roomId;
+  }, [roomId, exampleId]);
+
+  return exampleRoomId;
 }
 
 export default DocumentsWrapper;
