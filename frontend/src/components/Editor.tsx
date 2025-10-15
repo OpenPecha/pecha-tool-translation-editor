@@ -24,6 +24,7 @@ import type { Document } from "@/hooks/useCurrentDoc";
 import { useDisplaySettings } from "@/hooks/useDisplaySettings";
 import { QuillBinding } from "y-quill";
 import * as Y from "yjs";
+import { checkIsTibetan } from "@/lib/isTibetan";
 quill_import();
 
 
@@ -295,26 +296,26 @@ const Editor = ({
  
 //for non-realtime editor only
 
-  // useEffect(() => {
-  //   const content=currentDoc?.currentVersion?.content?.ops || [];
-  //   if (
-  //     quillRef.current &&
-  //     quillRef.current.getText().trim() === "" &&
-  //     content.length > 0
-  //     && yText.length === 0
-  //   ) {
-  //     setTimeout(() => {
-  //       quillRef.current?.setContents(content || []);
-  //       setIsTibetan(checkIsTibetan(quillRef.current?.getText() || ""));
-  //       // Set content loaded after a brief delay to ensure rendering is complete
-  //     }, 0);
-  //   }
-  //   return () => {
-  //     if (saveTimeoutRef.current) {
-  //       clearTimeout(saveTimeoutRef.current);
-  //     }
-  //   };
-  // }, [currentDoc,yText]);
+  useEffect(() => {
+    const content=currentDoc?.currentVersion?.content?.ops || [];
+    if(yText || provider)return()=>{};
+    if (
+      quillRef.current &&
+      quillRef.current.getText().trim() === "" &&
+      content.length > 0
+    ) {
+      setTimeout(() => {
+        quillRef.current?.setContents(content || []);
+        setIsTibetan(checkIsTibetan(quillRef.current?.getText() || ""));
+        // Set content loaded after a brief delay to ensure rendering is complete
+      }, 0);
+    }
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [currentDoc,yText]);
 
   function addComment() {
     if (!currentRange || currentRange?.length === 0) return;

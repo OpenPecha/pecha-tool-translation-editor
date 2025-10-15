@@ -151,7 +151,6 @@ export const useTranslationSidebarOperations = ({
   const scrollToBottom = () => {
     setTimeout(() => {
       if (scrollContainerRef.current) {
-        console.log("Auto-scrolling to bottom..."); // Debug log
         scrollContainerRef.current.scrollTo({
           top: scrollContainerRef.current.scrollHeight,
           behavior: "smooth",
@@ -189,7 +188,6 @@ export const useTranslationSidebarOperations = ({
   };
 
   const startGlossaryAndInconsistencyAnalysis = async () => {
-    console.log("Starting combined glossary extraction and inconsistency analysis");
     await startGlossaryExtraction();
   };
 

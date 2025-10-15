@@ -11,7 +11,6 @@ const Navbar = () => {
   const { login, isAuthenticated } = useAuth();
   const tolgee = useTolgee();
   const currentLanguage = tolgee.getLanguage();
-  console.log("currentLanguage", tolgee.getAllRecords())
 
 
   return (
