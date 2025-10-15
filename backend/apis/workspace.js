@@ -8,8 +8,10 @@
  */
 async function getToolsList() {
   try {
-    const WORKSPACE_ENDPOINT = process.env.WORKSPACE_URL;
-    const response = await fetch(WORKSPACE_ENDPOINT+'/api/tools/public');
+    const WORKSPACE_ENDPOINT = process.env.WORKSPACE_URL+'/api/tools';
+
+    console.log("WORKSPACE_ENDPOINT",WORKSPACE_ENDPOINT);
+    const response = await fetch(WORKSPACE_ENDPOINT);
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);

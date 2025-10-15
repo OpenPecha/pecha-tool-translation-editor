@@ -1,7 +1,8 @@
 export const MAX_HEADING_LEVEL = 20;
 export const EDITOR_READ_ONLY=false
 export const EDITOR_ENTER_ONLY=false
-
+export const ENABLE_CURSORS=true
+export const MAX_TEXT_LENGTH_FOR_REALTIME_COLLABORATION=150000
 
 const HISTORY_CONFIG={
      delay: 2000,
@@ -14,4 +15,6 @@ export const editor_config={
     EDITOR_READ_ONLY,
     EDITOR_ENTER_ONLY,
     HISTORY_CONFIG,
+    ENABLE_CURSORS,
+    MAX_TEXT_LENGTH_FOR_REALTIME_COLLABORATION
 }

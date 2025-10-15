@@ -13,7 +13,7 @@ import {
   UndoIcon,
   FootnoteIcon
 } from "../Toolbar/ToolbarIcons";
-
+import QuillCursors from "quill-cursors";
 const customHeaders: any[] = [];
 export default function quill_import() {
   // Quill.register("modules/cursors", QuillCursors);
@@ -38,6 +38,7 @@ export default function quill_import() {
   Quill.register(CustomParagraph);
   Quill.register(CommentBlot);
   Quill.register("modules/footnote", CustomFootnoteModule);
+  Quill.register("modules/cursors", QuillCursors);
   Quill.register(CollapsibleFootnoteSection, true);
   const icons:any = Quill.import("ui/icons");
   icons.bold = BoldIcon();

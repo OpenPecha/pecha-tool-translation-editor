@@ -15,8 +15,10 @@ const UserbackContext = createContext<UserbackContextType>({ userback: null });
 
 export const UserbackProvider: React.FC<UserbackProviderProps> = ({ children }) => {
   const [userback, setUserback] = useState<any>(null);
+  const isDevelopment = import.meta.env.VITE_ENVIRONMENT === "development";
  const {currentUser:user} = useAuth();
   useEffect(() => {
+    if(isDevelopment) return;
     if(!user) return;
     const usebackId = import.meta.env.VITE_USERBACK_ID||"";
     const init = async () => {
@@ -51,6 +53,7 @@ export const UserbackProvider: React.FC<UserbackProviderProps> = ({ children }) 
   }, [user]);
 
   const contextValue = useMemo(() => ({ userback }), [userback]);
+
 
   return (
     <UserbackContext.Provider value={contextValue}>

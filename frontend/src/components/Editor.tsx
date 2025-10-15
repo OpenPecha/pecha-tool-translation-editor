@@ -21,19 +21,25 @@ import SkeletonLoader from "./SkeletonLoader";
 import { footnoteKeyboardBindings } from "quill-footnote";
 import { CustomFootnoteModule } from "./quillExtension/CustomFootnote";
 import type { Document } from "@/hooks/useCurrentDoc";
-import { checkIsTibetan } from "@/lib/isTibetan";
 import { useDisplaySettings } from "@/hooks/useDisplaySettings";
-
+import { QuillBinding } from "y-quill";
+import * as Y from "yjs";
 quill_import();
+
+
 
 const Editor = ({
   documentId,
   isEditable,
   currentDoc,
+  yText,
+  provider,
 }: {
   documentId?: string;
   isEditable: boolean;
   currentDoc: Document;
+  yText: Y.Text | undefined;
+  provider: any | undefined; 
 }) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const toolbarId =
@@ -41,6 +47,7 @@ const Editor = ({
   const counterId =
     "counter-container" + "-" + Math.random().toString(36).slice(2, 6);
   const [currentRange, setCurrentRange] = useState<Range | null>(null);
+  const [isSynced,setIsSynced]=useState(false);
   const [showCommentModal, setShowCommentModal] = useState(false);
   const { registerQuill, transitionPhase } = useQuillVersion();
   const [isTibetan,setIsTibetan]=useState(false);
@@ -54,27 +61,29 @@ const Editor = ({
   const { t } = useTranslate();
   const { currentUser } = useAuth();
   const { trackDocumentOpened, trackDocumentSaved } = useUmamiTracking();
-  
   // Get display settings
   const { 
     showLineNumbers,
   } = useDisplaySettings();
   
-  // Track document opening
   useEffect(() => {
-    if (documentId && currentDoc) {
-      // Determine if this is a root document by checking if it has translations
-      const documentType =
-        currentDoc.translations && currentDoc.translations.length > 0
-          ? "root"
-          : "translation";
-      trackDocumentOpened(
-        documentId,
-        documentType,
-        getUserContext(currentUser)
-      );
+    if(!yText || !provider)return()=>{};
+    const name = currentUser?.name || "Anonymous User";
+    // Generate a random dark color (R, G, and B <= 100)
+    function getRandomDarkColor() {
+      const r = Math.floor(Math.random() * 100);
+      const g = Math.floor(Math.random() * 100);
+      const b = Math.floor(Math.random() * 100);
+      return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
     }
-  }, [documentId, currentDoc, trackDocumentOpened, currentUser]);
+    const color = getRandomDarkColor();
+    provider.awareness.setLocalStateField("user", {
+      name,
+      color,
+    });
+  }, [currentUser?.name]);
+  // Track document opening
+ 
 
   const updateDocumentMutation = useMutation({
     mutationFn: (content: Record<string, unknown>) =>
@@ -94,9 +103,9 @@ const Editor = ({
       }
     },
   });
-
-  const isSynced = !updateDocumentMutation.isPending;
+  const isSaving=updateDocumentMutation.isPending;
   const queryClient = useQueryClient();
+
   const debouncedSave = useCallback(
     (content: Record<string, unknown>) => {
       if (saveTimeoutRef.current) {
@@ -110,35 +119,19 @@ const Editor = ({
     },
     [documentId, updateDocumentMutation]
   );
-
   useEffect(() => {
     const signal = new AbortController();
-
     const editorId = documentId;
+    let binding: QuillBinding;
     const tool = document.getElementById(toolbarId);
     if (!editorRef.current || !tool) return;
-
-    function handleFormatChange(type: string) {
-      const range = quill.getSelection();
-      if (range) {
-        const format = quill.getFormat(range);
-        quill.format(type, !format[type], "user");
-      } else {
-        // If no selection, create one at cursor position
-        quill.focus();
-        const newRange = quill.getSelection(true);
-        if (newRange) {
-          const format = quill.getFormat(newRange);
-          quill.format(type, !format[type], "user");
-        }
-      }
-    }
 
     // Initialize the Yjs document and text with awareness
     const quill = new Quill(editorRef.current, {
       theme: "snow",
       modules: {
         history: editor_config.HISTORY_CONFIG,
+        cursors: editor_config.ENABLE_CURSORS,
         toolbar: {
           container: `#${toolbarId}`,
           handlers: {
@@ -173,9 +166,6 @@ const Editor = ({
           },
         },
         footnote:true,
-        // cursors: {
-        //   transformOnTextChange: false,
-        // },
         keyboard: {
           bindings: {...footnoteKeyboardBindings,
             footnoteEsc: {
@@ -200,6 +190,7 @@ const Editor = ({
           },
         },
         counter: { container: `#${counterId}`, unit: "character" },
+        
       },
       readOnly: !isEditable,
       placeholder: t("editor.startCollaborating") as string,
@@ -208,7 +199,15 @@ const Editor = ({
 
     registerQuill(quill);
     quillRef.current = quill;
-    registerQuill2(editorId, quill);
+    registerQuill2(editorId as string, quill);
+    if(yText && provider){
+      console.log("yText and provider",yText, provider)
+    binding = new QuillBinding(yText, quill, provider.awareness);
+    provider.on("sync", (data)=>{
+      setIsSynced(data);
+          });
+    }
+   
     quill?.root.addEventListener(
       "keydown",
       (e: KeyboardEvent) => {
@@ -262,6 +261,22 @@ const Editor = ({
       }
     });
 
+    function handleFormatChange(type: string) {
+      const range = quill.getSelection();
+      if (range) {
+        const format = quill.getFormat(range);
+        quill.format(type, !format[type], "user");
+      } else {
+        // If no selection, create one at cursor position
+        quill.focus();
+        const newRange = quill.getSelection(true);
+        if (newRange) {
+          const format = quill.getFormat(newRange);
+          quill.format(type, !format[type], "user");
+        }
+      }
+    }
+
     return () => {
       const currentContent = quill.getContents();
       updateDocumentMutation.mutate(currentContent);
@@ -271,28 +286,35 @@ const Editor = ({
       });
       signal.abort();
       quill.disable();
-    };
-  }, [isEditable]);
+  binding?.destroy?.();
 
-  useEffect(() => {
-    const content=currentDoc?.currentVersion?.content?.ops || [];
-    if (
-      quillRef.current &&
-      quillRef.current.getText().trim() === "" &&
-      content.length > 0
-    ) {
-      setTimeout(() => {
-        quillRef.current?.setContents(content || []);
-        setIsTibetan(checkIsTibetan(quillRef.current?.getText() || ""));
-        // Set content loaded after a brief delay to ensure rendering is complete
-      }, 0);
-    }
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
     };
-  }, [currentDoc]);
+  }, [isEditable,yText, provider]);
+
+
+ 
+//for non-realtime editor only
+
+  // useEffect(() => {
+  //   const content=currentDoc?.currentVersion?.content?.ops || [];
+  //   if (
+  //     quillRef.current &&
+  //     quillRef.current.getText().trim() === "" &&
+  //     content.length > 0
+  //     && yText.length === 0
+  //   ) {
+  //     setTimeout(() => {
+  //       quillRef.current?.setContents(content || []);
+  //       setIsTibetan(checkIsTibetan(quillRef.current?.getText() || ""));
+  //       // Set content loaded after a brief delay to ensure rendering is complete
+  //     }, 0);
+  //   }
+  //   return () => {
+  //     if (saveTimeoutRef.current) {
+  //       clearTimeout(saveTimeoutRef.current);
+  //     }
+  //   };
+  // }, [currentDoc,yText]);
 
   function addComment() {
     if (!currentRange || currentRange?.length === 0) return;
@@ -306,7 +328,7 @@ const Editor = ({
       {createPortal(
         <Toolbar
           addComment={addComment}
-          synced={isSynced}
+          synced={!isSaving || isSynced}
           documentId={documentId}
           toolbarId={toolbarId}
           range={currentRange}
