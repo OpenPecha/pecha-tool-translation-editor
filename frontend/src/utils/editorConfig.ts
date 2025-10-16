@@ -1,7 +1,9 @@
 export const MAX_HEADING_LEVEL = 20;
 export const EDITOR_READ_ONLY = false;
 export const EDITOR_ENTER_ONLY = false;
-export const ENABLE_CURSORS = true;
+export const ENABLE_LIVE_COLLABORATION =
+  import.meta.env.VITE_ENVIRONMENT !== "development";
+export const ENABLE_CURSORS = ENABLE_LIVE_COLLABORATION;
 export const MAX_TEXT_LENGTH_FOR_REALTIME_COLLABORATION = 150000;
 
 const HISTORY_CONFIG = {
