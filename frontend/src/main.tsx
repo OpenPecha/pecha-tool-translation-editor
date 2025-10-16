@@ -2,7 +2,6 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import "./index.css";
-import { Toaster } from "@/components/ui/sonner";
 
 import { Auth0ProviderWithNavigate } from "./auth/auth0-provider";
 
@@ -16,6 +15,5 @@ root.render(
     <Auth0ProviderWithNavigate>
       <App />
     </Auth0ProviderWithNavigate>
-    <Toaster />
   </BrowserRouter>
 );
