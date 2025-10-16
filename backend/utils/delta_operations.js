@@ -9,194 +9,194 @@ const prisma = new PrismaClient();
  * @returns {string} - Markdown content with footnotes
  */
 function generateMarkdownWithFootnotes(delta, footnotes) {
-  if (!Array.isArray(delta)) return "";
+	if (!Array.isArray(delta)) return "";
 
-  let markdown = "";
-  let currentPosition = 0;
-  let footnoteIndex = 0;
+	let markdown = "";
+	let currentPosition = 0;
+	let footnoteIndex = 0;
 
-  const sortedFootnotes = [...footnotes].sort(
-    (a, b) => a.position - b.position
-  );
+	const sortedFootnotes = [...footnotes].sort(
+		(a, b) => a.position - b.position,
+	);
 
-  for (const op of delta) {
-    if (typeof op.insert === "string") {
-      const result = processTextWithFootnotes(
-        op.insert,
-        sortedFootnotes,
-        currentPosition,
-        footnoteIndex
-      );
-      markdown += result.markdown;
-      currentPosition = result.newPosition;
-      footnoteIndex = result.newFootnoteIndex;
-    }
-  }
+	for (const op of delta) {
+		if (typeof op.insert === "string") {
+			const result = processTextWithFootnotes(
+				op.insert,
+				sortedFootnotes,
+				currentPosition,
+				footnoteIndex,
+			);
+			markdown += result.markdown;
+			currentPosition = result.newPosition;
+			footnoteIndex = result.newFootnoteIndex;
+		}
+	}
 
-  return markdown + generateFootnoteDefinitions(sortedFootnotes);
+	return markdown + generateFootnoteDefinitions(sortedFootnotes);
 }
 
 function processTextWithFootnotes(
-  text,
-  sortedFootnotes,
-  currentPosition,
-  footnoteIndex
+	text,
+	sortedFootnotes,
+	currentPosition,
+	footnoteIndex,
 ) {
-  let markdown = "";
-  let remainingText = text;
-  let newPosition = currentPosition;
-  let newFootnoteIndex = footnoteIndex;
-  let footnotesInThisSegment = [];
+	let markdown = "";
+	let remainingText = text;
+	let newPosition = currentPosition;
+	let newFootnoteIndex = footnoteIndex;
+	let footnotesInThisSegment = [];
 
-  // First pass: collect all footnotes that belong to this text segment
-  while (
-    shouldInsertFootnote(
-      sortedFootnotes,
-      newFootnoteIndex,
-      newPosition,
-      remainingText
-    )
-  ) {
-    const footnote = sortedFootnotes[newFootnoteIndex];
-    footnotesInThisSegment.push(footnote);
-    newFootnoteIndex++;
-  }
+	// First pass: collect all footnotes that belong to this text segment
+	while (
+		shouldInsertFootnote(
+			sortedFootnotes,
+			newFootnoteIndex,
+			newPosition,
+			remainingText,
+		)
+	) {
+		const footnote = sortedFootnotes[newFootnoteIndex];
+		footnotesInThisSegment.push(footnote);
+		newFootnoteIndex++;
+	}
 
-  // Second pass: build the markdown without footnotes
-  newFootnoteIndex = footnoteIndex;
-  while (
-    shouldInsertFootnote(
-      sortedFootnotes,
-      newFootnoteIndex,
-      newPosition,
-      remainingText
-    )
-  ) {
-    const footnote = sortedFootnotes[newFootnoteIndex];
-    const result = insertFootnoteInText(remainingText, footnote, newPosition);
-    markdown += result.beforeFootnote; // Don't add footnote reference here
-    remainingText = result.afterFootnote;
-    newPosition = footnote.position;
-    newFootnoteIndex++;
-  }
+	// Second pass: build the markdown without footnotes
+	newFootnoteIndex = footnoteIndex;
+	while (
+		shouldInsertFootnote(
+			sortedFootnotes,
+			newFootnoteIndex,
+			newPosition,
+			remainingText,
+		)
+	) {
+		const footnote = sortedFootnotes[newFootnoteIndex];
+		const result = insertFootnoteInText(remainingText, footnote, newPosition);
+		markdown += result.beforeFootnote; // Don't add footnote reference here
+		remainingText = result.afterFootnote;
+		newPosition = footnote.position;
+		newFootnoteIndex++;
+	}
 
-  if (remainingText) {
-    markdown += remainingText;
-    newPosition += remainingText.length;
-  }
+	if (remainingText) {
+		markdown += remainingText;
+		newPosition += remainingText.length;
+	}
 
-  // Add all footnotes at the end of this text segment
-  if (footnotesInThisSegment.length > 0) {
-    const footnoteReferences = footnotesInThisSegment
-      .map((footnote) => `[^${footnote.number}]`)
-      .join("");
+	// Add all footnotes at the end of this text segment
+	if (footnotesInThisSegment.length > 0) {
+		const footnoteReferences = footnotesInThisSegment
+			.map((footnote) => `[^${footnote.number}]`)
+			.join("");
 
-    // Add footnotes at the end, before any punctuation
-    const lastChar = markdown.slice(-1);
-    if ([".", "!", "?", ":", ";"].includes(lastChar)) {
-      // Insert before the punctuation
-      markdown = markdown.slice(0, -1) + footnoteReferences + lastChar;
-    } else {
-      // Add at the end
-      markdown += footnoteReferences;
-    }
-  }
+		// Add footnotes at the end, before any punctuation
+		const lastChar = markdown.slice(-1);
+		if ([".", "!", "?", ":", ";"].includes(lastChar)) {
+			// Insert before the punctuation
+			markdown = markdown.slice(0, -1) + footnoteReferences + lastChar;
+		} else {
+			// Add at the end
+			markdown += footnoteReferences;
+		}
+	}
 
-  return { markdown, newPosition, newFootnoteIndex };
+	return { markdown, newPosition, newFootnoteIndex };
 }
 
 function shouldInsertFootnote(
-  sortedFootnotes,
-  footnoteIndex,
-  currentPosition,
-  text
+	sortedFootnotes,
+	footnoteIndex,
+	currentPosition,
+	text,
 ) {
-  return (
-    footnoteIndex < sortedFootnotes.length &&
-    currentPosition <= sortedFootnotes[footnoteIndex].position &&
-    sortedFootnotes[footnoteIndex].position < currentPosition + text.length
-  );
+	return (
+		footnoteIndex < sortedFootnotes.length &&
+		currentPosition <= sortedFootnotes[footnoteIndex].position &&
+		sortedFootnotes[footnoteIndex].position < currentPosition + text.length
+	);
 }
 
 function insertFootnoteInText(text, footnote, currentPosition) {
-  const relativePosition = footnote.position - currentPosition;
-  const beforeFootnote = text.substring(0, relativePosition);
-  const afterFootnote = text.substring(relativePosition);
-  return { beforeFootnote, afterFootnote };
+	const relativePosition = footnote.position - currentPosition;
+	const beforeFootnote = text.substring(0, relativePosition);
+	const afterFootnote = text.substring(relativePosition);
+	return { beforeFootnote, afterFootnote };
 }
 
 function generateFootnoteDefinitions(sortedFootnotes) {
-  if (sortedFootnotes.length === 0) return "";
+	if (sortedFootnotes.length === 0) return "";
 
-  let definitions = "\n\n";
-  for (const footnote of sortedFootnotes) {
-    definitions += `[^${footnote.number}]: ${footnote.content}\n\n`;
-  }
-  return definitions;
+	let definitions = "\n\n";
+	for (const footnote of sortedFootnotes) {
+		definitions += `[^${footnote.number}]: ${footnote.content}\n\n`;
+	}
+	return definitions;
 }
 
 async function extractFootnotesFromDelta(delta) {
-  if (!Array.isArray(delta)) return [];
+	if (!Array.isArray(delta)) return [];
 
-  const footnotes = [];
-  const footnoteMap = new Map();
-  let currentPosition = 0;
+	const footnotes = [];
+	const footnoteMap = new Map();
+	let currentPosition = 0;
 
-  for (let i = 0; i < delta.length; i++) {
-    const op = delta[i];
+	for (let i = 0; i < delta.length; i++) {
+		const op = delta[i];
 
-    if (typeof op.insert !== "string") continue;
-    currentPosition += op.insert.length;
+		if (typeof op.insert !== "string") continue;
+		currentPosition += op.insert.length;
 
-    const threadId = extractThreadId(op);
-    if (!threadId || footnoteMap.has(threadId)) continue;
+		const threadId = extractThreadId(op);
+		if (!threadId || footnoteMap.has(threadId)) continue;
 
-    const footnoteNumber = footnoteMap.size + 1;
-    const actualContent = await getFootnoteContent(threadId);
+		const footnoteNumber = footnoteMap.size + 1;
+		const actualContent = await getFootnoteContent(threadId);
 
-    const footnote = {
-      threadId,
-      number: footnoteNumber,
-      position: currentPosition - op.insert.length,
-      content: actualContent || `Footnote ${footnoteNumber}`,
-      order: footnoteNumber,
-      operationIndex: i,
-    };
+		const footnote = {
+			threadId,
+			number: footnoteNumber,
+			position: currentPosition - op.insert.length,
+			content: actualContent || `Footnote ${footnoteNumber}`,
+			order: footnoteNumber,
+			operationIndex: i,
+		};
 
-    footnoteMap.set(threadId, footnote);
-    footnotes.push(footnote);
-  }
+		footnoteMap.set(threadId, footnote);
+		footnotes.push(footnote);
+	}
 
-  return footnotes;
+	return footnotes;
 }
 
 function extractThreadId(op) {
-  const attr = op.attributes?.footnote;
-  if (!attr) return null;
-  if (typeof attr === "string") return attr;
-  if (typeof attr === "object" && attr !== null) {
-    return attr.id || attr.threadId || null;
-  }
-  return null;
+	const attr = op.attributes?.footnote;
+	if (!attr) return null;
+	if (typeof attr === "string") return attr;
+	if (typeof attr === "object" && attr !== null) {
+		return attr.id || attr.threadId || null;
+	}
+	return null;
 }
 
 async function getFootnoteContent(threadId) {
-  try {
-    const footnoteRecord = await prisma.footnote.findFirst({
-      where: { threadId },
-      select: {
-        id: true,
-        threadId: true,
-        content: true,
-        order: true,
-        docId: true,
-      },
-    });
+	try {
+		const footnoteRecord = await prisma.footnote.findFirst({
+			where: { threadId },
+			select: {
+				id: true,
+				threadId: true,
+				content: true,
+				order: true,
+				docId: true,
+			},
+		});
 
-    return footnoteRecord?.content || null;
-  } catch (err) {
-    return null;
-  }
+		return footnoteRecord?.content || null;
+	} catch (err) {
+		return null;
+	}
 }
 
 /**
@@ -205,34 +205,34 @@ async function getFootnoteContent(threadId) {
  * @returns {Promise<Array|null>} - The document content as a Delta array or null
  */
 async function getDocumentContent(docId) {
-  try {
-    const document = await prisma.doc.findUnique({
-      where: { id: docId },
-      select: {
-        id: true,
-        identifier: true,
-        currentVersionId: true,
-      },
-    });
+	try {
+		const document = await prisma.doc.findUnique({
+			where: { id: docId },
+			select: {
+				id: true,
+				identifier: true,
+				currentVersionId: true,
+			},
+		});
 
-    if (!document) return null;
+		if (!document) return null;
 
-    // Get content from current version
-    let delta = null;
-    const currentVersion = await prisma.version.findUnique({
-      where: { id: document.currentVersionId },
-      select: { content: true }
-    });
-    
-    if (currentVersion?.content?.ops) {
-      delta = currentVersion.content.ops;
-    }
+		// Get content from current version
+		let delta = null;
+		const currentVersion = await prisma.version.findUnique({
+			where: { id: document.currentVersionId },
+			select: { content: true },
+		});
 
-    return delta;
-  } catch (error) {
-    console.error("Error getting document content:", error);
-    return null;
-  }
+		if (currentVersion?.content?.ops) {
+			delta = currentVersion.content.ops;
+		}
+
+		return delta;
+	} catch (error) {
+		console.error("Error getting document content:", error);
+		return null;
+	}
 }
 
 /**
@@ -241,33 +241,33 @@ async function getDocumentContent(docId) {
  * @returns {string} - Plain text content
  */
 function deltaToPlainText(delta) {
-  if (!Array.isArray(delta)) return "";
+	if (!Array.isArray(delta)) return "";
 
-  let text = "";
-  for (const op of delta) {
-    // stop if we reach the footnote divider
-    if (typeof op.insert === "object" && op.insert["footnote-divider"]) {
-      break;
-    }
+	let text = "";
+	for (const op of delta) {
+		// stop if we reach the footnote divider
+		if (typeof op.insert === "object" && op.insert["footnote-divider"]) {
+			break;
+		}
 
-    if (typeof op.insert === "string") {
-      // append only non-footnote-row text
-      if (!(op.attributes && op.attributes["footnote-row"])) {
-        text += op.insert;
-      }
-    }
-  }
+		if (typeof op.insert === "string") {
+			// append only non-footnote-row text
+			if (!(op.attributes && op.attributes["footnote-row"])) {
+				text += op.insert;
+			}
+		}
+	}
 
-  // Preserve original linebreaks, only normalize excessive whitespace
-  return text
-    .replace(/[ \t]+/g, " ")
-    .replace(/\n\s*\n\s*/g, "\n\n")
-    .trim();
+	// Preserve original linebreaks, only normalize excessive whitespace
+	return text
+		.replace(/[ \t]+/g, " ")
+		.replace(/\n\s*\n\s*/g, "\n\n")
+		.trim();
 }
 
 module.exports = {
-  generateMarkdownWithFootnotes,
-  extractFootnotesFromDelta,
-  getDocumentContent,
-  deltaToPlainText,
+	generateMarkdownWithFootnotes,
+	extractFootnotesFromDelta,
+	getDocumentContent,
+	deltaToPlainText,
 };

@@ -24,7 +24,7 @@ const router = express.Router();
  *     },
  *     {
  *       "id": "9c56995c-f332-4a2e-bc8c-f7638b260573",
- *       "name": "Translator Editor", 
+ *       "name": "Translator Editor",
  *       "description": "Computer-Assisted Translation (CAT) tool for Tibetan texts",
  *       "category": "",
  *       "price": null,
@@ -37,17 +37,17 @@ const router = express.Router();
  * }
  */
 router.get("/tools", async (req, res) => {
-  try {
-    const toolsData = await getToolsList();
-    res.json(toolsData);
-  } catch (error) {
-    console.error("Error fetching tools list:", error);
-    res.status(500).json({
-      success: false,
-      error: "Failed to fetch tools list",
-      message: error.message
-    });
-  }
+	try {
+		const toolsData = await getToolsList();
+		res.json(toolsData);
+	} catch (error) {
+		console.error("Error fetching tools list:", error);
+		res.status(500).json({
+			success: false,
+			error: "Failed to fetch tools list",
+			message: error.message,
+		});
+	}
 });
 
 module.exports = router;

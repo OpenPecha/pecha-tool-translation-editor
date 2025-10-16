@@ -7,14 +7,14 @@ const execAsync = promisify(exec);
  * @returns {Promise<boolean>} - True if Pandoc is available
  */
 async function isPandocAvailable() {
-  try {
-    await execAsync("pandoc --version");
-    return true;
-  } catch (error) {
-    return false;
-  }
+	try {
+		await execAsync("pandoc --version");
+		return true;
+	} catch (error) {
+		return false;
+	}
 }
 
 module.exports = {
-  isPandocAvailable,
+	isPandocAvailable,
 };

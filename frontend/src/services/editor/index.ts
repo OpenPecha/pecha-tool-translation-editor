@@ -3,14 +3,14 @@
  */
 
 export {
-  overwriteAllTranslations,
-  validateTranslationResults,
-  getOverwritePreview
-} from './overwriteTranslations';
+	overwriteAllTranslations,
+	validateTranslationResults,
+	getOverwritePreview,
+} from "./overwriteTranslations";
 
 // Export types for external use
 export type {
-  TranslationResult,
-  OverwriteResult,
-  OverwriteOptions
-} from './overwriteTranslations';
+	TranslationResult,
+	OverwriteResult,
+	OverwriteOptions,
+} from "./overwriteTranslations";

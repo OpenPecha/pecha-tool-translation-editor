@@ -1,3 +1,3 @@
-import {isMobile} from 'react-device-detect';
+import { isMobile } from "react-device-detect";
 
 export default isMobile;

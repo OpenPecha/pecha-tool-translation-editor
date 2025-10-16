@@ -4,44 +4,58 @@ const server_url = import.meta.env.VITE_SERVER_URL;
 
 // Streaming translation interfaces and functions
 export type TargetLanguage =
-  | "english"
-  | "french"
-  | "tibetan"
-  | "portuguese"
-  | "chinese";
+	| "english"
+	| "french"
+	| "tibetan"
+	| "portuguese"
+	| "chinese";
 export type TextType =
-  | "mantra"
-  | "sutra"
-  | "commentary"
-  | "philosophical treatises";
+	| "mantra"
+	| "sutra"
+	| "commentary"
+	| "philosophical treatises";
 export type ModelName =
- 'claude-3-5-sonnet-20241022'| 'claude-3-7-sonnet-20250219'| 'claude-sonnet-4-20250514'| 'claude-3-5-haiku-20241022'| 'claude-3-opus-20240229'| 'gemini-2.5-pro'| 'gemini-2.5-flash-thinking'| 'gemini-2.5-flash'
+	| "claude-3-5-sonnet-20241022"
+	| "claude-3-7-sonnet-20250219"
+	| "claude-sonnet-4-20250514"
+	| "claude-3-5-haiku-20241022"
+	| "claude-3-opus-20240229"
+	| "gemini-2.5-pro"
+	| "gemini-2.5-flash-thinking"
+	| "gemini-2.5-flash";
 
 // Constants for easy access to enum values
 export const TARGET_LANGUAGES: TargetLanguage[] = [
-  "english",
-  "french",
-  "tibetan",
-  "portuguese",
-  "chinese",
+	"english",
+	"french",
+	"tibetan",
+	"portuguese",
+	"chinese",
 ];
 export const TEXT_TYPES: TextType[] = [
-  "mantra",
-  "sutra",
-  "commentary",
-  "philosophical treatises",
+	"mantra",
+	"sutra",
+	"commentary",
+	"philosophical treatises",
 ];
 export const MODEL_NAMES: ModelName[] = [
-'claude-3-5-sonnet-20241022', 'claude-3-7-sonnet-20250219', 'claude-sonnet-4-20250514', 'claude-3-5-haiku-20241022', 'claude-3-opus-20240229', 'gemini-2.5-pro', 'gemini-2.5-flash-thinking', 'gemini-2.5-flash'
+	"claude-3-5-sonnet-20241022",
+	"claude-3-7-sonnet-20250219",
+	"claude-sonnet-4-20250514",
+	"claude-3-5-haiku-20241022",
+	"claude-3-opus-20240229",
+	"gemini-2.5-pro",
+	"gemini-2.5-flash-thinking",
+	"gemini-2.5-flash",
 ];
 
 export interface StreamTranslationParams {
-  texts: string[];
-  target_language: TargetLanguage;
-  text_type?: TextType;
-  model_name?: ModelName;
-  batch_size?: number;
-  user_rules?: string;
+	texts: string[];
+	target_language: TargetLanguage;
+	text_type?: TextType;
+	model_name?: ModelName;
+	batch_size?: number;
+	user_rules?: string;
 }
 
 /**
@@ -49,140 +63,140 @@ export interface StreamTranslationParams {
  * Returns a ReadableStream that can be consumed to get real-time translation results
  */
 export const streamTranslation = async (
-  params: StreamTranslationParams,
-  abortController?: AbortController
+	params: StreamTranslationParams,
+	abortController?: AbortController,
 ): Promise<Response> => {
-  try {
-    // Validate authentication before making the request
+	try {
+		// Validate authentication before making the request
 
-    const response = await fetch(`${server_url}/translate`, {
-      method: "POST",
-      headers: getHeaders(),
-      body: JSON.stringify(params),
-      signal: abortController?.signal,
-    });
+		const response = await fetch(`${server_url}/translate`, {
+			method: "POST",
+			headers: getHeaders(),
+			body: JSON.stringify(params),
+			signal: abortController?.signal,
+		});
 
-    if (!response.ok) {
-      // Handle different types of HTTP errors
-      if (response.status === 401) {
-        throw new Error("Authentication failed. Please log in again.");
-      } else if (response.status === 403) {
-        throw new Error(
-          "Access denied. You don't have permission to use translation services."
-        );
-      } else if (response.status === 400) {
-        try {
-          const errorData = await response.json();
-          throw new Error(
-            errorData.error ?? "Invalid translation request parameters."
-          );
-        } catch {
-          throw new Error("Invalid translation request parameters.");
-        }
-      } else if (response.status >= 500) {
-        throw new Error(
-          "Translation service is temporarily unavailable. Please try again later."
-        );
-      } else {
-        try {
-          const errorData = await response.json();
-          throw new Error(
-            errorData.error ??
-              `Translation request failed with status ${response.status}`
-          );
-        } catch {
-          throw new Error(
-            `Translation request failed with status ${response.status}`
-          );
-        }
-      }
-    }
+		if (!response.ok) {
+			// Handle different types of HTTP errors
+			if (response.status === 401) {
+				throw new Error("Authentication failed. Please log in again.");
+			} else if (response.status === 403) {
+				throw new Error(
+					"Access denied. You don't have permission to use translation services.",
+				);
+			} else if (response.status === 400) {
+				try {
+					const errorData = await response.json();
+					throw new Error(
+						errorData.error ?? "Invalid translation request parameters.",
+					);
+				} catch {
+					throw new Error("Invalid translation request parameters.");
+				}
+			} else if (response.status >= 500) {
+				throw new Error(
+					"Translation service is temporarily unavailable. Please try again later.",
+				);
+			} else {
+				try {
+					const errorData = await response.json();
+					throw new Error(
+						errorData.error ??
+							`Translation request failed with status ${response.status}`,
+					);
+				} catch {
+					throw new Error(
+						`Translation request failed with status ${response.status}`,
+					);
+				}
+			}
+		}
 
-    return response;
-  } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
-    throw new Error("Failed to start translation stream");
-  }
+		return response;
+	} catch (error) {
+		if (error instanceof Error) {
+			throw error;
+		}
+		throw new Error("Failed to start translation stream");
+	}
 };
 
 // Streaming event types for better type safety
 export interface StreamEvent {
-  type: string;
-  timestamp: string;
-  message?: string;
+	type: string;
+	timestamp: string;
+	message?: string;
 }
 
 export interface InitializationEvent extends StreamEvent {
-  type: "initialization";
-  total_texts: number;
+	type: "initialization";
+	total_texts: number;
 }
 
 export interface PlanningEvent extends StreamEvent {
-  type: "planning";
-  total_batches: number;
-  batch_size: number;
+	type: "planning";
+	total_batches: number;
+	batch_size: number;
 }
 
 export interface BatchStartEvent extends StreamEvent {
-  type: "batch_start";
-  batch_number: number;
-  progress_percent: number;
+	type: "batch_start";
+	batch_number: number;
+	progress_percent: number;
 }
 
 export interface TranslationStartEvent extends StreamEvent {
-  type: "translation_start";
+	type: "translation_start";
 }
 
 export interface TextCompletedEvent extends StreamEvent {
-  type: "text_completed";
-  text_number: number;
-  total_texts: number;
-  progress_percent: number;
-  translation_preview?: string;
+	type: "text_completed";
+	text_number: number;
+	total_texts: number;
+	progress_percent: number;
+	translation_preview?: string;
 }
 
 export interface BatchCompletedEvent extends StreamEvent {
-  type: "batch_completed";
-  batch_number: number;
-  batch_id: string;
-  batch_results: Array<{
-    original_text: string;
-    translated_text: string;
-    metadata?: Record<string, unknown>;
-  }>;
-  cumulative_progress: number;
-  processing_time: string;
+	type: "batch_completed";
+	batch_number: number;
+	batch_id: string;
+	batch_results: Array<{
+		original_text: string;
+		translated_text: string;
+		metadata?: Record<string, unknown>;
+	}>;
+	cumulative_progress: number;
+	processing_time: string;
 }
 
 export interface CompletionEvent extends StreamEvent {
-  type: "completion";
-  total_completed: number;
-  total_texts: number;
+	type: "completion";
+	total_completed: number;
+	total_texts: number;
 }
 
 export interface ErrorEvent extends StreamEvent {
-  type: "error";
-  error: string;
-  details?: string;
+	type: "error";
+	error: string;
+	details?: string;
 }
 
 export interface RawContentEvent extends StreamEvent {
-  type: "raw_content";
-  content: string;
+	type: "raw_content";
+	content: string;
 }
 
 export type TranslationStreamEvent =
-  | InitializationEvent
-  | PlanningEvent
-  | BatchStartEvent
-  | TranslationStartEvent
-  | TextCompletedEvent
-  | BatchCompletedEvent
-  | CompletionEvent
-  | ErrorEvent
-  | RawContentEvent;
+	| InitializationEvent
+	| PlanningEvent
+	| BatchStartEvent
+	| TranslationStartEvent
+	| TextCompletedEvent
+	| BatchCompletedEvent
+	| CompletionEvent
+	| ErrorEvent
+	| RawContentEvent;
 
 /**
  * Helper function to consume a streaming translation response with structured events
@@ -191,188 +205,188 @@ export type TranslationStreamEvent =
  * Calls onError if an error occurs
  */
 export const consumeTranslationStream = async (
-  response: Response,
-  onEvent: (event: TranslationStreamEvent) => void,
-  onComplete?: () => void,
-  onError?: (error: Error) => void,
-  abortController?: AbortController
+	response: Response,
+	onEvent: (event: TranslationStreamEvent) => void,
+	onComplete?: () => void,
+	onError?: (error: Error) => void,
+	abortController?: AbortController,
 ): Promise<void> => {
-  if (!response.body) {
-    const error = new Error(
-      "No response body available for streaming. The translation service may be unavailable."
-    );
-    onError?.(error);
-    throw error;
-  }
+	if (!response.body) {
+		const error = new Error(
+			"No response body available for streaming. The translation service may be unavailable.",
+		);
+		onError?.(error);
+		throw error;
+	}
 
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
+	const reader = response.body.getReader();
+	const decoder = new TextDecoder();
+	let buffer = "";
 
-  try {
-    while (true) {
-      // Check if the request has been aborted
-      if (abortController?.signal.aborted) {
-        reader.cancel();
-        return; // Exit silently on abort
-      }
+	try {
+		while (true) {
+			// Check if the request has been aborted
+			if (abortController?.signal.aborted) {
+				reader.cancel();
+				return; // Exit silently on abort
+			}
 
-      const { done, value } = await reader.read();
+			const { done, value } = await reader.read();
 
-      if (done) {
-        onComplete?.();
-        break;
-      }
+			if (done) {
+				onComplete?.();
+				break;
+			}
 
-      // Decode chunk and add to buffer
-      const chunk = decoder.decode(value, { stream: true });
-      buffer += chunk;
+			// Decode chunk and add to buffer
+			const chunk = decoder.decode(value, { stream: true });
+			buffer += chunk;
 
-      // Process complete lines in buffer
-      const lines = buffer.split("\n");
-      buffer = lines.pop() || ""; // Keep incomplete line in buffer
+			// Process complete lines in buffer
+			const lines = buffer.split("\n");
+			buffer = lines.pop() || ""; // Keep incomplete line in buffer
 
-      for (const line of lines) {
-        if (!line.trim()) continue;
+			for (const line of lines) {
+				if (!line.trim()) continue;
 
-        // Handle Server-Sent Events format
-        let eventData = line;
-        if (line.startsWith("data: ")) {
-          eventData = line.substring(6).trim();
-        }
+				// Handle Server-Sent Events format
+				let eventData = line;
+				if (line.startsWith("data: ")) {
+					eventData = line.substring(6).trim();
+				}
 
-        if (!eventData) continue;
+				if (!eventData) continue;
 
-        // Handle multiple JSON objects or fragments in eventData
-        if (eventData.startsWith("{") && eventData.endsWith("}")) {
-          try {
-            // Single complete JSON object
-            const parsedEvent = JSON.parse(eventData) as TranslationStreamEvent;
+				// Handle multiple JSON objects or fragments in eventData
+				if (eventData.startsWith("{") && eventData.endsWith("}")) {
+					try {
+						// Single complete JSON object
+						const parsedEvent = JSON.parse(eventData) as TranslationStreamEvent;
 
-            // Handle error events immediately
-            if (parsedEvent.type === "error") {
-              const error = new Error(
-                `Translation error: ${parsedEvent.error}`
-              );
-              onError?.(error);
-              return; // Stop processing on error
-            }
+						// Handle error events immediately
+						if (parsedEvent.type === "error") {
+							const error = new Error(
+								`Translation error: ${parsedEvent.error}`,
+							);
+							onError?.(error);
+							return; // Stop processing on error
+						}
 
-            // Call the event handler with the parsed event
-            onEvent(parsedEvent);
-          } catch (parseError) {
-            console.warn(
-              "Failed to parse complete JSON event:",
-              parseError,
-              "Raw eventData:",
-              eventData
-            );
-          }
-        } else {
-          // Handle partial or malformed JSON using a more robust approach
-          try {
-            // Try to fix common SSE formatting issues
-            let cleanedData = eventData;
+						// Call the event handler with the parsed event
+						onEvent(parsedEvent);
+					} catch (parseError) {
+						console.warn(
+							"Failed to parse complete JSON event:",
+							parseError,
+							"Raw eventData:",
+							eventData,
+						);
+					}
+				} else {
+					// Handle partial or malformed JSON using a more robust approach
+					try {
+						// Try to fix common SSE formatting issues
+						let cleanedData = eventData;
 
-            // Remove duplicate "data: " prefixes that sometimes occur
-            if (cleanedData.includes("data: ")) {
-              cleanedData = cleanedData.replace(/data:\s*/g, "");
-            }
+						// Remove duplicate "data: " prefixes that sometimes occur
+						if (cleanedData.includes("data: ")) {
+							cleanedData = cleanedData.replace(/data:\s*/g, "");
+						}
 
-            // Try to parse after cleaning
-            if (cleanedData.startsWith("{")) {
-              const parsedEvent = JSON.parse(
-                cleanedData
-              ) as TranslationStreamEvent;
+						// Try to parse after cleaning
+						if (cleanedData.startsWith("{")) {
+							const parsedEvent = JSON.parse(
+								cleanedData,
+							) as TranslationStreamEvent;
 
-              // Handle error events immediately
-              if (parsedEvent.type === "error") {
-                const error = new Error(
-                  `Translation error: ${parsedEvent.error}`
-                );
-                onError?.(error);
-                return; // Stop processing on error
-              }
+							// Handle error events immediately
+							if (parsedEvent.type === "error") {
+								const error = new Error(
+									`Translation error: ${parsedEvent.error}`,
+								);
+								onError?.(error);
+								return; // Stop processing on error
+							}
 
-              // Call the event handler with the parsed event
-              onEvent(parsedEvent);
-            } else {
-              console.warn("Skipping non-JSON event data:", eventData);
-            }
-          } catch (parseError) {
-            console.warn(
-              "Failed to parse streaming event:",
-              parseError,
-              "Raw line:",
-              line,
-              "Extracted eventData:",
-              eventData
-            );
+							// Call the event handler with the parsed event
+							onEvent(parsedEvent);
+						} else {
+							console.warn("Skipping non-JSON event data:", eventData);
+						}
+					} catch (parseError) {
+						console.warn(
+							"Failed to parse streaming event:",
+							parseError,
+							"Raw line:",
+							line,
+							"Extracted eventData:",
+							eventData,
+						);
 
-            // Check for authentication errors in raw text
-            if (
-              line.toLowerCase().includes("authentication") ||
-              line.toLowerCase().includes("unauthorized") ||
-              line.toLowerCase().includes("401")
-            ) {
-              const error = new Error(
-                "Authentication error during translation. Please log in again."
-              );
-              onError?.(error);
-              return;
-            }
-          }
-        }
-      }
-    }
-  } catch (error) {
-    // Handle abort errors gracefully
-    if (error instanceof Error && error.name === "AbortError") {
-      return; // Exit silently on abort
-    }
+						// Check for authentication errors in raw text
+						if (
+							line.toLowerCase().includes("authentication") ||
+							line.toLowerCase().includes("unauthorized") ||
+							line.toLowerCase().includes("401")
+						) {
+							const error = new Error(
+								"Authentication error during translation. Please log in again.",
+							);
+							onError?.(error);
+							return;
+						}
+					}
+				}
+			}
+		}
+	} catch (error) {
+		// Handle abort errors gracefully
+		if (error instanceof Error && error.name === "AbortError") {
+			return; // Exit silently on abort
+		}
 
-    const errorObj =
-      error instanceof Error
-        ? error
-        : new Error("Unknown streaming error occurred during translation");
-    onError?.(errorObj);
-    throw errorObj;
-  } finally {
-    reader.releaseLock();
-  }
+		const errorObj =
+			error instanceof Error
+				? error
+				: new Error("Unknown streaming error occurred during translation");
+		onError?.(errorObj);
+		throw errorObj;
+	} finally {
+		reader.releaseLock();
+	}
 };
 
 /**
  * Validates translation parameters
  */
 const validateTranslationParams = (params: StreamTranslationParams): void => {
-  if (
-    !params.texts ||
-    !Array.isArray(params.texts) ||
-    params.texts.length === 0
-  ) {
-    throw new Error("At least one text is required for translation");
-  }
+	if (
+		!params.texts ||
+		!Array.isArray(params.texts) ||
+		params.texts.length === 0
+	) {
+		throw new Error("At least one text is required for translation");
+	}
 
-  if (!params.target_language || params.target_language.trim() === "") {
-    throw new Error("Target language is required for translation");
-  }
+	if (!params.target_language || params.target_language.trim() === "") {
+		throw new Error("Target language is required for translation");
+	}
 
-  // Check for empty texts
-  const hasEmptyTexts = params.texts.some(
-    (text) => !text || text.trim() === ""
-  );
-  if (hasEmptyTexts) {
-    throw new Error("All texts must be non-empty for translation");
-  }
+	// Check for empty texts
+	const hasEmptyTexts = params.texts.some(
+		(text) => !text || text.trim() === "",
+	);
+	if (hasEmptyTexts) {
+		throw new Error("All texts must be non-empty for translation");
+	}
 
-  // Validate batch_size if provided
-  if (
-    params.batch_size !== undefined &&
-    (params.batch_size < 1 || params.batch_size > 10)
-  ) {
-    throw new Error("Batch size must be between 1 and 10");
-  }
+	// Validate batch_size if provided
+	if (
+		params.batch_size !== undefined &&
+		(params.batch_size < 1 || params.batch_size > 10)
+	) {
+		throw new Error("Batch size must be between 1 and 10");
+	}
 };
 
 /**
@@ -381,41 +395,39 @@ const validateTranslationParams = (params: StreamTranslationParams): void => {
  * Includes parameter validation and comprehensive error handling
  */
 export const performStreamingTranslation = async (
-  params: StreamTranslationParams,
-  onEvent: (event: TranslationStreamEvent) => void,
-  onComplete?: () => void,
-  onError?: (error: Error) => void,
-  abortController?: AbortController
+	params: StreamTranslationParams,
+	onEvent: (event: TranslationStreamEvent) => void,
+	onComplete?: () => void,
+	onError?: (error: Error) => void,
+	abortController?: AbortController,
 ): Promise<void> => {
-  try {
-    // Validate parameters before starting
-    validateTranslationParams(params);
+	try {
+		// Validate parameters before starting
+		validateTranslationParams(params);
 
-   
+		const response = await streamTranslation(params, abortController);
+		await consumeTranslationStream(
+			response,
+			onEvent,
+			onComplete,
+			onError,
+			abortController,
+		);
+	} catch (error) {
+		// Handle abort errors gracefully
+		if (error instanceof Error && error.name === "AbortError") {
+			return; // Exit silently on abort
+		}
 
-    const response = await streamTranslation(params, abortController);
-    await consumeTranslationStream(
-      response,
-      onEvent,
-      onComplete,
-      onError,
-      abortController
-    );
-  } catch (error) {
-    // Handle abort errors gracefully
-    if (error instanceof Error && error.name === "AbortError") {
-      return; // Exit silently on abort
-    }
+		const errorObj =
+			error instanceof Error
+				? error
+				: new Error("Translation failed unexpectedly");
 
-    const errorObj =
-      error instanceof Error
-        ? error
-        : new Error("Translation failed unexpectedly");
-
-    console.error("Translation error:", errorObj.message);
-    onError?.(errorObj);
-    throw errorObj;
-  }
+		console.error("Translation error:", errorObj.message);
+		onError?.(errorObj);
+		throw errorObj;
+	}
 };
 
 /**
@@ -423,18 +435,18 @@ export const performStreamingTranslation = async (
  * @deprecated Use performStreamingTranslation with event handlers instead
  */
 export const performStreamingTranslationLegacy = async (
-  params: StreamTranslationParams,
-  onChunk: (chunk: string) => void,
-  onComplete?: () => void,
-  onError?: (error: Error) => void
+	params: StreamTranslationParams,
+	onChunk: (chunk: string) => void,
+	onComplete?: () => void,
+	onError?: (error: Error) => void,
 ): Promise<void> => {
-  await performStreamingTranslation(
-    params,
-    (event) => {
-      // Convert events back to chunk format for legacy compatibility
-      onChunk(JSON.stringify(event));
-    },
-    onComplete,
-    onError
-  );
+	await performStreamingTranslation(
+		params,
+		(event) => {
+			// Convert events back to chunk format for legacy compatibility
+			onChunk(JSON.stringify(event));
+		},
+		onComplete,
+		onError,
+	);
 };

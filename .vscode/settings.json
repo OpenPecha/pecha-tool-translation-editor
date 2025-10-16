@@ -2,5 +2,11 @@
   "sonarlint.connectedMode.project": {
     "connectionId": "openpecha",
     "projectKey": "OpenPecha_monlamai-app-web"
+  },
+  "editor.defaultFormatter": "biomejs.biome",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.biome": "explicit",
+    "source.organizeImports.biome": "explicit"
   }
 }

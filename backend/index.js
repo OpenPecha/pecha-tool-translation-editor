@@ -25,45 +25,45 @@ const applyStandardizationRoutes = require("./routes/apply_standardization");
 const workspaceRoutes = require("./routes/workspace");
 
 const options = {
-  info: {
-    version: "1.0.0",
-    title: "Pecha Translation Editor API",
-    description: "API for the Pecha Translation Editor application",
-    license: {
-      name: "MIT",
-    },
-  },
-  security: {
-    BearerAuth: {
-      type: "http",
-      scheme: "bearer",
-      bearerFormat: "JWT",
-    },
-  },
-  // Base directory which we use to locate your JSDOC files
-  baseDir: __dirname,
-  // Glob pattern to find your jsdoc files (multiple patterns can be added in an array)
-  filesPattern: "./**/*.js",
-  // URL where SwaggerUI will be rendered
-  swaggerUIPath: "/docs",
-  // Expose OpenAPI UI
-  exposeSwaggerUI: true,
-  // Expose Open API JSON Docs documentation in `apiDocsPath` path.
-  exposeApiDocs: true,
-  // Open API JSON Docs endpoint.
-  apiDocsPath: "/api-docs.json",
-  // Set non-required fields as nullable by default
-  notRequiredAsNullable: false,
-  // You can customize your UI options.
-  swaggerUiOptions: {
-    explorer: true,
-    docExpansion: "list",
-    filter: true,
-  },
-  // multiple option in case you want more that one instance
-  multiple: false,
-  // Exclude routes that don't have explicit documentation
-  ignorePaths: ["/"],
+	info: {
+		version: "1.0.0",
+		title: "Pecha Translation Editor API",
+		description: "API for the Pecha Translation Editor application",
+		license: {
+			name: "MIT",
+		},
+	},
+	security: {
+		BearerAuth: {
+			type: "http",
+			scheme: "bearer",
+			bearerFormat: "JWT",
+		},
+	},
+	// Base directory which we use to locate your JSDOC files
+	baseDir: __dirname,
+	// Glob pattern to find your jsdoc files (multiple patterns can be added in an array)
+	filesPattern: "./**/*.js",
+	// URL where SwaggerUI will be rendered
+	swaggerUIPath: "/docs",
+	// Expose OpenAPI UI
+	exposeSwaggerUI: true,
+	// Expose Open API JSON Docs documentation in `apiDocsPath` path.
+	exposeApiDocs: true,
+	// Open API JSON Docs endpoint.
+	apiDocsPath: "/api-docs.json",
+	// Set non-required fields as nullable by default
+	notRequiredAsNullable: false,
+	// You can customize your UI options.
+	swaggerUiOptions: {
+		explorer: true,
+		docExpansion: "list",
+		filter: true,
+	},
+	// multiple option in case you want more that one instance
+	multiple: false,
+	// Exclude routes that don't have explicit documentation
+	ignorePaths: ["/"],
 };
 
 const expressJSDocSwagger = require("express-jsdoc-swagger");
@@ -74,15 +74,15 @@ const app = express();
 // const SECRET_KEY = process.env.SECRET_KEY || "super-secret-key";
 
 const ALLOWED_URLS = process.env.ALLOWED_URLS
-  ? process.env.ALLOWED_URLS.split(",")
-  : ["http://localhost:3000"];
+	? process.env.ALLOWED_URLS.split(",")
+	: ["http://localhost:3000"];
 app.use(
-  cors({
-    origin: ALLOWED_URLS, // reflects the request origin
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-  })
+	cors({
+		origin: ALLOWED_URLS, // reflects the request origin
+		credentials: true,
+		methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+		allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+	}),
 );
 
 expressJSDocSwagger(app)(options);
@@ -98,11 +98,11 @@ const server = http.createServer(app);
 // let count=0;
 
 app.get("/", (req, res) => {
-  res.json({
-    status: "success",
-    message: "API is running properly",
-    version: "1.0.0",
-  });
+	res.json({
+		status: "success",
+		message: "API is running properly",
+		version: "1.0.0",
+	});
 });
 
 app.use(express.json({ limit: "50mb" })); // Increase JSON payload limit
@@ -279,5 +279,5 @@ const clients = new Set();
 
 const PORT = process.env.PORT || 9000;
 server.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+	console.log(`Server running on http://localhost:${PORT}`);
 });

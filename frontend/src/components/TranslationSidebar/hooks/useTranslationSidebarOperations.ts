@@ -2,7 +2,10 @@ import { useRef, useEffect } from "react";
 import { useEditor } from "@/contexts/EditorContext";
 import { useTranslationSettings } from "@/hooks/useTranslationSettings";
 
-import { useTranslationOperations, TranslationConfig } from "./useTranslationOperations";
+import {
+	useTranslationOperations,
+	TranslationConfig,
+} from "./useTranslationOperations";
 import { useTranslationResults } from "./useTranslationResults";
 import { useTextSelection } from "./useTextSelection";
 import { useCopyOperations } from "./useCopyOperations";
@@ -10,279 +13,285 @@ import { useGlossaryOperations } from "./useGlossaryOperations";
 import { useStandardizationOperations } from "./useStandardizationOperations";
 
 interface UseTranslationSidebarOperationsProps {
-  documentId: string;
+	documentId: string;
 }
 
 export const useTranslationSidebarOperations = ({
-  documentId,
+	documentId,
 }: UseTranslationSidebarOperationsProps) => {
-  // Get translation settings
-  const { config, updateConfig, isSidebarCollapsed, setIsSidebarCollapsed } =
-    useTranslationSettings();
+	// Get translation settings
+	const { config, updateConfig, isSidebarCollapsed, setIsSidebarCollapsed } =
+		useTranslationSettings();
 
-  // Get editor context
-  const { quillEditors, scrollToLineNumber } = useEditor();
+	// Get editor context
+	const { quillEditors, scrollToLineNumber } = useEditor();
 
-  // Text selection hook
-  const { selectedText, activeSelectedEditor, selectedTextLineNumbers, clearSelection, clearUISelection } =
-    useTextSelection();
+	// Text selection hook
+	const {
+		selectedText,
+		activeSelectedEditor,
+		selectedTextLineNumbers,
+		clearSelection,
+		clearUISelection,
+	} = useTextSelection();
 
-  // Translation results hook
-  const {
-    editedTexts,
-    editingId,
-    editedText,
-    expandedItems,
-    getCurrentText,
-    getCurrentTranslationResults,
-    startEditing,
-    cancelEditing,
-    saveEdit,
-    resetToOriginal,
-    toggleItemExpansion,
-    resetEditingState,
-    setEditedText,
-  } = useTranslationResults();
+	// Translation results hook
+	const {
+		editedTexts,
+		editingId,
+		editedText,
+		expandedItems,
+		getCurrentText,
+		getCurrentTranslationResults,
+		startEditing,
+		cancelEditing,
+		saveEdit,
+		resetToOriginal,
+		toggleItemExpansion,
+		resetEditingState,
+		setEditedText,
+	} = useTranslationResults();
 
-  // Copy operations hook
-  const {
-    copiedItems,
-    copyResult,
-    copyAllResults,
-    appendAllResults,
-    overwriteAllResults: overwriteAllResultsInternal,
-    insertSingleResult,
-    resetCopyFeedback,
-  } = useCopyOperations({
-    quillEditors,
-    documentId,
-    scrollToLineNumber,
-  });
+	// Copy operations hook
+	const {
+		copiedItems,
+		copyResult,
+		copyAllResults,
+		appendAllResults,
+		overwriteAllResults: overwriteAllResultsInternal,
+		insertSingleResult,
+		resetCopyFeedback,
+	} = useCopyOperations({
+		quillEditors,
+		documentId,
+		scrollToLineNumber,
+	});
 
-  // Translation operations hook
-  const {
-    isTranslating,
-    translationResults,
-    currentStatus,
-    error,
-    progressPercent,
-    startTranslation: startTranslationInternal,
-    stopTranslation,
-    resetTranslations: resetTranslationsInternal,
-    updateTranslationResults,
-    setError,
-  } = useTranslationOperations({
-    config,
-    selectedText,
-    selectedTextLineNumbers,
-    onStreamComplete: () => {
-      // Clear UI selection but keep line numbers for replace functionality
-      clearUISelection();
-      
-      if (config.extractGlossary && translationResults.length > 0) {
-        startGlossaryExtraction();
-      }
-    },
-  });
+	// Translation operations hook
+	const {
+		isTranslating,
+		translationResults,
+		currentStatus,
+		error,
+		progressPercent,
+		startTranslation: startTranslationInternal,
+		stopTranslation,
+		resetTranslations: resetTranslationsInternal,
+		updateTranslationResults,
+		setError,
+	} = useTranslationOperations({
+		config,
+		selectedText,
+		selectedTextLineNumbers,
+		onStreamComplete: () => {
+			// Clear UI selection but keep line numbers for replace functionality
+			clearUISelection();
 
-  // Get current translation results function for hooks
-  const getCurrentResults = () => getCurrentTranslationResults(translationResults);
+			if (config.extractGlossary && translationResults.length > 0) {
+				startGlossaryExtraction();
+			}
+		},
+	});
 
-  // Glossary operations hook
-  const {
-    glossaryTerms,
-    isExtractingGlossary,
-    startGlossaryExtraction,
-    copyGlossaryTerms: copyGlossaryTermsInternal,
-    resetGlossary,
-  } = useGlossaryOperations({
-    config,
-    getCurrentTranslationResults: getCurrentResults,
-    onGlossaryComplete: () => {
-      if (translationResults.length > 0) {
-        startStandardizationAnalysis();
-      }
-    },
-    setError,
-  });
+	// Get current translation results function for hooks
+	const getCurrentResults = () =>
+		getCurrentTranslationResults(translationResults);
 
-  // Standardization operations hook
-  const {
-    inconsistentTerms,
-    isAnalyzingStandardization,
-    standardizationStatus,
-    isApplyingStandardization,
-    applyStandardizationStatus,
-    standardizationSelections,
-    currentProcessingIndex,
-    standardizationProgress,
-    startStandardizationAnalysis,
-    startApplyStandardization,
-    stopApplyStandardization,
-    resetStandardization,
-    setStandardizationSelections,
-  } = useStandardizationOperations({
-    config,
-    getCurrentTranslationResults: getCurrentResults,
-    updateTranslationResults,
-    glossaryTerms,
-    setError,
-  });
+	// Glossary operations hook
+	const {
+		glossaryTerms,
+		isExtractingGlossary,
+		startGlossaryExtraction,
+		copyGlossaryTerms: copyGlossaryTermsInternal,
+		resetGlossary,
+	} = useGlossaryOperations({
+		config,
+		getCurrentTranslationResults: getCurrentResults,
+		onGlossaryComplete: () => {
+			if (translationResults.length > 0) {
+				startStandardizationAnalysis();
+			}
+		},
+		setError,
+	});
 
-  // Refs for scrolling and containers
-  const resultAreaRef = useRef<HTMLDivElement>(null);
-  const translationListRef = useRef<HTMLDivElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+	// Standardization operations hook
+	const {
+		inconsistentTerms,
+		isAnalyzingStandardization,
+		standardizationStatus,
+		isApplyingStandardization,
+		applyStandardizationStatus,
+		standardizationSelections,
+		currentProcessingIndex,
+		standardizationProgress,
+		startStandardizationAnalysis,
+		startApplyStandardization,
+		stopApplyStandardization,
+		resetStandardization,
+		setStandardizationSelections,
+	} = useStandardizationOperations({
+		config,
+		getCurrentTranslationResults: getCurrentResults,
+		updateTranslationResults,
+		glossaryTerms,
+		setError,
+	});
 
-  // Auto-scroll to bottom of results
-  useEffect(() => {
-    if (resultAreaRef.current && translationResults.length > 0) {
-      // Use setTimeout to ensure DOM has updated
-      setTimeout(() => {
-        const container = resultAreaRef.current?.parentElement;
-        if (container) {
-          container.scrollTop = container.scrollHeight;
-        }
-      }, 50);
-    }
-  }, [translationResults]);
+	// Refs for scrolling and containers
+	const resultAreaRef = useRef<HTMLDivElement>(null);
+	const translationListRef = useRef<HTMLDivElement>(null);
+	const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Helper function to scroll to bottom
-  const scrollToBottom = () => {
-    setTimeout(() => {
-      if (scrollContainerRef.current) {
-        scrollContainerRef.current.scrollTo({
-          top: scrollContainerRef.current.scrollHeight,
-          behavior: "smooth",
-        });
-      }
-    }, 150); // Slightly increased delay to ensure DOM is updated
-  };
+	// Auto-scroll to bottom of results
+	useEffect(() => {
+		if (resultAreaRef.current && translationResults.length > 0) {
+			// Use setTimeout to ensure DOM has updated
+			setTimeout(() => {
+				const container = resultAreaRef.current?.parentElement;
+				if (container) {
+					container.scrollTop = container.scrollHeight;
+				}
+			}, 50);
+		}
+	}, [translationResults]);
 
-  // Enhanced wrapper functions
-  const handleConfigChange = <K extends keyof TranslationConfig>(
-    key: K,
-    value: TranslationConfig[K]
-  ) => {
-    updateConfig(key, value);
-  };
+	// Helper function to scroll to bottom
+	const scrollToBottom = () => {
+		setTimeout(() => {
+			if (scrollContainerRef.current) {
+				scrollContainerRef.current.scrollTo({
+					top: scrollContainerRef.current.scrollHeight,
+					behavior: "smooth",
+				});
+			}
+		}, 150); // Slightly increased delay to ensure DOM is updated
+	};
 
-  const startTranslation = async () => {
-    resetCopyFeedback();
-    await startTranslationInternal();
-  };
+	// Enhanced wrapper functions
+	const handleConfigChange = <K extends keyof TranslationConfig>(
+		key: K,
+		value: TranslationConfig[K],
+	) => {
+		updateConfig(key, value);
+	};
 
-  const copyGlossaryTerms = () => {
-    const copyId = copyGlossaryTermsInternal();
-    return copyId;
-  };
+	const startTranslation = async () => {
+		resetCopyFeedback();
+		await startTranslationInternal();
+	};
 
-  const copyAllResultsWrapper = () => {
-    const currentResults = getCurrentResults();
-    copyAllResults(currentResults);
-  };
+	const copyGlossaryTerms = () => {
+		const copyId = copyGlossaryTermsInternal();
+		return copyId;
+	};
 
-  const overwriteAllResults = () => {
-    const currentResults = getCurrentResults();
-    overwriteAllResultsInternal(currentResults, translationResults);
-  };
+	const copyAllResultsWrapper = () => {
+		const currentResults = getCurrentResults();
+		copyAllResults(currentResults);
+	};
 
-  const startGlossaryAndInconsistencyAnalysis = async () => {
-    await startGlossaryExtraction();
-  };
+	const overwriteAllResults = () => {
+		const currentResults = getCurrentResults();
+		overwriteAllResultsInternal(currentResults, translationResults);
+	};
 
-  const resetTranslations = () => {
-    resetTranslationsInternal();
-    resetCopyFeedback();
-    resetEditingState();
-    resetGlossary();
-    resetStandardization();
-  };
+	const startGlossaryAndInconsistencyAnalysis = async () => {
+		await startGlossaryExtraction();
+	};
 
-  return {
-    // Config and UI state
-    config,
-    handleConfigChange,
-    isSidebarCollapsed,
-    setIsSidebarCollapsed,
+	const resetTranslations = () => {
+		resetTranslationsInternal();
+		resetCopyFeedback();
+		resetEditingState();
+		resetGlossary();
+		resetStandardization();
+	};
 
-    // Text selection
-    selectedText,
-    activeSelectedEditor,
-    selectedTextLineNumbers,
-    clearSelection,
-    clearUISelection,
+	return {
+		// Config and UI state
+		config,
+		handleConfigChange,
+		isSidebarCollapsed,
+		setIsSidebarCollapsed,
 
-    // Translation state
-    isTranslating,
-    translationResults,
-    currentStatus,
-    error,
-    progressPercent,
+		// Text selection
+		selectedText,
+		activeSelectedEditor,
+		selectedTextLineNumbers,
+		clearSelection,
+		clearUISelection,
 
-    // Translation results management
-    editedTexts,
-    editingId,
-    editedText,
-    expandedItems,
-    getCurrentText,
-    getCurrentTranslationResults: getCurrentResults,
+		// Translation state
+		isTranslating,
+		translationResults,
+		currentStatus,
+		error,
+		progressPercent,
 
-    // Copy operations
-    copiedItems,
+		// Translation results management
+		editedTexts,
+		editingId,
+		editedText,
+		expandedItems,
+		getCurrentText,
+		getCurrentTranslationResults: getCurrentResults,
 
-    // Glossary state
-    glossaryTerms,
-    isExtractingGlossary,
+		// Copy operations
+		copiedItems,
 
-    // Standardization state
-    inconsistentTerms,
-    isAnalyzingStandardization,
-    standardizationStatus,
-    isApplyingStandardization,
-    applyStandardizationStatus,
-    standardizationSelections,
-    currentProcessingIndex,
-    standardizationProgress,
+		// Glossary state
+		glossaryTerms,
+		isExtractingGlossary,
 
-    // Refs
-    resultAreaRef,
-    translationListRef,
-    scrollContainerRef,
+		// Standardization state
+		inconsistentTerms,
+		isAnalyzingStandardization,
+		standardizationStatus,
+		isApplyingStandardization,
+		applyStandardizationStatus,
+		standardizationSelections,
+		currentProcessingIndex,
+		standardizationProgress,
 
-    // Translation actions
-    startTranslation,
-    stopTranslation,
-    resetTranslations,
+		// Refs
+		resultAreaRef,
+		translationListRef,
+		scrollContainerRef,
 
-    // Results editing actions
-    startEditing,
-    cancelEditing,
-    saveEdit,
-    resetToOriginal,
-    toggleItemExpansion,
-    setEditedText,
+		// Translation actions
+		startTranslation,
+		stopTranslation,
+		resetTranslations,
 
-    // Copy actions
-    copyResult,
-    copyAllResults: copyAllResultsWrapper,
-    appendAllResults: () => appendAllResults(translationResults),
-    overwriteAllResults,
-    insertSingleResult,
+		// Results editing actions
+		startEditing,
+		cancelEditing,
+		saveEdit,
+		resetToOriginal,
+		toggleItemExpansion,
+		setEditedText,
 
-    // Glossary actions
-    startGlossaryExtraction,
-    copyGlossaryTerms,
-    startGlossaryAndInconsistencyAnalysis,
+		// Copy actions
+		copyResult,
+		copyAllResults: copyAllResultsWrapper,
+		appendAllResults: () => appendAllResults(translationResults),
+		overwriteAllResults,
+		insertSingleResult,
 
-    // Standardization actions
-    startStandardizationAnalysis,
-    startApplyStandardization,
-    stopApplyStandardization,
-    setStandardizationSelections,
+		// Glossary actions
+		startGlossaryExtraction,
+		copyGlossaryTerms,
+		startGlossaryAndInconsistencyAnalysis,
 
-    // Utility
-    scrollToBottom,
-    setError,
-  };
+		// Standardization actions
+		startStandardizationAnalysis,
+		startApplyStandardization,
+		stopApplyStandardization,
+		setStandardizationSelections,
+
+		// Utility
+		scrollToBottom,
+		setError,
+	};
 };
