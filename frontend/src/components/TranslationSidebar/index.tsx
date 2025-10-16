@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 // Import components
 import GlossaryDisplay from "./components/GlossaryDisplay";
+import GlossaryExtractor from "./components/GlossaryExtractor";
 import SettingsModal from "./components/SettingsModal";
 import StandardizationPanel from "./components/StandardizationPanel";
 import TranslationControls from "./components/TranslationControls";
@@ -254,14 +255,8 @@ const TranslationSidebarContent = () => {
                     </div>
                   )}
               </TabsContent>
-              <TabsContent value="glossary">
-                <div className="p-4">
-                  <h2 className="text-lg font-semibold">Glossary Extractor</h2>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Glossary Extractor Description
-                  </p>
-                  {/* Placeholder for future glossary extractor UI */}
-                </div>
+              <TabsContent value="glossary" className="h-full">
+                <GlossaryExtractor />
               </TabsContent>
 
               {/* Input Area at Bottom */}

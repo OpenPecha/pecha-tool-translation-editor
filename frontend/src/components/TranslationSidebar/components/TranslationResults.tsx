@@ -223,88 +223,82 @@ const TranslationResults: React.FC = () => {
                   <span className="text-neutral-800 dark:text-neutral-300">
                     {t("translation.translation")}:
                   </span>
-                  {
-                    editedTexts[result.id] &&
-                      (() => {
-                        const changes = countChanges(
-                          result.translatedText,
-                          editedTexts[result.id]
-                        );
-                        return (
-                          <div className="flex items-center gap-1">
-                            <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">
-                              {t("translation.edited")}
+                  {editedTexts[result.id] &&
+                    (() => {
+                      const changes = countChanges(
+                        result.translatedText,
+                        editedTexts[result.id]
+                      );
+                      return (
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">
+                            {t("translation.edited")}
+                          </span>
+                          {changes.additions > 0 && (
+                            <span className="text-xs bg-green-100 text-green-800 px-1.5 py-0.5 rounded font-medium">
+                              +{changes.additions}
                             </span>
-                            {changes.additions > 0 && (
-                              <span className="text-xs bg-green-100 text-green-800 px-1.5 py-0.5 rounded font-medium">
-                                +{changes.additions}
-                              </span>
-                            )}
-                            {changes.deletions > 0 && (
-                              <span className="text-xs bg-red-100 text-red-800 px-1.5 py-0.5 rounded font-medium">
-                                -{changes.deletions}
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })();
-                  }
-                  {
-                    result.isUpdated &&
-                      result.previousTranslatedText &&
-                      (() => {
-                        const changes = countChanges(
-                          result.previousTranslatedText,
-                          result.translatedText
-                        );
-                        return (
-                          <div className="flex items-center gap-1">
-                            <span className="text-xs bg-secondary-100 text-secondary-700 px-2 py-0.5 rounded-full">
-                              {t("translation.updated")}
-                            </span>
-                            {changes.additions > 0 && (
-                              <span className="text-xs bg-green-100 text-green-800 px-1.5 py-0.5 rounded font-medium">
-                                +{changes.additions}
-                              </span>
-                            )}
-                            {changes.deletions > 0 && (
-                              <span className="text-xs bg-red-100 text-red-800 px-1.5 py-0.5 rounded font-medium">
-                                -{changes.deletions}
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })();
-                  }
-                </div>;
-                {
-                  (() => {
-                    const textToCheck =
-                      result.isUpdated && result.previousTranslatedText
-                        ? Math.max(
-                            result.previousTranslatedText.length,
-                            getCurrentText(result).length
-                          ) > TRUNCATE_LENGTH
-                        : shouldShowExpandButton(getCurrentText(result));
-
-                    return (
-                      textToCheck && (
-                        <Button
-                          onClick={() => onToggleItemExpansion(index)}
-                          variant="ghost"
-                          size="sm"
-                          className="h-5 w-5 p-0 text-neutral-800 dark:text-neutral-100 hover:text-gray-600"
-                        >
-                          {expandedItems.has(index) ? (
-                            <ChevronUp className="w-3 h-3" />
-                          ) : (
-                            <ChevronDown className="w-3 h-3" />
                           )}
-                        </Button>
-                      )
-                    );
-                  })();
-                }
+                          {changes.deletions > 0 && (
+                            <span className="text-xs bg-red-100 text-red-800 px-1.5 py-0.5 rounded font-medium">
+                              -{changes.deletions}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  {result.isUpdated &&
+                    result.previousTranslatedText &&
+                    (() => {
+                      const changes = countChanges(
+                        result.previousTranslatedText,
+                        result.translatedText
+                      );
+                      return (
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs bg-secondary-100 text-secondary-700 px-2 py-0.5 rounded-full">
+                            {t("translation.updated")}
+                          </span>
+                          {changes.additions > 0 && (
+                            <span className="text-xs bg-green-100 text-green-800 px-1.5 py-0.5 rounded font-medium">
+                              +{changes.additions}
+                            </span>
+                          )}
+                          {changes.deletions > 0 && (
+                            <span className="text-xs bg-red-100 text-red-800 px-1.5 py-0.5 rounded font-medium">
+                              -{changes.deletions}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })()}
+                </div>
+                {(() => {
+                  const textToCheck =
+                    result.isUpdated && result.previousTranslatedText
+                      ? Math.max(
+                          result.previousTranslatedText.length,
+                          getCurrentText(result).length
+                        ) > TRUNCATE_LENGTH
+                      : shouldShowExpandButton(getCurrentText(result));
+
+                  return (
+                    textToCheck && (
+                      <Button
+                        onClick={() => onToggleItemExpansion(index)}
+                        variant="ghost"
+                        size="sm"
+                        className="h-5 w-5 p-0 text-neutral-800 dark:text-neutral-100 hover:text-gray-600"
+                      >
+                        {expandedItems.has(index) ? (
+                          <ChevronUp className="w-3 h-3" />
+                        ) : (
+                          <ChevronDown className="w-3 h-3" />
+                        )}
+                      </Button>
+                    )
+                  );
+                })()}
               </div>
 
               {/* Show translation with diff highlighting if updated, otherwise show regular translation or edit mode */}

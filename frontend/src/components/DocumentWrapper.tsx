@@ -11,11 +11,11 @@ import { useCurrentDoc } from "@/hooks/useCurrentDoc";
 import { useDevToolsStatus } from "@/hooks/useDevToolStatus";
 import { useTranslationSidebarParams } from "@/hooks/useQueryParams";
 import isMobile from "@/lib/isMobile";
+import ChatSidebar from "./ChatSidebar";
 import DocumentEditor from "./DocumentEditor";
 import SideMenu from "./EditorSideMenu/Sidemenu";
 import Navbar from "./Navbar";
 import SettingsButton from "./setting/SettingsButton";
-import TranslationSidebar from "./TranslationSidebar";
 
 export type { Translation } from "@/hooks/useCurrentDoc";
 
@@ -170,10 +170,10 @@ function TranslationEditor({
         )}
       </div>
 
-      {/* Translation Sidebar - Sticky */}
+      {/* Chat Sidebar - Sticky */}
       {!isMobile && (
-        <div className="h-full overflow-y-auto sticky top-0">
-          <TranslationSidebar documentId={selectedTranslationId!} />
+        <div className="h-full sticky top-0">
+          <ChatSidebar documentId={selectedTranslationId!} />
         </div>
       )}
     </div>

@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { GlossaryItem } from "@/api/glossary";
 import { useEditor } from "@/contexts/EditorContext";
 import { useTranslationSettings } from "@/hooks/useTranslationSettings";
 import { useCopyOperations } from "./useCopyOperations";
@@ -32,6 +33,7 @@ export const useTranslationSidebarOperations = ({
     selectedTextLineNumbers,
     clearSelection,
     clearUISelection,
+    getTranslatedTextForLine,
   } = useTextSelection();
 
   // Translation results hook
@@ -101,6 +103,7 @@ export const useTranslationSidebarOperations = ({
     glossaryTerms,
     isExtractingGlossary,
     startGlossaryExtraction,
+    startStandaloneGlossaryExtraction,
     copyGlossaryTerms: copyGlossaryTermsInternal,
     resetGlossary,
   } = useGlossaryOperations({
@@ -201,6 +204,11 @@ export const useTranslationSidebarOperations = ({
     await startGlossaryExtraction();
   };
 
+  // Standalone glossary extraction from editors
+  const extractGlossaryFromEditors = async (textPairs: GlossaryItem[]) => {
+    await startStandaloneGlossaryExtraction(textPairs);
+  };
+
   const resetTranslations = () => {
     resetTranslationsInternal();
     resetCopyFeedback();
@@ -222,6 +230,7 @@ export const useTranslationSidebarOperations = ({
     selectedTextLineNumbers,
     clearSelection,
     clearUISelection,
+    getTranslatedTextForLine,
 
     // Translation state
     isTranslating,
@@ -284,6 +293,8 @@ export const useTranslationSidebarOperations = ({
     startGlossaryExtraction,
     copyGlossaryTerms,
     startGlossaryAndInconsistencyAnalysis,
+    extractGlossaryFromEditors,
+    resetGlossary,
 
     // Standardization actions
     startStandardizationAnalysis,
