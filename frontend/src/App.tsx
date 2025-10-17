@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { lazy } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { lazy, useEffect } from "react";
+import ReactGA from "react-ga4";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { injectUmami } from "./analytics";
 import { AuthProvider } from "./auth/auth-context-provider";
@@ -24,7 +25,7 @@ const QuillVersionProvider = lazy(() =>
 if (import.meta.env.VITE_ENVIRONMENT === "production") {
   injectUmami();
 }
-
+ReactGA.initialize("G-CM51E2KXSB");
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -34,6 +35,14 @@ const queryClient = new QueryClient({
 });
 
 function AppContent() {
+  const location = useLocation();
+
+  useEffect(() => {
+    ReactGA.send({
+      hitType: "pageview",
+      page: location.pathname + location.search,
+    });
+  }, [location]);
   const currentLanguage = useCurrentLanguage();
   return (
     <div
