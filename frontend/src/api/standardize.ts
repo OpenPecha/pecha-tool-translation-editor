@@ -8,19 +8,36 @@ export interface GlossaryTerm {
 	translated_term: string;
 }
 
+/**
+ * @summary Defines the structure for an item to be analyzed for standardization.
+ * @property {string} original_text - The original text to be analyzed for consistency.
+ * @property {string} translated_text - The translated text to be analyzed for consistency.
+ * @property {GlossaryTerm[]} glossary - An array of glossary terms to check against.
+ */
 export interface StandardizationItem {
 	original_text: string;
 	translated_text: string;
 	glossary: GlossaryTerm[];
 }
 
+/**
+ * @summary Defines the structure for a request to the standardization analysis API.
+ * @property {StandardizationItem[]} items - An array of items to be analyzed.
+ */
 export interface StandardizationRequest {
 	items: StandardizationItem[];
 }
 
-export interface InconsistentTerms {
-	[sourceTerm: string]: string[]; // source term -> array of different translations
-}
+/**
+ * @summary Defines the structure for inconsistent terms identified by the analysis.
+ * The keys are the source terms, and the values are arrays of their inconsistent translations.
+ */
+export type InconsistentTermData = {
+	original: string;
+	suggestions: string[];
+	count: number;
+};
+export type InconsistentTerms = Record<string, InconsistentTermData>;
 
 export interface StandardizationResponse {
 	inconsistent_terms: InconsistentTerms;

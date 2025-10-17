@@ -1,15 +1,16 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
+import type { GlossaryItem } from "@/api/glossary";
+import type { TranslationConfig } from "@/components/TranslationSidebar/hooks";
+import {
+  useCopyOperations,
+  useGlossaryOperations,
+  useStandardizationOperations,
+  useTextSelection,
+  useTranslationOperations,
+  useTranslationResults,
+} from "@/components/TranslationSidebar/hooks";
 import { useEditor } from "@/contexts/EditorContext";
 import { useTranslationSettings } from "@/hooks/useTranslationSettings";
-import { useCopyOperations } from "./useCopyOperations";
-import { useGlossaryOperations } from "./useGlossaryOperations";
-import { useStandardizationOperations } from "./useStandardizationOperations";
-import { useTextSelection } from "./useTextSelection";
-import {
-  type TranslationConfig,
-  useTranslationOperations,
-} from "./useTranslationOperations";
-import { useTranslationResults } from "./useTranslationResults";
 
 interface UseTranslationSidebarOperationsProps {
   documentId: string;
@@ -23,7 +24,13 @@ export const useTranslationSidebarOperations = ({
     useTranslationSettings();
 
   // Get editor context
-  const { quillEditors, scrollToLineNumber } = useEditor();
+  const {
+    quillEditors,
+    scrollToLineNumber,
+    getQuill,
+    getTextByLineNumber,
+    activeEditor,
+  } = useEditor();
 
   // Text selection hook
   const {
@@ -32,6 +39,7 @@ export const useTranslationSidebarOperations = ({
     selectedTextLineNumbers,
     clearSelection,
     clearUISelection,
+    getTranslatedTextForLine,
   } = useTextSelection();
 
   // Translation results hook
@@ -99,8 +107,10 @@ export const useTranslationSidebarOperations = ({
   // Glossary operations hook
   const {
     glossaryTerms,
+    glossarySourcePairs,
     isExtractingGlossary,
     startGlossaryExtraction,
+    startStandaloneGlossaryExtraction,
     copyGlossaryTerms: copyGlossaryTermsInternal,
     resetGlossary,
   } = useGlossaryOperations({
@@ -134,6 +144,7 @@ export const useTranslationSidebarOperations = ({
     getCurrentTranslationResults: getCurrentResults,
     updateTranslationResults,
     glossaryTerms,
+    glossarySourcePairs,
     setError,
   });
 
@@ -201,6 +212,11 @@ export const useTranslationSidebarOperations = ({
     await startGlossaryExtraction();
   };
 
+  // Standalone glossary extraction from editors
+  const extractGlossaryFromEditors = async (textPairs: GlossaryItem[]) => {
+    await startStandaloneGlossaryExtraction(textPairs);
+  };
+
   const resetTranslations = () => {
     resetTranslationsInternal();
     resetCopyFeedback();
@@ -208,6 +224,15 @@ export const useTranslationSidebarOperations = ({
     resetGlossary();
     resetStandardization();
   };
+
+  const getOriginalTextForLine = useCallback(
+    (lineNumber: number): string | null => {
+      if (!activeEditor) return null;
+      const quill = getQuill(activeEditor);
+      return getTextByLineNumber(quill, lineNumber);
+    },
+    [activeEditor, getQuill, getTextByLineNumber]
+  );
 
   return {
     // Config and UI state
@@ -222,6 +247,8 @@ export const useTranslationSidebarOperations = ({
     selectedTextLineNumbers,
     clearSelection,
     clearUISelection,
+    getTranslatedTextForLine,
+    getOriginalTextForLine,
 
     // Translation state
     isTranslating,
@@ -243,6 +270,7 @@ export const useTranslationSidebarOperations = ({
 
     // Glossary state
     glossaryTerms,
+    glossarySourcePairs,
     isExtractingGlossary,
 
     // Standardization state
@@ -284,6 +312,8 @@ export const useTranslationSidebarOperations = ({
     startGlossaryExtraction,
     copyGlossaryTerms,
     startGlossaryAndInconsistencyAnalysis,
+    extractGlossaryFromEditors,
+    resetGlossary,
 
     // Standardization actions
     startStandardizationAnalysis,
