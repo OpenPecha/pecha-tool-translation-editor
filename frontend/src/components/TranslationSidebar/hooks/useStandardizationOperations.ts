@@ -23,6 +23,10 @@ interface UseStandardizationOperationsProps {
     updater: (prev: TranslationResult[]) => TranslationResult[]
   ) => void;
   glossaryTerms: GlossaryTerm[];
+  glossarySourcePairs: Array<{
+    original_text: string;
+    translated_text: string;
+  }>;
   setError: (error: string | null) => void;
 }
 
@@ -31,6 +35,7 @@ export const useStandardizationOperations = ({
   getCurrentTranslationResults,
   updateTranslationResults,
   glossaryTerms,
+  glossarySourcePairs,
   setError,
 }: UseStandardizationOperationsProps) => {
   // Standardization analysis state
@@ -66,19 +71,34 @@ export const useStandardizationOperations = ({
   }>({ current: 0, total: 0, percentage: 0 });
 
   const startStandardizationAnalysis = async () => {
-    const translationResults = getCurrentTranslationResults();
+    let translationResults = getCurrentTranslationResults();
+
+    if (translationResults.length === 0 && glossarySourcePairs.length > 0) {
+      console.log(
+        "No translation results found, using glossary source pairs as fallback"
+      );
+      translationResults = glossarySourcePairs.map((pair, index) => ({
+        originalText: pair.original_text,
+        translatedText: pair.translated_text,
+        lineNumbers: {}, // No line numbers for standalone pairs
+        metadata: {
+          pairing_method: "glossary_source",
+          pair_index: index,
+          timestamp: Date.now(),
+        },
+        timestamp: Date.now(),
+      }));
+    }
 
     if (translationResults.length === 0 || glossaryTerms.length === 0) {
       console.log(
         "No translation results or glossary terms available for standardization analysis"
       );
+      toast.error(
+        "Cannot check inconsistencies: No text available for analysis."
+      );
       return;
     }
-
-    console.log("Starting standardization analysis with:", {
-      resultsCount: translationResults.length,
-      glossaryTermsCount: glossaryTerms.length,
-    });
 
     setIsAnalyzingStandardization(true);
     setStandardizationStatus("Analyzing translation consistency...");
@@ -87,14 +107,18 @@ export const useStandardizationOperations = ({
     try {
       // Prepare items for standardization analysis using current text (edited or original)
       const items: StandardizationRequest["items"] = translationResults.map(
-        (result) => ({
-          original_text: result.originalText,
-          translated_text: result.translatedText, // This now includes edited text
-          glossary: glossaryTerms.map((term) => ({
+        (result) => {
+          const glossary = glossaryTerms.map((term) => ({
             source_term: term.source_term,
             translated_term: term.translated_term,
-          })),
-        })
+          }));
+
+          return {
+            original_text: result.originalText,
+            translated_text: result.translatedText, // This now includes edited text
+            glossary,
+          };
+        }
       );
 
       const standardizationParams = { items };

@@ -5,110 +5,130 @@ import { AVAILABLE_COMMANDS } from "../types/chatTypes";
 
 export const useChatCommands = () => {
 	const {
-		selectedText,
-		startTranslation,
-		startGlossaryExtraction,
-		isTranslating,
-		isExtractingGlossary,
-		getTranslatedTextForLine,
-		selectedTextLineNumbers,
-		extractGlossaryFromEditors,
-	} = useTranslationSidebar();
+    selectedText,
+    startTranslation,
+    startGlossaryExtraction,
+    isTranslating,
+    isExtractingGlossary,
+    getTextByLineNumber,
+    getOriginalTextForLine,
+    getTranslatedTextForLine,
+    selectedTextLineNumbers,
+    extractGlossaryFromEditors,
+  } = useTranslationSidebar();
 
-	const initiateTranslationFlow = useCallback(async (): Promise<CommandResult> => {
-		if (!selectedText || selectedText.trim() === "") {
-			return {
-				success: false,
-				message:
-					"No text selected. Please select some text in the editor before using #translate.",
-				error: "No selected text",
-			};
-		}
+  const initiateTranslationFlow =
+    useCallback(async (): Promise<CommandResult> => {
+      if (!selectedText || selectedText.trim() === "") {
+        return {
+          success: false,
+          message:
+            "No text selected. Please select some text in the editor before using #translate.",
+          error: "No selected text",
+        };
+      }
 
-		if (isTranslating) {
-			return {
-				success: false,
-				message:
-					"Translation is already in progress. Please wait for it to complete.",
-				error: "Translation in progress",
-			};
-		}
+      if (isTranslating) {
+        return {
+          success: false,
+          message:
+            "Translation is already in progress. Please wait for it to complete.",
+          error: "Translation in progress",
+        };
+      }
 
-		await startTranslation();
-		return {
-			success: true,
-			message: `Started translation for selected text: "${selectedText
-				.slice(0, 100)
-				.trim()}"...`,
-			data: { action: "translate" },
-		};
-	}, [selectedText, isTranslating, startTranslation]);
+      await startTranslation();
+      return {
+        success: true,
+        message: `Started translation for selected text: "${selectedText
+          .slice(0, 100)
+          .trim()}"...`,
+        data: { action: "translate" },
+      };
+    }, [selectedText, isTranslating, startTranslation]);
 
-	const initiateGlossaryFlow = useCallback(async (): Promise<CommandResult> => {
-		if (isExtractingGlossary) {
-			return {
-				success: false,
-				message:
-					"Glossary extraction is already in progress. Please wait for it to complete.",
-				error: "Extraction in progress",
-			};
-		}
+  const initiateGlossaryFlow = useCallback(async (): Promise<CommandResult> => {
+    if (isExtractingGlossary) {
+      return {
+        success: false,
+        message:
+          "Glossary extraction is already in progress. Please wait for it to complete.",
+        error: "Extraction in progress",
+      };
+    }
 
-		if (!selectedText || !selectedText.trim() || !selectedTextLineNumbers) {
-			return {
-				success: false,
-				message:
-					"No text selected. Please select some text in the editor to use #glossary.",
-				error: "No selected text",
-			};
-		}
+    if (!selectedText || !selectedText.trim() || !selectedTextLineNumbers) {
+      return {
+        success: false,
+        message:
+          "No text selected. Please select some text in the editor to use #glossary.",
+        error: "No selected text",
+      };
+    }
 
-		const lineNumbers = Object.keys(selectedTextLineNumbers).map(Number);
-		if (lineNumbers.length === 0) {
-			return {
-				success: false,
-				message: "Could not determine the line number of the selected text.",
-				error: "No line number",
-			};
-		}
+    const lineNumbers = Object.keys(selectedTextLineNumbers).map(Number);
+    if (lineNumbers.length === 0) {
+      return {
+        success: false,
+        message: "Could not determine the line number of the selected text.",
+        error: "No line number",
+      };
+    }
+    // Create text pairs for ALL selected lines, not just the first
+    const textPairs = [];
+    const missingTranslations = [];
 
-		const firstLineNumber = lineNumbers[0];
-		const translatedText = getTranslatedTextForLine(firstLineNumber);
+    for (let i = 0; i < lineNumbers.length; i++) {
+      const lineNumber = lineNumbers[i];
+      const originalText = getOriginalTextForLine(lineNumber); // You'll need to add this
+      const translatedText = getTranslatedTextForLine(lineNumber);
 
-		if (!translatedText) {
-			return {
-				success: false,
-				message: `Could not find a corresponding translation for the selected text on line ${firstLineNumber}. Please ensure a translation exists.`,
-				error: "No translated text",
-			};
-		}
+      if (!translatedText) {
+        missingTranslations.push(lineNumber);
+        continue; // Skip lines without translations
+      }
 
-		const textPairs = [
-			{
-				original_text: selectedText.trim(),
-				translated_text: translatedText,
-				metadata: {
-					pairing_method: "selected_text_line_match",
-					pair_index: 0,
-					timestamp: Date.now(),
-				},
-			},
-		];
+      if (originalText && originalText.trim()) {
+        textPairs.push({
+          original_text: originalText.trim(),
+          translated_text: translatedText.trim(),
+          metadata: {
+            pairing_method: "selected_text_line_match",
+            pair_index: i,
+            line_number: lineNumber,
+            timestamp: Date.now(),
+          },
+        });
+      }
+    }
 
-		await extractGlossaryFromEditors(textPairs);
+    if (textPairs.length === 0) {
+      return {
+        success: false,
+        message:
+          missingTranslations.length > 0
+            ? `Could not find translations for lines: ${missingTranslations.join(
+                ", "
+              )}. Please ensure translations exist for the selected lines.`
+            : "No valid text pairs found in the selection.",
+        error: "No text pairs",
+      };
+    }
 
-		return {
-			success: true,
-			message: "Started glossary extraction from selected text.",
-			data: { action: "glossary" },
-		};
-	}, [
-		isExtractingGlossary,
-		selectedText,
-		selectedTextLineNumbers,
-		getTranslatedTextForLine,
-		extractGlossaryFromEditors,
-	]);
+    await extractGlossaryFromEditors(textPairs);
+
+    return {
+      success: true,
+      message: "Started glossary extraction from selected text.",
+      data: { action: "glossary" },
+    };
+  }, [
+    isExtractingGlossary,
+    selectedText,
+    selectedTextLineNumbers,
+    getTranslatedTextForLine,
+    extractGlossaryFromEditors,
+  ]);
 
 	const processInput = useCallback(
 		async (input: string): Promise<CommandResult> => {

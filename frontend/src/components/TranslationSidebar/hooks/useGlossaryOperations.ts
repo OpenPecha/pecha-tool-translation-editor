@@ -54,6 +54,12 @@ export const useGlossaryOperations = ({
   // Glossary extraction state
   const [glossaryTerms, setGlossaryTerms] = useState<GlossaryTerm[]>([]);
   const [isExtractingGlossary, setIsExtractingGlossary] = useState(false);
+  const [glossarySourcePairs, setGlossarySourcePairs] = useState<
+    Array<{
+      original_text: string;
+      translated_text: string;
+    }>
+  >([]);
 
   const glossaryAbortControllerRef = useRef<AbortController | null>(null);
 
@@ -150,6 +156,13 @@ export const useGlossaryOperations = ({
         },
       }));
 
+      setGlossarySourcePairs(
+        items.map((item) => ({
+          original_text: item.original_text,
+          translated_text: item.translated_text,
+        }))
+      );
+
       const glossaryParams = {
         items,
         model_name: config.modelName,
@@ -208,6 +221,7 @@ export const useGlossaryOperations = ({
 
   const resetGlossary = () => {
     setGlossaryTerms([]);
+    setGlossarySourcePairs([]);
     setIsExtractingGlossary(false);
   };
 
@@ -235,6 +249,13 @@ export const useGlossaryOperations = ({
 
     setIsExtractingGlossary(true);
     setGlossaryTerms([]);
+
+    setGlossarySourcePairs(
+      textPairs.map((pair) => ({
+        original_text: pair.original_text,
+        translated_text: pair.translated_text,
+      }))
+    );
 
     // Create abort controller for glossary extraction
     glossaryAbortControllerRef.current = new AbortController();
@@ -286,6 +307,7 @@ export const useGlossaryOperations = ({
   return {
     // State
     glossaryTerms,
+    glossarySourcePairs,
     isExtractingGlossary,
 
     // Actions
