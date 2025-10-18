@@ -1,8 +1,8 @@
-<h1 align="center"> <br> <a href="https://openpecha.org"><img src="https://avatars.githubusercontent.com/u/82142807?s=400&u=19e108a15566f3a1449bafb03b8dd706a72aebcd&v=4" alt="OpenPecha" width="150"></a> <br> </h1> <h3 align="center">Pecha Tool Sync Editor</h3>
+<h1 align="center"> <br> <a href="https://openpecha.org"><img src="https://avatars.githubusercontent.com/u/82142807?s=400&u=19e108a15566f3a1449bafb03b8dd706a72aebcd&v=4" alt="OpenPecha" width="150"></a> <br> </h1> <h3 align="center">Buddhistai Translation Tool</h3>
 
 ## Description
 
-Pecha Tool Sync Editor is an advanced annotation and collaborative editing platform built for working with Tibetan texts in the PechaData format. This tool is built with a modern stack using React (frontend) and Express (backend), and powered by the Quill editor for rich text editing with real-time collaboration and syncing capabilities.
+Buddhistai Translation Tool is an advanced annotation and collaborative editing platform built for working with Tibetan texts in the PechaData format. This tool is built with a modern stack using React (frontend) and Express (backend), and powered by the Quill editor for rich text editing with real-time collaboration and syncing capabilities.
 
 It allows multiple users to:
 
@@ -14,7 +14,7 @@ Synchronize two related texts side-by-side (e.g., source and translation)
 
 Track changes and sync annotations across versions using the STAM (Stand-off Text Annotation Model)
 
-This is the second version of the existing Pecha toolkit, redesigned for better performance, usability, and collaborative workflows.
+This is the second version of the existing Buddhistai Translation Tool, redesigned for better performance, usability, and collaborative workflows.
 
 ## Features
 
@@ -39,7 +39,7 @@ Backend: Node.js, Express
 Real-time: WebSockets / Socket.IO
 
 Quickstart
-To get started with the toolkit, we recommend following this documentation.
+To get started with Buddhistai Translation Tool, we recommend following this documentation.
 
 # Getting Started with Vite ⚡
 
@@ -62,8 +62,8 @@ Before running the application, set up environment variables:
    cp .env.example .env
    # Edit .env with your configuration values
    ```
-
 2. **Frontend Environment**
+
    ```bash
    cd frontend
    cp .env.example .env
