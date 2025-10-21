@@ -4,7 +4,7 @@ import type { AvailableCommand, CommandResult } from "../types/chatTypes";
 import { AVAILABLE_COMMANDS } from "../types/chatTypes";
 
 export const useChatCommands = () => {
-	const {
+  const {
     selectedText,
     startTranslation,
     startGlossaryExtraction,
@@ -114,7 +114,6 @@ export const useChatCommands = () => {
         error: "No text pairs",
       };
     }
-
     await extractGlossaryFromEditors(textPairs);
 
     return {
@@ -130,35 +129,35 @@ export const useChatCommands = () => {
     extractGlossaryFromEditors,
   ]);
 
-	const processInput = useCallback(
-		async (input: string): Promise<CommandResult> => {
-			const command = input.trim().slice(1).split(" ")[0].toLowerCase();
+  const processInput = useCallback(
+    async (input: string): Promise<CommandResult> => {
+      const command = input.trim().slice(1).split(" ")[0].toLowerCase();
 
-			if (!(AVAILABLE_COMMANDS as readonly string[]).includes(command)) {
-				return {
-					success: false,
-					message: `Command "#${command}" not found. Available commands: #translate, #glossary.`,
-					error: "Command not found",
-				};
-			}
+      if (!(AVAILABLE_COMMANDS as readonly string[]).includes(command)) {
+        return {
+          success: false,
+          message: `Command "#${command}" not found. Available commands: #translate, #glossary.`,
+          error: "Command not found",
+        };
+      }
 
-			switch (command as AvailableCommand) {
-				case "translate":
-					return initiateTranslationFlow();
-				case "glossary":
-					return initiateGlossaryFlow();
-				default:
-					return {
-						success: false,
-						message: "Unknown command.",
-						error: "Unknown command",
-					};
-			}
-		},
-		[initiateTranslationFlow, initiateGlossaryFlow],
-	);
+      switch (command as AvailableCommand) {
+        case "translate":
+          return initiateTranslationFlow();
+        case "glossary":
+          return initiateGlossaryFlow();
+        default:
+          return {
+            success: false,
+            message: "Unknown command.",
+            error: "Unknown command",
+          };
+      }
+    },
+    [initiateTranslationFlow, initiateGlossaryFlow]
+  );
 
-	return {
-		processInput,
-	};
+  return {
+    processInput,
+  };
 };

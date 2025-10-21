@@ -179,8 +179,23 @@ const StandardizationPanel: React.FC = () => {
     );
   }
 
+  // Debug logging
+  console.log("StandardizationPanel - inconsistentTerms:", inconsistentTerms);
+  console.log(
+    "StandardizationPanel - inconsistentTerms keys:",
+    Object.keys(inconsistentTerms)
+  );
+  console.log(
+    "StandardizationPanel - isAnalyzingStandardization:",
+    isAnalyzingStandardization
+  );
+  console.log("StandardizationPanel - variant:", variant);
+
   // No inconsistencies found
   if (Object.keys(inconsistentTerms).length === 0) {
+    console.log(
+      "StandardizationPanel - returning null because no inconsistent terms"
+    );
     return null;
   }
 

@@ -10,7 +10,10 @@ import {
   performStandardizationAnalysis,
   type StandardizationRequest,
 } from "@/api/standardize";
-import type { GlossaryTerm } from "./useGlossaryOperations";
+import {
+  type GlossaryTerm,
+  type GlossaryExtractionResult,
+} from "./useGlossaryOperations";
 import type {
   TranslationConfig,
   TranslationResult,
@@ -28,6 +31,7 @@ interface UseStandardizationOperationsProps {
     translated_text: string;
   }>;
   setError: (error: string | null) => void;
+  glossaryExtractionResults: GlossaryExtractionResult[];
 }
 
 export const useStandardizationOperations = ({
@@ -37,6 +41,7 @@ export const useStandardizationOperations = ({
   glossaryTerms,
   glossarySourcePairs,
   setError,
+  glossaryExtractionResults,
 }: UseStandardizationOperationsProps) => {
   // Standardization analysis state
   const [inconsistentTerms, setInconsistentTerms] = useState<InconsistentTerms>(
@@ -78,15 +83,12 @@ export const useStandardizationOperations = ({
         "No translation results found, using glossary source pairs as fallback"
       );
       translationResults = glossarySourcePairs.map((pair, index) => ({
+        id: `glossary-pair-${index}`,
         originalText: pair.original_text,
         translatedText: pair.translated_text,
         lineNumbers: {}, // No line numbers for standalone pairs
-        metadata: {
-          pairing_method: "glossary_source",
-          pair_index: index,
-          timestamp: Date.now(),
-        },
-        timestamp: Date.now(),
+        metadata: {},
+        timestamp: Date.now().toString(),
       }));
     }
 
@@ -100,12 +102,21 @@ export const useStandardizationOperations = ({
       return;
     }
 
-    setIsAnalyzingStandardization(true);
-    setStandardizationStatus("Analyzing translation consistency...");
-    setInconsistentTerms({});
-
-    try {
-      // Prepare items for standardization analysis using current text (edited or original)
+    if (glossaryExtractionResults.length > 0) {
+      console.log(
+        "Using glossary extraction results for standardization analysis"
+      );
+      const items: StandardizationRequest["items"] =
+        glossaryExtractionResults.map((result) => ({
+          original_text: result.original_text,
+          translated_text: result.translated_text,
+          glossary: result.glossary,
+        }));
+      startAnalysis(items);
+    } else {
+      console.log(
+        "Using translation results and glossary terms for standardization analysis"
+      );
       const items: StandardizationRequest["items"] = translationResults.map(
         (result) => {
           const glossary = glossaryTerms.map((term) => ({
@@ -120,7 +131,16 @@ export const useStandardizationOperations = ({
           };
         }
       );
+      startAnalysis(items);
+    }
+  };
 
+  const startAnalysis = async (items: StandardizationRequest["items"]) => {
+    setIsAnalyzingStandardization(true);
+    setStandardizationStatus("Analyzing translation consistency...");
+    setInconsistentTerms({});
+
+    try {
       const standardizationParams = { items };
 
       console.log("Standardization analysis params:", standardizationParams);
@@ -250,11 +270,6 @@ export const useStandardizationOperations = ({
       return;
     }
 
-    console.log("Starting apply standardization with:", {
-      resultsCount: translationResults.length,
-      inconsistentTermsCount: Object.keys(inconsistentTerms).length,
-    });
-
     setIsApplyingStandardization(true);
     setApplyStandardizationStatus("Preparing standardization application...");
 
@@ -274,7 +289,7 @@ export const useStandardizationOperations = ({
 
       // Create standardization pairs from user selections
       const standardization_pairs = Object.entries(inconsistentTerms).map(
-        ([sourceWord, data]: [string, any]) => ({
+        ([sourceWord, data]) => ({
           source_word: sourceWord,
           standardized_translation:
             standardizationSelections[sourceWord] || data.suggestions[0],

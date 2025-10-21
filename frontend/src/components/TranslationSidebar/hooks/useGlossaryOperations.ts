@@ -15,6 +15,13 @@ export interface GlossaryTerm {
   context?: string;
 }
 
+export interface GlossaryExtractionResult {
+  original_text: string;
+  translated_text: string;
+  glossary: GlossaryTerm[];
+  id: string; // Unique identifier for the text pair
+}
+
 export interface GlossaryEvent {
   type: string;
   timestamp?: string;
@@ -60,10 +67,16 @@ export const useGlossaryOperations = ({
       translated_text: string;
     }>
   >([]);
+  const [glossaryExtractionResults, setGlossaryExtractionResults] = useState<
+    GlossaryExtractionResult[]
+  >([]);
 
   const glossaryAbortControllerRef = useRef<AbortController | null>(null);
 
-  const handleGlossaryStreamEvent = (event: GlossaryEvent) => {
+  const handleGlossaryStreamEvent = (
+    event: GlossaryEvent,
+    textPairs: GlossaryItem[]
+  ) => {
     console.log("Handling glossary event:", event.type, event);
 
     switch (event.type) {
@@ -106,6 +119,20 @@ export const useGlossaryOperations = ({
           );
           console.log("Setting final glossary terms:", convertedTerms);
           setGlossaryTerms(convertedTerms);
+
+          // Create glossary extraction results for consistency check
+          // Create one result per text pair with all relevant terms
+          const extractionResults: GlossaryExtractionResult[] = textPairs.map(
+            (pair) => ({
+              original_text: pair.original_text,
+              translated_text: pair.translated_text,
+              glossary: convertedTerms, // For now, assign all terms to each pair
+              id: pair.original_text,
+            })
+          );
+
+          // Update the extraction results state
+          setGlossaryExtractionResults(extractionResults);
 
           // Trigger completion callback
           setTimeout(() => {
@@ -177,7 +204,7 @@ export const useGlossaryOperations = ({
         (event: GlossaryEvent) => {
           console.log("Glossary event received:", event);
           if (!glossaryAbortControllerRef.current?.signal.aborted) {
-            handleGlossaryStreamEvent(event);
+            handleGlossaryStreamEvent(event, items);
           }
         },
         // onComplete
@@ -222,6 +249,7 @@ export const useGlossaryOperations = ({
   const resetGlossary = () => {
     setGlossaryTerms([]);
     setGlossarySourcePairs([]);
+    setGlossaryExtractionResults([]);
     setIsExtractingGlossary(false);
   };
 
@@ -240,12 +268,6 @@ export const useGlossaryOperations = ({
       console.log("No text pairs available for standalone glossary extraction");
       return;
     }
-
-    console.log("Starting standalone glossary extraction with:", {
-      pairsCount: textPairs.length,
-      modelName: config.modelName,
-      batchSize: config.batchSize,
-    });
 
     setIsExtractingGlossary(true);
     setGlossaryTerms([]);
@@ -275,7 +297,7 @@ export const useGlossaryOperations = ({
         (event: GlossaryEvent) => {
           console.log("Standalone glossary event received:", event);
           if (!glossaryAbortControllerRef.current?.signal.aborted) {
-            handleGlossaryStreamEvent(event);
+            handleGlossaryStreamEvent(event, textPairs);
           }
         },
         // onComplete
@@ -309,6 +331,8 @@ export const useGlossaryOperations = ({
     glossaryTerms,
     glossarySourcePairs,
     isExtractingGlossary,
+    glossaryExtractionResults,
+    setGlossaryExtractionResults,
 
     // Actions
     startGlossaryExtraction,

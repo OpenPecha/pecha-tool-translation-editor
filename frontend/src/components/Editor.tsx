@@ -16,7 +16,11 @@ import { getUserContext, useUmamiTracking } from "@/hooks/use-umami-tracking";
 import type { Document } from "@/hooks/useCurrentDoc";
 import { useDisplaySettings } from "@/hooks/useDisplaySettings";
 import { checkIsTibetan } from "@/lib/isTibetan";
-import { EDITOR_ENTER_ONLY, editor_config } from "@/utils/editorConfig";
+import {
+  EDITOR_ENTER_ONLY,
+  MAX_TEXT_LENGTH_FOR_REALTIME_COLLABORATION,
+  editor_config,
+} from "@/utils/editorConfig";
 import { useQuillVersion } from "../contexts/VersionContext";
 import CommentBubble from "./Comment/CommentBubble";
 import CommentInitialize from "./Comment/CommentInitialize";
@@ -25,6 +29,8 @@ import quill_import from "./quillExtension";
 import type { CustomFootnoteModule } from "./quillExtension/CustomFootnote";
 import SkeletonLoader from "./SkeletonLoader";
 import TableOfContent from "./TableOfContent";
+import AnnotationList from "./Annotation/AnnotationList";
+import { handleAnnotationVote } from "./quill_func";
 
 quill_import();
 
@@ -187,7 +193,10 @@ const Editor = ({
             },
           },
         },
-        counter: { container: `#${counterId}`, unit: "character" },
+        counter: {
+          container: `#${counterId}`,
+          unit: "character",
+        },
       },
       readOnly: !isEditable,
       placeholder: t("editor.startCollaborating") as string,
@@ -325,6 +334,7 @@ const Editor = ({
     setShowCommentModal(true);
   }
 
+  const characterCount = quillRef.current?.getContents().length() || 0;
   if (!documentId) return null;
   return (
     <>
@@ -342,6 +352,7 @@ const Editor = ({
       )}
       <div className="relative w-full flex flex-1 h-full overflow-hidden  ">
         <TableOfContent documentId={documentId} />
+
         <div className="editor-container w-full h-full flex flex-1  relative max-w-6xl mx-auto  ">
           {showLineNumbers && (
             <LineNumberVirtualized
@@ -368,10 +379,28 @@ const Editor = ({
             )}
           </div>
           {createPortal(
-            <div className="flex gap-1 items-center text-sm text-gray-500 dark:text-neutral-300 hover:text-gray-900">
+            <div
+              className="flex gap-1 items-center text-sm text-gray-500 px-2 dark:text-neutral-300 hover:text-gray-900"
+              style={{
+                background:
+                  characterCount > MAX_TEXT_LENGTH_FOR_REALTIME_COLLABORATION
+                    ? "red"
+                    : "transparent",
+                color:
+                  characterCount > MAX_TEXT_LENGTH_FOR_REALTIME_COLLABORATION
+                    ? "black"
+                    : undefined,
+              }}
+              title={`${
+                characterCount > MAX_TEXT_LENGTH_FOR_REALTIME_COLLABORATION
+                  ? `collaboration limit exceeded , max limit is ${MAX_TEXT_LENGTH_FOR_REALTIME_COLLABORATION} characters`
+                  : ""
+              }`}
+            >
               <div id={`${counterId}`} className="leading-[normal]">
                 0
               </div>
+
               {t("editor.characters")}
             </div>,
             document.getElementById("counter")!
@@ -384,6 +413,7 @@ const Editor = ({
               currentRange={currentRange}
             />
           )}
+          <AnnotationList onVote={handleAnnotationVote} />
           <CommentBubble documentId={documentId} isEditable={isEditable} />
         </div>
         {/* <OverlayLoading isLoading={!isSynced} /> */}

@@ -189,7 +189,7 @@ const ChatSidebarContent: React.FC = () => {
 
       {/* Selected Text Display */}
       <TooltipProvider>
-        {selectedText ? (
+        {selectedText && (
           <div className="border-b border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-950/20 p-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -231,16 +231,6 @@ const ChatSidebarContent: React.FC = () => {
               </div>
             </div>
           </div>
-        ) : (
-          <div className="border-b border-gray-200 dark:border-gray-700 bg-yellow-50 dark:bg-yellow-950/20 p-3">
-            <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
-              <div className="text-sm text-yellow-800 dark:text-yellow-200">
-                No text selected. Please select text in the editor to use
-                commands.
-              </div>
-            </div>
-          </div>
         )}
       </TooltipProvider>
 
@@ -270,11 +260,11 @@ const ChatSidebarContent: React.FC = () => {
 };
 
 const ChatSidebar: React.FC<ChatSidebarProps> = ({ documentId }) => {
-	return (
-		<TranslationSidebarProvider documentId={documentId}>
-			<ChatSidebarContent />
-		</TranslationSidebarProvider>
-	)
-}
+  return (
+    <TranslationSidebarProvider documentId={documentId}>
+      <ChatSidebarContent />
+    </TranslationSidebarProvider>
+  );
+};
 
-export default ChatSidebar
+export default ChatSidebar;

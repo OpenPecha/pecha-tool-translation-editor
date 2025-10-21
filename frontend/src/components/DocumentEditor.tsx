@@ -9,6 +9,7 @@ import { CommentProvider } from "@/contexts/CommentContext";
 import { FootNoteProvider } from "@/contexts/FootNoteContext";
 import { QuillVersionProvider } from "@/contexts/VersionContext";
 import type { Document } from "@/hooks/useCurrentDoc";
+import { AnnotationProvider } from "@/contexts/AnnotationContext";
 
 export const RealtimeDocumentEditor = ({
   docId,
@@ -83,21 +84,23 @@ export const RealtimeDocumentEditor = ({
       currentVersionData={currentVersionData}
     >
       <CommentProvider>
-        <FootNoteProvider>
-          <ClientSideSuspense fallback={<div>Loading…</div>}>
-            {!isContentReady ? (
-              <LoadingScreen />
-            ) : (
-              <Editor
-                documentId={docId}
-                isEditable={isEditable}
-                currentDoc={currentDoc}
-                yText={yText}
-                provider={yProvider}
-              />
-            )}
-          </ClientSideSuspense>
-        </FootNoteProvider>
+        <AnnotationProvider>
+          <FootNoteProvider>
+            <ClientSideSuspense fallback={<div>Loading…</div>}>
+              {!isContentReady ? (
+                <LoadingScreen />
+              ) : (
+                <Editor
+                  documentId={docId}
+                  isEditable={isEditable}
+                  currentDoc={currentDoc}
+                  yText={yText}
+                  provider={yProvider}
+                />
+              )}
+            </ClientSideSuspense>
+          </FootNoteProvider>
+        </AnnotationProvider>
       </CommentProvider>
     </QuillVersionProvider>
   );
@@ -126,17 +129,19 @@ export const NormalDocumentEditor = ({
       currentVersionData={currentVersionData}
     >
       <CommentProvider>
-        <FootNoteProvider>
-          <ClientSideSuspense fallback={<div>Loading…</div>}>
-            <Editor
-              documentId={docId}
-              isEditable={isEditable}
-              currentDoc={currentDoc}
-              yText={undefined}
-              provider={undefined}
-            />
-          </ClientSideSuspense>
-        </FootNoteProvider>
+        <AnnotationProvider>
+          <FootNoteProvider>
+            <ClientSideSuspense fallback={<div>Loading…</div>}>
+              <Editor
+                documentId={docId}
+                isEditable={isEditable}
+                currentDoc={currentDoc}
+                yText={undefined}
+                provider={undefined}
+              />
+            </ClientSideSuspense>
+          </FootNoteProvider>
+        </AnnotationProvider>
       </CommentProvider>
     </QuillVersionProvider>
   );

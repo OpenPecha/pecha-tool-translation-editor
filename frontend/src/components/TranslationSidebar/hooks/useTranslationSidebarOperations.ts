@@ -113,6 +113,8 @@ export const useTranslationSidebarOperations = ({
     startStandaloneGlossaryExtraction,
     copyGlossaryTerms: copyGlossaryTermsInternal,
     resetGlossary,
+    glossaryExtractionResults,
+    setGlossaryExtractionResults,
   } = useGlossaryOperations({
     config,
     getCurrentTranslationResults: getCurrentResults,
@@ -146,6 +148,7 @@ export const useTranslationSidebarOperations = ({
     glossaryTerms,
     glossarySourcePairs,
     setError,
+    glossaryExtractionResults,
   });
 
   // Refs for scrolling and containers
@@ -214,6 +217,7 @@ export const useTranslationSidebarOperations = ({
 
   // Standalone glossary extraction from editors
   const extractGlossaryFromEditors = async (textPairs: GlossaryItem[]) => {
+    setGlossaryExtractionResults([]); // Clear previous results
     await startStandaloneGlossaryExtraction(textPairs);
   };
 
@@ -272,6 +276,7 @@ export const useTranslationSidebarOperations = ({
     glossaryTerms,
     glossarySourcePairs,
     isExtractingGlossary,
+    glossaryExtractionResults,
 
     // Standardization state
     inconsistentTerms,

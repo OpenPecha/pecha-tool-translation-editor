@@ -417,42 +417,55 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ className = "" }) => {
 
                 {hasInconsistentTerms && (
                   <div className="space-y-2">
-                    {Object.entries(inconsistentTerms).map(([term, data]) => (
-                      <div
-                        key={term}
-                        className="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md p-3"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                              {data.original}
+                    {Object.entries(inconsistentTerms).map(([term, data]) => {
+                      // Handle both formats: array of strings or InconsistentTermData object
+                      const suggestions = Array.isArray(data)
+                        ? data
+                        : data.suggestions || [];
+                      const originalTerm = Array.isArray(data)
+                        ? term
+                        : data.original || term;
+                      const count = Array.isArray(data)
+                        ? data.length
+                        : data.count || suggestions.length;
+
+                      return (
+                        <div
+                          key={term}
+                          className="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md p-3"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                {originalTerm}
+                              </div>
+                              <RadioGroup
+                                defaultValue={suggestions[0]}
+                                className="mt-2"
+                              >
+                                {suggestions.map((suggestion) => (
+                                  <div
+                                    key={suggestion}
+                                    className="flex items-center space-x-2"
+                                  >
+                                    <RadioGroupItem
+                                      value={suggestion}
+                                      id={`${term}-${suggestion}`}
+                                    />
+                                    <Label htmlFor={`${term}-${suggestion}`}>
+                                      {suggestion}
+                                    </Label>
+                                  </div>
+                                ))}
+                              </RadioGroup>
                             </div>
-                            <RadioGroup
-                              defaultValue={data.suggestions[0]}
-                              className="mt-2"
-                            >
-                              {data.suggestions.map((suggestion) => (
-                                <div
-                                  key={suggestion}
-                                  className="flex items-center space-x-2"
-                                >
-                                  <RadioGroupItem
-                                    value={suggestion}
-                                    id={`${term}-${suggestion}`}
-                                  />
-                                  <Label htmlFor={`${term}-${suggestion}`}>
-                                    {suggestion}
-                                  </Label>
-                                </div>
-                              ))}
-                            </RadioGroup>
-                          </div>
-                          <div className="text-xs bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 px-2 py-1 rounded-full">
-                            ×{data.count}
+                            <div className="text-xs bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 px-2 py-1 rounded-full">
+                              ×{count}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                     <Button className="w-full mt-2">
                       Apply Standardization
                     </Button>
@@ -474,4 +487,4 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ className = "" }) => {
   );
 };
 
-export default ResultsPanel
+export default ResultsPanel;
