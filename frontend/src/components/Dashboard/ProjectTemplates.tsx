@@ -160,13 +160,13 @@ const ProjectTemplates = () => {
 		);
 	}
 
-	if (!isLoadingTemplates && templateData.length === 0) {
+	if (!isLoadingTemplates && templateData?.length === 0) {
 		return null;
 	}
 
 	return (
 		<div className="flex gap-4 h-full">
-			{templateData.map((template: TemplateData) => {
+			{templateData?.map((template: TemplateData) => {
 				const isCreating = creatingTemplateId === template.expression_id;
 				const alternativeTitle = template?.metadata?.alternative_title;
 				const card_title =

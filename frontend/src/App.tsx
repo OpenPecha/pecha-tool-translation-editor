@@ -3,7 +3,6 @@ import { lazy } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { injectUmami } from "./analytics";
-import { AuthProvider } from "./auth/auth-context-provider";
 import DocumentsWrapper from "./components/DocumentWrapper";
 import PublicDocumentViewer from "./components/PublicDocumentViewer";
 import TolgeeProvider, { useCurrentLanguage } from "./contexts/TolgeeContext";
@@ -13,6 +12,7 @@ import Callback from "./pages/Callback";
 import Login from "./pages/Login";
 import Logout from "./pages/Logout";
 import { Layout, SuspenceWithLoadingFallback } from "./pages/layout";
+import { AuthProvider } from "./auth/AuthProvider";
 
 const ProjectList = lazy(() => import("./components/Dashboard/ProjectList"));
 const QuillVersionProvider = lazy(() =>
@@ -88,7 +88,7 @@ function App() {
           <UserbackProvider>
             <AppContent />
           </UserbackProvider>
-        </AuthProvider>
+          </AuthProvider>
       </QueryClientProvider>
       <Toaster />
     </TolgeeProvider>

@@ -4,6 +4,7 @@ import { useAuth } from "@/auth/use-auth-hook";
 import { useTokenExpiration } from "@/hooks/useTokenExpiration";
 import Footer from "./Footbar";
 import Navbar from "./Navbar";
+import { Welcome } from "@/components/welcome";
 
 export const LoadingFallback: React.FC = () => (
 	<div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -44,23 +45,19 @@ export function SuspenceWithLoadingFallback({
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-	const { isAuthenticated, login, isLoading, getToken } = useAuth();
+	const { isAuthenticated, isLoading, getToken } = useAuth();
 
 	// Hook to automatically check token expiration and logout if expired
 	useTokenExpiration();
 
 	useEffect(() => {
 		if (isAuthenticated) {
-			getToken().then((token) => {
-				localStorage.setItem("access_token", token!);
-			});
+			getToken()
 			return;
 		}
-		if (!isAuthenticated && !isLoading) {
-			login(true);
-		}
 	}, [isAuthenticated, isLoading]);
-	if (!isAuthenticated) return null;
+	if (!isAuthenticated) 
+		return <Welcome />;
 
 	return (
 		<SuspenceWithLoadingFallback>
