@@ -99,7 +99,7 @@ const ProjectList = () => {
 					<div className="flex items-stretch gap-6 mb-24 h-[200px]">
 						<DocumentCreateModal />
 						<div className="hidden md:flex gap-6">
-							<ProjectTemplates />
+							{/* <ProjectTemplates /> */}
 						</div>
 					</div>
 				</div>
