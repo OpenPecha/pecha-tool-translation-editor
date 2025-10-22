@@ -7,7 +7,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useEditor } from "@/contexts/EditorContext";
 import SettingsModal from "./components/sidebar/SettingsModal";
 import {
   TranslationProvider,
@@ -39,7 +38,22 @@ const ChatSidebarContent: React.FC = () => {
     clearSelection,
     resetTranslations,
     resetGlossary,
+    translationResults,
+    glossaryTerms,
+    inconsistentTerms,
+    inputMode,
   } = useTranslation();
+
+  const hasTranslationResults = translationResults.length > 0;
+  const hasGlossaryResults = glossaryTerms.length > 0;
+  const hasInconsistentTerms = Object.keys(inconsistentTerms).length > 0;
+  const showPanel =
+    hasTranslationResults ||
+    hasGlossaryResults ||
+    hasInconsistentTerms ||
+    isTranslating ||
+    isExtractingGlossary ||
+    isAnalyzingStandardization;
 
   // Helper function to extract start and end line numbers from selectedTextLineNumbers
   const getLineRange = (
@@ -54,7 +68,7 @@ const ChatSidebarContent: React.FC = () => {
 
     return {
       startLine: lineNums[0],
-      endLine: lineNums[lineNums.length - 1],
+      endLine: lineNums.at(-1)!,
     };
   };
 
@@ -81,7 +95,7 @@ const ChatSidebarContent: React.FC = () => {
 
   const handleClearChat = useCallback(() => {
     if (
-      window.confirm(
+      globalThis.confirm(
         "Are you sure you want to clear the chat history and reset all results?"
       )
     ) {
@@ -220,16 +234,19 @@ const ChatSidebarContent: React.FC = () => {
 
       {/* Chat Area */}
       <div className="flex-1 flex flex-col min-h-0">
-        <ChatHistory
-          messages={messages}
-          isProcessing={
-            isTranslating || isExtractingGlossary || isAnalyzingStandardization
-          }
-          onAction={handleAction}
-        />
-
-        {/* Results Panel */}
-        <ResultsPanel />
+        {showPanel ? (
+          <ResultsPanel inputMode={inputMode} />
+        ) : (
+          <ChatHistory
+            messages={messages}
+            isProcessing={
+              isTranslating ||
+              isExtractingGlossary ||
+              isAnalyzingStandardization
+            }
+            onAction={handleAction}
+          />
+        )}
 
         {/* Input Area */}
         <ChatInput

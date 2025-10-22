@@ -5,29 +5,29 @@ import {
   ChevronDown,
   ChevronUp,
   Copy,
-  Eye,
-  FileDown,
   FileText,
   Globe,
   X,
 } from "lucide-react";
-import type Quill from "quill";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TbReplaceFilled } from "react-icons/tb";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useEditor } from "@/contexts/EditorContext";
 import TranslationResults from "./sidebar/TranslationResults";
 import { useTranslation } from "../contexts/TranslationContext";
 
 interface ResultsPanelProps {
   className?: string;
+  inputMode: "selection" | "manual";
 }
 
-type PanelType = "translation" | "glossary" | "inconsistency";
+type PanelType = "translation" | "glossary" | "inconsistency" | "standardized";
 
-const ResultsPanel: React.FC<ResultsPanelProps> = ({ className = "" }) => {
+const ResultsPanel: React.FC<ResultsPanelProps> = ({
+  className = "",
+  inputMode,
+}) => {
   const [expandedPanel, setExpandedPanel] = useState<PanelType | null>(null);
 
   const {
@@ -44,19 +44,34 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ className = "" }) => {
     resetGlossary,
     startGlossaryExtraction,
     overwriteAllResults,
+    standardizedTranslationResults,
+    startStandardizationTranslation,
+    standardizationSelections,
+    setStandardizationSelections,
   } = useTranslation();
-  const { quillEditors } = useEditor();
+
+  useEffect(() => {
+    if (isTranslating) {
+      setExpandedPanel("translation");
+    } else if (isExtractingGlossary) {
+      setExpandedPanel("glossary");
+    } else if (isAnalyzingStandardization) {
+      setExpandedPanel("inconsistency");
+    }
+  }, [isTranslating, isExtractingGlossary, isAnalyzingStandardization]);
 
   const hasTranslationResults = translationResults.length > 0;
   const hasGlossaryResults = glossaryTerms.length > 0;
   const hasInconsistentTerms = Object.keys(inconsistentTerms).length > 0;
+  const hasStandardizedResults = standardizedTranslationResults.length > 0;
   const showPanel =
     hasTranslationResults ||
     hasGlossaryResults ||
     hasInconsistentTerms ||
     isTranslating ||
     isExtractingGlossary ||
-    isAnalyzingStandardization;
+    isAnalyzingStandardization ||
+    hasStandardizedResults;
 
   if (!showPanel) {
     return null;
@@ -84,6 +99,12 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ className = "" }) => {
           : "";
         return `Inconsistency Report${suffix}`;
       }
+      case "standardized": {
+        const suffix = hasStandardizedResults
+          ? ` (${standardizedTranslationResults.length})`
+          : "";
+        return `Standardized Translation${suffix}`;
+      }
       default:
         return "";
     }
@@ -93,55 +114,21 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ className = "" }) => {
   const shouldShowGlossaryPanel = hasGlossaryResults || isExtractingGlossary;
   const shouldShowInconsistencyPanel =
     hasInconsistentTerms || isAnalyzingStandardization;
-
-  // Function to apply glossary to translation editor
-  const applyGlossaryToEditor = () => {
-    // Get the translation editor (the one in the split view)
-    const editors = Array.from(quillEditors.entries());
-    let translationEditor: [string, Quill] | null = null;
-
-    for (const [id, quill] of editors) {
-      const container = quill.root.closest(".editor-container");
-      const isTranslationEditor =
-        container?.closest(".group\\/translation") ||
-        container?.closest(".translation-editor-container");
-
-      if (isTranslationEditor) {
-        translationEditor = [id, quill];
-        break;
-      }
-    }
-
-    if (translationEditor?.[1]) {
-      const editor = translationEditor[1];
-
-      // Focus the translation editor
-      if (typeof editor.focus === "function") {
-        editor.focus();
-      }
-
-      // Show visual feedback that glossary is ready to be applied
-      const container = editor.root?.closest?.(
-        ".editor-container"
-      ) as HTMLElement;
-      if (container) {
-        container.style.outline = "2px solid #10b981";
-        container.style.outlineOffset = "2px";
-        setTimeout(() => {
-          container.style.outline = "";
-          container.style.outlineOffset = "";
-        }, 2000);
-      }
-    }
-  };
+  const shouldShowStandardizedPanel = hasStandardizedResults;
 
   return (
     <div
-      className={`border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 ${className}`}
+      className={`flex-1 flex flex-col min-h-0 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 ${className}`}
     >
       {/* Translation Results Panel */}
       {shouldShowTranslationPanel && (
-        <div className="border-b border-gray-200 dark:border-gray-700 last:border-b-0">
+        <div
+          className={`border-b border-gray-200 dark:border-gray-700 last:border-b-0 ${
+            expandedPanel === "translation"
+              ? "flex flex-col flex-1 min-h-0"
+              : ""
+          }`}
+        >
           <div className="flex items-center justify-between px-1 py-1 bg-blue-50 dark:bg-blue-950/20">
             <Button
               variant="ghost"
@@ -163,17 +150,19 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ className = "" }) => {
             </Button>
 
             <div className="flex items-center gap-1">
-              {hasTranslationResults && !isTranslating && (
-                <Button
-                  onClick={overwriteAllResults}
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 px-2 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30"
-                  title="Overwrite all results"
-                >
-                  <TbReplaceFilled className="w-3 h-3 " />
-                </Button>
-              )}
+              {hasTranslationResults &&
+                !isTranslating &&
+                inputMode === "selection" && (
+                  <Button
+                    onClick={overwriteAllResults}
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                    title="Overwrite all results"
+                  >
+                    <TbReplaceFilled className="w-3 h-3 " />
+                  </Button>
+                )}
               {hasTranslationResults && !isTranslating && (
                 <Button
                   onClick={startGlossaryExtraction}
@@ -201,7 +190,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ className = "" }) => {
           </div>
 
           {expandedPanel === "translation" && (
-            <div className="max-h-80 overflow-y-auto border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+            <div className="flex-1 min-h-0 overflow-y-auto border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
               <div className="p-3">
                 {isTranslating && (
                   <div className="text-center py-4">
@@ -220,7 +209,11 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ className = "" }) => {
 
       {/* Glossary Results Panel */}
       {shouldShowGlossaryPanel && (
-        <div className="border-b border-gray-200 dark:border-gray-700 last:border-b-0">
+        <div
+          className={`border-b border-gray-200 dark:border-gray-700 last:border-b-0 ${
+            expandedPanel === "glossary" ? "flex flex-col flex-1 min-h-0" : ""
+          }`}
+        >
           <div className="flex items-center justify-between px-1 py-1 bg-gray-100 dark:bg-gray-800">
             <Button
               variant="ghost"
@@ -306,7 +299,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ className = "" }) => {
           </div>
 
           {expandedPanel === "glossary" && (
-            <div className="max-h-80 overflow-y-auto border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+            <div className="flex-1 min-h-0 overflow-y-auto border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
               <div className="p-3">
                 {isExtractingGlossary && (
                   <div className="text-center py-4">
@@ -366,7 +359,13 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ className = "" }) => {
 
       {/* Inconsistency Report Panel */}
       {shouldShowInconsistencyPanel && (
-        <div className="border-b border-gray-200 dark:border-gray-700 last:border-b-0">
+        <div
+          className={`border-b border-gray-200 dark:border-gray-700 last:border-b-0 ${
+            expandedPanel === "inconsistency"
+              ? "flex flex-col flex-1 min-h-0"
+              : ""
+          }`}
+        >
           <div className="flex items-center justify-between px-1 py-1 bg-orange-50 dark:bg-orange-950/20">
             <Button
               variant="ghost"
@@ -389,7 +388,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ className = "" }) => {
           </div>
 
           {expandedPanel === "inconsistency" && (
-            <div className="max-h-80 overflow-y-auto border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+            <div className="flex-1 min-h-0 overflow-y-auto border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
               <div className="p-3">
                 {isAnalyzingStandardization && (
                   <div className="text-center py-4">
@@ -425,7 +424,13 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ className = "" }) => {
                                 {originalTerm}
                               </div>
                               <RadioGroup
-                                defaultValue={suggestions[0]}
+                                value={standardizationSelections[term]}
+                                onValueChange={(value) => {
+                                  setStandardizationSelections((prev) => ({
+                                    ...prev,
+                                    [term]: value,
+                                  }));
+                                }}
                                 className="mt-2"
                               >
                                 {suggestions.map((suggestion) => (
@@ -451,7 +456,10 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ className = "" }) => {
                         </div>
                       );
                     })}
-                    <Button className="w-full mt-2">
+                    <Button
+                      className="w-full mt-2"
+                      onClick={startStandardizationTranslation}
+                    >
                       Apply Standardization
                     </Button>
                   </div>
@@ -463,6 +471,46 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ className = "" }) => {
                     <p className="text-sm">No inconsistencies found.</p>
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Standardized Translation Panel */}
+      {shouldShowStandardizedPanel && (
+        <div
+          className={`border-b border-gray-200 dark:border-gray-700 last:border-b-0 ${
+            expandedPanel === "standardized"
+              ? "flex flex-col flex-1 min-h-0"
+              : ""
+          }`}
+        >
+          <div className="flex items-center justify-between px-1 py-1 bg-purple-50 dark:bg-purple-950/20">
+            <Button
+              variant="ghost"
+              className="flex-1 justify-start font-medium hover:bg-purple-100 dark:hover:bg-purple-900/30"
+              onClick={() => togglePanel("standardized")}
+            >
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-purple-500" />
+                <span>{getPanelTitle("standardized")}</span>
+                {expandedPanel === "standardized" ? (
+                  <ChevronUp className="w-4 h-4 ml-2" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 ml-2" />
+                )}
+              </div>
+            </Button>
+          </div>
+
+          {expandedPanel === "standardized" && (
+            <div className="flex-1 min-h-0 overflow-y-auto border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+              <div className="p-3">
+                <TranslationResults
+                  results={standardizedTranslationResults}
+                  isStandardized
+                />
               </div>
             </div>
           )}

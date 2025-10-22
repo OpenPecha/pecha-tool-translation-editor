@@ -150,7 +150,7 @@ export const useTranslationController = ({
     startGlossaryExtraction,
     startStandaloneGlossaryExtraction,
     copyGlossaryTerms: copyGlossaryTermsInternal,
-    resetGlossary,
+    resetGlossary: resetGlossaryInternal,
     glossaryExtractionResults,
     setGlossaryExtractionResults,
   } = useGlossaryOperations({
@@ -174,8 +174,10 @@ export const useTranslationController = ({
     standardizationSelections,
     currentProcessingIndex,
     standardizationProgress,
+    standardizedTranslationResults,
     startStandardizationAnalysis,
     startApplyStandardization,
+    startStandardizationTranslation,
     stopApplyStandardization,
     resetStandardization,
     setStandardizationSelections,
@@ -230,7 +232,7 @@ export const useTranslationController = ({
     // Reset all previous results and states
     resetTranslationsInternal(); // Reset translation list
     resetCopyFeedback();
-    resetGlossary(); // Reset glossary list
+    resetGlossaryInternal(); // Reset glossary list
     resetStandardization();
     await startTranslationInternal();
   };
@@ -266,9 +268,14 @@ export const useTranslationController = ({
     resetTranslationsInternal();
     resetCopyFeedback();
     resetEditingState();
-    resetGlossary();
+    resetGlossaryInternal();
     resetStandardization();
     setAnalysisSourceItems([]);
+  };
+
+  const resetGlossary = () => {
+    resetGlossaryInternal();
+    resetStandardization();
   };
 
   const getOriginalTextForLine = useCallback(
@@ -348,6 +355,7 @@ export const useTranslationController = ({
     standardizationSelections,
     currentProcessingIndex,
     standardizationProgress,
+    standardizedTranslationResults,
 
     // Refs
     resultAreaRef,
@@ -384,6 +392,7 @@ export const useTranslationController = ({
     // Standardization actions
     startStandardizationAnalysis,
     startApplyStandardization,
+    startStandardizationTranslation,
     stopApplyStandardization,
     setStandardizationSelections,
 

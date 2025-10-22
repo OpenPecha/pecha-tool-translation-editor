@@ -67,6 +67,8 @@ export const useStandardizationOperations = ({
     total: number;
     percentage: number;
   }>({ current: 0, total: 0, percentage: 0 });
+  const [standardizedTranslationResults, setStandardizedTranslationResults] =
+    useState<TranslationResult[]>([]);
 
   const startStandardizationAnalysis = async () => {
     let items: StandardizationRequest["items"];
@@ -96,7 +98,6 @@ export const useStandardizationOperations = ({
     }
 
     if (glossaryTerms.length === 0) {
-      toast.error("Cannot check inconsistencies: No glossary available.");
       return;
     }
 
@@ -111,14 +112,21 @@ export const useStandardizationOperations = ({
     try {
       const standardizationParams = { items };
 
-      console.log("Standardization analysis params:", standardizationParams);
-
       const result = await performStandardizationAnalysis(
         standardizationParams
       );
 
       console.log("Standardization analysis result:", result);
       setInconsistentTerms(result.inconsistent_terms);
+      // Set default selections for the radio buttons
+      const defaultSelections: Record<string, string> = {};
+      for (const [term, data] of Object.entries(result.inconsistent_terms)) {
+        const suggestions = Array.isArray(data) ? data : data.suggestions || [];
+        if (suggestions.length > 0) {
+          defaultSelections[term] = suggestions[0];
+        }
+      }
+      setStandardizationSelections(defaultSelections);
 
       const inconsistentCount = Object.keys(result.inconsistent_terms).length;
       if (inconsistentCount > 0) {
@@ -132,7 +140,6 @@ export const useStandardizationOperations = ({
 
       setIsAnalyzingStandardization(false);
     } catch (err) {
-      console.error("Standardization analysis error:", err);
       setIsAnalyzingStandardization(false);
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
       setStandardizationStatus(
@@ -257,11 +264,16 @@ export const useStandardizationOperations = ({
 
       // Create standardization pairs from user selections
       const standardization_pairs = Object.entries(inconsistentTerms).map(
-        ([sourceWord, data]) => ({
-          source_word: sourceWord,
-          standardized_translation:
-            standardizationSelections[sourceWord] || data.suggestions[0],
-        })
+        ([sourceWord, data]) => {
+          const suggestions = Array.isArray(data)
+            ? data
+            : data.suggestions || [];
+          return {
+            source_word: sourceWord,
+            standardized_translation:
+              standardizationSelections[sourceWord] || suggestions[0],
+          };
+        }
       );
 
       const params: ApplyStandardizationParams = {
@@ -311,6 +323,25 @@ export const useStandardizationOperations = ({
     }
   };
 
+  const startStandardizationTranslation = async () => {
+    // Reset previous standardized results before starting a new one
+    setStandardizedTranslationResults([]);
+
+    // This function will be called when the user clicks "Apply Standardization".
+    // It will first apply the standardization and then start a new translation
+    // with the standardized text.
+    await startApplyStandardization();
+
+    // After standardization is complete, the `retranslation_completed` event
+    // handler will have updated the translationResults. Now, we can kick off
+    // the new translation.
+
+    // For now, let's just populate the standardized results with the updated
+    // translationResults.
+    const updatedResults = getCurrentTranslationResults();
+    setStandardizedTranslationResults(updatedResults);
+  };
+
   const stopApplyStandardization = () => {
     if (applyStandardizationAbortControllerRef.current) {
       applyStandardizationAbortControllerRef.current.abort();
@@ -329,6 +360,7 @@ export const useStandardizationOperations = ({
     setStandardizationSelections({});
     setCurrentProcessingIndex(-1);
     setStandardizationProgress({ current: 0, total: 0, percentage: 0 });
+    setStandardizedTranslationResults([]);
   };
 
   return {
@@ -341,10 +373,12 @@ export const useStandardizationOperations = ({
     standardizationSelections,
     currentProcessingIndex,
     standardizationProgress,
+    standardizedTranslationResults,
 
     // Actions
     startStandardizationAnalysis,
     startApplyStandardization,
+    startStandardizationTranslation,
     stopApplyStandardization,
     resetStandardization,
     setStandardizationSelections,
