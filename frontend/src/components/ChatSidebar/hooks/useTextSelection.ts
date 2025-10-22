@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useEditor } from "@/contexts/EditorContext";
+import { isEqual } from "lodash";
 
 export const useTextSelection = () => {
   const [selectedText, setSelectedText] = useState<string>("");
@@ -20,8 +21,8 @@ export const useTextSelection = () => {
   } = useEditor();
 
   // Function to get selected text from the DOM (only from main editor)
-  const getSelectedText = () => {
-    const selection = window.getSelection();
+  const getSelectedText = useCallback(() => {
+    const selection = globalThis.getSelection();
     if (selection?.toString().trim()) {
       // Check if selection is from the main editor (not from sidebar or other elements)
       const range = selection.getRangeAt(0);
@@ -50,37 +51,43 @@ export const useTextSelection = () => {
       }
     }
     return "";
-  };
+  }, []);
 
   // Monitor text selection changes
   useEffect(() => {
     const handleSelectionChange = () => {
       const text = getSelectedText();
-      if (!text || text.length === 0) {
-        return;
-      }
-      setSelectedText(text);
-      setActiveSelectedEditor(activeEditor);
+      const lineNumbers = text ? getSelectionLineNumbers() : null;
 
-      // Get line number information for the selected text
+      // Update state only if text or line numbers have actually changed
+      setSelectedText((prevText) => {
+        if (text !== prevText) {
+          return text;
+        }
+        return prevText;
+      });
+
+      setSelectedTextLineNumbers((prevLineNumbers) => {
+        if (!isEqual(lineNumbers, prevLineNumbers)) {
+          return lineNumbers;
+        }
+        return prevLineNumbers;
+      });
+
       if (text) {
-        const lineNumbers = getSelectionLineNumbers();
-        setSelectedTextLineNumbers(lineNumbers);
+        setActiveSelectedEditor(activeEditor);
       } else {
-        setSelectedTextLineNumbers(null);
+        setActiveSelectedEditor(null);
       }
     };
 
     // Add event listener for selection changes
     document.addEventListener("selectionchange", handleSelectionChange);
 
-    // Initial check
-    handleSelectionChange();
-
     return () => {
       document.removeEventListener("selectionchange", handleSelectionChange);
     };
-  }, [getSelectionLineNumbers, activeEditor, getSelectedText]);
+  }, [activeEditor, getSelectedText, getSelectionLineNumbers]);
 
   const clearSelection = () => {
     setSelectedText("");
@@ -116,6 +123,36 @@ export const useTextSelection = () => {
     return getTextByLineNumber(otherEditorQuill, lineNumber);
   };
 
+  const getOriginalTextForLine = (lineNumber: number): string | null => {
+    if (!activeEditor) {
+      return null;
+    }
+    const quill = getQuill(activeEditor);
+    return getTextByLineNumber(quill, lineNumber);
+  };
+
+  const getTextPairsByLineNumbers = (): Array<{
+    original_text: string;
+    translated_text: string;
+  }> | null => {
+    if (!selectedTextLineNumbers) {
+      return null;
+    }
+    const lineNumbers = Object.keys(selectedTextLineNumbers).map(Number);
+    const textPairs = [];
+    for (const lineNumber of lineNumbers) {
+      const originalText = getOriginalTextForLine(lineNumber);
+      const translatedText = getTranslatedTextForLine(lineNumber);
+      if (originalText && translatedText) {
+        textPairs.push({
+          original_text: originalText,
+          translated_text: translatedText,
+        });
+      }
+    }
+    return textPairs;
+  };
+
   return {
     selectedText,
     activeSelectedEditor,
@@ -123,5 +160,7 @@ export const useTextSelection = () => {
     clearSelection,
     clearUISelection,
     getTranslatedTextForLine,
+    getOriginalTextForLine,
+    getTextPairsByLineNumbers,
   };
 };

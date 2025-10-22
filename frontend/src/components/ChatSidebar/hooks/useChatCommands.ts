@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useTranslationSidebar } from "../../TranslationSidebar/contexts/TranslationSidebarContext";
+import { useTranslation } from "../contexts/TranslationContext";
 import type { AvailableCommand, CommandResult } from "../types/chatTypes";
 import { AVAILABLE_COMMANDS } from "../types/chatTypes";
 
@@ -15,7 +15,7 @@ export const useChatCommands = () => {
     getTranslatedTextForLine,
     selectedTextLineNumbers,
     extractGlossaryFromEditors,
-  } = useTranslationSidebar();
+  } = useTranslation();
 
   const initiateTranslationFlow =
     useCallback(async (): Promise<CommandResult> => {
@@ -40,9 +40,7 @@ export const useChatCommands = () => {
       await startTranslation();
       return {
         success: true,
-        message: `Started translation for selected text: "${selectedText
-          .slice(0, 100)
-          .trim()}"...`,
+        message: `Translating : "${selectedText.slice(0, 100).trim()}"...`,
         data: { action: "translate" },
       };
     }, [selectedText, isTranslating, startTranslation]);
@@ -61,12 +59,13 @@ export const useChatCommands = () => {
       return {
         success: false,
         message:
-          "No text selected. Please select some text in the editor to use #glossary.",
+          "No text selected. Please select some text in the editor to use /glossary.",
         error: "No selected text",
       };
     }
 
     const lineNumbers = Object.keys(selectedTextLineNumbers).map(Number);
+    console.log("lineNumbers", lineNumbers);
     if (lineNumbers.length === 0) {
       return {
         success: false,
@@ -132,14 +131,6 @@ export const useChatCommands = () => {
   const processInput = useCallback(
     async (input: string): Promise<CommandResult> => {
       const command = input.trim().slice(1).split(" ")[0].toLowerCase();
-
-      if (!(AVAILABLE_COMMANDS as readonly string[]).includes(command)) {
-        return {
-          success: false,
-          message: `Command "#${command}" not found. Available commands: #translate, #glossary.`,
-          error: "Command not found",
-        };
-      }
 
       switch (command as AvailableCommand) {
         case "translate":

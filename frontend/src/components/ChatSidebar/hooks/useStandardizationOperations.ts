@@ -10,10 +10,8 @@ import {
   performStandardizationAnalysis,
   type StandardizationRequest,
 } from "@/api/standardize";
-import {
-  type GlossaryTerm,
-  type GlossaryExtractionResult,
-} from "./useGlossaryOperations";
+import type { GlossaryItem } from "@/api/glossary";
+import { type GlossaryTerm } from "./useGlossaryOperations";
 import type {
   TranslationConfig,
   TranslationResult,
@@ -26,12 +24,8 @@ interface UseStandardizationOperationsProps {
     updater: (prev: TranslationResult[]) => TranslationResult[]
   ) => void;
   glossaryTerms: GlossaryTerm[];
-  glossarySourcePairs: Array<{
-    original_text: string;
-    translated_text: string;
-  }>;
   setError: (error: string | null) => void;
-  glossaryExtractionResults: GlossaryExtractionResult[];
+  translationPairs: GlossaryItem[];
 }
 
 export const useStandardizationOperations = ({
@@ -39,9 +33,8 @@ export const useStandardizationOperations = ({
   getCurrentTranslationResults,
   updateTranslationResults,
   glossaryTerms,
-  glossarySourcePairs,
+  translationPairs,
   setError,
-  glossaryExtractionResults,
 }: UseStandardizationOperationsProps) => {
   // Standardization analysis state
   const [inconsistentTerms, setInconsistentTerms] = useState<InconsistentTerms>(
@@ -76,63 +69,38 @@ export const useStandardizationOperations = ({
   }>({ current: 0, total: 0, percentage: 0 });
 
   const startStandardizationAnalysis = async () => {
-    let translationResults = getCurrentTranslationResults();
-
-    if (translationResults.length === 0 && glossarySourcePairs.length > 0) {
-      console.log(
-        "No translation results found, using glossary source pairs as fallback"
-      );
-      translationResults = glossarySourcePairs.map((pair, index) => ({
-        id: `glossary-pair-${index}`,
-        originalText: pair.original_text,
-        translatedText: pair.translated_text,
-        lineNumbers: {}, // No line numbers for standalone pairs
-        metadata: {},
-        timestamp: Date.now().toString(),
+    let items: StandardizationRequest["items"];
+    if (translationPairs.length > 0) {
+      items = translationPairs.map((pair) => ({
+        original_text: pair.original_text,
+        translated_text: pair.translated_text,
+        glossary: glossaryTerms.map((term) => ({
+          source_term: term.source_term,
+          translated_term: term.translated_term,
+        })),
+      }));
+    } else {
+      const translationResults = getCurrentTranslationResults();
+      if (translationResults.length === 0) {
+        toast.error("No text available for inconsistency analysis.");
+        return;
+      }
+      items = translationResults.map((result) => ({
+        original_text: result.originalText,
+        translated_text: result.translatedText,
+        glossary: glossaryTerms.map((term) => ({
+          source_term: term.source_term,
+          translated_term: term.translated_term,
+        })),
       }));
     }
 
-    if (translationResults.length === 0 || glossaryTerms.length === 0) {
-      console.log(
-        "No translation results or glossary terms available for standardization analysis"
-      );
-      toast.error(
-        "Cannot check inconsistencies: No text available for analysis."
-      );
+    if (glossaryTerms.length === 0) {
+      toast.error("Cannot check inconsistencies: No glossary available.");
       return;
     }
 
-    if (glossaryExtractionResults.length > 0) {
-      console.log(
-        "Using glossary extraction results for standardization analysis"
-      );
-      const items: StandardizationRequest["items"] =
-        glossaryExtractionResults.map((result) => ({
-          original_text: result.original_text,
-          translated_text: result.translated_text,
-          glossary: result.glossary,
-        }));
-      startAnalysis(items);
-    } else {
-      console.log(
-        "Using translation results and glossary terms for standardization analysis"
-      );
-      const items: StandardizationRequest["items"] = translationResults.map(
-        (result) => {
-          const glossary = glossaryTerms.map((term) => ({
-            source_term: term.source_term,
-            translated_term: term.translated_term,
-          }));
-
-          return {
-            original_text: result.originalText,
-            translated_text: result.translatedText, // This now includes edited text
-            glossary,
-          };
-        }
-      );
-      startAnalysis(items);
-    }
+    startAnalysis(items);
   };
 
   const startAnalysis = async (items: StandardizationRequest["items"]) => {

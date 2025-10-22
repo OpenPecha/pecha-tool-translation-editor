@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import type { GlossaryItem } from "@/api/glossary";
-import type { TranslationConfig } from "@/components/TranslationSidebar/hooks";
+import type { TranslationConfig } from ".";
 import {
   useCopyOperations,
   useGlossaryOperations,
@@ -8,17 +8,27 @@ import {
   useTextSelection,
   useTranslationOperations,
   useTranslationResults,
-} from "@/components/TranslationSidebar/hooks";
+} from ".";
 import { useEditor } from "@/contexts/EditorContext";
 import { useTranslationSettings } from "@/hooks/useTranslationSettings";
 
-interface UseTranslationSidebarOperationsProps {
+interface UseTranslationControllerProps {
   documentId: string;
 }
 
-export const useTranslationSidebarOperations = ({
+export const useTranslationController = ({
   documentId,
-}: UseTranslationSidebarOperationsProps) => {
+}: UseTranslationControllerProps) => {
+  const [analysisSourceItems, setAnalysisSourceItems] = useState<
+    GlossaryItem[]
+  >([]);
+  // Manual input state with character limit
+  const CHARACTER_LIMIT = 5000; // Set character limit for manual input
+  const [manualText, setManualText] = useState<string>("");
+  const [inputMode, setInputMode] = useState<"selection" | "manual">(
+    "selection"
+  );
+
   // Get translation settings
   const { config, updateConfig, isSidebarCollapsed, setIsSidebarCollapsed } =
     useTranslationSettings();
@@ -74,6 +84,25 @@ export const useTranslationSidebarOperations = ({
     scrollToLineNumber,
   });
 
+  // Handle manual text input with character limit
+  const handleManualTextChange = useCallback(
+    (text: string) => {
+      if (text.length <= CHARACTER_LIMIT) {
+        setManualText(text);
+      }
+    },
+    [CHARACTER_LIMIT]
+  );
+
+  // Get current input text based on mode
+  const getCurrentInputText = useCallback(() => {
+    return inputMode === "selection" ? selectedText : manualText;
+  }, [inputMode, selectedText, manualText]);
+
+  // Get current line numbers (only for selection mode)
+  const getCurrentLineNumbers = useCallback(() => {
+    return inputMode === "selection" ? selectedTextLineNumbers : null;
+  }, [inputMode, selectedTextLineNumbers]);
   // Translation operations hook
   const {
     isTranslating,
@@ -88,13 +117,21 @@ export const useTranslationSidebarOperations = ({
     setError,
   } = useTranslationOperations({
     config,
-    selectedText,
-    selectedTextLineNumbers,
-    onStreamComplete: () => {
+    selectedText: getCurrentInputText(),
+    selectedTextLineNumbers: getCurrentLineNumbers(),
+    onStreamComplete: (finalResults) => {
       // Clear UI selection but keep line numbers for replace functionality
-      clearUISelection();
+      if (inputMode === "selection") {
+        clearUISelection();
+      }
 
-      if (config.extractGlossary && translationResults.length > 0) {
+      const items = finalResults.map((r) => ({
+        original_text: r.originalText,
+        translated_text: r.translatedText,
+      }));
+      setAnalysisSourceItems(items);
+
+      if (config.extractGlossary && finalResults.length > 0) {
         startGlossaryExtraction();
       }
     },
@@ -102,8 +139,9 @@ export const useTranslationSidebarOperations = ({
 
   // Get current translation results function for hooks
   const getCurrentResults = () =>
-    getCurrentTranslationResults(translationResults);
-
+    translationResults.length > 0
+      ? getCurrentTranslationResults(translationResults)
+      : [];
   // Glossary operations hook
   const {
     glossaryTerms,
@@ -146,28 +184,14 @@ export const useTranslationSidebarOperations = ({
     getCurrentTranslationResults: getCurrentResults,
     updateTranslationResults,
     glossaryTerms,
-    glossarySourcePairs,
+    translationPairs: analysisSourceItems,
     setError,
-    glossaryExtractionResults,
   });
 
   // Refs for scrolling and containers
   const resultAreaRef = useRef<HTMLDivElement>(null);
   const translationListRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  // Auto-scroll to bottom of results
-  useEffect(() => {
-    if (resultAreaRef.current && translationResults.length > 0) {
-      // Use setTimeout to ensure DOM has updated
-      setTimeout(() => {
-        const container = resultAreaRef.current?.parentElement;
-        if (container) {
-          container.scrollTop = container.scrollHeight;
-        }
-      }, 50);
-    }
-  }, [translationResults]);
 
   // Helper function to scroll to bottom
   const scrollToBottom = () => {
@@ -190,8 +214,23 @@ export const useTranslationSidebarOperations = ({
   };
 
   const startTranslation = async () => {
+    const currentText = getCurrentInputText();
+    console.log("Translation Sidebar - startTranslation called with:", {
+      currentText,
+      inputMode,
+      manualText,
+      selectedText: selectedText.slice(0, 100) + "...",
+    });
+
+    if (!currentText.trim()) {
+      setError("Please select text or enter text to translate");
+      return;
+    }
+
+    // Reset all previous results and states
+    resetTranslationsInternal(); // Reset translation list
     resetCopyFeedback();
-    resetGlossary();
+    resetGlossary(); // Reset glossary list
     resetStandardization();
     await startTranslationInternal();
   };
@@ -217,7 +256,9 @@ export const useTranslationSidebarOperations = ({
 
   // Standalone glossary extraction from editors
   const extractGlossaryFromEditors = async (textPairs: GlossaryItem[]) => {
+    setAnalysisSourceItems(textPairs);
     setGlossaryExtractionResults([]); // Clear previous results
+
     await startStandaloneGlossaryExtraction(textPairs);
   };
 
@@ -227,6 +268,7 @@ export const useTranslationSidebarOperations = ({
     resetEditingState();
     resetGlossary();
     resetStandardization();
+    setAnalysisSourceItems([]);
   };
 
   const getOriginalTextForLine = useCallback(
@@ -237,18 +279,37 @@ export const useTranslationSidebarOperations = ({
     },
     [activeEditor, getQuill, getTextByLineNumber]
   );
-
+  const hasTranslationResults = translationResults.length > 0;
+  const hasGlossaryResults = glossaryTerms.length > 0;
+  const hasInconsistentTerms = Object.keys(inconsistentTerms).length > 0;
+  const hasActiveWorkflow =
+    hasTranslationResults || hasGlossaryResults || hasInconsistentTerms;
+  const resetActiveWorkflow = () => {
+    resetTranslations();
+    resetGlossary();
+    resetStandardization();
+    setAnalysisSourceItems([]);
+  };
   return {
+    hasActiveWorkflow,
+    resetActiveWorkflow: resetActiveWorkflow,
     // Config and UI state
     config,
     handleConfigChange,
     isSidebarCollapsed,
     setIsSidebarCollapsed,
 
-    // Text selection
+    // Text input (selection + manual)
     selectedText,
     activeSelectedEditor,
     selectedTextLineNumbers,
+    manualText,
+    inputMode,
+    CHARACTER_LIMIT,
+    getCurrentInputText,
+    getCurrentLineNumbers,
+    setManualText: handleManualTextChange,
+    setInputMode,
     clearSelection,
     clearUISelection,
     getTranslatedTextForLine,

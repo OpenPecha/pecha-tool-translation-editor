@@ -1,19 +1,11 @@
 import { useTranslate } from "@tolgee/react";
 import { diffWords } from "diff";
-import {
-  Check,
-  ChevronDown,
-  ChevronUp,
-  Copy,
-  RotateCcw,
-  Save,
-  X,
-} from "lucide-react";
+import { Save, X } from "lucide-react";
 import type React from "react";
-import { TbReplaceFilled } from "react-icons/tb";
 import { Button } from "@/components/ui/button";
 import { useEditor } from "@/contexts/EditorContext";
-import { useTranslationSidebar } from "../contexts/TranslationSidebarContext";
+import { useTranslation } from "../../contexts/TranslationContext";
+import ActionMenu from "./ActionMenu";
 import DiffText from "./DiffText";
 
 interface TranslationResult {
@@ -49,7 +41,7 @@ const TranslationResults: React.FC = () => {
     saveEdit: onSaveEdit,
     setEditedText: onEditTextChange,
     resetToOriginal: onResetToOriginal,
-  } = useTranslationSidebar();
+  } = useTranslation();
 
   const { scrollToLineNumber } = useEditor();
   const { t } = useTranslate();
@@ -59,8 +51,9 @@ const TranslationResults: React.FC = () => {
     if (editingId === result.id) {
       return editedText;
     }
+    const result_text = editedTexts[result.id] || result.translatedText;
     // Otherwise, use saved edited text if available, or original text
-    return editedTexts[result.id] || result.translatedText;
+    return result_text;
   };
 
   const truncateText = (
@@ -71,10 +64,6 @@ const TranslationResults: React.FC = () => {
     return text.substring(0, maxLength) + "...";
   };
 
-  const shouldShowExpandButton = (text: string): boolean => {
-    return text.length > TRUNCATE_LENGTH;
-  };
-
   const formatLineNumbers = (result: TranslationResult): string => {
     if (!result.lineNumbers) return "";
 
@@ -83,7 +72,7 @@ const TranslationResults: React.FC = () => {
 
     // Use the first line range from this specific result
     const [lineKey, range] = lineRanges[0];
-    const lineNumber = parseInt(lineKey, 10);
+    const lineNumber = Number.parseInt(lineKey, 10);
     return `${t("translation.line")} ${lineNumber}(${range.from}-${range.to})`;
   };
 
@@ -95,13 +84,13 @@ const TranslationResults: React.FC = () => {
     let additions = 0;
     let deletions = 0;
 
-    differences.forEach((part) => {
+    for (const part of differences) {
       if (part.added) {
         additions++;
       } else if (part.removed) {
         deletions++;
       }
-    });
+    }
 
     return { additions, deletions };
   };
@@ -114,10 +103,10 @@ const TranslationResults: React.FC = () => {
           className="bg-neutral-50 dark:bg-neutral-700 rounded-lg p-3 space-y-2"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs text-neutral-800 dark:text-neutral-100">
-              {new Date(result.timestamp).toLocaleTimeString()}
-            </span>
             <div className="flex items-center gap-2">
+              <span className="text-xs text-neutral-800 dark:text-neutral-100">
+                {new Date(result.timestamp).toLocaleTimeString()}
+              </span>
               {/* Line Numbers Display */}
               {formatLineNumbers(result) && (
                 <button
@@ -128,7 +117,7 @@ const TranslationResults: React.FC = () => {
                     const lineRanges = Object.entries(result.lineNumbers);
                     if (lineRanges.length > 0) {
                       const [lineKey] = lineRanges[0];
-                      const lineNumber = parseInt(lineKey, 10);
+                      const lineNumber = Number.parseInt(lineKey, 10);
                       scrollToLineNumber(lineNumber);
                     }
                   }}
@@ -137,77 +126,40 @@ const TranslationResults: React.FC = () => {
                   {formatLineNumbers(result)}
                 </button>
               )}
-              <Button
-                onClick={() =>
-                  onInsertResult({
-                    ...result,
-                    translatedText: getCurrentText(result),
-                  })
-                }
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0 hover:bg-secondary-200 transition-colors"
-                title="Insert translation at line position"
-                disabled={
-                  !result.lineNumbers ||
-                  Object.keys(result.lineNumbers).length === 0
-                }
-              >
-                <TbReplaceFilled className="w-3 h-3 " />
-              </Button>
-              <Button
-                onClick={() => onCopyResult(getCurrentText(result), result.id)}
-                variant="ghost"
-                size="sm"
-                className={`h-6 w-6 p-0 hover:bg-gray-200 transition-colors ${
-                  copiedItems.has(result.id)
-                    ? "bg-green-100 text-green-600"
-                    : ""
-                }`}
-                title={copiedItems.has(result.id) ? "Copied!" : "Copy"}
-              >
-                {copiedItems.has(result.id) ? (
-                  <Check className="w-3 h-3" />
-                ) : (
-                  <Copy className="w-3 h-3" />
-                )}
-              </Button>
-
-              {editedTexts[result.id] && (
-                <Button
-                  onClick={() => onResetToOriginal(result)}
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0 hover:bg-red-200 transition-colors"
-                  title="Reset to original translation"
-                  disabled={editingId !== null && editingId !== result.id}
-                >
-                  <RotateCcw className="w-3 h-3" />
-                </Button>
-              )}
             </div>
+
+            <ActionMenu
+              result={result}
+              currentText={getCurrentText(result)}
+              isCopied={copiedItems.has(result.id)}
+              isEdited={!!editedTexts[result.id]}
+              isExpanded={expandedItems.has(index)}
+              canInsert={
+                !!(
+                  result.lineNumbers &&
+                  Object.keys(result.lineNumbers).length > 0
+                )
+              }
+              onCopy={() => onCopyResult(getCurrentText(result), result.id)}
+              onInsert={() =>
+                onInsertResult({
+                  ...result,
+                  translatedText: getCurrentText(result),
+                })
+              }
+              onEdit={() => onStartEditing(result)}
+              onReset={() => onResetToOriginal(result)}
+              onToggleExpand={() => onToggleItemExpansion(index)}
+              disabled={editingId !== null && editingId !== result.id}
+            />
           </div>
           <div className="space-y-2">
             {/* Source Text */}
             <div className="border-l-4 border-gray-300 pl-3">
-              <div className="text-xs text-neutral-700 dark:text-neutral-100 mb-1 font-medium flex items-center justify-between">
+              <div className="text-xs text-neutral-700 dark:text-neutral-100 mb-1 font-medium">
                 <span className="text-neutral-800 dark:text-neutral-300">
                   {t("translation.source")}
                 </span>
-                {shouldShowExpandButton(result.originalText) && (
-                  <Button
-                    onClick={() => onToggleItemExpansion(index)}
-                    variant="ghost"
-                    size="sm"
-                    className="h-5 w-5 p-0 text-neutral-800 dark:text-neutral-100 hover:text-gray-600"
-                  >
-                    {expandedItems.has(index) ? (
-                      <ChevronUp className="w-3 h-3" />
-                    ) : (
-                      <ChevronDown className="w-3 h-3" />
-                    )}
-                  </Button>
-                )}
               </div>
               <div className="text-sm text-neutral-800 dark:text-neutral-100 leading-relaxed">
                 {expandedItems.has(index)
@@ -273,32 +225,6 @@ const TranslationResults: React.FC = () => {
                       );
                     })()}
                 </div>
-                {(() => {
-                  const textToCheck =
-                    result.isUpdated && result.previousTranslatedText
-                      ? Math.max(
-                          result.previousTranslatedText.length,
-                          getCurrentText(result).length
-                        ) > TRUNCATE_LENGTH
-                      : shouldShowExpandButton(getCurrentText(result));
-
-                  return (
-                    textToCheck && (
-                      <Button
-                        onClick={() => onToggleItemExpansion(index)}
-                        variant="ghost"
-                        size="sm"
-                        className="h-5 w-5 p-0 text-neutral-800 dark:text-neutral-100 hover:text-gray-600"
-                      >
-                        {expandedItems.has(index) ? (
-                          <ChevronUp className="w-3 h-3" />
-                        ) : (
-                          <ChevronDown className="w-3 h-3" />
-                        )}
-                      </Button>
-                    )
-                  );
-                })()}
               </div>
 
               {/* Show translation with diff highlighting if updated, otherwise show regular translation or edit mode */}

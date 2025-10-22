@@ -1,6 +1,6 @@
 import type React from "react";
 import { createContext, useContext } from "react";
-import { useTranslationSidebarOperations } from "../hooks/useTranslationSidebarOperations";
+import { useTranslationSidebarOperations } from "../../TranslationSidebar/hooks/useTranslationSidebarOperations";
 
 type TranslationSidebarContextType = ReturnType<
   typeof useTranslationSidebarOperations

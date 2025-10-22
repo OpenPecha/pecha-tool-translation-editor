@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { useTranslationSidebar } from "../../TranslationSidebar/contexts/TranslationSidebarContext";
+import { useTranslation } from "../contexts/TranslationContext";
 import type { ChatMessage } from "../types/chatTypes";
 import { useChatCommands } from "./useChatCommands";
 import { useChatHistory } from "./useChatHistory";
@@ -22,7 +22,7 @@ export const useChatFlow = () => {
     selectedTextLineNumbers,
     getTranslatedTextForLine,
     extractGlossaryFromEditors,
-  } = useTranslationSidebar();
+  } = useTranslation();
 
   const { processInput } = useChatCommands();
 
@@ -31,27 +31,19 @@ export const useChatFlow = () => {
       const trimmedInput = input.trim();
       addMessage("user", trimmedInput);
 
-      if (trimmedInput.startsWith("#")) {
-        const result = await processInput(trimmedInput);
-        if (result.success) {
-          addMessage("command-response", result.message, {
-            command: trimmedInput.split(" ")[0].slice(1),
-            status: "completed",
-            metadata: result.data as Record<string, unknown>,
-          });
-        } else {
-          addMessage("error", result.message, {
-            command: trimmedInput.split(" ")[0].slice(1),
-            status: "error",
-            metadata: { error: result.error },
-          });
-        }
+      const result = await processInput(trimmedInput);
+      if (result.success) {
+        addMessage("command-response", result.message, {
+          command: trimmedInput.split(" ")[0].slice(1),
+          status: "completed",
+          metadata: result.data as Record<string, unknown>,
+        });
       } else {
-        // Handle regular messages
-        addMessage(
-          "system",
-          "I can only process commands. Please start your message with #."
-        );
+        addMessage("error", result.message, {
+          command: trimmedInput.split(" ")[0].slice(1),
+          status: "error",
+          metadata: { error: result.error },
+        });
       }
     },
     [addMessage, processInput]

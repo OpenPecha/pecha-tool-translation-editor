@@ -77,8 +77,6 @@ export const useGlossaryOperations = ({
     event: GlossaryEvent,
     textPairs: GlossaryItem[]
   ) => {
-    console.log("Handling glossary event:", event.type, event);
-
     switch (event.type) {
       case "initialization":
         break;
@@ -90,7 +88,6 @@ export const useGlossaryOperations = ({
         break;
 
       case "glossary_batch_completed":
-        console.log("Glossary batch completed:", event);
         if (event.terms && event.terms.length > 0) {
           // Convert the API response format to our interface
           const convertedTerms: GlossaryTerm[] = event.terms.map((term) => ({
@@ -105,7 +102,6 @@ export const useGlossaryOperations = ({
         break;
 
       case "completion":
-        console.log("Glossary completion event:", event);
         setIsExtractingGlossary(false); // Stop loading indicator
         if (event.glossary_terms && event.glossary_terms.length > 0) {
           // Convert the API response format to our interface
@@ -154,7 +150,7 @@ export const useGlossaryOperations = ({
 
   const startGlossaryExtraction = async () => {
     const translationResults = getCurrentTranslationResults();
-
+    console.log("started glossary extraction", translationResults);
     if (translationResults.length === 0) {
       console.log("No translation results available for glossary extraction");
       return;
@@ -202,20 +198,17 @@ export const useGlossaryOperations = ({
         glossaryParams,
         // onEvent - handle glossary events
         (event: GlossaryEvent) => {
-          console.log("Glossary event received:", event);
           if (!glossaryAbortControllerRef.current?.signal.aborted) {
             handleGlossaryStreamEvent(event, items);
           }
         },
         // onComplete
         () => {
-          console.log("Glossary extraction completed!");
           setIsExtractingGlossary(false);
           onGlossaryComplete?.();
         },
         // onError
         (error: Error) => {
-          console.error("Glossary extraction error:", error);
           setIsExtractingGlossary(false);
           // Show error in UI for debugging
           setError(`Glossary extraction failed: ${error.message}`);
@@ -271,44 +264,44 @@ export const useGlossaryOperations = ({
 
     setIsExtractingGlossary(true);
     setGlossaryTerms([]);
-
-    setGlossarySourcePairs(
-      textPairs.map((pair) => ({
-        original_text: pair.original_text,
-        translated_text: pair.translated_text,
-      }))
-    );
+    const items = textPairs.map((pair, index) => ({
+      original_text: pair.original_text,
+      translated_text: pair.translated_text,
+      metadata: pair?.metadata ?? {
+        batch_id: "batch_1",
+        batch_index: index,
+        model_used: config.modelName,
+        text_type: config.textType,
+        timestamp: new Date().toISOString(),
+      },
+    }));
+    setGlossarySourcePairs(items);
 
     // Create abort controller for glossary extraction
     glossaryAbortControllerRef.current = new AbortController();
 
     try {
       const glossaryParams = {
-        items: textPairs,
+        items,
         model_name: config.modelName,
         batch_size: Math.min(config.batchSize, 5), // Limit batch size for glossary
       };
-
-      console.log("Standalone glossary extraction params:", glossaryParams);
 
       await performStreamingGlossaryExtraction(
         glossaryParams,
         // onEvent - handle glossary events
         (event: GlossaryEvent) => {
-          console.log("Standalone glossary event received:", event);
           if (!glossaryAbortControllerRef.current?.signal.aborted) {
             handleGlossaryStreamEvent(event, textPairs);
           }
         },
         // onComplete
         () => {
-          console.log("Standalone glossary extraction completed!");
           setIsExtractingGlossary(false);
           onGlossaryComplete?.();
         },
         // onError
         (error: Error) => {
-          console.error("Standalone glossary extraction error:", error);
           setIsExtractingGlossary(false);
           // Show error in UI for debugging
           setError(`Standalone glossary extraction failed: ${error.message}`);

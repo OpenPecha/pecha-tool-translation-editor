@@ -13,7 +13,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { formatInconsistenciesForDisplay } from "@/api/standardize";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useTranslationSidebar } from "../contexts/TranslationSidebarContext";
+import { useTranslation } from "../../contexts/TranslationContext";
 
 const StandardizationPanel: React.FC = () => {
   const {
@@ -29,7 +29,7 @@ const StandardizationPanel: React.FC = () => {
     startStandardizationAnalysis: onRetryInconsistencyAnalysis,
     currentProcessingIndex,
     scrollContainerRef,
-  } = useTranslationSidebar();
+  } = useTranslation();
 
   const variant = "inline";
 

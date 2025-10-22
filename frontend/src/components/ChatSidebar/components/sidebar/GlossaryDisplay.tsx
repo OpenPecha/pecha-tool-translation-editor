@@ -11,7 +11,7 @@ import {
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useTranslationSidebar } from "../contexts/TranslationSidebarContext";
+import { useTranslation } from "../../contexts/TranslationContext";
 
 const GlossaryDisplay: React.FC = () => {
   const {
@@ -21,7 +21,7 @@ const GlossaryDisplay: React.FC = () => {
     copyGlossaryTerms,
     startGlossaryAndInconsistencyAnalysis,
     scrollContainerRef,
-  } = useTranslationSidebar();
+  } = useTranslation();
   const [isCollapsed, setIsCollapsed] = useState(true);
   const glossaryRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslate();

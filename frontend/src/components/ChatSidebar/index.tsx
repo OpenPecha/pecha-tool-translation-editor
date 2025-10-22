@@ -1,12 +1,4 @@
-import {
-  ChevronRight,
-  Eye,
-  MapPin,
-  MessageSquare,
-  Plus,
-  Trash2,
-  X,
-} from "lucide-react";
+import { ChevronRight, MapPin, MessageSquare, Plus, X } from "lucide-react";
 import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,11 +8,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useEditor } from "@/contexts/EditorContext";
-import SettingsModal from "../TranslationSidebar/components/SettingsModal";
+import SettingsModal from "./components/sidebar/SettingsModal";
 import {
-  TranslationSidebarProvider,
-  useTranslationSidebar,
-} from "../TranslationSidebar/contexts/TranslationSidebarContext";
+  TranslationProvider,
+  useTranslation,
+} from "./contexts/TranslationContext";
 import ChatHistory from "./components/ChatHistory";
 import ChatInput from "./components/ChatInput";
 import ResultsPanel from "./components/ResultsPanel";
@@ -34,13 +26,7 @@ const ChatSidebarContent: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
-  const {
-    messages,
-    clearHistory,
-    messageCount,
-    handleSendMessage,
-    handleAction,
-  } = useChatFlow();
+  const { messages, clearHistory, messageCount, handleAction } = useChatFlow();
 
   const {
     config,
@@ -49,13 +35,11 @@ const ChatSidebarContent: React.FC = () => {
     isExtractingGlossary,
     isAnalyzingStandardization,
     selectedText,
-    activeSelectedEditor,
     selectedTextLineNumbers,
     clearSelection,
     resetTranslations,
     resetGlossary,
-  } = useTranslationSidebar();
-  const { getQuill } = useEditor();
+  } = useTranslation();
 
   // Helper function to extract start and end line numbers from selectedTextLineNumbers
   const getLineRange = (
@@ -249,7 +233,6 @@ const ChatSidebarContent: React.FC = () => {
 
         {/* Input Area */}
         <ChatInput
-          onSendMessage={handleSendMessage}
           isProcessing={
             isTranslating || isExtractingGlossary || isAnalyzingStandardization
           }
@@ -261,9 +244,9 @@ const ChatSidebarContent: React.FC = () => {
 
 const ChatSidebar: React.FC<ChatSidebarProps> = ({ documentId }) => {
   return (
-    <TranslationSidebarProvider documentId={documentId}>
+    <TranslationProvider documentId={documentId}>
       <ChatSidebarContent />
-    </TranslationSidebarProvider>
+    </TranslationProvider>
   );
 };
 

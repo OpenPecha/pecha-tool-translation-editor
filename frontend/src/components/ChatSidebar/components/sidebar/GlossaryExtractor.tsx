@@ -4,7 +4,7 @@ import type Quill from "quill";
 import type React from "react";
 import { Button } from "@/components/ui/button";
 import { useEditor } from "@/contexts/EditorContext";
-import { useTranslationSidebar } from "../contexts/TranslationSidebarContext";
+import { useTranslationSidebar } from "../../ChatSidebar/contexts/TranslationSidebarContext";
 import { extractTextPairs, getContentSummary } from "../utils/textPairing";
 import GlossaryDisplay from "./GlossaryDisplay";
 

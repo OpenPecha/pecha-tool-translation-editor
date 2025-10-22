@@ -18,8 +18,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useEditor } from "@/contexts/EditorContext";
-import TranslationResults from "../../TranslationSidebar/components/TranslationResults";
-import { useTranslationSidebar } from "../../TranslationSidebar/contexts/TranslationSidebarContext";
+import TranslationResults from "./sidebar/TranslationResults";
+import { useTranslation } from "../contexts/TranslationContext";
 
 interface ResultsPanelProps {
   className?: string;
@@ -44,7 +44,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ className = "" }) => {
     resetGlossary,
     startGlossaryExtraction,
     overwriteAllResults,
-  } = useTranslationSidebar();
+  } = useTranslation();
   const { quillEditors } = useEditor();
 
   const hasTranslationResults = translationResults.length > 0;
@@ -243,21 +243,6 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ className = "" }) => {
 
             {/* Action buttons */}
             <div className="flex items-center gap-1">
-              {/* Eye button to apply glossary to editor */}
-              {hasGlossaryResults &&
-                !isExtractingGlossary &&
-                !isAnalyzingStandardization && (
-                  <Button
-                    onClick={applyGlossaryToEditor}
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 px-2 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30"
-                    title="Apply glossary to translation editor"
-                  >
-                    <Eye className="w-3 h-3" />
-                  </Button>
-                )}
-
               {/* Check inconsistency button */}
               {hasGlossaryResults &&
                 !isExtractingGlossary &&

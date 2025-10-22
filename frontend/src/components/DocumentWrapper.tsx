@@ -133,7 +133,7 @@ function DocumentsWrapper() {
 
       {/* Main editor container - uses CSS Grid for better layout control */}
       <div className="grid grid-rows-[1fr] h-full">
-        <div className="relative flex px-2 w-full overflow-hidden ">
+        <div className="relative flex  w-full overflow-hidden ">
           {renderContent()}
         </div>
       </div>
