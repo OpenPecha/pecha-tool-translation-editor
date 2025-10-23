@@ -1,14 +1,7 @@
 require("dotenv").config();
 const express = require("express");
-const { PrismaClient } = require("@prisma/client");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const http = require("http");
-const WebSocket = require("ws");
-const map = require("lib0/map");
-const Y = require("yjs");
-const { WSSharedDoc, utils, messageListener } = require("./services");
 const commentsRoutes = require("./routes/comments");
 const versionsRoutes = require("./routes/versions");
 const documentsRoutes = require("./routes/documents");
