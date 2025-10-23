@@ -1,5 +1,4 @@
 import { useCallback, useState } from "react";
-import { toast } from "sonner";
 import { useTranslation } from "../contexts/TranslationContext";
 import type { ChatMessage } from "../types/chatTypes";
 import { useChatCommands } from "./useChatCommands";

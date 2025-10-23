@@ -2,7 +2,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { lazy } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
-import { injectUmami } from "./analytics";
 import DocumentsWrapper from "./components/DocumentWrapper";
 import PublicDocumentViewer from "./components/PublicDocumentViewer";
 import TolgeeProvider, { useCurrentLanguage } from "./contexts/TolgeeContext";
@@ -21,9 +20,6 @@ const QuillVersionProvider = lazy(() =>
   }))
 );
 
-if (import.meta.env.VITE_ENVIRONMENT === "production") {
-  injectUmami();
-}
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -88,7 +84,7 @@ function App() {
           <UserbackProvider>
             <AppContent />
           </UserbackProvider>
-          </AuthProvider>
+        </AuthProvider>
       </QueryClientProvider>
       <Toaster />
     </TolgeeProvider>

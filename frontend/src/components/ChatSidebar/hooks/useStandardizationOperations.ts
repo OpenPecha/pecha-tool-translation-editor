@@ -116,7 +116,6 @@ export const useStandardizationOperations = ({
         standardizationParams
       );
 
-      console.log("Standardization analysis result:", result);
       setInconsistentTerms(result.inconsistent_terms);
       // Set default selections for the radio buttons
       const defaultSelections: Record<string, string> = {};

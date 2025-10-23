@@ -12,7 +12,6 @@ import type * as Y from "yjs";
 import { updateContentDocument } from "@/api/document";
 import { useAuth } from "@/auth/use-auth-hook";
 import { useEditor } from "@/contexts/EditorContext";
-import { getUserContext, useUmamiTracking } from "@/hooks/use-umami-tracking";
 import type { Document } from "@/hooks/useCurrentDoc";
 import { useDisplaySettings } from "@/hooks/useDisplaySettings";
 import { checkIsTibetan } from "@/lib/isTibetan";
@@ -66,10 +65,8 @@ const Editor = ({
   const quillRef = useRef<Quill | null>(null);
   const { t } = useTranslate();
   const { currentUser } = useAuth();
-  const { trackDocumentOpened, trackDocumentSaved } = useUmamiTracking();
   // Get display settings
   const { showLineNumbers } = useDisplaySettings();
-
   useEffect(() => {
     if (!yText || !provider) return () => {};
     const name = currentUser?.name || "Anonymous User";
@@ -99,11 +96,6 @@ const Editor = ({
     onSuccess: () => {
       // refetch versions
       queryClient.invalidateQueries({ queryKey: [`versions-${documentId}`] });
-
-      // Track document save
-      if (documentId) {
-        trackDocumentSaved(documentId, "auto", getUserContext(currentUser));
-      }
     },
   });
   const isSaving = updateDocumentMutation.isPending;
@@ -122,6 +114,7 @@ const Editor = ({
     },
     [documentId, updateDocumentMutation]
   );
+
   useEffect(() => {
     const signal = new AbortController();
     const editorId = documentId;
@@ -251,9 +244,7 @@ const Editor = ({
     quill.on("text-change", (delta, oldDelta, source) => {
       if (source === "user") {
         const currentContent = quill.getLength() > 1 ? quill.getContents() : "";
-        setTimeout(() => {
-          debouncedSave(currentContent);
-        }, 0);
+        debouncedSave(currentContent);
       }
     });
     quill.on("selection-change", (range) => {
@@ -315,11 +306,17 @@ const Editor = ({
       quillRef.current.getText().trim() === "" &&
       content.length > 0
     ) {
-      setTimeout(() => {
-        quillRef.current?.setContents(content || []);
-        setIsTibetan(checkIsTibetan(quillRef.current?.getText() || ""));
-        // Set content loaded after a brief delay to ensure rendering is complete
-      }, 0);
+      if ("requestIdleCallback" in window) {
+        requestIdleCallback(() => {
+          quillRef.current?.setContents(content || []);
+          setIsTibetan(checkIsTibetan(quillRef.current?.getText() || ""));
+        });
+      } else {
+        setTimeout(() => {
+          quillRef.current?.setContents(content || []);
+          setIsTibetan(checkIsTibetan(quillRef.current?.getText() || ""));
+        }, 0);
+      }
     }
     return () => {
       if (saveTimeoutRef.current) {
@@ -333,7 +330,6 @@ const Editor = ({
 
     setShowCommentModal(true);
   }
-
   const characterCount = quillRef.current?.getContents().length() || 0;
   if (!documentId) return null;
   return (
@@ -422,4 +418,4 @@ const Editor = ({
   );
 };
 
-export default memo(Editor);
+export default Editor;

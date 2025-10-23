@@ -32,7 +32,6 @@ function DocumentsWrapper() {
     id: currentDoc?.rootProjectId || currentDoc?.rootProject?.id || "",
     name: currentDoc?.rootProject?.name || "Project",
   };
-  const roomId1 = useExampleRoomId(id || "root");
   const isLiveEnabled = useLiveBlockActive(currentDoc);
 
   if (!id) return null;
@@ -95,7 +94,7 @@ function DocumentsWrapper() {
           <div className="h-full w-full flex">
             <div className="flex-1 h-full relative">
               {currentDoc && (
-                <LiveBlockProvider roomId={roomId1} enabled={isLiveEnabled}>
+                <LiveBlockProvider roomId={id} enabled={isLiveEnabled}>
                   <DocumentEditor
                     liveEnabled={isLiveEnabled}
                     docId={id}
@@ -212,17 +211,6 @@ function Loader({ show }: { show: boolean }) {
       </div>
     </div>
   );
-}
-
-function useExampleRoomId(roomId: string) {
-  const params = useSearchParams();
-  const exampleId = params[0].get("exampleId");
-
-  const exampleRoomId = useMemo(() => {
-    return exampleId ? `${roomId}-${exampleId}` : roomId;
-  }, [roomId, exampleId]);
-
-  return exampleRoomId;
 }
 
 export default DocumentsWrapper;
