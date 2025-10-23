@@ -51,7 +51,6 @@ export const RealtimeDocumentEditor = ({
               }
             });
           });
-          console.log("Initialized Yjs document with database content");
         }
         initializedRef.current = true;
         setIsContentReady(true);

@@ -52,43 +52,30 @@ const AuthContextProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = useCallback(
     async (options?: { force?: boolean }) => {
-      try {
-        // If this is a forced login (user clicked login button), skip silent auth
-        if (options?.force) {
-          setSilentAuthAttempted(true);
-          return loginWithRedirect({
-            authorizationParams: {
-              redirect_uri: `${window.location.origin}/callback`,
-            },
-          });
-        }
-
-        // If silent auth was already attempted and failed, don't try again
-        if (silentAuthAttempted) {
-          return;
-        }
-
-        console.log("Attempting silent authentication...");
+      // If this is a forced login (user clicked login button), skip silent auth
+      if (options?.force) {
         setSilentAuthAttempted(true);
-
-        // Try silent authentication first
-        await loginWithRedirect({
+        return loginWithRedirect({
           authorizationParams: {
             redirect_uri: `${window.location.origin}/callback`,
-            prompt: "none", // Silent auth
           },
         });
-      } catch (error: unknown) {
-        const authError = error as { error?: string };
-        console.log(
-          "Silent auth failed, user will need to login manually:",
-          error
-        );
-
-        // Silent auth failed - do NOT automatically redirect
-        // User will need to manually click login button
-        // Just log the error and let the app continue
       }
+
+      // If silent auth was already attempted and failed, don't try again
+      if (silentAuthAttempted) {
+        return;
+      }
+
+      setSilentAuthAttempted(true);
+
+      // Try silent authentication first
+      await loginWithRedirect({
+        authorizationParams: {
+          redirect_uri: `${window.location.origin}/callback`,
+          prompt: "none", // Silent auth
+        },
+      });
     },
     [loginWithRedirect, silentAuthAttempted]
   );

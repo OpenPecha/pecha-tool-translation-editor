@@ -158,35 +158,12 @@ export const validateStandardizationParams = (
 export const performStandardizationAnalysis = async (
   params: StandardizationRequest
 ): Promise<StandardizationResponse> => {
-  try {
-    // Validate parameters before starting
-    validateStandardizationParams(params);
+  // Validate parameters before starting
+  validateStandardizationParams(params);
 
-    console.log("Starting standardization analysis:", {
-      itemCount: params.items.length,
-      totalGlossaryTerms: params.items.reduce(
-        (sum, item) => sum + item.glossary.length,
-        0
-      ),
-    });
+  const result = await analyzeStandardization(params);
 
-    const result = await analyzeStandardization(params);
-
-    console.log("Standardization analysis completed:", {
-      inconsistentTermsCount: Object.keys(result.inconsistent_terms).length,
-      inconsistentTerms: result.inconsistent_terms,
-    });
-
-    return result;
-  } catch (error) {
-    const errorObj =
-      error instanceof Error
-        ? error
-        : new Error("Standardization analysis failed unexpectedly");
-
-    console.error("Standardization analysis error:", errorObj.message);
-    throw errorObj;
-  }
+  return result;
 };
 
 /**

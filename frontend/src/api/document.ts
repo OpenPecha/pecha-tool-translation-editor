@@ -4,17 +4,13 @@ import { getHeaders, getHeadersMultipart } from "./utils";
 const server_url = import.meta.env.VITE_SERVER_URL;
 
 export const fetchPublicDocuments = async () => {
-  try {
-    const response = await fetch(`${server_url}/documents/public`, {
-      headers: getHeaders(),
-    });
+  const response = await fetch(`${server_url}/documents/public`, {
+    headers: getHeaders(),
+  });
 
-    if (response.ok) {
-      const data = await response.json();
-      return data;
-    }
-  } catch (error) {
-    console.log(error);
+  if (response.ok) {
+    const data = await response.json();
+    return data;
   }
 };
 
@@ -25,76 +21,57 @@ export const fetchDocuments = async ({
   search?: string;
   isRoot?: boolean;
 } = {}) => {
-  try {
-    let url = `${server_url}/documents`;
-    const params = new URLSearchParams();
+  let url = `${server_url}/documents`;
+  const params = new URLSearchParams();
 
-    if (search) params.append("search", search);
-    if (isRoot !== undefined) params.append("isRoot", isRoot.toString());
+  if (search) params.append("search", search);
+  if (isRoot !== undefined) params.append("isRoot", isRoot.toString());
 
-    if (params.toString()) {
-      url += `?${params.toString()}`;
-    }
+  if (params.toString()) {
+    url += `?${params.toString()}`;
+  }
 
-    const response = await fetch(url, {
-      headers: getHeaders(),
-    });
+  const response = await fetch(url, {
+    headers: getHeaders(),
+  });
 
-    if (response.ok) {
-      const data = await response.json();
-      return data;
-    }
-  } catch (error) {
-    console.log(error);
+  if (response.ok) {
+    const data = await response.json();
+    return data;
   }
 };
 
 export const fetchDocument = async (id: string) => {
-  try {
-    const response = await fetch(`${server_url}/documents/${id}`, {
-      headers: getHeaders(),
-    });
-    if (response.ok) {
-      const data = await response.json();
-      return data;
-    }
-    throw new Error("Failed to fetch document");
-  } catch (error) {
-    console.log(error);
-    throw error;
+  const response = await fetch(`${server_url}/documents/${id}`, {
+    headers: getHeaders(),
+  });
+  if (response.ok) {
+    const data = await response.json();
+    return data;
   }
+  throw new Error("Failed to fetch document");
 };
 
 export const fetchPublicDocument = async (id: string) => {
-  try {
-    const response = await fetch(`${server_url}/documents/public/${id}`, {
-      headers: getHeaders(),
-    });
-    if (response.ok) {
-      const data = await response.json();
-      return data;
-    }
-    throw new Error("Failed to fetch public document");
-  } catch (error) {
-    console.log(error);
-    throw error;
+  const response = await fetch(`${server_url}/documents/public/${id}`, {
+    headers: getHeaders(),
+  });
+  if (response.ok) {
+    const data = await response.json();
+    return data;
   }
+  throw new Error("Failed to fetch public document");
 };
 
 export const fetchDocumentWithContent = async (id: string) => {
-  try {
-    const response = await fetch(`${server_url}/documents/${id}/content`, {
-      headers: getHeaders(),
-    });
-    if (response.ok) {
-      const data = await response.json();
-      return data;
-    }
-    throw new Error("Failed to fetch document");
-  } catch (error) {
-    console.log(error);
-    throw error;
+  const response = await fetch(`${server_url}/documents/${id}/content`, {
+    headers: getHeaders(),
+  });
+  if (response.ok) {
+    const data = await response.json();
+    return data;
   }
+  throw new Error("Failed to fetch document");
 };
 
 export const createDocument = async (formData: FormData) => {
@@ -155,18 +132,14 @@ export const updatePermission = async (
   }
 };
 export const deleteDocument = async (id: string) => {
-  try {
-    const response = await fetch(`${server_url}/documents/${id}`, {
-      headers: getHeaders(),
-      method: "DELETE",
-    });
+  const response = await fetch(`${server_url}/documents/${id}`, {
+    headers: getHeaders(),
+    method: "DELETE",
+  });
 
-    if (response.ok) {
-      const data = await response.json();
-      return data;
-    }
-  } catch (error) {
-    console.log(error);
+  if (response.ok) {
+    const data = await response.json();
+    return data;
   }
 };
 

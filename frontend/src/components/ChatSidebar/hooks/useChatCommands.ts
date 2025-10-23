@@ -65,7 +65,6 @@ export const useChatCommands = () => {
     }
 
     const lineNumbers = Object.keys(selectedTextLineNumbers).map(Number);
-    console.log("lineNumbers", lineNumbers);
     if (lineNumbers.length === 0) {
       return {
         success: false,

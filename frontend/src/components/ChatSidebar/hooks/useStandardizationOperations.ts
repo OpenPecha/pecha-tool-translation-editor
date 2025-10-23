@@ -152,8 +152,6 @@ export const useStandardizationOperations = ({
   const handleApplyStandardizationStreamEvent = (
     event: ApplyStandardizationStreamEvent
   ) => {
-    console.log("Handling apply standardization event:", event);
-
     switch (event.type) {
       case "initialization":
         setApplyStandardizationStatus(
@@ -238,9 +236,6 @@ export const useStandardizationOperations = ({
       translationResults.length === 0 ||
       Object.keys(inconsistentTerms).length === 0
     ) {
-      console.log(
-        "No translation results or inconsistent terms available for standardization application"
-      );
       return;
     }
 
@@ -294,7 +289,6 @@ export const useStandardizationOperations = ({
         },
         // onComplete
         () => {
-          console.log("Apply standardization completed!");
           setIsApplyingStandardization(false);
           setApplyStandardizationStatus(
             "Standardization application completed!"

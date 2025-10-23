@@ -96,7 +96,6 @@ export const useGlossaryOperations = ({
             frequency: term.frequency,
             context: term.context,
           }));
-          console.log("Adding glossary terms:", convertedTerms);
           setGlossaryTerms((prev) => [...prev, ...convertedTerms]);
         }
         break;
@@ -113,7 +112,6 @@ export const useGlossaryOperations = ({
               context: term.context || term.definition,
             })
           );
-          console.log("Setting final glossary terms:", convertedTerms);
           setGlossaryTerms(convertedTerms);
 
           // Create glossary extraction results for consistency check
@@ -144,23 +142,15 @@ export const useGlossaryOperations = ({
         break;
 
       default:
-        console.log("Unknown glossary event type:", event.type, event);
+        console.warn("Unknown glossary event type:", event.type, event);
     }
   };
 
   const startGlossaryExtraction = async () => {
     const translationResults = getCurrentTranslationResults();
-    console.log("started glossary extraction", translationResults);
     if (translationResults.length === 0) {
-      console.log("No translation results available for glossary extraction");
       return;
     }
-
-    console.log("Starting glossary extraction with:", {
-      resultsCount: translationResults.length,
-      modelName: config.modelName,
-      batchSize: config.batchSize,
-    });
 
     setIsExtractingGlossary(true);
     setGlossaryTerms([]);
@@ -192,8 +182,6 @@ export const useGlossaryOperations = ({
         batch_size: Math.min(config.batchSize, 5), // Limit batch size for glossary
       };
 
-      console.log("Glossary extraction params:", glossaryParams);
-
       await performStreamingGlossaryExtraction(
         glossaryParams,
         // onEvent - handle glossary events
@@ -219,7 +207,6 @@ export const useGlossaryOperations = ({
     } catch (err) {
       // Don't show error for aborted requests
       if (err instanceof Error && err.name === "AbortError") {
-        console.log("Glossary extraction aborted");
         return;
       }
 
@@ -258,7 +245,6 @@ export const useGlossaryOperations = ({
     textPairs: GlossaryItem[]
   ) => {
     if (textPairs.length === 0) {
-      console.log("No text pairs available for standalone glossary extraction");
       return;
     }
 

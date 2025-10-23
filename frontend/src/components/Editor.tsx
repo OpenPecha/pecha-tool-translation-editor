@@ -200,7 +200,6 @@ const Editor = ({
     quillRef.current = quill;
     registerQuill2(editorId as string, quill);
     if (yText && provider) {
-      console.log("yText and provider", yText, provider);
       binding = new QuillBinding(yText, quill, provider.awareness);
       provider.on("sync", (data) => {
         setIsSynced(data);

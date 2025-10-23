@@ -217,12 +217,6 @@ export const useTranslationController = ({
 
   const startTranslation = async () => {
     const currentText = getCurrentInputText();
-    console.log("Translation Sidebar - startTranslation called with:", {
-      currentText,
-      inputMode,
-      manualText,
-      selectedText: selectedText.slice(0, 100) + "...",
-    });
 
     if (!currentText.trim()) {
       setError("Please select text or enter text to translate");

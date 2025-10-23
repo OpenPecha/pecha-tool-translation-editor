@@ -52,10 +52,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
       manualText.trim() &&
       !isTranslating
     ) {
-      console.log(
-        "ChatInput - Auto-starting translation with manual text:",
-        manualText
-      );
       setShouldStartTranslation(false);
       resetTranslations();
       resetGlossary();
@@ -73,8 +69,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const handleSend = useCallback(() => {
     const text = input.trim();
     if (text && !disabled && !isTranslating) {
-      console.log("ChatInput - Preparing translation with text:", text);
-
       // Set the text in manual mode and flag for translation
       setInputMode("manual");
       setManualText(text);
@@ -92,7 +86,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
   // Handle quick command buttons for selected text
   const handleTranslateSelected = useCallback(() => {
     if (selectedText.trim() && !isTranslating) {
-      console.log("ChatInput - Starting translation for selected text");
       setInputMode("selection");
       resetTranslations();
       resetGlossary();

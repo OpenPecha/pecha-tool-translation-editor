@@ -176,7 +176,6 @@ function convertDeltaToDocx(deltaData) {
 
 async function generateDocxBuffer(deltaData) {
 	try {
-		console.log("Converting Delta data to DOCX...");
 
 		const doc = convertDeltaToDocx(deltaData);
 
@@ -868,7 +867,6 @@ async function createSideBySideDocxTemplate(
 		});
 		// Check if template exists
 		const templatePath = TEMPLATE_MAP[`bo_${targetLanguage}`] || TEMPLATE_PATH;
-		console.log("templatePath :: ", templatePath);
 		if (!fs.existsSync(templatePath)) {
 			console.warn(
 				`Template not found at ${templatePath}, using fallback DOCX`,
@@ -1093,8 +1091,6 @@ async function createDocxTemplate(docName, language, sourceDelta, progressId) {
 		};
 
 		sendProgress(progressStreams, progressId, 70, "Rendering template...");
-		// console.log("template data ",templateData)
-		// console.log("template content ",templateContent)
 		try {
 			doc.render(templateData);
 		} catch (renderError) {
@@ -1235,7 +1231,7 @@ async function createPageViewDocxBuffer(docName, delta) {
 						footnoteMap.set(threadId, footnote);
 						footnotes.push(footnote);
 					} else {
-						console.log(
+						console.warn(
 							`📝 ${docName}: Footnote with thread ID ${threadId} already processed`,
 						);
 					}

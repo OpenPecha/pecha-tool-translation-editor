@@ -125,8 +125,6 @@ export const useTranslationOperations = ({
       { from: number; to: number }
     > | null>
   ) => {
-    console.log("Handling stream event:", event);
-
     switch (event.type) {
       case "initialization":
         updateProgress(
@@ -213,20 +211,11 @@ export const useTranslationOperations = ({
         break;
 
       default:
-        console.log("Unknown event type:", event.type);
+        console.warn("Unknown event type:", event.type);
     }
   };
 
   const startTranslation = async () => {
-    console.log(
-      "useTranslationOperations - startTranslation called with selectedText:",
-      {
-        selectedText: selectedText.slice(0, 100) + "...",
-        length: selectedText.length,
-        trimmed: selectedText.trim().slice(0, 100) + "...",
-      }
-    );
-
     if (!selectedText.trim()) {
       setError("Please enter text to translate");
       return;

@@ -382,11 +382,6 @@ export const performStreamingGlossaryExtraction = async (
     // Validate parameters before starting
     validateGlossaryParams(params);
 
-    console.log("Starting streaming glossary extraction:", {
-      itemCount: params.items.length,
-      model: params.model_name || "default",
-    });
-
     const response = await streamGlossaryExtraction(params, abortController);
     await consumeGlossaryStream(
       response,

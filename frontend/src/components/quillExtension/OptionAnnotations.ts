@@ -29,14 +29,11 @@ class AnnotationBlot extends Inline {
 
       // Get the Quill instance from the scroll's domNode
       const quill = Quill.find(scroll.domNode.parentNode as Node);
-      console.log("Quill instance:", quill);
 
       // Get the index of the blot in the document
       const index = quill.getIndex(blot);
       const length = blot.length();
       const originalText = target.textContent || "";
-
-      console.log("Index:", index, "Length:", length, "Text:", originalText);
 
       const popupData = {
         id: value.id,
