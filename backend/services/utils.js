@@ -85,7 +85,7 @@ const closeConn = (doc, conn) => {
 persistence = {
   bindState: async (id, doc) => {
     // Y.js state is no longer stored directly - content comes from versions
-    console.log("Y.js bindState called for document:", id);
+    console.info("Y.js bindState called for document:", id);
   },
   writeState: async (ydoc) => {
     const id = ydoc.name;
@@ -93,7 +93,7 @@ persistence = {
     const stateSizeInBytes = state.byteLength;
     const yText = ydoc.getText(id);
     const delta = yText.toDelta();
-    console.log("Yjs document state size:", stateSizeInBytes, "bytes");
+    console.info("Yjs document state size:", stateSizeInBytes, "bytes");
     const text_length = yText.toString().length;
 
     // ✅ Build a fresh Y.Doc and apply delta
@@ -103,7 +103,7 @@ persistence = {
       if (text_length < largeContentCharacterLength) {
         // Y.js state and delta no longer stored directly in doc table
         // Content is managed through the Version system
-        console.log("Y.js writeState called for document:", id);
+        console.info("Y.js writeState called for document:", id);
       }
 
       // Write delta for debug
@@ -131,7 +131,7 @@ persistence = {
       docs.set(id, freshDoc); // Replace in your doc map
       ydoc.destroy(); // Destroy old doc
     } catch (error) {
-      console.log(error);
+      console.info(error);
     }
   },
 };
