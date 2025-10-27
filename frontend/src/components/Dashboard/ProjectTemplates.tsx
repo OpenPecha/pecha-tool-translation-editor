@@ -105,7 +105,6 @@ const ProjectTemplates = () => {
   if (!isLoadingTemplates && templateData?.length === 0) {
     return null;
   }
-  console.log(templateData);
   return (
     <div className="flex gap-4 h-full">
       {templateData?.map((template: TemplateData) => {
@@ -142,8 +141,14 @@ const ProjectTemplates = () => {
                 <span className="text-md truncate text-foreground font-light font-monlam-2 line-clamp-1">
                   {template.title}
                 </span>
-                <span className="text-xs text-muted-foreground block">
-                  {template.metadata.type} - {template.metadata.language}
+
+                <span className="text-xs flex justify-end gap-1 text-muted-foreground">
+                  <img
+                    src={template.owner.picture}
+                    className="w-4 h-4 rounded-full inline-block mr-1"
+                    alt={template.owner.username}
+                  />
+                  {template.owner.username}
                 </span>
               </div>
             </div>
