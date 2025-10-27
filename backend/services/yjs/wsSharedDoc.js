@@ -1,7 +1,8 @@
 const Y = require("yjs");
 const debounce = require("lodash/debounce");
-const callback = require("./callback");
 const utils = require("./utils");
+const callback = require("./callback");
+
 const gcEnabled = process.env.GC !== "false" && process.env.GC !== "0";
 
 class WSSharedDoc extends Y.Doc {

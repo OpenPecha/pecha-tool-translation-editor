@@ -48,6 +48,7 @@ router.get("/", authenticate, async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
+  const isPublic = req.query.public;
 
   try {
     const whereClause = {
@@ -61,6 +62,7 @@ router.get("/", authenticate, async (req, res) => {
           },
         },
       ],
+      isPublic: isPublic ? isPublic === "true" : undefined,
     };
 
     // Only add status filter if not "all"
@@ -75,7 +77,6 @@ router.get("/", authenticate, async (req, res) => {
         mode: "insensitive",
       };
     }
-
     const [projects, totalCount] = await Promise.all([
       getProjects(whereClause, skip, limit),
       getProjectsCount(whereClause),

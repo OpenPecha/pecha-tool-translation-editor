@@ -5,8 +5,7 @@ const {
 } = require("../middleware/authenticate");
 const { PrismaClient } = require("@prisma/client");
 const multer = require("multer");
-const { WSSharedDoc } = require("../services/yjs");
-
+const { WSSharedDoc } = require("../services");
 const prisma = new PrismaClient();
 const router = express.Router();
 

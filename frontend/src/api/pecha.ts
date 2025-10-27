@@ -80,12 +80,3 @@ export const fetchTextContent = async (textId: string) => {
     return data;
   }
 };
-
-export const fetchTemplates = async (limit: number = 6) => {
-  const response = await fetch(`${server_url}/pecha/templates?limit=${limit}`, {
-    headers: getHeaders(),
-  });
-  const data = await response.json();
-
-  return data;
-};
