@@ -58,13 +58,11 @@ export const fetchProjects = async ({
   searchQuery = "",
   page = 1,
   limit = 10,
-  isPublic = undefined,
 }: {
   status?: string;
   searchQuery?: string;
   page?: number;
   limit?: number;
-  isPublic?: boolean;
 } = {}) => {
   try {
     const queryParams = new URLSearchParams();
@@ -80,9 +78,6 @@ export const fetchProjects = async ({
     }
     if (limit) {
       queryParams.append("limit", limit.toString());
-    }
-    if (isPublic) {
-      queryParams.append("public", isPublic.toString());
     }
 
     const url = `${server_url}/projects?${queryParams.toString()}`;
@@ -116,6 +111,30 @@ export const fetchProjectById = async (projectId: string) => {
     return await response.json();
   } catch (error) {
     console.error(`Error fetching project ${projectId}:`, error);
+    throw error;
+  }
+};
+
+// Fetch public projects
+export const fetchPublicProjects = async ({
+  page = 1,
+  limit = 10,
+}: { page?: number; limit?: number } = {}) => {
+  try {
+    const response = await fetch(
+      `${server_url}/projects/public?page=${page}&limit=${limit}`,
+      {
+        headers: getHeaders(),
+      }
+    );
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch public projects: ${response.statusText}`
+      );
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching public projects:", error);
     throw error;
   }
 };

@@ -20,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
-import ProjectTemplates from "./ProjectTemplates";
+import PublicProjects from "./PublicProjects";
 
 const ProjectList = () => {
   const { searchQuery } = useSearchStore();
@@ -99,7 +99,7 @@ const ProjectList = () => {
           <div className="flex items-stretch gap-6 mb-24 h-[200px]">
             <DocumentCreateModal />
             <div className="hidden md:flex gap-6">
-              <ProjectTemplates />
+              <PublicProjects />
             </div>
           </div>
         </div>

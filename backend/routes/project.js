@@ -48,7 +48,6 @@ router.get("/", authenticate, async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
-  const isPublic = req.query.public;
 
   try {
     const whereClause = {
@@ -62,7 +61,6 @@ router.get("/", authenticate, async (req, res) => {
           },
         },
       ],
-      isPublic: isPublic ? isPublic === "true" : undefined,
     };
 
     // Only add status filter if not "all"
@@ -94,6 +92,55 @@ router.get("/", authenticate, async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching projects:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+//get project templates
+router.get("/public", authenticate, async (req, res) => {
+  const searchQuery = req.query.search || "";
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  const whereClause = {
+    isPublic: true,
+  };
+
+  if (searchQuery) {
+    whereClause.name = {
+      contains: searchQuery,
+      mode: "insensitive",
+    };
+  }
+  try {
+    const publicProjects = await prisma.project.findMany({
+      include: {
+        owner: {
+          select: {
+            id: true,
+            username: true,
+            picture: true,
+          },
+        },
+        roots: {
+          select: {
+            id: true,
+            name: true,
+            updatedAt: true,
+          },
+        },
+      },
+      where: whereClause,
+      skip,
+      take: limit,
+    });
+    res.json({
+      success: true,
+      data: publicProjects,
+    });
+  } catch (error) {
+    console.error("Error fetching project templates:", error);
     res.status(500).json({ error: error.message });
   }
 });

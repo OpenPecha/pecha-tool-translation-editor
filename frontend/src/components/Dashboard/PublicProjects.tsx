@@ -1,11 +1,12 @@
-import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate } from "react-router-dom";
-import { AlertCircle, Loader2 } from "lucide-react";
-import { fetchProjects } from "@/api/project";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
+import { AlertCircle } from "lucide-react";
+import { fetchPublicProjects } from "@/api/project";
 import { MAX_TEMPLATES } from "@/utils/Constants";
 import { useTranslation } from "react-i18next";
-// Types for OpenPecha data structures
+
+// Types for OpenPecha data structures and backend API response
+
 export interface OpenPechaTemplateProject {
   id: string;
   name: string;
@@ -26,6 +27,7 @@ export interface OpenPechaTemplateProject {
   owner: {
     id: string;
     username: string;
+    picture: string;
   };
   roots: Array<{
     id: string;
@@ -34,22 +36,25 @@ export interface OpenPechaTemplateProject {
   }>;
 }
 
-const ProjectTemplates = () => {
+interface ApiResponse {
+  success: boolean;
+  data: OpenPechaTemplateProject[];
+}
+
+const PublicProjects = () => {
   const { t } = useTranslation();
-
-  // Fetch templates using the new single endpoint
-
   const {
     data,
     isLoading: isLoadingTemplates,
-    isError: templatesError,
-  } = useQuery({
-    queryKey: ["templates", MAX_TEMPLATES],
-    queryFn: () =>
-      fetchProjects({ page: 1, limit: MAX_TEMPLATES, isPublic: true }),
-    staleTime: 60 * 60 * 1000, // Cache for 1 hour
+    isError: publicProjectsError,
+  } = useQuery<ApiResponse>({
+    queryKey: ["publicProjects", MAX_TEMPLATES],
+    queryFn: () => fetchPublicProjects({ page: 1 }),
+    staleTime: 60 * 60 * 1000, // 1 hour
   });
-  const templateData = data?.data;
+
+  const publicProjectData: OpenPechaTemplateProject[] | undefined =
+    data?.data ?? [];
 
   if (isLoadingTemplates) {
     return (
@@ -58,7 +63,7 @@ const ProjectTemplates = () => {
           {Array.from({ length: MAX_TEMPLATES }).map((_, index) => (
             <div
               key={index}
-              className="flex flex-col gap-6  border py-3 shadow-sm bg-neutral-50 dark:bg-neutral-700 animate-pulse"
+              className="flex flex-col gap-6 border py-3 shadow-sm bg-neutral-50 dark:bg-neutral-700 animate-pulse"
             >
               <div className="px-4 flex flex-col h-full">
                 {/* Header skeleton */}
@@ -91,64 +96,69 @@ const ProjectTemplates = () => {
     );
   }
 
-  if (templatesError) {
+  if (publicProjectsError) {
     return (
       <div className="flex items-center justify-center py-8">
         <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
         <span className="text-red-600">
-          {t("template.failedToLoadTemplates", "Failed to load templates")}
+          {t(
+            "publicProject.failedToLoadTemplates",
+            "Failed to load publicProjects"
+          )}
         </span>
       </div>
     );
   }
 
-  if (!isLoadingTemplates && templateData?.length === 0) {
+  if (
+    !isLoadingTemplates &&
+    (!publicProjectData || publicProjectData.length === 0)
+  ) {
     return null;
   }
+
   return (
     <div className="flex gap-4 h-full">
-      {templateData?.map((template: TemplateData) => {
-        const alternativeTitle = template?.name || template?.identifier;
-        const card_title =
-          alternativeTitle.length > 0
-            ? JSON.stringify(alternativeTitle)
-            : template.title;
-        const rootDocument = template.roots[0];
+      {publicProjectData?.map((publicProject) => {
+        if (!publicProject) return null;
+        const cardTitle = publicProject.name || publicProject.identifier;
+        const rootDocument = publicProject.roots[0];
         return (
           <Link
-            to={`/documents/${rootDocument.id}`}
-            title={JSON.stringify(card_title)}
-            key={rootDocument.id}
+            to={rootDocument ? `/documents/${rootDocument.id}` : "#"}
+            title={cardTitle}
+            key={publicProject.id}
             className="flex-shrink-0 cursor-pointer group"
             style={{ width: "180px" }}
           >
             <div className="space-y-2">
               <div
-                className={`border border-border/50 hover:shadow-lg transition-all duration-300 overflow-hidden h-[180px]  bg-neutral-50 dark:bg-neutral-700 `}
+                className={`border border-border/50 hover:shadow-lg transition-all duration-300 overflow-hidden h-[180px] bg-neutral-50 dark:bg-neutral-700`}
               >
                 <div className="px-4 pt-6 h-full flex justify-center bg-gradient-to-br from-secondary/30 to-muted/30">
-                  <div className=" w-full text-center space-y-3">
+                  <div className="w-full text-center space-y-3">
                     <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                       TEXT
                     </div>
                     <div className="text-[10px] leading-[normal] font-monlam text-foreground/80 line-clamp-4 px-2">
-                      {template.name}
+                      {publicProject.name}
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="space-y-0.5 px-1" title={template.title}>
+              <div className="space-y-0.5 px-1" title={publicProject.name}>
                 <span className="text-md truncate text-foreground font-light font-monlam-2 line-clamp-1">
-                  {template.title}
+                  {publicProject.name}
                 </span>
-
                 <span className="text-xs flex justify-end gap-1 text-muted-foreground">
-                  <img
-                    src={template.owner.picture}
-                    className="w-4 h-4 rounded-full inline-block mr-1"
-                    alt={template.owner.username}
-                  />
-                  {template.owner.username}
+                  {publicProject.owner?.picture && (
+                    <img
+                      src={publicProject.owner.picture}
+                      className="w-4 h-4 rounded-full inline-block mr-1"
+                      alt={publicProject.owner.username}
+                    />
+                  )}
+                  {publicProject.owner?.username}
                 </span>
               </div>
             </div>
@@ -159,4 +169,4 @@ const ProjectTemplates = () => {
   );
 };
 
-export default ProjectTemplates;
+export default PublicProjects;
