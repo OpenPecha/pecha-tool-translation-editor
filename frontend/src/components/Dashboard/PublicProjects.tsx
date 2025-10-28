@@ -331,47 +331,6 @@ const PublicProjects = ({ showAll = false }: { showAll?: boolean }) => {
     );
   };
 
-  const renderProjectListItem = (publicProject: OpenPechaTemplateProject) => {
-    const cardTitle = publicProject.name || publicProject.identifier;
-    const rootDocument = publicProject.roots[0];
-    return (
-      <Link
-        to={rootDocument ? `/documents/${rootDocument.id}` : "#"}
-        title={cardTitle}
-        key={publicProject.id}
-        className="cursor-pointer group w-full"
-      >
-        <div className="flex items-center gap-3 p-3 border border-border/50 hover:shadow-md transition-all duration-300 bg-neutral-50 dark:bg-neutral-700 rounded-lg">
-          {/* Small icon/indicator */}
-          <div className="flex-shrink-0 w-8 h-8 rounded bg-gradient-to-br from-secondary/30 to-muted/30 flex items-center justify-center">
-            <span className="text-xs font-medium text-muted-foreground">T</span>
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-sm font-medium text-foreground font-monlam-2 truncate">
-                {publicProject.name}
-              </span>
-              <div className="flex items-center gap-1 flex-shrink-0">
-                {publicProject.owner?.picture && (
-                  <img
-                    src={publicProject.owner.picture}
-                    className="w-4 h-4 rounded-full"
-                    alt={publicProject.owner.username}
-                  />
-                )}
-                <span className="text-xs text-muted-foreground">
-                  {publicProject.owner?.username}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Link>
-    );
-  };
-
   return (
     <div className="space-y-4 ">
       {showAll && (
@@ -396,7 +355,12 @@ const PublicProjects = ({ showAll = false }: { showAll?: boolean }) => {
       <div className="flex flex-col gap-2 sm:hidden">
         {publicProjectData?.map((publicProject) => {
           if (!publicProject) return null;
-          return renderProjectListItem(publicProject);
+          return (
+            <ProjectListItem
+              publicProject={publicProject}
+              key={publicProject.id}
+            />
+          );
         })}
       </div>
 
@@ -455,6 +419,51 @@ const PublicProjects = ({ showAll = false }: { showAll?: boolean }) => {
         </div>
       )}
     </div>
+  );
+};
+
+const ProjectListItem = ({
+  publicProject,
+}: {
+  publicProject: OpenPechaTemplateProject;
+}) => {
+  const cardTitle = publicProject.name || publicProject.identifier;
+  const rootDocument = publicProject.roots[0];
+  return (
+    <Link
+      to={rootDocument ? `/documents/${rootDocument.id}` : "#"}
+      title={cardTitle}
+      key={publicProject.id}
+      className="cursor-pointer group w-full"
+    >
+      <div className="flex items-center gap-3 p-3 border border-border/50 hover:shadow-md transition-all duration-300 bg-neutral-50 dark:bg-neutral-700 rounded-lg">
+        {/* Small icon/indicator */}
+        <div className="flex-shrink-0 w-8 h-8 rounded bg-gradient-to-br from-secondary/30 to-muted/30 flex items-center justify-center">
+          <span className="text-xs font-medium text-muted-foreground">T</span>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-sm font-medium text-foreground font-monlam-2 truncate">
+              {publicProject.name}
+            </span>
+            <div className="flex items-center gap-1 flex-shrink-0">
+              {publicProject.owner?.picture && (
+                <img
+                  src={publicProject.owner.picture}
+                  className="w-4 h-4 rounded-full"
+                  alt={publicProject.owner.username}
+                />
+              )}
+              <span className="text-xs text-muted-foreground">
+                {publicProject.owner?.username}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Link>
   );
 };
 
