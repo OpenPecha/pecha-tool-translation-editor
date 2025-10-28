@@ -534,6 +534,7 @@ router.get("/:id", authenticate, async (req, res) => {
         createdAt: true,
         updatedAt: true,
         rootProjectId: true,
+        metadata: true,
         currentVersionId: true,
         currentVersion: {
           select: {

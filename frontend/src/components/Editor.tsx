@@ -27,9 +27,9 @@ import LineNumberVirtualized from "./LineNumbers";
 import quill_import from "./quillExtension";
 import type { CustomFootnoteModule } from "./quillExtension/CustomFootnote";
 import SkeletonLoader from "./SkeletonLoader";
-import TableOfContent from "./TableOfContent";
 import AnnotationList from "./Annotation/AnnotationList";
 import { handleAnnotationVote } from "./quill_func";
+import DocumentSidebar from "./DocumentSidebar";
 
 quill_import();
 
@@ -346,7 +346,7 @@ const Editor = ({
         document.getElementById("toolbar-container")!
       )}
       <div className="relative w-full flex flex-1 h-full overflow-hidden px-4 ">
-        <TableOfContent documentId={documentId} />
+        <DocumentSidebar documentId={documentId} />
 
         <div className="editor-container w-full h-full flex flex-1  relative max-w-6xl mx-auto  ">
           {showLineNumbers && (

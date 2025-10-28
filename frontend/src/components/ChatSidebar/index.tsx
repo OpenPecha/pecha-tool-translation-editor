@@ -118,26 +118,6 @@ const ChatSidebarContent: React.FC = () => {
           >
             <MessageSquare className="w-4 h-4" />
           </Button>
-
-          {/* Text selection indicator */}
-          {selectedText ? (
-            <div
-              className="w-3 h-3 bg-blue-500 rounded-full"
-              title="Text selected"
-            />
-          ) : (
-            <div
-              className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"
-              title="No text selected"
-            />
-          )}
-
-          {messageCount > 0 && (
-            <div
-              className="w-2 h-2 bg-green-500 rounded-full animate-pulse"
-              title={`${messageCount} messages`}
-            />
-          )}
         </div>
       </div>
     );
