@@ -119,10 +119,18 @@ export const fetchProjectById = async (projectId: string) => {
 export const fetchPublicProjects = async ({
   page = 1,
   limit = 10,
-}: { page?: number; limit?: number } = {}) => {
+  search = "",
+}: { page?: number; limit?: number; search?: string } = {}) => {
   try {
+    const queryParams = new URLSearchParams();
+    queryParams.append("page", page.toString());
+    queryParams.append("limit", limit.toString());
+    if (search) {
+      queryParams.append("search", search);
+    }
+
     const response = await fetch(
-      `${server_url}/projects/public?page=${page}&limit=${limit}`,
+      `${server_url}/projects/public?${queryParams.toString()}`,
       {
         headers: getHeaders(),
       }

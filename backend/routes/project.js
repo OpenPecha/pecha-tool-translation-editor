@@ -114,30 +114,63 @@ router.get("/public", authenticate, async (req, res) => {
     };
   }
   try {
-    const publicProjects = await prisma.project.findMany({
-      include: {
-        owner: {
-          select: {
-            id: true,
-            username: true,
-            picture: true,
+    const [publicProjects, totalCount] = await Promise.all([
+      prisma.project.findMany({
+        include: {
+          owner: {
+            select: {
+              id: true,
+              username: true,
+              picture: true,
+            },
+          },
+          roots: {
+            select: {
+              id: true,
+              name: true,
+              updatedAt: true,
+            },
           },
         },
-        roots: {
-          select: {
-            id: true,
-            name: true,
-            updatedAt: true,
-          },
-        },
-      },
-      where: whereClause,
-      skip,
-      take: limit,
-    });
+        where: whereClause,
+        skip,
+        take: limit,
+      }),
+      prisma.project.count({
+        where: whereClause,
+      }),
+    ]);
+
+    const totalPages = Math.ceil(totalCount / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+    const startItem = (page - 1) * limit + 1;
+    const endItem = Math.min(page * limit, totalCount);
+
     res.json({
       success: true,
       data: publicProjects,
+      pagination: {
+        currentPage: page, // ftv - current page number
+        page, // backward compatibility
+        limit,
+        totalItems: totalCount,
+        totalPages,
+        hasNextPage,
+        hasPrevPage,
+        startItem,
+        endItem,
+        // Additional helper info for frontend
+        nextPage: hasNextPage ? page + 1 : null,
+        prevPage: hasPrevPage ? page - 1 : null,
+        isFirstPage: page === 1,
+        isLastPage: page === totalPages,
+      },
+      meta: {
+        total: totalCount,
+        count: publicProjects.length,
+        ftv: page, // Current page number as requested
+      },
     });
   } catch (error) {
     console.error("Error fetching project templates:", error);

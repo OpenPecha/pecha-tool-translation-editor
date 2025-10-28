@@ -19,126 +19,57 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown } from "lucide-react";
+import { ArrowUpDownIcon, ChevronDown } from "lucide-react";
 import PublicProjects from "./PublicProjects";
+import { useSearchParams } from "react-router-dom";
 
 const ProjectList = () => {
-  const { searchQuery } = useSearchStore();
-  const limit = 50;
-  const [view, setView] = useState<"grid" | "list">("list");
-  const [selectedOwner, setSelectedOwner] = useState<string | null>(
-    "Owned by anyone"
-  );
-  const [displayCount, setDisplayCount] = useState(15); // Show first 15 projects
-
-  const { data, isLoading, isError, isFetching, isPending } = useQuery({
-    queryKey: ["projects", searchQuery],
-    initialData: { data: [] },
-    queryFn: () => fetchProjects({ searchQuery, page: 1, limit }),
-    refetchOnWindowFocus: false,
-  });
-
-  const { data: projects } = data;
   const { t } = useTranslate();
-  const { currentUser } = useAuth();
+  const [param, setParam] = useSearchParams();
+  const ftv = param.get("ftv");
 
-  const showLoader = isLoading || isFetching || isPending;
-
-  // Filter projects by selected owner and limit display count
-  const filteredProjects = useMemo(() => {
-    let filtered = projects;
-    if (selectedOwner === "Owned by me")
-      filtered = projects.filter(
-        (project: Project) => project.owner?.id === currentUser?.id
-      );
-    else if (selectedOwner === "Not owned by me")
-      filtered = projects.filter(
-        (project: Project) => project.owner?.id !== currentUser?.id
-      );
-    return filtered;
-  }, [projects, selectedOwner, currentUser?.id]);
-
-  // Limit displayed projects for pagination
-  const displayedProjects = useMemo(() => {
-    return filteredProjects.slice(0, displayCount);
-  }, [filteredProjects, displayCount]);
-
-  // Check if there are more projects to show
-  const hasMoreProjects = filteredProjects.length > displayCount;
-
-  // Function to load more projects
-  const loadMoreProjects = () => {
-    setDisplayCount((prev) => prev + 15);
+  const handleViewAllPublicProjects = () => {
+    if (ftv)
+      setParam((prev) => {
+        prev.delete("ftv");
+        return prev;
+      });
+    else setParam((prev) => ({ ...prev, ftv: "1" }));
   };
-
-  // Reset display count when search or filter changes
-  const resetDisplayCount = () => {
-    setDisplayCount(15);
-  };
-
-  // Get unique owners for the filter dropdown
-  const uniqueOwners = ["Owned by me", "Owned by anyone", "Not owned by me"];
-
-  // Reset display count when search or filter changes
-  useEffect(() => {
-    resetDisplayCount();
-  }, [searchQuery, selectedOwner]);
-
-  // Categorize projects by time using displayed projects
-  const categorizedProjects = useMemo(() => {
-    return categorizeProjectsByTime(displayedProjects || []);
-  }, [displayedProjects]);
 
   return (
     <div className="flex flex-1 flex-col h-[100vh] overflow-y-scroll">
-      <div className="pt-10 px-6  bg-neutral-500/20">
-        <div className="max-w-5xl  mx-auto">
-          <h1 className="text-lg font-medium mb-6">
-            {t(`projects.startNewProject`)}
-          </h1>
-          <div className="flex items-stretch gap-6 mb-24 h-[200px]">
-            <DocumentCreateModal />
-            <div className="hidden md:flex gap-6">
-              <PublicProjects />
+      <div
+        className="pt-10 px-6  bg-neutral-400/10 "
+        style={{ minHeight: ftv ? "fit-content" : "auto" }}
+      >
+        <div className="max-w-5xl  mx-auto ">
+          <div className="flex items-center justify-between">
+            <h1 className="text-lg font-medium mb-6">
+              {t(`projects.startNewProject`)}
+            </h1>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`hover:bg-neutral-300/50 capitalize ${
+                ftv ? "bg-neutral-300/50" : ""
+              }`}
+              onClick={handleViewAllPublicProjects}
+            >
+              gallery <ArrowUpDownIcon size={16} />
+            </Button>
+          </div>
+
+          <div className={`flex items-stretch gap-6 mb-24 `}>
+            {!ftv && <DocumentCreateModal />}
+            <div className="flex gap-6 flex-wrap">
+              {ftv && <DocumentCreateModal />}
+              <PublicProjects showAll={!!ftv} />
             </div>
           </div>
         </div>
       </div>
-      <div className="px-4 w-full">
-        {isError && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {"Failed to fetch projects"}
-          </div>
-        )}
-        <div className="max-w-5xl mx-auto mb-2">
-          {filteredProjects?.length === 0 && !isLoading && !isFetching && (
-            <div className="text-center py-8">
-              <p>You don't have any projects yet. Create one to get started!</p>
-            </div>
-          )}
-          <ProjectsSection
-            categorizedProjects={categorizedProjects}
-            uniqueOwners={uniqueOwners}
-            selectedOwner={selectedOwner}
-            onOwnerChange={setSelectedOwner}
-            isLoading={showLoader}
-            view={view}
-            setView={setView}
-          />
-          {hasMoreProjects && (
-            <div className="flex justify-center mt-6">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={loadMoreProjects}
-                className="px-6"
-              >
-                View More
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
+      {!ftv && <ProjectsListSection />}
     </div>
   );
 };
@@ -152,6 +83,106 @@ interface ProjectsSectionProps {
   view: "grid" | "list";
   setView: (view: "grid" | "list") => void;
 }
+
+const ProjectsListSection = () => {
+  const [displayCount, setDisplayCount] = useState(15); // Show first 15 projects\
+  const limit = 50;
+  const [view, setView] = useState<"grid" | "list">("list");
+  const [selectedOwner, setSelectedOwner] = useState<string | null>(
+    "Owned by anyone"
+  );
+  const { searchQuery } = useSearchStore();
+
+  const { currentUser } = useAuth();
+  // Filter projects by selected owner and limit display count
+
+  // Get unique owners for the filter dropdown
+  const uniqueOwners = ["Owned by me", "Owned by anyone", "Not owned by me"];
+
+  // Categorize projects by time using displayed projects
+  const { data, isLoading, isError, isFetching, isPending } = useQuery({
+    queryKey: ["projects", searchQuery],
+    initialData: { data: [] },
+    queryFn: () => fetchProjects({ searchQuery, page: 1, limit }),
+    refetchOnWindowFocus: false,
+  });
+
+  const showLoader = isLoading || isFetching || isPending;
+  // Reset display count when search or filter changes
+  const resetDisplayCount = () => {
+    setDisplayCount(15);
+  };
+
+  // Reset display count when search or filter changes
+  useEffect(() => {
+    resetDisplayCount();
+  }, [searchQuery, selectedOwner]);
+  // Check if there are more projects to show
+
+  // Function to load more projects
+  const loadMoreProjects = () => {
+    setDisplayCount((prev) => prev + 15);
+  };
+  const { data: projects } = data;
+  const filteredProjects = useMemo(() => {
+    let filtered = projects;
+    if (selectedOwner === "Owned by me")
+      filtered = projects.filter(
+        (project: Project) => project.owner?.id === currentUser?.id
+      );
+    else if (selectedOwner === "Not owned by me")
+      filtered = projects.filter(
+        (project: Project) => project.owner?.id !== currentUser?.id
+      );
+    return filtered;
+  }, [projects, selectedOwner, currentUser?.id]);
+  const hasMoreProjects = filteredProjects.length > displayCount;
+  // Limit displayed projects for pagination
+  const displayedProjects = useMemo(() => {
+    return filteredProjects.slice(0, displayCount);
+  }, [filteredProjects, displayCount]);
+
+  const categorizedProjects = useMemo(() => {
+    return categorizeProjectsByTime(displayedProjects || []);
+  }, [displayedProjects]);
+  return (
+    <div className="px-4 w-full">
+      {isError && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {"Failed to fetch projects"}
+        </div>
+      )}
+      <div className="max-w-5xl mx-auto mb-2">
+        {filteredProjects?.length === 0 && !isLoading && !isFetching && (
+          <div className="text-center py-8">
+            <p>You don't have any projects yet. Create one to get started!</p>
+          </div>
+        )}
+        <ProjectsSection
+          categorizedProjects={categorizedProjects}
+          uniqueOwners={uniqueOwners}
+          selectedOwner={selectedOwner}
+          onOwnerChange={setSelectedOwner}
+          isLoading={showLoader}
+          view={view}
+          setView={setView}
+        />
+        {hasMoreProjects && (
+          <div className="flex justify-center mt-6">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={loadMoreProjects}
+              className="px-6"
+            >
+              View More
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const ProjectsSection = ({
   categorizedProjects,
