@@ -124,6 +124,7 @@ const LineNumberVirtualized = ({
 
   const quill = getQuill(documentId);
   const updateLineNumbers = useCallback(() => {
+    console.log("updateLineNumbers");
     if (!lineNumbersRef.current) return;
 
     const editorElement = editorRef?.current?.querySelector(".ql-editor");
@@ -180,7 +181,12 @@ const LineNumberVirtualized = ({
 
     if (quill) {
       quill.on("text-change", debouncedUpdateLineNumbers);
-      window.addEventListener("resize", debouncedUpdateLineNumbers);
+      quill.root.addEventListener("resize", debouncedUpdateLineNumbers);
+      const resizeObserver = new ResizeObserver(() => {
+        debouncedUpdateLineNumbers();
+      });
+      resizeObserver.observe(quill.root);
+      quill.root.addEventListener("scroll", debouncedUpdateLineNumbers);
       debouncedUpdateLineNumbers(); // Initial call
     }
 

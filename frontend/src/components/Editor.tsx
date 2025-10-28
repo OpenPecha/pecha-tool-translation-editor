@@ -345,7 +345,7 @@ const Editor = ({
         />,
         document.getElementById("toolbar-container")!
       )}
-      <div className="relative w-full flex flex-1 h-full overflow-hidden  ">
+      <div className="relative w-full flex flex-1 h-full overflow-hidden px-4 ">
         <TableOfContent documentId={documentId} />
 
         <div className="editor-container w-full h-full flex flex-1  relative max-w-6xl mx-auto  ">
