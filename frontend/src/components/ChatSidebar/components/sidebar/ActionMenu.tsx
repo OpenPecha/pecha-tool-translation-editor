@@ -18,6 +18,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { TooltipWrapper } from "@/components/TooltipWrapper";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface TranslationResult {
   id: string;
@@ -66,86 +73,50 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
   const { t } = useTranslate();
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-1 relative">
       {/* Primary Actions - Always Visible */}
-      <Button
-        onClick={onCopy}
-        variant="ghost"
-        size="sm"
-        className={`h-7 w-7 p-0 transition-colors ${
-          isCopied
-            ? "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400"
-            : "hover:bg-gray-100 dark:hover:bg-gray-800"
-        }`}
-        title={isCopied ? t("translation.copied") : t("translation.copy")}
-        disabled={disabled}
-      >
-        {isCopied ? (
-          <Check className="w-3 h-3" />
-        ) : (
-          <Copy className="w-3 h-3" />
-        )}
-      </Button>
-
-      {canInsert && (
-        <Button
-          onClick={onInsert}
-          variant="ghost"
-          size="sm"
-          className="h-7 w-7 p-0 hover:bg-blue-100 dark:hover:bg-blue-900 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-          title="Insert translation at line position"
-          disabled={disabled}
-        >
-          <TbReplaceFilled className="w-3 h-3" />
-        </Button>
-      )}
-
-      {/* Secondary Actions - Dropdown Menu */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
-            disabled={disabled}
-          >
-            <MoreHorizontal className="w-3 h-3" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuItem onClick={onEdit} className="cursor-pointer">
-            <Edit3 className="w-4 h-4 mr-2" />
-            {t("translation.editTranslation")}
-          </DropdownMenuItem>
-
-          <DropdownMenuItem onClick={onToggleExpand} className="cursor-pointer">
-            {isExpanded ? (
-              <>
-                <EyeOff className="w-4 h-4 mr-2" />
-                Collapse text
-              </>
-            ) : (
-              <>
-                <Eye className="w-4 h-4 mr-2" />
-                Expand text
-              </>
-            )}
-          </DropdownMenuItem>
-
-          {isEdited && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={onReset}
-                className="cursor-pointer text-orange-600 dark:text-orange-400"
+      <TooltipProvider>
+        <Tooltip delayDuration={5}>
+          <TooltipTrigger>
+            <Button
+              onClick={onCopy}
+              variant="ghost"
+              size="sm"
+              className={`h-7 w-7 p-0 transition-colors ${
+                isCopied
+                  ? "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400"
+                  : "hover:bg-gray-100 dark:hover:bg-gray-800"
+              }`}
+              disabled={disabled}
+            >
+              {isCopied ? (
+                <Check className="w-3 h-3" />
+              ) : (
+                <Copy className="w-3 h-3" />
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {isCopied ? "Copied" : "Copy to clipboard"}
+          </TooltipContent>
+        </Tooltip>
+        {canInsert && (
+          <Tooltip delayDuration={5}>
+            <TooltipTrigger>
+              <Button
+                onClick={onInsert}
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0 hover:bg-blue-100 dark:hover:bg-blue-900 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                disabled={disabled}
               >
-                <RotateCcw className="w-4 h-4 mr-2" />
-                {t("translation.resetToOriginal")}
-              </DropdownMenuItem>
-            </>
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
+                <TbReplaceFilled className="w-3 h-3" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Insert translation at line position</TooltipContent>
+          </Tooltip>
+        )}
+      </TooltipProvider>
     </div>
   );
 };

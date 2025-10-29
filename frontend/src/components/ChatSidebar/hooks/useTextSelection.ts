@@ -47,7 +47,7 @@ export const useTextSelection = () => {
       }
     }
     return "";
-  }, []);
+  }, [activeEditor, quillEditors]);
 
   // Monitor text selection changes
   useEffect(() => {

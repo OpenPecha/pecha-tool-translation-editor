@@ -16,6 +16,11 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import TranslationResults from "./sidebar/TranslationResults";
 import { useTranslation } from "../contexts/TranslationContext";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ResultsPanelProps {
   className?: string;
@@ -153,38 +158,51 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({
               {hasTranslationResults &&
                 !isTranslating &&
                 inputMode === "selection" && (
-                  <Button
-                    onClick={overwriteAllResults}
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 px-2 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30"
-                    title="Overwrite all results"
-                  >
-                    <TbReplaceFilled className="w-3 h-3 " />
-                  </Button>
+                  <Tooltip delayDuration={5}>
+                    <TooltipTrigger>
+                      <Button
+                        onClick={overwriteAllResults}
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                      >
+                        <TbReplaceFilled className="w-3 h-3 " />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Overwrite all results</TooltipContent>
+                  </Tooltip>
                 )}
+
               {hasTranslationResults && !isTranslating && (
-                <Button
-                  onClick={startGlossaryExtraction}
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 px-2 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30"
-                  title="Generate Glossary"
-                >
-                  <BookText className="w-3 h-3" />
-                </Button>
+                <Tooltip delayDuration={5}>
+                  <TooltipTrigger>
+                    <Button
+                      onClick={startGlossaryExtraction}
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                    >
+                      <BookText className="w-3 h-3" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Generate Glossary</TooltipContent>
+                </Tooltip>
               )}
               {/* Close button for translation */}
               {hasTranslationResults && !isTranslating && (
-                <Button
-                  onClick={resetTranslations}
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 px-2 text-blue-600 dark:text-blue-400 hover:bg-red-100 dark:hover:bg-red-900/30"
-                  title="Clear translation results"
-                >
-                  <X className="w-3 h-3" />
-                </Button>
+                <Tooltip delayDuration={5}>
+                  <TooltipTrigger>
+                    <Button
+                      onClick={resetTranslations}
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-blue-600 dark:text-blue-400 hover:bg-red-100 dark:hover:bg-red-900/30"
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Clear translation results</TooltipContent>
+                </Tooltip>
               )}
             </div>
           </div>

@@ -23,6 +23,7 @@ const TranslationItem: React.FC<TranslationItemProps> = ({ translation }) => {
   const rootId = id as string;
   const { setSelectedTranslationId } = useTranslationSidebarParams();
   const { t } = useTranslate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Helper function to render the status indicator
   const refetchTranslations = () =>
@@ -81,7 +82,9 @@ const TranslationItem: React.FC<TranslationItemProps> = ({ translation }) => {
       console.error(t("translation.failedToUpdateDocument"), error);
     },
   });
-
+  const isDeleting = deleteTranslationMutation.isPending;
+  const isUpdating = updateDocumentMutation.isPending;
+  const disabled = isDeleting || isUpdating;
   const onEdit = (translationId: string, name?: string, language?: string) => {
     // Implement edit functionality here
     const updateData: { id: string; name?: string; language?: string } = {
@@ -100,24 +103,7 @@ const TranslationItem: React.FC<TranslationItemProps> = ({ translation }) => {
       deleteTranslationMutation.mutate(translationId);
     }
   };
-  const renderStatusIndicator = () => {
-    if (isDeleting) {
-      return (
-        <>
-          <Trash2 className="h-3 w-3 mr-1 animate-pulse text-red-500" />
-          <span className="text-red-500 dark:text-red-400">
-            {t("translation.deleting")}
-          </span>
-        </>
-      );
-    }
 
-    return formatTimeAgo(translation.updatedAt);
-  };
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const isDeleting = deleteTranslationMutation.isPending;
-  const isUpdating = updateDocumentMutation.isPending;
-  const disabled = isDeleting || isUpdating;
   return (
     <div
       key={translation.id}
@@ -154,7 +140,9 @@ const TranslationItem: React.FC<TranslationItemProps> = ({ translation }) => {
               {getLanguageInfo(translation.language).name}
             </span>
             <span>•</span>
-            <span>{renderStatusIndicator()}</span>
+            <span>
+              <RenderStatusIndicator isDeleting={isDeleting} />
+            </span>
           </div>
         </div>
       </button>
@@ -172,4 +160,19 @@ const TranslationItem: React.FC<TranslationItemProps> = ({ translation }) => {
   );
 };
 
+function RenderStatusIndicator({
+  isDeleting,
+}: {
+  readonly isDeleting: boolean;
+}) {
+  if (isDeleting) {
+    return (
+      <>
+        <Trash2 className="h-3 w-3 mr-1 animate-pulse text-red-500" />
+        <span className="text-red-500 dark:text-red-400">Deleting...</span>
+      </>
+    );
+  }
+  return null;
+}
 export default TranslationItem;

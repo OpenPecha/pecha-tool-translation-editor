@@ -12,6 +12,7 @@ import Login from "./pages/Login";
 import Logout from "./pages/Logout";
 import { Layout, SuspenceWithLoadingFallback } from "./pages/layout";
 import { AuthProvider } from "./auth/AuthProvider";
+import { TooltipProvider } from "./components/ui/tooltip";
 
 const ProjectList = lazy(() => import("./components/Dashboard/ProjectList"));
 const QuillVersionProvider = lazy(() =>
@@ -82,7 +83,9 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <UserbackProvider>
-            <AppContent />
+            <TooltipProvider>
+              <AppContent />
+            </TooltipProvider>
           </UserbackProvider>
         </AuthProvider>
       </QueryClientProvider>
