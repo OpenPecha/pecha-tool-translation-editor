@@ -58,11 +58,13 @@ export const fetchProjects = async ({
   searchQuery = "",
   page = 1,
   limit = 10,
+  owner = "both",
 }: {
   status?: string;
   searchQuery?: string;
   page?: number;
   limit?: number;
+  owner?: "User" | "both" | "shared";
 } = {}) => {
   try {
     const queryParams = new URLSearchParams();
@@ -78,6 +80,9 @@ export const fetchProjects = async ({
     }
     if (limit) {
       queryParams.append("limit", limit.toString());
+    }
+    if (owner) {
+      queryParams.append("owner", owner);
     }
 
     const url = `${server_url}/projects?${queryParams.toString()}`;

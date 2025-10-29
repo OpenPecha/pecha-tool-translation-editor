@@ -48,6 +48,7 @@ router.get("/", authenticate, async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
+  const owner = req.query.owner || "both"; // "User" | "both" | "shared"
 
   try {
     const whereClause = {
@@ -68,6 +69,22 @@ router.get("/", authenticate, async (req, res) => {
       whereClause.status = status;
     }
 
+    if (owner) {
+      if (owner === "User") {
+        whereClause.ownerId = req.user.id;
+      } else if (owner === "shared") {
+        whereClause.permissions = {
+          some: {
+            userId: req.user.id,
+          },
+        };
+      } else if (owner === "both") {
+        whereClause.OR = [
+          { ownerId: req.user.id },
+          { permissions: { some: { userId: req.user.id } } },
+        ];
+      }
+    }
     // Only add name filter if searchQuery is provided
     if (searchQuery) {
       whereClause.name = {
