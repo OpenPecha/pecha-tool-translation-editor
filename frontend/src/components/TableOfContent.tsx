@@ -17,7 +17,7 @@ import {
   useTableOfContentOpenStore,
 } from "@/stores/tableOfContentStore";
 import { BookOpen, Dot } from "lucide-react";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 import isMobile from "@/lib/isMobile";
 
 interface Heading {
@@ -176,7 +176,7 @@ const TableOfContent: React.FC<TableOfContentProps> = ({ documentId }) => {
     }
   }, [quill, documentId, generateList, updateActiveHeading]);
 
-  const { t } = useTranslate();
+  const { t } = useTranslation();
   return (
     <>
       <div
@@ -223,7 +223,7 @@ const Toc = React.memo(function Toc({
 }: TocProps) {
   const { getQuill, quillEditors } = useEditor();
   const quill = getQuill(documentId);
-  const { t } = useTranslate();
+  const { t } = useTranslation();
   const scrollToHeading = useCallback(
     (id: string) => {
       if (!quill) return;

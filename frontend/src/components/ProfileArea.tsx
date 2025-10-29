@@ -1,17 +1,18 @@
 import { useState, useRef, useEffect } from "react";
 import AvatarWrapper from "./ui/custom-avatar";
 import { useAuth } from "@/auth/use-auth-hook";
-import { useCurrentLanguage } from "@/contexts/TolgeeContext";
 import { MdKeyboardArrowDown, MdLogout } from "react-icons/md";
 import LanguageSwitcher from "./LanguageSwitcher";
 import ThemeToggle from "./ThemeToggle";
 import SettingsButton from "./setting/SettingsButton";
 import { Button } from "./ui/button";
+import { useTranslation } from "react-i18next";
 
 function ProfileArea() {
   const [isOpen, setIsOpen] = useState(false);
   const { currentUser, logout: handleLogout } = useAuth();
-  const currentLanguage = useCurrentLanguage();
+  const { i18n } = useTranslation(); 
+  const currentLanguage = i18n.language;
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const toggleDropdown = () => setIsOpen(!isOpen);

@@ -9,7 +9,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Project, deleteProject, updateProject } from "@/api/project";
 import formatTimeAgo from "@/lib/formatTimeAgo";
 import { formatDateByCategory, type TimeCategory } from "@/lib/dateUtils";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 
 interface EachProjectProps {
@@ -23,7 +23,7 @@ export default function EachProject({
   view,
   timeCategory,
 }: EachProjectProps) {
-  const { t } = useTranslate();
+  const { t } = useTranslation();
   const [showEditModal, setShowEditModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);

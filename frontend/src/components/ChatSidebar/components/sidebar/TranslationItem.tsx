@@ -1,4 +1,4 @@
-import { useTranslate } from "@tolgee/react";
+import { useTranslation as useTranslationI18next } from "react-i18next";
 import { diffWords } from "diff";
 import { Save, X } from "lucide-react";
 import type React from "react";
@@ -53,7 +53,7 @@ const TranslationItem: React.FC<TranslationItemProps> = ({
   } = useTranslation();
 
   const { scrollToLineNumber } = useEditor();
-  const { t } = useTranslate();
+  const { t } = useTranslationI18next();
 
   const getCurrentText = (result: TranslationResult): string => {
     if (editingId === result.id) {

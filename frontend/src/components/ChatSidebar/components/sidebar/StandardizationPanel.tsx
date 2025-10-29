@@ -1,4 +1,4 @@
-import { useTranslate } from "@tolgee/react";
+import { useTranslation as useTranslationI18next } from "react-i18next";
 import {
   AlertTriangle,
   CheckCircle,
@@ -36,7 +36,7 @@ const StandardizationPanel: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const standardizationRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const { t } = useTranslate();
+  const { t } = useTranslationI18next();
   const setStandardizationSelections = useCallback(
     (updater: (prev: Record<string, string>) => Record<string, string>) => {
       onStandardizationSelectionChange(updater(standardizationSelections));

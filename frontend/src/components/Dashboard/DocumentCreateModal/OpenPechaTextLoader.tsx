@@ -14,7 +14,7 @@ import {
 import { SearchableDropdown } from "./SearchableDropdown";
 import { ErrorDisplay } from "@/components/shared/modals";
 import { Label } from "@/components/ui/label";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 
 // Types for OpenPecha data structures
 interface Expression {
@@ -62,7 +62,7 @@ export function OpenPechaTextLoader({
   }> | null>(null);
 
   const queryClient = useQueryClient();
-  const { t } = useTranslate();
+  const { t } = useTranslation();
   // Validation state
   const isValid = !!(
     selectedExpressionId &&

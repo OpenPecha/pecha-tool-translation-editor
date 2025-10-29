@@ -9,7 +9,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Switch } from "../ui/switch";
 import AvatarWrapper from "../ui/custom-avatar";
 import ContentEditableDiv from "../ui/contentEditable";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 
 function CommentInitialize({
   documentId,
@@ -29,7 +29,7 @@ function CommentInitialize({
   const quill = getQuill(documentId);
   const { currentUser } = useAuth();
   const queryClient = useQueryClient();
-  const { t } = useTranslate();
+  const { t } = useTranslation();
 
   const currentRangeText = quill?.getText(
     currentRange?.index,

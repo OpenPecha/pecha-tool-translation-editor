@@ -1,5 +1,5 @@
 import { useTheme, Theme } from "@/hooks/useTheme";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 import { MdLightMode, MdDarkMode, MdSettingsBrightness } from "react-icons/md";
 import {
 	Select,
@@ -10,7 +10,7 @@ import {
 
 const ThemeToggle = () => {
 	const { theme, setTheme } = useTheme();
-	const { t } = useTranslate();
+	const { t } = useTranslation();
 
 	const themeOptions = [
 		{

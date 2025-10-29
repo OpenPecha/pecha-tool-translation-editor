@@ -1,4 +1,4 @@
-import { useTranslate } from "@tolgee/react";
+import { useTranslation as useTranslationI18next } from "react-i18next";
 import {
   Languages,
   BookOpen,
@@ -31,7 +31,7 @@ const ActionButtonGrid: React.FC<ActionButtonGridProps> = ({
     glossaryTerms,
   } = useTranslation();
 
-  const { t } = useTranslate();
+  const { t } = useTranslationI18next();
 
   const isProcessing = isTranslating || isExtractingGlossary;
   const hasTranslationResults = translationResults.length > 0;

@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 import { useTheme } from "@/hooks/useTheme";
 import { Eye, Type, Palette, RotateCcw, Minus, Plus } from "lucide-react";
 import {
@@ -19,7 +19,7 @@ import {
   type TypographySettings,
 } from "@/hooks/useDisplaySettings";
 const DisplaySettings: React.FC<{}> = ({}) => {
-  const { t } = useTranslate();
+  const { t } = useTranslation();
   const {
     settings,
     updateSetting,

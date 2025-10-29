@@ -1,4 +1,4 @@
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 import {
 	useTableOfContentSyncStore,
 	useTableOfContentOpenStore,
@@ -20,7 +20,7 @@ function SyncOptions({
 }) {
 	const { setSynced } = useTableOfContentSyncStore();
 	const { openAll } = useTableOfContentOpenStore();
-	const { t } = useTranslate();
+	const { t } = useTranslation();
 	const options = [
 		{
 			value: "none",
