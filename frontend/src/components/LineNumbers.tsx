@@ -124,7 +124,6 @@ const LineNumberVirtualized = ({
 
   const quill = getQuill(documentId);
   const updateLineNumbers = useCallback(() => {
-    console.log("updateLineNumbers");
     if (!lineNumbersRef.current) return;
 
     const editorElement = editorRef?.current?.querySelector(".ql-editor");

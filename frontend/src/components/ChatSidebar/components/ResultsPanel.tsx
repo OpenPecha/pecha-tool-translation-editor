@@ -200,6 +200,24 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({
                     </div>
                   </div>
                 )}
+                {expandedPanel === "translation" &&
+                  !isTranslating &&
+                  translationResults.length === 0 && (
+                    <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                          <p className="text-sm text-red-800 dark:text-red-200 font-medium mb-1">
+                            Translation Failed
+                          </p>
+
+                          <p className="text-xs text-red-600 dark:text-red-400">
+                            💡 Try selecting a different AI model from settings
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 <TranslationResults />
               </div>
             </div>

@@ -97,11 +97,10 @@ const PublicDocumentViewer: React.FC<PublicDocumentViewerProps> = ({
     ensurePortalContainer("navbar");
     ensurePortalContainer("toolbar-container");
     ensurePortalContainer("counter");
-    ensurePortalContainer("settings");
 
     return () => {
       // Cleanup on unmount
-      const containers = ["navbar", "toolbar-container", "counter", "settings"];
+      const containers = ["navbar", "toolbar-container", "counter"];
       containers.forEach((id) => {
         const element = window.document.getElementById(id);
         if (element && element.parentNode) {
@@ -181,10 +180,6 @@ const PublicDocumentViewer: React.FC<PublicDocumentViewerProps> = ({
                 selectedTranslationId={selectedTranslationId}
               />,
               window.document.getElementById("navbar")!
-            )}
-            {createPortal(
-              <SettingsButton />,
-              window.document.getElementById("settings")!
             )}
 
             {/* Main editor container - exactly like DocumentWrapper */}

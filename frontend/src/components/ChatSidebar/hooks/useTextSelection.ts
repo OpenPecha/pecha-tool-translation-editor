@@ -22,32 +22,28 @@ export const useTextSelection = () => {
 
   // Function to get selected text from the DOM (only from main editor)
   const getSelectedText = useCallback(() => {
+    // Get the first editor from quillEditors map, if it exists
+    const firstQuillEntry =
+      quillEditors && quillEditors.size > 0
+        ? Array.from(quillEditors.values())[0]
+        : null;
+    const EditorElement = firstQuillEntry?.root;
     const selection = globalThis.getSelection();
-    if (selection?.toString().trim()) {
-      // Check if selection is from the main editor (not from sidebar or other elements)
-      const range = selection.getRangeAt(0);
-      const container = range.commonAncestorContainer;
 
-      // Find the closest editor container
-      let element =
-        container.nodeType === Node.TEXT_NODE
-          ? container.parentElement
-          : (container as Element);
-      while (element) {
-        // Look for editor-specific classes or data attributes
-        if (
-          element.classList?.contains("ql-editor") ||
-          element.classList?.contains("ProseMirror") ||
-          element.closest(".editor-container") ||
-          element.closest('[data-editor="main"]')
-        ) {
-          return selection.toString().trim();
-        }
-        // Don't allow selection from translation sidebar
-        if (element.closest("[data-translation-sidebar]")) {
-          return "";
-        }
-        element = element.parentElement;
+    if (
+      selection &&
+      selection.rangeCount > 0 &&
+      EditorElement &&
+      selection.toString().trim()
+    ) {
+      const range = selection.getRangeAt(0);
+
+      // Only allow selection if both endpoints are inside the EditorElement
+      if (
+        EditorElement.contains(range.startContainer) &&
+        EditorElement.contains(range.endContainer)
+      ) {
+        return selection.toString().trim();
       }
     }
     return "";

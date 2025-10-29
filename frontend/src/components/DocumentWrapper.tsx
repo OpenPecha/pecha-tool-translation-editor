@@ -128,7 +128,6 @@ function DocumentsWrapper() {
         <Navbar project={project} />,
         document.getElementById("navbar")!
       )}
-      {createPortal(<SettingsButton />, document.getElementById("settings")!)}
 
       {/* Main editor container - uses CSS Grid for better layout control */}
       <div className="grid grid-rows-[1fr] h-full">

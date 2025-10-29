@@ -250,7 +250,7 @@ const MetadataContent = ({ documentId }: { documentId: string }) => {
 };
 
 const DocumentSidebar: React.FC<DocumentSidebarProps> = ({ documentId }) => {
-  const [activeTab, setActiveTab] = useState<string | null>("toc");
+  const [activeTab, setActiveTab] = useState<string | null>(null);
 
   const toggleTab = (tabValue: string) => {
     setActiveTab(activeTab === tabValue ? null : tabValue);
