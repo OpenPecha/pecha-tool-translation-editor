@@ -105,24 +105,18 @@ function getArrayIndexForLogicalLine(
 	return mapping.get(logicalLineNumber) ?? -1;
 }
 
-/**
- * Overwrites AI-generated translations into the translation editor at their specific logical line numbers
- *
- * IMPORTANT: This function uses LOGICAL line numbering, which means:
- * - Only non-empty lines are counted for line numbering (consistent with LineNumbers component)
- * - Blank lines ("") are preserved in their exact positions and never overwritten
- * - Translation line numbers refer to the Nth non-empty line, not array indices
- *
- * Example:
- * Editor content: ["Hello", "", "World", "", "Test"]
- * Logical lines:  [1=Hello, 2=World, 3=Test] (blanks are skipped)
- * Translation for logical line 2 will overwrite "World", not the first blank line
- *
- * @param targetEditor - The Quill editor instance to modify
- * @param translationResults - Array of translation results with logical line number mappings
- * @param options - Configuration options for the overwrite behavior
- * @returns Result object with success status and details
- */
+function getCharacterIndexForLine(lineIndex: number, lines: string[]): number {
+	let characterIndex = 0;
+	for (let i = 0; i < lineIndex && i < lines.length; i++) {
+		characterIndex += lines[i].length + 1; // +1 for newline character
+	}
+	return characterIndex;
+}
+
+function getMaxLogicalLines(lines: string[]): number {
+	return lines.filter(line => line.trim() !== "").length;
+}
+
 export function overwriteAllTranslations(
 	targetEditor: Quill,
 	translationResults: TranslationResult[],
@@ -175,6 +169,9 @@ export function overwriteAllTranslations(
 		};
 	}
 
+	// Import Delta class for delta operations
+	const Delta = Quill.import("delta");
+
 	// Get current editor content
 	const currentText = targetEditor.getText();
 	const currentLines = currentText.split("\n");
@@ -192,138 +189,114 @@ export function overwriteAllTranslations(
 		currentLines.length <= 1 &&
 		(currentLines[0] === "" || currentLines[0]?.trim() === "");
 
-	// Create target lines array
-	const targetLines: string[] = [];
+	// Create a batch delta for all changes to preserve formatting
+	let batchDelta = new Delta();
+	let linesOverwritten = 0;
 	let placeholdersAdded = 0;
+	let lastInsertedCharacterIndex = -1;
 
-	if (isEditorEmpty) {
-		// For empty editor: Create minimal array to accommodate logical line numbers
-		// Since we're starting with an empty editor, logical line positions map directly to array indices
-		// We only need to create as many lines as the highest logical line number
+	// Handle empty editor case - need to create content structure
+	if (isEditorEmpty && maxLineNumber > 0) {
+		// For empty editor, create the initial structure with placeholders
+		let initialContent = "";
 		for (let i = 0; i < maxLineNumber; i++) {
-			targetLines[i] = placeholder;
+			if (i > 0) initialContent += "\n";
+			initialContent += placeholder;
 			if (placeholder !== "") {
 				placeholdersAdded++;
 			}
 		}
-	} else {
-		// For non-empty editor: Preserve ALL existing content exactly as is
-		// We don't need to extend beyond current content since we're mapping logical lines
-		for (let i = 0; i < currentLines.length; i++) {
-			// Use existing content - preserve all lines (including blank lines) exactly as they are
-			targetLines[i] = currentLines[i];
-		}
+		// Insert initial structure
+		batchDelta = batchDelta.insert(initialContent);
+		
+		// Update currentLines to reflect the new structure
+		currentLines.length = 0;
+		currentLines.push(...initialContent.split("\n"));
 	}
 
-	// Overwrite only the specific lines with translation results
-	// Note: lineNumber refers to logical line numbers (counting only non-empty content)
-	let linesOverwritten = 0;
-	let lastInsertedLineIndex = -1; // Track the last line where we inserted content
+	// Sort translations by logical line number to process them in order
+	const sortedTranslations = Array.from(lineTranslations.entries()).sort((a, b) => a[0] - b[0]);
 
-	lineTranslations.forEach((translatedText, logicalLineNumber) => {
+	// Process each translation using delta operations
+	for (const [logicalLineNumber, translatedText] of sortedTranslations) {
 		// Map logical line number to actual array index
-		const arrayIndex = getArrayIndexForLogicalLine(
-			logicalLineNumber,
-			targetLines,
-		);
+		const arrayIndex = getArrayIndexForLogicalLine(logicalLineNumber, currentLines);
 
-		if (arrayIndex >= 0 && arrayIndex < targetLines.length) {
+		if (arrayIndex >= 0 && arrayIndex < currentLines.length) {
 			// Only overwrite if the target line is not a deliberate blank line
-			// (blank lines in targetLines would be empty strings "", not whitespace-only)
-			const currentLine = targetLines[arrayIndex];
+			const currentLine = currentLines[arrayIndex];
 			if (currentLine.trim() !== "") {
+				// Calculate character position for this line
+				const lineStartIndex = getCharacterIndexForLine(arrayIndex, currentLines);
+				const lineLength = currentLine.length;
+
 				// Flatten multi-line translations to maintain line count
 				const flattenedText = flattenTranslation(translatedText);
-				targetLines[arrayIndex] = flattenedText;
+
+				// Create delta operation to replace this line while preserving formatting
+				const lineDelta = new Delta()
+					.retain(lineStartIndex) // Keep everything before this line
+					.delete(lineLength) // Delete the current line content
+					.insert(flattenedText); // Insert the new translation
+
+				// Apply this delta operation
+				targetEditor.updateContents(lineDelta, "user");
+
+				// Update our tracking
+				currentLines[arrayIndex] = flattenedText;
 				linesOverwritten++;
-				lastInsertedLineIndex = arrayIndex;
+				lastInsertedCharacterIndex = lineStartIndex + flattenedText.length;
 			} else {
 				console.warn(
 					`Logical line ${logicalLineNumber} maps to a blank line (index ${arrayIndex}), skipping overwrite to preserve blank line`,
 				);
 			}
-		} else {
+		} else if (logicalLineNumber > getMaxLogicalLines(currentLines)) {
 			// Line number is higher than existing content - need to extend the editor
-			if (isEditorEmpty) {
-				// In empty editor, we can safely add content at the logical line position
-				// Extend targetLines if necessary to accommodate the translation
-				while (targetLines.length < logicalLineNumber) {
-					targetLines.push(placeholder);
-					if (placeholder !== "") {
-						placeholdersAdded++;
-					}
-				}
-				// Place translation at the correct logical position (convert to 0-based index)
-				const targetIndex = logicalLineNumber - 1;
-				if (targetIndex >= 0) {
-					const flattenedText = flattenTranslation(translatedText);
-					targetLines[targetIndex] = flattenedText;
-					linesOverwritten++;
-					lastInsertedLineIndex = targetIndex;
-				}
-			} else {
-				// For non-empty editor, we need to extend with placeholders to reach the target logical line
-				// First, count how many logical lines we currently have
-				const currentLogicalLines =
-					createLogicalLineToIndexMapping(targetLines).size;
+			const currentLogicalLines = getMaxLogicalLines(currentLines);
+			const linesNeeded = logicalLineNumber - currentLogicalLines;
 
-				// If the target logical line number is higher than what we have, extend the editor
-				if (logicalLineNumber > currentLogicalLines) {
-					// Add placeholders until we can accommodate the target logical line
-					while (
-						createLogicalLineToIndexMapping(targetLines).size <
-						logicalLineNumber
-					) {
-						targetLines.push(placeholder);
-						if (placeholder !== "") {
-							placeholdersAdded++;
-						}
-					}
+			// Calculate where to insert new content (at the end)
+			const endPosition = targetEditor.getLength() - 1; // -1 to account for Quill's trailing newline
 
-					// Now try to map the logical line number again
-					const newArrayIndex = getArrayIndexForLogicalLine(
-						logicalLineNumber,
-						targetLines,
-					);
-					if (newArrayIndex >= 0 && newArrayIndex < targetLines.length) {
-						const flattenedText = flattenTranslation(translatedText);
-						targetLines[newArrayIndex] = flattenedText;
-						linesOverwritten++;
-						lastInsertedLineIndex = newArrayIndex;
-					}
-				} else {
-					console.warn(
-						`Logical line number ${logicalLineNumber} could not be mapped to array index in non-empty editor`,
-					);
+			// Create content to extend the editor
+			let extensionContent = "";
+			for (let i = 0; i < linesNeeded - 1; i++) {
+				extensionContent += "\n" + placeholder;
+				if (placeholder !== "") {
+					placeholdersAdded++;
 				}
 			}
+
+			// Add the final line with the translation
+			const flattenedText = flattenTranslation(translatedText);
+			extensionContent += "\n" + flattenedText;
+
+			// Create delta to extend the editor
+			const extensionDelta = new Delta()
+				.retain(endPosition)
+				.insert(extensionContent);
+
+			// Apply the extension
+			targetEditor.updateContents(extensionDelta, "user");
+
+			// Update our tracking
+			currentLines.push(...extensionContent.substring(1).split("\n")); // Remove first \n
+			linesOverwritten++;
+			lastInsertedCharacterIndex = endPosition + extensionContent.length;
+		} else {
+			console.warn(
+				`Logical line number ${logicalLineNumber} could not be mapped to array index`,
+			);
 		}
-	});
+	}
 
-	// Set the new text content while preserving line count
-	const newContent = targetLines.join("\n");
-	targetEditor.setText(newContent, "user");
-
-	// Focus the editor and position cursor at the end of the inserted translation
+	// Focus the editor and position cursor at the end of the last inserted translation
 	targetEditor.focus();
 
-	if (
-		lastInsertedLineIndex >= 0 &&
-		lastInsertedLineIndex < targetLines.length
-	) {
-		// Calculate the cursor position at the end of the inserted line
-		let cursorPosition = 0;
-
-		// Add the length of all lines before the inserted line (including newlines)
-		for (let i = 0; i < lastInsertedLineIndex; i++) {
-			cursorPosition += targetLines[i].length + 1; // +1 for the newline character
-		}
-
-		// Add the length of the inserted line itself
-		cursorPosition += targetLines[lastInsertedLineIndex].length;
-
-		// Set cursor at the end of the inserted translation
-		targetEditor.setSelection(cursorPosition, 0);
+	if (lastInsertedCharacterIndex >= 0) {
+		// Set cursor at the end of the last inserted translation
+		targetEditor.setSelection(lastInsertedCharacterIndex, 0);
 	} else {
 		// Fallback: position cursor at the end of the document
 		const finalLength = targetEditor.getLength();
