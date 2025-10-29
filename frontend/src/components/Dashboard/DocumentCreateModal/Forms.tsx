@@ -4,140 +4,243 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import TextUploader from "./TextUploader";
 import MetaDataInput from "./MetaDataInput";
 import { createProject } from "@/api/project";
+import { createDocumentWithContent } from "@/api/document";
 import { OpenPechaTextLoader } from "./OpenPechaTextLoader";
 import { ErrorDisplay, FormSection } from "@/components/shared/modals";
 import { DEFAULT_LANGUAGE_SELECTED } from "@/config";
 import { useTranslate } from "@tolgee/react";
 
 export type SelectedPechaType = {
-	id: string;
-	type: string;
-	language: string;
-	title: string;
+  id: string;
+  type: string;
+  language: string;
+  title: string;
 };
 
 export function NewPechaForm({
-	projectName,
-	closeModal,
-	onValidationChange,
-	onCreateProject,
+  projectName,
+  closeModal,
+  onValidationChange,
+  onCreateProject,
 }: {
-	readonly projectName: string;
-	readonly closeModal: () => void;
-	readonly onValidationChange?: (isValid: boolean) => void;
-	readonly onCreateProject?: React.MutableRefObject<(() => void) | null>;
+  readonly projectName: string;
+  readonly closeModal: () => void;
+  readonly onValidationChange?: (isValid: boolean) => void;
+  readonly onCreateProject?: React.MutableRefObject<(() => void) | null>;
 }) {
-	const [error, setError] = useState("");
-	const [selectedLanguage, setSelectedLanguage] = useState<string>(
-		DEFAULT_LANGUAGE_SELECTED,
-	);
-	const [rootId, setRootId] = useState<string | null>(null);
-	const [metadata, setMetadata] = useState<Record<string, unknown> | null>(
-		null,
-	);
-	const queryClient = useQueryClient();
-	const { t } = useTranslate();
+  const [error, setError] = useState("");
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(
+    DEFAULT_LANGUAGE_SELECTED
+  );
+  const [rootId, setRootId] = useState<string | null>(null);
+  const [metadata, setMetadata] = useState<Record<string, unknown> | null>(
+    null
+  );
+  const queryClient = useQueryClient();
+  const { t } = useTranslate();
 
-	// Notify parent about validation state
-	const isValid = !!(rootId && selectedLanguage && selectedLanguage !== "");
+  // Notify parent about validation state
+  const isValid = !!(rootId && selectedLanguage && selectedLanguage !== "");
 
-	React.useEffect(() => {
-		onValidationChange?.(isValid);
-	}, [isValid, onValidationChange]);
+  React.useEffect(() => {
+    onValidationChange?.(isValid);
+  }, [isValid, onValidationChange]);
 
-	const createProjectMutation = useMutation({
-		mutationFn: () => {
-			if (!projectName) {
-				throw new Error("Project name is required");
-			}
-			return createProject({
-				name: projectName,
-				identifier: projectName.toLowerCase().replace(/\s+/g, "-"),
-				rootId: rootId ?? undefined,
-				metadata: metadata ?? undefined,
-			});
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["projects"] });
-			closeModal();
-		},
-		onError: (error: Error) => {
-			setError(error.message || "Failed to create project");
-		},
-	});
+  const createProjectMutation = useMutation({
+    mutationFn: () => {
+      if (!projectName) {
+        throw new Error("Project name is required");
+      }
+      return createProject({
+        name: projectName,
+        identifier: projectName.toLowerCase().replace(/\s+/g, "-"),
+        rootId: rootId ?? undefined,
+        metadata: metadata ?? undefined,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      closeModal();
+    },
+    onError: (error: Error) => {
+      setError(error.message || "Failed to create project");
+    },
+  });
 
-	const handleCreateProject = React.useCallback(() => {
-		if (!projectName) {
-			setError("Project name is required");
-			return;
-		}
-		setError(""); // Clear any previous errors
-		createProjectMutation.mutate();
-	}, [projectName, createProjectMutation]);
+  const handleCreateProject = React.useCallback(() => {
+    if (!projectName) {
+      setError("Project name is required");
+      return;
+    }
+    setError(""); // Clear any previous errors
+    createProjectMutation.mutate();
+  }, [projectName, createProjectMutation]);
 
-	// Expose the create function to parent
-	React.useEffect(() => {
-		if (onCreateProject) {
-			// Replace the onCreateProject prop with our handleCreateProject
-			(onCreateProject as React.MutableRefObject<(() => void) | null>).current =
-				handleCreateProject;
-		}
-	}, [handleCreateProject, onCreateProject]);
+  // Expose the create function to parent
+  React.useEffect(() => {
+    if (onCreateProject) {
+      // Replace the onCreateProject prop with our handleCreateProject
+      (onCreateProject as React.MutableRefObject<(() => void) | null>).current =
+        handleCreateProject;
+    }
+  }, [handleCreateProject, onCreateProject]);
 
-	return (
-		<div className="space-y-8">
-			<ErrorDisplay error={error} />
-			<SelectLanguage
-				setSelectedLanguage={setSelectedLanguage}
-				selectedLanguage={selectedLanguage}
-			/>
+  return (
+    <div className="space-y-8">
+      <ErrorDisplay error={error} />
+      <SelectLanguage
+        setSelectedLanguage={setSelectedLanguage}
+        selectedLanguage={selectedLanguage}
+      />
 
-			{selectedLanguage && (
-				<>
-					<TextUploader
-						isRoot={true}
-						isPublic={false}
-						selectedLanguage={selectedLanguage}
-						setRootId={setRootId}
-						disable={!selectedLanguage || selectedLanguage === ""}
-					/>
+      {selectedLanguage && (
+        <>
+          <TextUploader
+            isRoot={true}
+            isPublic={false}
+            selectedLanguage={selectedLanguage}
+            setRootId={setRootId}
+            disable={!selectedLanguage || selectedLanguage === ""}
+          />
 
-					{rootId && (
-						<FormSection
-							title={t("projects.additionalInformation")}
-							description={t("projects.ExtraMetadata")}
-						>
-							<MetaDataInput
-								setMetadata={setMetadata}
-								disable={
-									!rootId || !selectedLanguage || selectedLanguage === ""
-								}
-							/>
-						</FormSection>
-					)}
-				</>
-			)}
-		</div>
-	);
+          {rootId && (
+            <FormSection
+              title={t("projects.additionalInformation")}
+              description={t("projects.ExtraMetadata")}
+            >
+              <MetaDataInput
+                setMetadata={setMetadata}
+                disable={
+                  !rootId || !selectedLanguage || selectedLanguage === ""
+                }
+              />
+            </FormSection>
+          )}
+        </>
+      )}
+    </div>
+  );
 }
 
 export function PechaFromOpenPecha({
-	projectName,
-	closeModal,
-	onValidationChange,
-	onCreateProject,
+  projectName,
+  closeModal,
+  onValidationChange,
+  onCreateProject,
 }: {
-	readonly projectName: string;
-	readonly closeModal: () => void;
-	readonly onValidationChange?: (isValid: boolean) => void;
-	readonly onCreateProject?: React.MutableRefObject<(() => void) | null>;
+  readonly projectName: string;
+  readonly closeModal: () => void;
+  readonly onValidationChange?: (isValid: boolean) => void;
+  readonly onCreateProject?: React.MutableRefObject<(() => void) | null>;
 }) {
-	return (
-		<OpenPechaTextLoader
-			projectName={projectName}
-			closeModal={closeModal}
-			onValidationChange={onValidationChange}
-			onCreateProject={onCreateProject}
-		/>
-	);
+  return (
+    <OpenPechaTextLoader
+      projectName={projectName}
+      closeModal={closeModal}
+      onValidationChange={onValidationChange}
+      onCreateProject={onCreateProject}
+    />
+  );
+}
+
+export function EmptyTextForm({
+  projectName,
+  closeModal,
+  onValidationChange,
+  onCreateProject,
+}: {
+  readonly projectName: string;
+  readonly closeModal: () => void;
+  readonly onValidationChange?: (isValid: boolean) => void;
+  readonly onCreateProject?: React.MutableRefObject<(() => void) | null>;
+}) {
+  const [error, setError] = useState("");
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(
+    DEFAULT_LANGUAGE_SELECTED
+  );
+  const queryClient = useQueryClient();
+  const { t } = useTranslate();
+
+  // Valid if language is selected
+  const isValid = !!(selectedLanguage && selectedLanguage !== "");
+
+  React.useEffect(() => {
+    onValidationChange?.(isValid);
+  }, [isValid, onValidationChange]);
+
+  const createProjectMutation = useMutation({
+    mutationFn: async () => {
+      if (!projectName) throw new Error("Project name is required");
+
+      // Create empty document first
+      const formData = new FormData();
+      formData.append("name", projectName);
+      formData.append(
+        "identifier",
+        projectName.toLowerCase().replace(/\s+/g, "-")
+      );
+      formData.append("isRoot", "true");
+      formData.append("isPublic", "false");
+      formData.append("language", selectedLanguage);
+      formData.append("content", ""); // Empty content
+
+      const documentResponse = await createDocumentWithContent(formData);
+      if (!documentResponse?.id) {
+        throw new Error("Failed to create document");
+      }
+
+      // Create project with empty document as root
+      return createProject({
+        name: projectName,
+        identifier: projectName.toLowerCase().replace(/\s+/g, "-"),
+        rootId: documentResponse.id,
+        metadata: {
+          source: "empty",
+          language: selectedLanguage,
+        },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      closeModal();
+    },
+    onError: (error: Error) => {
+      setError(error.message || "Failed to create project");
+    },
+  });
+
+  const handleCreateProject = React.useCallback(() => {
+    if (!projectName) {
+      setError("Project name is required");
+      return;
+    }
+    if (!selectedLanguage || selectedLanguage === "") {
+      setError("Please select a language");
+      return;
+    }
+    setError("");
+    createProjectMutation.mutate();
+  }, [projectName, selectedLanguage, createProjectMutation]);
+
+  React.useEffect(() => {
+    if (onCreateProject) {
+      (onCreateProject as React.MutableRefObject<(() => void) | null>).current =
+        handleCreateProject;
+    }
+  }, [handleCreateProject, onCreateProject]);
+
+  return (
+    <div className="space-y-8">
+      <ErrorDisplay error={error} />
+      <SelectLanguage
+        setSelectedLanguage={setSelectedLanguage}
+        selectedLanguage={selectedLanguage}
+      />
+      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+        <p className="text-sm text-blue-800 dark:text-blue-200">
+          {t("projects.emptyTextInfo")}
+        </p>
+      </div>
+    </div>
+  );
 }

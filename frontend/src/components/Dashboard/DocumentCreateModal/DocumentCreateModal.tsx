@@ -3,14 +3,14 @@ import { BaseModal } from "@/components/shared/modals/BaseModal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { NewPechaForm, PechaFromOpenPecha } from "./Forms";
+import { NewPechaForm, PechaFromOpenPecha, EmptyTextForm } from "./Forms";
 import { useTranslate } from "@tolgee/react";
 import PlusIcon from "@/assets/plus.svg";
-import { ChevronLeft, ChevronRight, File } from "lucide-react";
+import { ChevronLeft, ChevronRight, File, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TbApi } from "react-icons/tb";
 
-export type UploadMethod = "file" | "openpecha";
+export type UploadMethod = "file" | "openpecha" | "empty";
 
 export type AvailableMethodType = {
   type: UploadMethod;
@@ -97,6 +97,11 @@ function MethodSelection({
       icon: <TbApi size={24} />,
       title: t("common.openpecha"),
       description: t("projects.importFromOpenPechaRepository"),
+    },
+    empty: {
+      icon: <FileText size={24} />,
+      title: t("common.emptyText"),
+      description: t("projects.startWithEmptyDocument"),
     },
   };
 
@@ -236,6 +241,7 @@ function DocumentCreateModal() {
   const availableMethods: AvailableMethodType[] = [
     { type: "file", label: t("common.file"), isDisabled: false },
     { type: "openpecha", label: t("common.openpecha"), isDisabled: false },
+    { type: "empty", label: t("common.emptyText"), isDisabled: false },
   ];
 
   const trigger = (
@@ -325,6 +331,14 @@ function DocumentCreateModal() {
             )}
             {selectedMethod === "openpecha" && (
               <PechaFromOpenPecha
+                projectName={projectName}
+                closeModal={closeModal}
+                onValidationChange={handleValidationChange}
+                onCreateProject={createProjectRef}
+              />
+            )}
+            {selectedMethod === "empty" && (
+              <EmptyTextForm
                 projectName={projectName}
                 closeModal={closeModal}
                 onValidationChange={handleValidationChange}
