@@ -1,13 +1,13 @@
 import React from "react";
 import { User, Mail, Calendar, Shield } from "lucide-react";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/auth/use-auth-hook";
 import AvatarWrapper from "@/components/ui/custom-avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 const UserProfile: React.FC = () => {
-	const { t } = useTranslate();
+	const { t } = useTranslation();
 	const { currentUser, isAuthenticated } = useAuth();
 
 	if (!isAuthenticated || !currentUser) {

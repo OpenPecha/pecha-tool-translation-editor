@@ -1,4 +1,4 @@
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 import { Edit, MoreVertical, Trash2 } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
@@ -26,7 +26,7 @@ const TranslationMenu: React.FC<TranslationMenuProps> = ({
   onModalOpenChange,
 }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const { t } = useTranslate();
+  const { t } = useTranslation();
 
   const handleEditClick = (e: React.MouseEvent) => {
     e.stopPropagation();

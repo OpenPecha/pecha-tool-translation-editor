@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
 import OpenPecha from "@/assets/icon.png";
 import { HelpCircle } from "lucide-react";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 
 export default function Footer() {
-	const { t } = useTranslate();
+	const { t } = useTranslation();
 	return (
 		<div className="bg-neutral-100 dark:bg-neutral-700 p-4">
 			<div className="flex items-center justify-between gap-4">

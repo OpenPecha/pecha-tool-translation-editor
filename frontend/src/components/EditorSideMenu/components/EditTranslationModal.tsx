@@ -11,7 +11,7 @@ import {
 import { languages } from "@/utils/Constants";
 import { Translation } from "../../DocumentWrapper";
 import { BaseModal } from "@/components/shared/modals";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 
 interface EditTranslationModalProps {
 	translation: Translation;
@@ -30,7 +30,7 @@ const EditTranslationModal: React.FC<EditTranslationModalProps> = ({
 	const [language, setLanguage] = useState("");
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
-	const { t } = useTranslate();
+	const { t } = useTranslation();
 	// Initialize form values when modal opens
 	useEffect(() => {
 		if (isOpen) {

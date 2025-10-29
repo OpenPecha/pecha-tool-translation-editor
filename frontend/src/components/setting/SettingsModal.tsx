@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 import SyncOptions from "./SyncOptions";
 import ApiCredentials from "./ApiCredentials";
 import UserProfile from "./UserProfile";
@@ -29,7 +29,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 	rootId,
 	translationId,
 }) => {
-	const { t } = useTranslate();
+	const { t } = useTranslation();
 	const { isAuthenticated } = useAuth();
 	const { getQuill } = useEditor();
 	// Get Quill instances for sync functionality (only in dual editor mode)

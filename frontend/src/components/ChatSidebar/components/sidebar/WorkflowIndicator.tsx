@@ -1,4 +1,4 @@
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 import {
   Languages,
   BookOpen,
@@ -32,7 +32,7 @@ const WorkflowIndicator: React.FC<WorkflowIndicatorProps> = ({
   currentStatus,
   progressPercent = 0,
 }) => {
-  const { t } = useTranslate();
+  const { t } = useTranslation();
 
   const steps = [
     {

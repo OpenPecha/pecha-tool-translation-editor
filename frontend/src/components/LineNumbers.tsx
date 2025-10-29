@@ -13,7 +13,7 @@ import { useEditor } from "@/contexts/EditorContext";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { FaBookmark, FaChevronUp, FaChevronDown } from "react-icons/fa";
 import { createPortal } from "react-dom";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 
 const offsetTop = 0;
 
@@ -26,7 +26,7 @@ const LineNumberVirtualized = ({
   editorRef,
   documentId,
 }: LineNumberVirtualizedProps) => {
-  const { t } = useTranslate();
+  const { t } = useTranslation();
   const lineNumbersRef = useRef<HTMLDivElement>(null);
   const { getQuill, activeEditor } = useEditor();
   const observerRef = useRef<IntersectionObserver | null>(null);

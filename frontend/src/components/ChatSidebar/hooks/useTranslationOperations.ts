@@ -6,7 +6,7 @@ import {
   performStreamingTranslation,
   TranslationStreamEvent,
 } from "@/api/translate";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 
 export interface TranslationConfig {
   targetLanguage: TargetLanguage;
@@ -67,7 +67,7 @@ export const useTranslationOperations = ({
   // Refs
   const abortControllerRef = useRef<AbortController | null>(null);
   const currentSegmentIndexRef = useRef<number>(0);
-  const { t } = useTranslate();
+  const { t } = useTranslation();
   // Helper functions
   const updateProgress = (percent: number | null, text: string) => {
     if (percent !== null) {

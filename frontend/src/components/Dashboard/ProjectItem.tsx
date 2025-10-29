@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { BiRename } from "react-icons/bi";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 
 interface ProjectItemProps {
 	title: string;
@@ -189,7 +189,7 @@ function ProjectItemDropdownMenu({
 		}
 		setOpen(false);
 	};
-	const { t } = useTranslate();
+	const { t } = useTranslation();
 	return (
 		<DropdownMenu open={open} onOpenChange={setOpen}>
 			<DropdownMenuTrigger asChild>

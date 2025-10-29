@@ -6,14 +6,14 @@ import { useAuth } from "@/auth/use-auth-hook";
 import AppLauncher from "@/components/Applauncher";
 import DocIcon from "@/assets/doc_icon.png";
 import ProfileArea from "@/components/ProfileArea";
-import { useTolgee } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 const Navbar = () => {
 	const { login, isAuthenticated } = useAuth();
-	const tolgee = useTolgee();
-	const currentLanguage = tolgee.getLanguage();
+	const { i18n } = useTranslation();
+	const currentLanguage = i18n.language;
 
 	return (
-		<nav className="  px-6 py-2 flex justify-between items-center">
+		<nav className={`${currentLanguage === "bo" && " leading-[normal]"} px-6 py-2 flex justify-between items-center`}>
 			<div className="flex gap-2">
 				<NavSidebar />
 				<Link

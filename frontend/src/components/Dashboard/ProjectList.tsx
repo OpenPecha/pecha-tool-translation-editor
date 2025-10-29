@@ -7,7 +7,7 @@ import EachProject from "./EachProject";
 import { useAuth } from "@/auth/use-auth-hook";
 import { FaSpinner } from "react-icons/fa";
 import { useSearchStore } from "@/stores/searchStore";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 import {
   categorizeProjectsByTime,
   getCategoryTitle,
@@ -24,7 +24,7 @@ import PublicProjects from "./PublicProjects";
 import { useSearchParams } from "react-router-dom";
 
 const ProjectList = () => {
-  const { t } = useTranslate();
+  const { t } = useTranslation();
   const [param, setParam] = useSearchParams();
   const ftv = param.get("ftv");
 

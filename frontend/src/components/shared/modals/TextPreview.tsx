@@ -4,7 +4,7 @@ import { CheckCircle, AlertCircle } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { createDocument } from "@/api/document";
 import { ModalFooter, ErrorDisplay } from "@/components/shared/modals";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 
 interface TextPreviewProps {
 	file: File;
@@ -26,7 +26,7 @@ export function TextPreview({
 	refetchTranslations,
 }: TextPreviewProps) {
 	const [error, setError] = useState("");
-	const { t } = useTranslate();
+	const { t } = useTranslation();
 
 	const createTranslationMutation = useMutation({
 		mutationFn: async () => {

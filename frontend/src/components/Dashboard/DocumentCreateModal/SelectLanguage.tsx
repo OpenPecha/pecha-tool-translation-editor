@@ -1,6 +1,6 @@
 import { memo, useCallback } from "react";
 import { languages } from "@/utils/Constants";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 import { SearchableDropdown } from "./SearchableDropdown";
 
 function SelectLanguage({
@@ -10,7 +10,7 @@ function SelectLanguage({
 	readonly selectedLanguage: string;
 	readonly setSelectedLanguage: (language: string) => void;
 }) {
-	const { t } = useTranslate();
+	const { t } = useTranslation();
 	const handleChange = useCallback(
 		(value: string) => {
 			setSelectedLanguage(value);

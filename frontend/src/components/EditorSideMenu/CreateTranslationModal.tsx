@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { createDocument } from "@/api/document";
 import SelectLanguage from "../Dashboard/DocumentCreateModal/SelectLanguage";
 import TextUploader from "../Dashboard/DocumentCreateModal/TextUploader";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 import {
   BaseModal,
   UploadMethodTabs,
@@ -31,7 +31,7 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [fileContent, setFileContent] = useState<string>("");
   const [showPreview, setShowPreview] = useState(false);
-  const { t } = useTranslate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (translationId) {
@@ -152,7 +152,7 @@ const EmptyDocumentCreator = ({
 }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string>("");
-  const { t } = useTranslate();
+  const { t } = useTranslation();
   const createEmptyTranslationMutation = useMutation({
     mutationFn: async () => {
       const formData = new FormData();

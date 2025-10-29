@@ -4,7 +4,7 @@ import { QueryObserverResult, useMutation } from "@tanstack/react-query";
 import { createDocument } from "@/api/document";
 import { MAX_FILE_SIZE, MAX_FILE_SIZE_MB } from "@/utils/Constants";
 import { AlertCircle, FileText, Upload } from "lucide-react";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 
 const TextUploader = ({
 	isRoot,
@@ -30,7 +30,7 @@ const TextUploader = ({
 	const [file, setFile] = useState<File | null>(null);
 	const [fileContent, setFileContent] = useState<string>("");
 	const [fileSizeError, setFileSizeError] = useState<string>("");
-	const { t } = useTranslate();
+	const { t } = useTranslation();
 
 	const uploadMutation = useMutation({
 		mutationFn: async (file: File) => {

@@ -4,7 +4,6 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import DocumentsWrapper from "./components/DocumentWrapper";
 import PublicDocumentViewer from "./components/PublicDocumentViewer";
-import TolgeeProvider, { useCurrentLanguage } from "./contexts/TolgeeContext";
 import { UserbackProvider } from "./contexts/UserbackProvider";
 import Documentation from "./documentation/Documentation";
 import Callback from "./pages/Callback";
@@ -13,6 +12,8 @@ import Logout from "./pages/Logout";
 import { Layout, SuspenceWithLoadingFallback } from "./pages/layout";
 import { AuthProvider } from "./auth/AuthProvider";
 import { TooltipProvider } from "./components/ui/tooltip";
+import "./i18n";
+import { useTranslation } from "react-i18next";
 
 const ProjectList = lazy(() => import("./components/Dashboard/ProjectList"));
 const QuillVersionProvider = lazy(() =>
@@ -30,7 +31,9 @@ const queryClient = new QueryClient({
 });
 
 function AppContent() {
-  const currentLanguage = useCurrentLanguage();
+  const { i18n } = useTranslation();
+  const currentLanguage = i18n.language;
+
   return (
     <div
       className={`flex s flex-col h-full ${
@@ -79,18 +82,16 @@ function AppContent() {
 
 function App() {
   return (
-    <TolgeeProvider>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <UserbackProvider>
-            <TooltipProvider>
-              <AppContent />
-            </TooltipProvider>
-          </UserbackProvider>
-        </AuthProvider>
-      </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <UserbackProvider>
+          <TooltipProvider>
+            <AppContent />
+          </TooltipProvider>
+        </UserbackProvider>
+      </AuthProvider>
       <Toaster />
-    </TolgeeProvider>
+    </QueryClientProvider>
   );
 }
 
