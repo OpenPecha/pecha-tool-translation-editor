@@ -1,7 +1,7 @@
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 
 import { File } from "lucide-react";
 import { MdApi } from "react-icons/md";
@@ -31,7 +31,7 @@ export function UploadMethodTabs({
 	availableMethods,
 	className,
 }: UploadMethodTabsProps) {
-	const { t } = useTranslate();
+	const { t } = useTranslation();
 
 	const tabConfigs: Record<UploadMethod, TabConfig> = {
 		empty: {

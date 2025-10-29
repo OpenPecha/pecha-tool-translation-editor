@@ -1,9 +1,4 @@
-import {
-	useTranslate,
-	useSetLanguage,
-	useCurrentLanguage,
-	Language,
-} from "@/contexts/TolgeeContext";
+import { useTranslation } from "react-i18next";
 import {
 	Select,
 	SelectContent,
@@ -11,16 +6,25 @@ import {
 	SelectTrigger,
 } from "@/components/ui/select";
 import { i18n_languages } from "@/utils/Constants";
-import { useTolgee } from "@tolgee/react";
+import { Language, setStoredLanguage, AVAILABLE_LANGUAGES } from "../i18n/index";
 
 const LanguageSwitcher = () => {
-	const { t } = useTranslate();
-	const changeLanguage = useSetLanguage();
-	const currentLanguage = useCurrentLanguage();
-	const tolgee = useTolgee();
-	const isLoading = tolgee.isLoading();
+	const { t, i18n } = useTranslation();
+	const currentLanguage = i18n.language as Language;
+	const isLoading = false; // react-i18next doesn't have loading state like Tolgee
+	
 	const setLang = async (lng: Language) => {
-		changeLanguage(lng);
+		if (!AVAILABLE_LANGUAGES.includes(lng)) {
+			console.warn(`Language "${lng}" is not available`);
+			return;
+		}
+		
+		try {
+			await i18n.changeLanguage(lng);
+			setStoredLanguage(lng);
+		} catch (error) {
+			console.error("Failed to change language:", error);
+		}
 	};
 
 	const selectedLanguage =

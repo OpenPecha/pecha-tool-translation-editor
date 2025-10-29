@@ -8,7 +8,7 @@ import { createDocumentWithContent } from "@/api/document";
 import { OpenPechaTextLoader } from "./OpenPechaTextLoader";
 import { ErrorDisplay, FormSection } from "@/components/shared/modals";
 import { DEFAULT_LANGUAGE_SELECTED } from "@/config";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 
 export type SelectedPechaType = {
   id: string;
@@ -37,7 +37,7 @@ export function NewPechaForm({
     null
   );
   const queryClient = useQueryClient();
-  const { t } = useTranslate();
+  const { t } = useTranslation();
 
   // Notify parent about validation state
   const isValid = !!(rootId && selectedLanguage && selectedLanguage !== "");
@@ -159,7 +159,7 @@ export function EmptyTextForm({
     DEFAULT_LANGUAGE_SELECTED
   );
   const queryClient = useQueryClient();
-  const { t } = useTranslate();
+  const { t } = useTranslation();
 
   // Valid if language is selected
   const isValid = !!(selectedLanguage && selectedLanguage !== "");

@@ -1,4 +1,4 @@
-import { useTranslate } from "@tolgee/react";
+import { useTranslation as useTranslationI18next } from "react-i18next";
 import {
   BookOpen,
   Check,
@@ -24,7 +24,7 @@ const GlossaryDisplay: React.FC = () => {
   } = useTranslation();
   const [isCollapsed, setIsCollapsed] = useState(true);
   const glossaryRef = useRef<HTMLDivElement>(null);
-  const { t } = useTranslate();
+  const { t } = useTranslationI18next();
   // Helper function to scroll within the container instead of the entire page
   const scrollToGlossary = useCallback(() => {
     if (!glossaryRef.current || !scrollContainerRef?.current) return;

@@ -21,7 +21,7 @@ import {
 } from "./ui/tooltip";
 import { useParams } from "react-router-dom";
 import { Card, CardContent } from "./ui/card";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 import { useCurrentDocTranslations, Translation } from "@/hooks/useCurrentDoc";
 
 export type ExportMode = "single" | "with_translation";
@@ -48,7 +48,7 @@ function ExportButton({
   const [exportMessage, setExportMessage] = useState<string>("");
   const [selectedTranslation, setSelectedTranslation] = useState<string>("all");
   const [showTranslationError, setShowTranslationError] = useState(false);
-  const { t } = useTranslate();
+  const { t } = useTranslation();
 
   // Fetch available translations for the root document
   const { translations, loading: translationsLoading } =

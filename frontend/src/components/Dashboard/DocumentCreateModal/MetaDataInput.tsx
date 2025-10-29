@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 
 function MetaDataInput({
 	setMetadata,
@@ -13,7 +13,7 @@ function MetaDataInput({
 }) {
 	const [jsonFile, setJsonFile] = useState<File | null>(null);
 	const [fileName, setFileName] = useState<string>("");
-	const { t } = useTranslate();
+	const { t } = useTranslation();
 	useEffect(() => {
 		if (jsonFile) {
 			const reader = new FileReader();

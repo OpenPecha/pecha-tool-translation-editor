@@ -19,7 +19,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Trash2, Edit, Plus, Key, Check, X, Eye, EyeOff } from "lucide-react";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 
 const ApiCredentials: React.FC = () => {
 	const queryClient = useQueryClient();
@@ -34,7 +34,7 @@ const ApiCredentials: React.FC = () => {
 		text: string;
 		type: "success" | "error";
 	} | null>(null);
-	const { t } = useTranslate();
+	const { t } = useTranslation();
 	// Fetch API credentials
 	const {
 		data: credentials,

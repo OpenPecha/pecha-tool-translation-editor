@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import TranslationResults from "./sidebar/TranslationResults";
 import { useTranslation } from "../contexts/TranslationContext";
+import { useTranslation as useTranslationI18next } from "react-i18next";
 
 interface ResultsPanelProps {
   className?: string;
@@ -28,6 +29,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({
   className = "",
   inputMode,
 }) => {
+  const { t } = useTranslationI18next();
   const [expandedPanel, setExpandedPanel] = useState<PanelType | null>(null);
 
   const {
@@ -478,7 +480,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({
                       className="w-full mt-2"
                       onClick={startStandardizationTranslation}
                     >
-                      Apply Standardization
+                      {t("standardizationPanel.applyStandardization")}
                     </Button>
                   </div>
                 )}

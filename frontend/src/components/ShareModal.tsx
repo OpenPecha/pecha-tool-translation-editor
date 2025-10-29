@@ -34,7 +34,7 @@ import {
 	searchUsers,
 	type User,
 } from "@/api/project";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 
 interface ShareModalProps {
 	projectId: string;
@@ -65,7 +65,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
 	const [error, setError] = useState("");
 	const [success, setSuccess] = useState("");
 	const [copied, setCopied] = useState(false);
-	const { t } = useTranslate();
+	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 
 	// Fetch project sharing information

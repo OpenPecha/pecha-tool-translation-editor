@@ -1,4 +1,4 @@
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 import {
   Check,
   Copy,
@@ -63,7 +63,7 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
   onToggleExpand,
   disabled = false,
 }) => {
-  const { t } = useTranslate();
+  const { t } = useTranslation();
 
   return (
     <div className="flex items-center gap-1">

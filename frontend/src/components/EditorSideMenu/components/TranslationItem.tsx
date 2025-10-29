@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 import { Trash2 } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
@@ -22,7 +22,7 @@ const TranslationItem: React.FC<TranslationItemProps> = ({ translation }) => {
   const { id } = useParams();
   const rootId = id as string;
   const { setSelectedTranslationId } = useTranslationSidebarParams();
-  const { t } = useTranslate();
+  const { t } = useTranslation();
 
   // Helper function to render the status indicator
   const refetchTranslations = () =>

@@ -7,11 +7,11 @@ import { useCurrentDocTranslations } from "@/hooks/useCurrentDoc";
 
 // Import components
 import TranslationList from "./components/TranslationList";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 
 function SelectTranslation() {
 	const [showCreateModal, setShowCreateModal] = useState(false);
-	const { t } = useTranslate();
+	const { t } = useTranslation();
 	const { id } = useParams();
 	const rootId = id as string;
 	// URL params hook is used in child components

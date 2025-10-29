@@ -4,7 +4,7 @@ import Toolbar from "./Toolbar/Toolbar";
 import "quill/dist/quill.snow.css";
 import "quill-footnote/dist/quill-footnote.css";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 import { footnoteKeyboardBindings } from "quill-footnote";
 import { createPortal } from "react-dom";
 import { QuillBinding } from "y-quill";
@@ -63,7 +63,7 @@ const Editor = ({
   } = useEditor();
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const quillRef = useRef<Quill | null>(null);
-  const { t } = useTranslate();
+  const { t } = useTranslation();
   const { currentUser } = useAuth();
   // Get display settings
   const { showLineNumbers } = useDisplaySettings();
@@ -192,7 +192,7 @@ const Editor = ({
         },
       },
       readOnly: !isEditable,
-      placeholder: t("editor.startCollaborating") as string,
+      placeholder: t("editor.startTyping") as string,
       // className is not a valid Quill option, apply these styles to the container instead
     });
 

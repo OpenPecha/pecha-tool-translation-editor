@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { NewPechaForm, PechaFromOpenPecha, EmptyTextForm } from "./Forms";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 import PlusIcon from "@/assets/plus.svg";
 import { ChevronLeft, ChevronRight, File, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -85,7 +85,7 @@ function MethodSelection({
   readonly availableMethods: AvailableMethodType[];
   readonly onDoubleClick: () => void;
 }) {
-  const { t } = useTranslate();
+  const { t } = useTranslation();
 
   const methodConfigs = {
     file: {
@@ -182,7 +182,7 @@ function DocumentCreateModal() {
   const [isFormValid, setIsFormValid] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const createProjectRef = React.useRef<(() => void) | null>(null);
-  const { t } = useTranslate();
+  const { t } = useTranslation();
 
   const totalSteps = 3;
 

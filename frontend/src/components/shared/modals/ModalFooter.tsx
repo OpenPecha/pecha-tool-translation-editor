@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 
 interface ModalFooterProps {
 	onCancel: () => void;
@@ -32,7 +32,7 @@ export function ModalFooter({
 	className,
 	layout = "space-between",
 }: ModalFooterProps) {
-	const { t } = useTranslate();
+	const { t } = useTranslation();
 
 	return (
 		<div

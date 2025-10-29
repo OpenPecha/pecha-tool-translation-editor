@@ -3,10 +3,10 @@ import { Home, Globe2Icon, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { fetchTools } from "@/api/workspace/tools";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 const NavSidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { t } = useTranslate();
+  const { t } = useTranslation();
   const closeSidebar = () => {
     setIsOpen(false);
   };

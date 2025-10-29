@@ -37,7 +37,7 @@ import {
 	TextType,
 	ModelName,
 } from "@/api/translate";
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 
 interface TranslationConfig {
 	targetLanguage: TargetLanguage;
@@ -64,7 +64,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 	onOpenChange,
 	onConfigChange,
 }) => {
-	const { t } = useTranslate();
+	const { t } = useTranslation();
 	return (
 		<Dialog open={isOpen} onOpenChange={onOpenChange}>
 			<DialogTrigger asChild>

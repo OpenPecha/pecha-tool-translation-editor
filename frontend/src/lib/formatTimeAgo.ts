@@ -1,6 +1,6 @@
-import { useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 function formatTimeAgo(timestamp) {
-	const { t } = useTranslate();
+	const { t } = useTranslation();
 	const time = new Date(timestamp);
 	const now = new Date();
 	const diffInSeconds = Math.floor((now - time) / 1000);

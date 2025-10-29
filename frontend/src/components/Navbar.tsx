@@ -9,9 +9,10 @@ import EditableText from "./ui/EditableText";
 
 import DocIcon from "@/assets/doc_icon.png";
 import ShareModal from "./ShareModal";
+
 import { BiShare } from "react-icons/bi";
 import ProfileArea from "./ProfileArea";
-import { useTolgee, useTranslate } from "@tolgee/react";
+import { useTranslation } from "react-i18next";
 
 type Project = {
 	id: string;
@@ -25,8 +26,8 @@ interface NavbarProps {
 const Navbar = ({ project }: NavbarProps) => {
 	const { login, isAuthenticated } = useAuth();
 	const [showPermissionsModal, setShowPermissionsModal] = useState(false);
-	const tolgee = useTolgee();
-	const currentLanguage = tolgee.getLanguage();
+	const { i18n } = useTranslation();
+	const currentLanguage = i18n.language;
 	const handleAuth0Login = () => {
 		login(false);
 	};
@@ -132,7 +133,7 @@ export function NavMenuList({
 }: {
 	readonly permissionsOpen: (e: React.MouseEvent) => void;
 }) {
-	const { t } = useTranslate();
+	const { t } = useTranslation();
 	return (
 		<div className="flex gap-3 font-google-sans">
 			<Button
