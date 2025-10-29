@@ -91,8 +91,13 @@ export const createDocument = async (formData: FormData) => {
   return response.json();
 };
 
-export const createDocumentWithContent = async (formData: FormData) => {
-  const body = JSON.stringify(Object.fromEntries(formData));
+export const createDocumentWithContent = async (
+  data: FormData | Record<string, any>
+) => {
+  const body =
+    data instanceof FormData
+      ? JSON.stringify(Object.fromEntries(data))
+      : JSON.stringify(data);
   const response = await fetch(`${server_url}/documents/content`, {
     method: "POST",
     headers: getHeaders(),

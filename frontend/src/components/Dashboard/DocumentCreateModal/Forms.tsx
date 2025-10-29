@@ -159,7 +159,6 @@ export function EmptyTextForm({
     DEFAULT_LANGUAGE_SELECTED
   );
   const queryClient = useQueryClient();
-  const { t } = useTranslate();
 
   // Valid if language is selected
   const isValid = !!(selectedLanguage && selectedLanguage !== "");
@@ -172,19 +171,21 @@ export function EmptyTextForm({
     mutationFn: async () => {
       if (!projectName) throw new Error("Project name is required");
 
-      // Create empty document first
-      const formData = new FormData();
-      formData.append("name", projectName);
-      formData.append(
-        "identifier",
-        projectName.toLowerCase().replace(/\s+/g, "-")
-      );
-      formData.append("isRoot", "true");
-      formData.append("isPublic", "false");
-      formData.append("language", selectedLanguage);
-      formData.append("content", ""); // Empty content
+      // Create empty document first with date-based identifier
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const documentData = {
+        name: "EmptyText",
+        identifier: `empty-text-${timestamp}`,
+        isRoot: true,
+        language: selectedLanguage,
+        content: "",
+        metadata: {
+          source: "empty",
+          createdAt: new Date().toISOString(),
+        },
+      };
 
-      const documentResponse = await createDocumentWithContent(formData);
+      const documentResponse = await createDocumentWithContent(documentData);
       if (!documentResponse?.id) {
         throw new Error("Failed to create document");
       }
@@ -238,7 +239,7 @@ export function EmptyTextForm({
       />
       <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
         <p className="text-sm text-blue-800 dark:text-blue-200">
-          {t("projects.emptyTextInfo")}
+          Empty text project will be created with the selected language.
         </p>
       </div>
     </div>

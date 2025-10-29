@@ -192,7 +192,7 @@ const Editor = ({
         },
       },
       readOnly: !isEditable,
-      placeholder: t("editor.startCollaborating") as string,
+      placeholder: "Start Typing...",
       // className is not a valid Quill option, apply these styles to the container instead
     });
 

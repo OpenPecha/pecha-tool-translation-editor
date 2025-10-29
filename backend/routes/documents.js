@@ -356,17 +356,34 @@ router.post("/content", authenticate, async (req, res) => {
         });
         rootProjectId = rootDoc?.rootProjectId;
       }
+
+      // Handle isRoot - accept both boolean and string
+      const isRootBool =
+        typeof isRoot === "boolean" ? isRoot : isRoot === "true";
+
+      // Handle metadata - parse only if provided
+      let parsedMetadata = null;
+      if (metadata) {
+        try {
+          parsedMetadata =
+            typeof metadata === "string" ? JSON.parse(metadata) : metadata;
+        } catch (e) {
+          console.error("Failed to parse metadata:", e);
+          parsedMetadata = null;
+        }
+      }
+
       const doc = await tx.doc.create({
         data: {
           id: identifier,
           identifier,
           name,
           ownerId: req.user.id,
-          isRoot: isRoot === "true",
+          isRoot: isRootBool,
           rootId: rootId ?? null,
           language,
           rootProjectId: rootProjectId,
-          metadata: JSON.parse(metadata),
+          metadata: parsedMetadata,
         },
         select: {
           id: true,
