@@ -88,6 +88,11 @@ function MethodSelection({
   const { t } = useTranslation();
 
   const methodConfigs = {
+    empty: {
+      icon: <FileText size={24} />,
+      title: "Empty Text",
+      description: "Start with empty document",
+    },
     file: {
       icon: <File size={24} />,
       title: t("common.file"),
@@ -97,11 +102,6 @@ function MethodSelection({
       icon: <TbApi size={24} />,
       title: t("common.openpecha"),
       description: t("projects.importFromOpenPechaRepository"),
-    },
-    empty: {
-      icon: <FileText size={24} />,
-      title: t("common.emptyText"),
-      description: t("projects.startWithEmptyDocument"),
     },
   };
 
