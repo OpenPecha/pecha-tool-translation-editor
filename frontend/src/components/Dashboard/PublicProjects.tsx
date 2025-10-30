@@ -340,8 +340,8 @@ const PublicProjects = ({ showAll = false }: { showAll?: boolean }) => {
             <Input
               type="text"
               placeholder={t(
-                "publicProject.searchProjects",
-                "Search public projects..."
+                "project.searchPublicProjects",
+                "Search public projects"
               )}
               value={searchQuery}
               onChange={handleSearch}

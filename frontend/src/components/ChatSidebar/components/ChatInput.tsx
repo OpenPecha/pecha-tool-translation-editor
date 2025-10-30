@@ -6,8 +6,8 @@ import {
   useRef,
   useState,
 } from "react";
+import { useTranslation as useTranslationI18next } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import type { GlossaryItem } from "@/api/glossary";
 import { useTranslation } from "@/components/ChatSidebar/contexts/TranslationContext";
 import { useTextSelection } from "../hooks";
 
@@ -20,12 +20,15 @@ interface ChatInputProps {
 const ChatInput: React.FC<ChatInputProps> = ({
   isProcessing = false,
   disabled = false,
-  placeholder = "Type or paste text to translate...",
+  placeholder,
 }) => {
+  const { t } = useTranslationI18next();
   const [input, setInput] = useState("");
   const [shouldStartTranslation, setShouldStartTranslation] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { getTextPairsByLineNumbers } = useTextSelection();
+  
+  const defaultPlaceholder = placeholder || t("translation.typePasteTextPlaceholder");
   const {
     isTranslating,
     isExtractingGlossary,
@@ -177,7 +180,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
             onClick={resetActiveWorkflow}
             className="flex-shrink-0 h-7 justify-self-end text-xs gap-1 hover:bg-blue-50 hover:text-blue-600"
           >
-            /Clear
+         {t("translation.commandClear")}
           </Button>
         ) : (
           <div className="flex gap-1 overflow-x-auto">
@@ -191,7 +194,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
               className="flex-shrink-0 h-7 text-xs gap-1 hover:bg-blue-50 hover:text-blue-600"
               title="Translate selected text"
             >
-              /Translate
+             {t("translation.commandTranslate")}
             </Button>
             <Button
               variant="ghost"
@@ -206,7 +209,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
               className="flex-shrink-0 h-7 text-xs gap-1 hover:bg-blue-50 hover:text-blue-600"
               title="Extract glossary from selected text and corresponding translations"
             >
-              /Glossary
+            {t("translation.commandGlossary")}
             </Button>
           </div>
         )}
@@ -221,7 +224,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
             onFocus={handleFocus}
             onChange={handleInputChange}
             onKeyDown={handleKeyPress}
-            placeholder={placeholder}
+            placeholder={defaultPlaceholder}
             disabled={disabled || isProcessing || isTranslating}
             className="w-full resize-none border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 min-h-[40px] max-h-[120px]"
             rows={1}

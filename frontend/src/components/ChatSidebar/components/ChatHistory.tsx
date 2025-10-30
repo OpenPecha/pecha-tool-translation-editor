@@ -1,5 +1,6 @@
 import { MessageSquare } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import type { ChatMessage as ChatMessageType } from "../types/chatTypes";
 import ActionableMessage from "./ActionableMessage";
 import ChatMessage from "./ChatMessage";
@@ -15,6 +16,7 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
   isProcessing = false,
   onAction,
 }) => {
+  const { t } = useTranslation();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -41,24 +43,24 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
           <MessageSquare className="w-8 h-8 text-gray-400" />
         </div>
         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-          Welcome to Translator
+          {t("translation.welcomeToTranslator")}
         </h3>
 
         <div className="space-y-2 text-sm">
           <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
             <code className="bg-blue-50 dark:bg-blue-950 px-2 py-1 rounded">
-              /translate
+              {t("translation.commandTranslate")}
             </code>
             <span className="text-gray-600 dark:text-gray-400">
-              - Translate selected text
+              - {t("translation.translateSelectedText")}
             </span>
           </div>
           <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
             <code className="bg-green-50 dark:bg-green-950 px-2 py-1 rounded">
-              /glossary
+              {t("translation.commandGlossary")}
             </code>
             <span className="text-gray-600 dark:text-gray-400">
-              - Extract glossary terms
+              - {t("translation.extractGlossaryTerms")}
             </span>
           </div>
         </div>

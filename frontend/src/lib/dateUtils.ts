@@ -62,11 +62,11 @@ export function getTimeCategory(date: string): TimeCategory {
  */
 export function getCategoryTitle(category: TimeCategory): string {
 	const categoryTitles = {
-		today: "Today",
-		yesterday: "Yesterday",
-		last7Days: "Last 7 Days",
-		previous30Days: "Previous 30 Days",
-		earlier: "Earlier",
+		today: "today",
+		yesterday: "yesterday",
+		last7Days: "last7Days",
+		previous30Days: "previous30Days",
+		earlier: "earlier",
 	};
 
 	return categoryTitles[category] || category;

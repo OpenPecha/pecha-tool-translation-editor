@@ -11,7 +11,7 @@ import { useTranslation } from "react-i18next";
 function ProfileArea() {
   const [isOpen, setIsOpen] = useState(false);
   const { currentUser, logout: handleLogout } = useAuth();
-  const { i18n } = useTranslation(); 
+  const { i18n, t } = useTranslation(); 
   const currentLanguage = i18n.language;
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -99,7 +99,7 @@ function ProfileArea() {
             >
               <MdLogout className="w-4 h-4 text-neutral-500 dark:text-neutral-300" />{" "}
               <span className="text-sm text-neutral-500 dark:text-neutral-300">
-                Logout
+                {t(`auth.logout`)}
               </span>
             </Button>
           </div>
