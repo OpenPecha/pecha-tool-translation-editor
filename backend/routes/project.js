@@ -35,6 +35,7 @@ const {
   getProjectWithDocuments,
 } = require("../utils/model");
 const { sendProgress, progressStreams } = require("../utils/progress");
+const { sendEmail } = require("../services/utils");
 
 const prisma = new PrismaClient();
 
@@ -1179,6 +1180,7 @@ router.post("/:id/share", authenticate, async (req, res) => {
     const shareableLink = updatedProject.isPublic
       ? `${baseUrl}/documents/public/${rootDocument.id}`
       : null;
+
     res.json({
       success: true,
       data: {
@@ -1359,6 +1361,16 @@ router.post("/:id/collaborators", authenticate, async (req, res) => {
           },
         },
       });
+
+      try {
+        const message = {
+          subject: "Project shared with you",
+          text: `The project ${project.name} has been shared with you. You can access it at ${process.env.WORKSPACE_URL}`,
+        };
+        await sendEmail([userToAdd.email], message);
+      } catch (e) {
+        console.log("Error sending email:", e);
+      }
 
       return res.json({
         success: true,

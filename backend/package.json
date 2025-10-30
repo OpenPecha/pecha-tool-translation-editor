@@ -15,6 +15,7 @@
 	"dependencies": {
 		"@prisma/client": "^6.4.1",
 		"archiver": "^7.0.1",
+		"aws-sdk": "^2.1692.0",
 		"bcrypt": "^5.1.1",
 		"bcryptjs": "^3.0.2",
 		"cors": "^2.8.5",
