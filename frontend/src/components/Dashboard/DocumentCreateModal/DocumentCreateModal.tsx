@@ -367,7 +367,7 @@ function DocumentCreateModal() {
         <div className="flex-1 overflow-y-auto">
           <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
 
-          <div className="min-h-[400px] pb-6">{renderStepContent()}</div>
+          <div className="min-h-[40dvh] pb-6">{renderStepContent()}</div>
         </div>
 
         {/* Fixed Navigation Footer */}
