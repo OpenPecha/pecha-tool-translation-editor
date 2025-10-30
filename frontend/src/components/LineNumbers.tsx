@@ -144,7 +144,7 @@ const LineNumberVirtualized = ({
     const editorScrollTop = editorElement.scrollTop;
 
     Array.from(childs).forEach((child) => {
-      if (child.tagName !== "P" || !child.textContent?.trim()) return;
+      if (!child.textContent?.trim()) return;
 
       const range = document.createRange();
       range.selectNodeContents(child);
