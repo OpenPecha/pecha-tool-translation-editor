@@ -198,30 +198,35 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({
     lineNumber: number
   ): string | null => {
     if (!quill || lineNumber < 1) return null;
-
+  
     const fullText = quill.getText();
     const fullTextLines = fullText.split("\n");
-
+  
     let currentLineNumber = 1;
-
-    for (let lineIndex = 0; lineIndex < fullTextLines.length; lineIndex++) {
-      const lineText = fullTextLines[lineIndex];
-
-      // Skip empty lines (similar to getLineNumber logic)
-      if (!lineText.trim()) {
-        continue; // Don't increment currentLineNumber for empty lines
-      }
-
-      // If this is the line we're looking for
+  
+    for (let i = 0; i < fullTextLines.length; i++) {
+      const lineText = fullTextLines[i];
+  
+      // Skip counting for leading/trailing empty lines
+      if (!lineText.trim()) continue;
+  
       if (currentLineNumber === lineNumber) {
-        return lineText;
+        // Count number of consecutive empty lines *after* this line
+        let noOfNewLines = 0;
+        for (let j = i + 1; j < fullTextLines.length; j++) {
+          if (fullTextLines[j].trim()) break;
+          noOfNewLines++;
+        }
+  
+        return lineText + '\n'.repeat(noOfNewLines);
       }
-
+  
       currentLineNumber++;
     }
-
+  
     return null; // Line number not found
   };
+  
 
   const getSelectionLineNumbers = (): Record<
     string,

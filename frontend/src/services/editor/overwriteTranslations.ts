@@ -1,10 +1,5 @@
-/**
- * Utility function for overwriting AI-generated translations into the editor
- * while preserving line structure and total line count
- */
 
 import Quill from "quill";
-
 export interface TranslationResult {
 	id: string;
 	originalText: string;
@@ -32,26 +27,53 @@ export interface OverwriteOptions {
 	customPlaceholder?: string;
 }
 
-/**
- * Flattens multi-line translations into a single line by replacing newlines with spaces
- * @param text - The text to flatten
- * @returns The flattened text
- */
-function flattenTranslation(text: string): string {
+const getTextByLineNumber = (
+    quill: Quill | null,
+    lineNumber: number
+  ): string | null => {
+    if (!quill || lineNumber < 1) return null;
+  
+    const fullText = quill.getText();
+    const fullTextLines = fullText.split("\n");
+  
+    let currentLineNumber = 1;
+  
+    for (let i = 0; i < fullTextLines.length; i++) {
+      const lineText = fullTextLines[i];
+  
+      // Skip counting for leading/trailing empty lines
+      if (!lineText.trim()) continue;
+  
+      if (currentLineNumber === lineNumber) {
+        // Count number of consecutive empty lines *after* this line
+        let noOfNewLines = 0;
+        for (let j = i + 1; j < fullTextLines.length; j++) {
+          if (fullTextLines[j].trim()) break;
+          noOfNewLines++;
+        }
+  
+        return lineText + '\n'.repeat(noOfNewLines);
+      }
+  
+      currentLineNumber++;
+    }
+  
+    return null; // Line number not found
+  };
+
+function flattenTranslation(text: string, quill: Quill, lineNumber: number): string {
+	const data = getTextByLineNumber(quill, lineNumber);
+	// Count newlines in the data to preserve formatting
+	const newlineCount = data ? (data.match(/\n/g) || []).length : 0;
 	return text
 		.split("\n")
 		.map((line) => line.trim())
 		.filter((line) => line.length > 0)
-		.join(" ");
+		.join(" ") + '\n'.repeat(newlineCount);
 }
 
 const LINE_PLACEHOLDER = "↩";
 
-/**
- * Gets the appropriate placeholder text based on options
- * @param options - Configuration options for placeholder behavior
- * @returns The placeholder string to use
- */
 function getPlaceholder(options: OverwriteOptions = {}): string {
 	const { placeholderType = "emoji", customPlaceholder } = options;
 
@@ -69,12 +91,6 @@ function getPlaceholder(options: OverwriteOptions = {}): string {
 	}
 }
 
-/**
- * Creates a mapping between logical line numbers (counting only non-empty content)
- * and array indices (including blank lines)
- * @param lines - Array of strings representing editor content
- * @returns Map from logical line number (1-based) to array index (0-based)
- */
 function createLogicalLineToIndexMapping(lines: string[]): Map<number, number> {
 	const mapping = new Map<number, number>();
 	let logicalLineNumber = 1;
@@ -91,12 +107,6 @@ function createLogicalLineToIndexMapping(lines: string[]): Map<number, number> {
 	return mapping;
 }
 
-/**
- * Gets the array index for a given logical line number
- * @param logicalLineNumber - 1-based logical line number (counting only non-empty lines)
- * @param lines - Array of strings representing editor content
- * @returns Array index (0-based) or -1 if not found
- */
 function getArrayIndexForLogicalLine(
 	logicalLineNumber: number,
 	lines: string[],
@@ -118,6 +128,7 @@ function getMaxLogicalLines(lines: string[]): number {
 }
 
 export function overwriteAllTranslations(
+	sourceEditor: Quill,
 	targetEditor: Quill,
 	translationResults: TranslationResult[],
 	options: OverwriteOptions = {},
@@ -152,6 +163,8 @@ export function overwriteAllTranslations(
 					// Flatten multi-line translations to maintain line count
 					const flattenedTranslation = flattenTranslation(
 						result.translatedText,
+						sourceEditor,
+						lineNumber
 					);
 					lineTranslations.set(lineNumber, flattenedTranslation);
 					maxLineNumber = Math.max(maxLineNumber, lineNumber);
@@ -197,60 +210,56 @@ export function overwriteAllTranslations(
 
 	// Handle empty editor case - need to create content structure
 	if (isEditorEmpty && maxLineNumber > 0) {
-		// For empty editor, create the initial structure with placeholders
 		let initialContent = "";
-		for (let i = 0; i < maxLineNumber; i++) {
-			if (i > 0) initialContent += "\n";
+		for (let i = 1; i <= maxLineNumber; i++) {
+			if (i > 1) initialContent += "\n";
+			
 			initialContent += placeholder;
-			if (placeholder !== "") {
-				placeholdersAdded++;
-			}
+			placeholdersAdded++;
 		}
-		// Insert initial structure
-		batchDelta = batchDelta.insert(initialContent);
 		
-		// Update currentLines to reflect the new structure
+		// Insert initial structure into the editor
+		targetEditor.updateContents(batchDelta.insert(initialContent), "user");
+		
 		currentLines.length = 0;
 		currentLines.push(...initialContent.split("\n"));
 	}
 
-	// Sort translations by logical line number to process them in order
 	const sortedTranslations = Array.from(lineTranslations.entries()).sort((a, b) => a[0] - b[0]);
 
 	// Process each translation using delta operations
 	for (const [logicalLineNumber, translatedText] of sortedTranslations) {
-		// Map logical line number to actual array index
-		const arrayIndex = getArrayIndexForLogicalLine(logicalLineNumber, currentLines);
+		let arrayIndex: number;
+		
+		if (isEditorEmpty) {
+			arrayIndex = logicalLineNumber - 1;
+		} else {
+			// Use the existing logic for non-empty editors
+			arrayIndex = getArrayIndexForLogicalLine(logicalLineNumber, currentLines);
+		}
 
 		if (arrayIndex >= 0 && arrayIndex < currentLines.length) {
-			// Only overwrite if the target line is not a deliberate blank line
+			// Calculate character position for this line
+			const lineStartIndex = getCharacterIndexForLine(arrayIndex, currentLines);
 			const currentLine = currentLines[arrayIndex];
-			if (currentLine.trim() !== "") {
-				// Calculate character position for this line
-				const lineStartIndex = getCharacterIndexForLine(arrayIndex, currentLines);
-				const lineLength = currentLine.length;
+			const lineLength = currentLine.length;
 
-				// Flatten multi-line translations to maintain line count
-				const flattenedText = flattenTranslation(translatedText);
+			// Flatten multi-line translations to maintain line count
+			const flattenedText = flattenTranslation(translatedText, sourceEditor, logicalLineNumber);
 
-				// Create delta operation to replace this line while preserving formatting
-				const lineDelta = new Delta()
-					.retain(lineStartIndex) // Keep everything before this line
-					.delete(lineLength) // Delete the current line content
-					.insert(flattenedText); // Insert the new translation
+			// Create delta operation to replace this line while preserving formatting
+			const lineDelta = new Delta()
+				.retain(lineStartIndex) // Keep everything before this line
+				.delete(lineLength) // Delete the current line content
+				.insert(flattenedText); // Insert the new translation
 
-				// Apply this delta operation
-				targetEditor.updateContents(lineDelta, "user");
+			// Apply this delta operation
+			targetEditor.updateContents(lineDelta, "user");
 
-				// Update our tracking
-				currentLines[arrayIndex] = flattenedText;
-				linesOverwritten++;
-				lastInsertedCharacterIndex = lineStartIndex + flattenedText.length;
-			} else {
-				console.warn(
-					`Logical line ${logicalLineNumber} maps to a blank line (index ${arrayIndex}), skipping overwrite to preserve blank line`,
-				);
-			}
+			// Update our tracking
+			currentLines[arrayIndex] = flattenedText;
+			linesOverwritten++;
+			lastInsertedCharacterIndex = lineStartIndex + flattenedText.length;
 		} else if (logicalLineNumber > getMaxLogicalLines(currentLines)) {
 			// Line number is higher than existing content - need to extend the editor
 			const currentLogicalLines = getMaxLogicalLines(currentLines);
@@ -269,7 +278,7 @@ export function overwriteAllTranslations(
 			}
 
 			// Add the final line with the translation
-			const flattenedText = flattenTranslation(translatedText);
+			const flattenedText = flattenTranslation(translatedText, sourceEditor, logicalLineNumber);
 			extensionContent += "\n" + flattenedText;
 
 			// Create delta to extend the editor

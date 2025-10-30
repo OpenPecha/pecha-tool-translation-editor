@@ -1369,7 +1369,6 @@ router.post("/:id/collaborators", authenticate, async (req, res) => {
         };
         await sendEmail([userToAdd.email], message);
       } catch (e) {
-        console.log("Error sending email:", e);
       }
 
       return res.json({
