@@ -239,9 +239,9 @@ function DocumentCreateModal() {
   };
 
   const availableMethods: AvailableMethodType[] = [
+    { type: "empty", label: t("common.emptyText"), isDisabled: false },
     { type: "file", label: t("common.file"), isDisabled: false },
     { type: "openpecha", label: t("common.openpecha"), isDisabled: false },
-    { type: "empty", label: t("common.emptyText"), isDisabled: false },
   ];
 
   const trigger = (

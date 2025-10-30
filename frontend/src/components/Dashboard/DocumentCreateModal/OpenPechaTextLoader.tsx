@@ -345,6 +345,11 @@ export function OpenPechaTextLoader({
 
   return (
     <div className="space-y-8">
+      {error && (
+        <p className="text-red-500">
+          API under maintenance. Please try again later.
+        </p>
+      )}
       <ErrorDisplay error={error} />
 
       {/* Expression Selection */}
