@@ -66,7 +66,7 @@ const ProjectList = () => {
               }`}
               onClick={handleViewAllPublicProjects}
             >
-              gallery <ArrowUpDownIcon size={16} />
+              {t(`project.gallery`)} <ArrowUpDownIcon size={16} />
             </Button>
           </div>
 
@@ -96,28 +96,30 @@ interface ProjectsSectionProps {
 
 const getOwnerType = (selectedOwner: string | null) => {
   if (!selectedOwner) return "both";
-  if (selectedOwner === "Owned by me") return "User";
-  if (selectedOwner === "Owned by anyone") return "both";
-  if (selectedOwner === "Not owned by me") return "shared";
+  if (selectedOwner === "ownedByMe") return "User";
+  if (selectedOwner === "ownedByAnyone") return "both";
+  if (selectedOwner === "notOwnedByMe") return "shared";
   return "both";
 };
 
 const ProjectsListSection = () => {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [view, setView] = useState<"grid" | "list">("list");
   const [selectedOwner, setSelectedOwner] = useState<string | null>(
-    "Owned by anyone"
+    "ownedByAnyone"
   );
   const { searchQuery } = useSearchStore();
   const { currentUser } = useAuth();
 
-  const uniqueOwners = ["Owned by me", "Owned by anyone", "Not owned by me"];
+  const uniqueOwners = ["ownedByMe", "ownedByAnyone", "notOwnedByMe"];
   const itemsPerPage = INITIAL_PROJECT_LIMIT;
 
   // Reset to page 1 when search or filter changes
   useEffect(() => {
     setPage(1);
   }, [searchQuery, selectedOwner]);
+  // Get unique owners for the filter dropdown
 
   const { data, isLoading, isError, isFetching, isPending } = useQuery({
     queryKey: ["projects", searchQuery, page, getOwnerType(selectedOwner)],
@@ -142,11 +144,11 @@ const ProjectsListSection = () => {
 
   const filteredProjects = useMemo(() => {
     let filtered = projects;
-    if (selectedOwner === "Owned by me")
+    if (selectedOwner === "ownedByMe")
       filtered = projects.filter(
         (project: Project) => project.owner?.id === currentUser?.id
       );
-    else if (selectedOwner === "Not owned by me")
+    else if (selectedOwner === "notOwnedByMe")
       filtered = projects.filter(
         (project: Project) => project.owner?.id !== currentUser?.id
       );
@@ -296,6 +298,7 @@ const ProjectsSection = ({
   view,
   setView,
 }: ProjectsSectionProps) => {
+  const { t } = useTranslation();
   const selectedOwnerName = selectedOwner
     ? uniqueOwners.find((owner) => owner === selectedOwner)
     : "All";
@@ -306,7 +309,7 @@ const ProjectsSection = ({
       <div className="flex items-center py-2 px-1 mb-6 gap-4">
         <div className="flex-grow min-w-0">
           <span className="text-md md:text-xl font-medium text-neutral-700/80 dark:text-neutral-100">
-            My Projects
+            {t(`project.myProjects`)}
           </span>
         </div>
 
@@ -318,7 +321,7 @@ const ProjectsSection = ({
                 size="sm"
                 className="h-8 text-sm gap-2 w-fit"
               >
-                {selectedOwnerName}
+                {t(`project.${selectedOwnerName}`)}
                 <ChevronDown size={16} />
               </Button>
             </DropdownMenuTrigger>
@@ -328,7 +331,7 @@ const ProjectsSection = ({
                   key={owner}
                   onClick={() => onOwnerChange(owner)}
                 >
-                  {owner}
+                  {t(`project.${owner}`)}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -337,7 +340,7 @@ const ProjectsSection = ({
 
         <div className="hidden sm:flex flex-shrink-0 w-36 items-center gap-2">
           <span className="text-sm text-neutral-600 dark:text-neutral-300">
-            Last modified
+            {t(`project.lastModified`)}
           </span>
         </div>
 
@@ -448,8 +451,8 @@ const ProjectsSection = ({
       {/* Categorized Projects */}
       {categorizedProjects.map((category) => (
         <div key={category.category} className="mb-8">
-          <div className="text-sm text-neutral-600 dark:text-neutral-300 mb-3 px-1">
-            {getCategoryTitle(category.category)}
+          <div className=" text-smtext-neutral-600 dark:text-neutral-300 mb-3 px-1">
+            {t(`${getCategoryTitle(category.category)}`)}
           </div>
           <div
             className={`${

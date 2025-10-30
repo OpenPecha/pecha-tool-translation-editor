@@ -8,13 +8,14 @@ import Comments from "./EditorSideMenu/Comments";
 import { useQuery } from "@tanstack/react-query";
 import { fetchDocument } from "@/api/document";
 import TableOfContent from "./TableOfContent";
-
+import { useTranslation } from "react-i18next";
 interface DocumentSidebarProps {
   documentId: string;
 }
 
 // Metadata content component for sidebar
 const MetadataContent = ({ documentId }: { documentId: string }) => {
+  const { t } = useTranslation();
   const {
     data: document,
     isLoading,
@@ -81,12 +82,12 @@ const MetadataContent = ({ documentId }: { documentId: string }) => {
       {/* Basic Information */}
       <div>
         <h4 className="font-medium text-sm mb-2 text-gray-800 dark:text-gray-200">
-          Basic Information
+          {t(`meta.basicInfo`)}
         </h4>
         <div className="space-y-2">
           <div className="text-xs">
             <div className="font-medium text-gray-700 dark:text-gray-300">
-              Name
+              {t(`meta.name`)}
             </div>
             <div className="text-gray-600 dark:text-gray-400 break-words">
               {document.name || "Untitled Document"}
@@ -94,7 +95,7 @@ const MetadataContent = ({ documentId }: { documentId: string }) => {
           </div>
           <div className="text-xs">
             <div className="font-medium text-gray-700 dark:text-gray-300">
-              Language
+              {t(`common.language`)}
             </div>
             <div className="text-gray-600 dark:text-gray-400">
               {document.language || "Not specified"}
@@ -102,7 +103,7 @@ const MetadataContent = ({ documentId }: { documentId: string }) => {
           </div>
           <div className="text-xs">
             <div className="font-medium text-gray-700 dark:text-gray-300">
-              Type
+              {t(`meta.type`)}
             </div>
             <div className="text-gray-600 dark:text-gray-400">
               {document.isRoot ? "Root Document" : "Translation"}
@@ -114,12 +115,12 @@ const MetadataContent = ({ documentId }: { documentId: string }) => {
       {/* Dates */}
       <div>
         <h4 className="font-medium text-sm mb-2 text-gray-800 dark:text-gray-200">
-          Timeline
+          {t(`meta.timeline`)}
         </h4>
         <div className="space-y-2">
           <div className="text-xs">
             <div className="font-medium text-gray-700 dark:text-gray-300">
-              Created
+              {t(`meta.created`)}
             </div>
             <div className="text-gray-600 dark:text-gray-400">
               {formatDate(document.createdAt)}
@@ -127,7 +128,7 @@ const MetadataContent = ({ documentId }: { documentId: string }) => {
           </div>
           <div className="text-xs">
             <div className="font-medium text-gray-700 dark:text-gray-300">
-              Last Updated
+              {t(`meta.lastUpdated`)}
             </div>
             <div className="text-gray-600 dark:text-gray-400">
               {formatDateTime(document.updatedAt)}
@@ -140,12 +141,12 @@ const MetadataContent = ({ documentId }: { documentId: string }) => {
       {currentVersion && (
         <div>
           <h4 className="font-medium text-sm mb-2 text-gray-800 dark:text-gray-200">
-            Current Version
+            {t(`meta.currentVersion`)}
           </h4>
           <div className="space-y-2">
             <div className="text-xs">
               <div className="font-medium text-gray-700 dark:text-gray-300">
-                Label
+                {t(`meta.label`)}
               </div>
               <div className="text-gray-600 dark:text-gray-400">
                 {currentVersion.label || "No label"}
@@ -153,7 +154,7 @@ const MetadataContent = ({ documentId }: { documentId: string }) => {
             </div>
             <div className="text-xs">
               <div className="font-medium text-gray-700 dark:text-gray-300">
-                Version Updated
+                {t(`meta.versionUpdated`)}
               </div>
               <div className="text-gray-600 dark:text-gray-400">
                 {formatDateTime(currentVersion.updatedAt)}
@@ -167,12 +168,12 @@ const MetadataContent = ({ documentId }: { documentId: string }) => {
       {rootProject && (
         <div>
           <h4 className="font-medium text-sm mb-2 text-gray-800 dark:text-gray-200">
-            Project
+            {t(`meta.project`)}
           </h4>
           <div className="space-y-2">
             <div className="text-xs">
               <div className="font-medium text-gray-700 dark:text-gray-300">
-                Name
+                {t(`meta.name`)}
               </div>
               <div className="text-gray-600 dark:text-gray-400 break-words">
                 {rootProject.name || "Unnamed Project"}
@@ -180,7 +181,7 @@ const MetadataContent = ({ documentId }: { documentId: string }) => {
             </div>
             <div className="text-xs">
               <div className="font-medium text-gray-700 dark:text-gray-300">
-                Visibility
+                {t(`meta.visibility`)}
               </div>
               <div className="text-gray-600 dark:text-gray-400">
                 {rootProject.isPublic ? "Public" : "Private"}
@@ -199,7 +200,7 @@ const MetadataContent = ({ documentId }: { documentId: string }) => {
           <div className="space-y-2">
             <div className="text-xs">
               <div className="font-medium text-gray-700 dark:text-gray-300">
-                Origin
+                {t(`meta.origin`)}
               </div>
               <div className="text-gray-600 dark:text-gray-400">
                 {openpechaData.template ? "Yes" : "No"}
@@ -208,7 +209,7 @@ const MetadataContent = ({ documentId }: { documentId: string }) => {
             {openpechaData.expression_id && (
               <div className="text-xs">
                 <div className="font-medium text-gray-700 dark:text-gray-300">
-                  Expression ID
+                  {t(`meta.expressionId`)}
                 </div>
                 <div className="text-gray-600 dark:text-gray-400 font-mono text-xs break-all">
                   {openpechaData.expression_id}
@@ -222,12 +223,12 @@ const MetadataContent = ({ documentId }: { documentId: string }) => {
       {/* IDs */}
       <div>
         <h4 className="font-medium text-sm mb-2 text-gray-800 dark:text-gray-200">
-          Identifiers
+          {t(`meta.identifiers`)}
         </h4>
         <div className="space-y-2">
           <div className="text-xs">
             <div className="font-medium text-gray-700 dark:text-gray-300">
-              Document ID
+              {t(`meta.documentId`)}
             </div>
             <div className="text-gray-600 dark:text-gray-400 font-mono text-xs break-all">
               {document.id}
@@ -236,7 +237,7 @@ const MetadataContent = ({ documentId }: { documentId: string }) => {
           {document.identifier && (
             <div className="text-xs">
               <div className="font-medium text-gray-700 dark:text-gray-300">
-                Identifier
+                {t(`meta.identifier`)}
               </div>
               <div className="text-gray-600 dark:text-gray-400">
                 {document.identifier}
@@ -251,7 +252,7 @@ const MetadataContent = ({ documentId }: { documentId: string }) => {
 
 const DocumentSidebar: React.FC<DocumentSidebarProps> = ({ documentId }) => {
   const [activeTab, setActiveTab] = useState<string | null>(null);
-
+  const { t } = useTranslation();
   const toggleTab = (tabValue: string) => {
     setActiveTab(activeTab === tabValue ? null : tabValue);
   };
@@ -260,19 +261,19 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({ documentId }) => {
     {
       id: "toc",
       icon: BookOpen,
-      label: "Table of Contents",
+      label: t(`editor.tableOfContents`),
       shortLabel: "Contents",
     },
     {
       id: "metadata",
       icon: Info,
-      label: "Document Information",
+      label: t(`meta.documentInfo`),
       shortLabel: "Info",
     },
     {
       id: "comments",
       icon: MessageCircle,
-      label: "Comments",
+      label: t(`common.comments`),
       shortLabel: "Comments",
     },
   ];

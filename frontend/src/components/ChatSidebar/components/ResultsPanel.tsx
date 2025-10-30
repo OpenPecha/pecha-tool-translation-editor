@@ -91,20 +91,13 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({
   const getPanelTitle = (type: PanelType) => {
     switch (type) {
       case "translation": {
-        const suffix = hasTranslationResults
-          ? ` (${translationResults.length})`
-          : "";
-        return `Translation Results${suffix}`;
+        return t("translation.translationResultsCount", { count: translationResults.length });
       }
       case "glossary": {
-        const suffix = hasGlossaryResults ? ` (${glossaryTerms.length})` : "";
-        return `Glossary Terms${suffix}`;
+        return t("translation.glossaryTermsCount", { count: glossaryTerms.length });
       }
       case "inconsistency": {
-        const suffix = hasInconsistentTerms
-          ? ` (${Object.keys(inconsistentTerms).length})`
-          : "";
-        return `Inconsistency Report${suffix}`;
+        return t("translation.inconsistencyReportCount", { count: Object.keys(inconsistentTerms).length });
       }
       case "standardized": {
         const suffix = hasStandardizedResults
@@ -171,7 +164,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({
                         <TbReplaceFilled className="w-3 h-3 " />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Overwrite all results</TooltipContent>
+                    <TooltipContent>{t("translation.overwriteAllResults")}</TooltipContent>
                   </Tooltip>
                 )}
 
@@ -187,7 +180,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({
                       <BookText className="w-3 h-3" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Generate Glossary</TooltipContent>
+                  <TooltipContent>{t("translation.generateGlossary")}</TooltipContent>
                 </Tooltip>
               )}
               {/* Close button for translation */}
@@ -216,7 +209,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({
                   <div className="text-center py-4">
                     <div className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400">
                       <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                      Translating...
+                      {t("translation.translatingStatus")}
                     </div>
                   </div>
                 )}
@@ -343,7 +336,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({
                   <div className="text-center py-4">
                     <div className="inline-flex items-center gap-2 text-green-600 dark:text-green-400">
                       <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
-                      Extracting glossary...
+                      {t("translation.extractingGlossaryStatus")}
                     </div>
                   </div>
                 )}
@@ -352,7 +345,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({
                   <div className="text-center py-4">
                     <div className="inline-flex items-center gap-2 text-orange-600 dark:text-orange-400">
                       <div className="w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
-                      Analyzing inconsistencies...
+                      {t("translation.analyzingForInconsistencies")}
                     </div>
                   </div>
                 )}

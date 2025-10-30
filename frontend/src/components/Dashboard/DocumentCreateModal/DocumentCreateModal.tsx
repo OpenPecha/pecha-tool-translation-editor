@@ -90,8 +90,8 @@ function MethodSelection({
   const methodConfigs = {
     empty: {
       icon: <FileText size={24} />,
-      title: "Empty Text",
-      description: "Start with empty document",
+      title: t("documents.emptyText"),
+      description: t("documents.startEmptyDocument"),
     },
     file: {
       icon: <File size={24} />,
@@ -262,14 +262,14 @@ function DocumentCreateModal() {
             >
               <img src={PlusIcon} width={50} height={50} alt="Create project" />
             </div>
-            <p className="text-sm font-medium text-foreground">Blank</p>
+            <p className="text-sm font-medium text-foreground">{t(`project.blank`)}</p>
           </div>
         </button>
         <div className="space-y-0.5 px-1">
           <h3 className="text-sm font-medium text-foreground line-clamp-1">
             {t(`projects.createProject`)}
           </h3>
-          <p className="text-xs text-muted-foreground">Start from scratch</p>
+          <p className="text-xs text-muted-foreground">{t(`project.startFromScratch`)}</p>
         </div>
       </div>
     </div>
