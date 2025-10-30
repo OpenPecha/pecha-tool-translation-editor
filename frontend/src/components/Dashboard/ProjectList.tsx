@@ -312,7 +312,7 @@ const ProjectsSection = ({
 
         <div className="hidden sm:flex flex-shrink-0 mx-4 w-36 justify-end">
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger>
               <Button
                 variant="outline"
                 size="sm"
