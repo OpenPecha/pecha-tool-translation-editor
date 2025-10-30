@@ -13,6 +13,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ScrollArea } from "../ui/scroll-area";
 import AvatarWrapper from "../ui/custom-avatar";
 import { groupBy } from "lodash";
+import { useTranslation } from "react-i18next";
 interface Comment {
 	id: string;
 	threadId: string;
@@ -38,6 +39,7 @@ interface Comment {
 }
 
 function Comments() {
+	const { t } = useTranslation();
 	const { id } = useParams();
 	const { getQuill } = useEditor();
 	const quill = getQuill(id!);
@@ -113,7 +115,7 @@ function Comments() {
 				error
 			/>
 		);
-	if (!commentsThread.length) return <Message text="No comments yet" />;
+	if (!commentsThread.length) return <Message text={t(`common.noCommentsYet`)} />;
 
 	// Group comments by threadId for better organization
 	const groupedThreads = groupBy(

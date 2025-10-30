@@ -1,5 +1,6 @@
 import { ChevronRight, MapPin, MessageSquare, Plus, X } from "lucide-react";
 import { useCallback, useState } from "react";
+import { useTranslation as useTranslationI18next } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -22,6 +23,7 @@ interface ChatSidebarProps {
 }
 
 const ChatSidebarContent: React.FC = () => {
+  const { t } = useTranslationI18next();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
@@ -140,7 +142,7 @@ const ChatSidebarContent: React.FC = () => {
         <div className="flex items-center gap-2">
           <MessageSquare className="w-4 h-4 text-blue-500" />
           <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
-            AI
+            {t("translation.aiTranslation")}
           </h3>
         </div>
 
@@ -174,7 +176,7 @@ const ChatSidebarContent: React.FC = () => {
                 <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                 <div className="min-w-0 flex-1">
                   <div className="text-xs text-blue-700 dark:text-blue-300 font-medium mb-1">
-                    Selected Text
+                    {t("translation.selectedText")}
                   </div>
                   <Tooltip>
                     <TooltipTrigger asChild>

@@ -97,7 +97,7 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            {isCopied ? "Copied" : "Copy to clipboard"}
+            {isCopied ? "Copied" : t("translation.copyToClipboard")}
           </TooltipContent>
         </Tooltip>
         {canInsert && (
@@ -113,7 +113,7 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
                 <TbReplaceFilled className="w-3 h-3" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Insert translation at line position</TooltipContent>
+            <TooltipContent>{t("translation.insertTranslationAtLine")}</TooltipContent>
           </Tooltip>
         )}
       </TooltipProvider>
