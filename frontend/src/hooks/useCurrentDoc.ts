@@ -68,10 +68,11 @@ export const useCurrentDoc = (
         : await fetchDocument(docId);
 
       // For public documents, always set as not editable
-      if (isPublic) {
-        setIsEditable(false);
+      const isPublicDocument = doc?.rootProject?.isPublic === true;
+      if (isPublicDocument || isPublic) {
+        setIsEditable(isPublicDocument);
+        return doc;
       }
-
       if (doc?.rootProject?.permissions && !EDITOR_READ_ONLY) {
         doc?.rootProject.permissions.map((permission: Permission) => {
           if (permission?.userId === currentUser?.id && permission?.canWrite) {

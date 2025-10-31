@@ -27,8 +27,9 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const [shouldStartTranslation, setShouldStartTranslation] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { getTextPairsByLineNumbers } = useTextSelection();
-  
-  const defaultPlaceholder = placeholder || t("translation.typePasteTextPlaceholder");
+
+  const defaultPlaceholder =
+    placeholder || t("translation.typePasteTextPlaceholder");
   const {
     isTranslating,
     isExtractingGlossary,
@@ -180,24 +181,24 @@ const ChatInput: React.FC<ChatInputProps> = ({
             onClick={resetActiveWorkflow}
             className="flex-shrink-0 h-7 justify-self-end text-xs gap-1 hover:bg-blue-50 hover:text-blue-600"
           >
-         {t("translation.commandClear")}
+            {t("translation.commandClear")}
           </Button>
         ) : (
           <div className="flex gap-1 overflow-x-auto">
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={handleTranslateSelected}
               disabled={
                 !selectedText.trim() || isTranslating || isExtractingGlossary
               }
-              className="flex-shrink-0 h-7 text-xs gap-1 hover:bg-blue-50 hover:text-blue-600"
+              className="flex-shrink-0 h-7 text-xs gap-1 cursor-pointer hover:bg-blue-50 hover:text-blue-600"
               title="Translate selected text"
             >
-             {t("translation.commandTranslate")}
+              {t("translation.commandTranslate")}
             </Button>
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={handleGlossarySelected}
               disabled={
@@ -206,10 +207,10 @@ const ChatInput: React.FC<ChatInputProps> = ({
                 isTranslating ||
                 isExtractingGlossary
               }
-              className="flex-shrink-0 h-7 text-xs gap-1 hover:bg-blue-50 hover:text-blue-600"
+              className="flex-shrink-0 h-7 text-xs gap-1 cursor-pointer hover:bg-blue-50 hover:text-blue-600"
               title="Extract glossary from selected text and corresponding translations"
             >
-            {t("translation.commandGlossary")}
+              {t("translation.commandGlossary")}
             </Button>
           </div>
         )}
