@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { ScrollArea } from "./ui/scroll-area";
-import { ChevronLeft, Info, MessageCircle, BookOpen } from "lucide-react";
+import {
+  ChevronLeft,
+  Info,
+  MessageCircle,
+  BookOpen,
+  FileText,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import TableOfContentSidebar from "./TableOfContentSidebar";
 import Comments from "./EditorSideMenu/Comments";
@@ -9,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchDocument } from "@/api/document";
 import TableOfContent from "./TableOfContent";
 import { useTranslation } from "react-i18next";
+import Resources from "./EditorSideMenu/Resources";
 interface DocumentSidebarProps {
   documentId: string;
 }
@@ -276,6 +283,12 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({ documentId }) => {
       label: t(`common.comments`),
       shortLabel: "Comments",
     },
+    {
+      id: "resources",
+      icon: FileText,
+      label: t(`common.resources`),
+      shortLabel: "Resources",
+    },
   ];
 
   return (
@@ -346,6 +359,13 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({ documentId }) => {
               <ScrollArea className="h-full">
                 <div className="h-full">
                   <Comments />
+                </div>
+              </ScrollArea>
+            )}
+            {activeTab === "resources" && (
+              <ScrollArea className="h-full">
+                <div className="h-full">
+                  <Resources />
                 </div>
               </ScrollArea>
             )}

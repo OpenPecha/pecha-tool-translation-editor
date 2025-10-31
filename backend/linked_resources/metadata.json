@@ -1,0 +1,173 @@
+{
+    "choejuk": {
+        "root": {
+            "title": {
+                "bo": "བྱང་ཆུབ་སེམས་དཔའི་སྤྱོད་པ་ལ་འཇུག་པ།",
+                "en": "The Way of the Bodhisattva"
+            },
+            "author": {
+                "bo": "རྒྱལ་སྲས་ཞི་བ་ལྷ།",
+                "en": "Shantideva"
+            }
+        },
+        "commentary_1": {
+            "title": {
+                "bo": "ཀུན་དཔལ། འཇམ་དབྱངས་བླ་མའི་ཞལ་ལུང་།",
+                "en": "Khenpo Kunpel's commentary on the Bodhicaryavatara"
+            },
+            "author": {
+                "en": "author of commentary_1"
+            }
+        },
+        "commentary_2": {
+            "title": {
+                "en": "commentary_2 title"
+            },
+            "author": {
+                "en": "author of commentary_2"
+            }
+        },
+        "commentary_3": {
+            "title": {
+                "en": "Tokme Zangpo, The Ocean of Good Saying",
+                "bo": "ཐོགས་མེད་བཟང་པོ། སྤྱོད་འགྲེལ་ལེགས་བཤད་རྒྱ་མཚོ།"
+            },
+            "author": {
+                "en": "author of commentary_3"
+            }
+        },
+        "sanskrit_text": {
+            "title": {
+                "sa": "शबोधिचर्यावतार"
+            },
+            "author": "author of sanskrit"
+        }
+    },
+    "dorjee_choepa": {
+        "root": {
+            "title": {
+                "bo": "རྡོ་རྗེ་གཅོད་པ་ཞེས་བྱ་བ་ཐེག་པ་ཆེན་པོའི་མདོ།",
+                "en": "The Sutra of the Great Vehicle Called the Diamond Cutter"
+            },
+            "author": {
+                "bo": "སྟོན་པ་བཅོམ་ལྡན་འདས།",
+                "en": "Buddha"
+            }
+        },
+        "commentary_1": {
+            "title": {
+                "en": "commentary_1 title"
+            },
+            "author": {
+                "en": "author of commentary_1"
+            }
+        },
+        "commentary_2": {
+            "title": {
+                "en": "commentary_2 title"
+            },
+            "author": {
+                "en": "author of commentary_2"
+            }
+        },
+        "commentary_3": {
+            "title": {
+                "en": "commentary_3 title"
+            },
+            "author": {
+                "en": "author of commentary_3"
+            }
+        },
+        "sanskrit_text": {
+            "title": {
+                "sa": "वज्रच्छेदिका नाम त्रिशतिका प्रज्ञापारमिता।"
+            },
+            "author": "author of sanskrit"
+        }
+    },
+    "phakpa_duepa": {
+        "root": {
+            "title": {
+                "bo": "འཕགས་པ་ཤེས་རབ་ཀྱི་ཕ་རོལ་ཏུ་ཕྱིན་པ་སྡུད་པ་ཚིགས་སུ་བཅད་པ།",
+                "en": "The Verses Condensing the Perfection of Wisdom"
+            },
+            "author": {
+                "en": "phakdoe"
+            }
+        },
+        "commentary_1": {
+            "title": {
+                "en": "commentary_1 title"
+            },
+            "author": {
+                "en": "author of commentary_1"
+            }
+        },
+        "commentary_2": {
+            "title": {
+                "en": "commentary_2 title"
+            },
+            "author": {
+                "en": "author of commentary_2"
+            }
+        },
+        "commentary_3": {
+            "title": {
+                "en": "commentary_3 title"
+            },
+            "author": {
+                "en": "author of commentary_3"
+            }
+        },
+        "sanskrit_text": {
+            "title": {
+                "sa": "आर्यप्रज्ञापारमिताहृदयसूत्रं"
+            },
+            "author": "author of sanskrit"
+        }
+    },
+    "sherab_nyinpo": {
+        "root": {
+            "title": {
+                "bo": "ཤེས་རབ་ཀྱི་ཕ་རོལ་ཏུ་ཕྱིན་པའི་སྙིང་པོ།",
+                "en": "The Heart of the Perfection of Wisdom"
+            },
+            "author": {
+                "en": "phakdoe"
+            }
+        },
+        "commentary_1": {
+            "title": {
+                "bo": "བཻ་རོ་ཙ་ན། ཤེར་སྙིང་འགྲེལ་པ་སྔགས་སུ་བཀྲལ་པ།",
+                "en": "Vairocana, Unravelling the Meaning of the Heart of Sutra According to the Mantra"
+            },
+            "author": {
+                "en": "author of commentary_1"
+            }
+        },
+        "commentary_2": {
+            "title": {
+                "bo": "ཕྱག་ན་རྡོ་རྗེ། ཤེར་ཕྱིན་སྙིང་པོའི་འགྲེལ་པ།",
+                "en": "Chakna Dorje, Explaining the Heart Sutra"
+            },
+            "author": {
+                "en": "author of commentary_2"
+            }
+        },
+        "commentary_3": {
+            "title": {
+                "bo": "ཏཱ་ར་ནཱ་ཐ། ཤེས་རབ་སྙིང་པོའི་ཚིག་འགྲེལ།",
+                "en": "Taranatha, Word for Word Commentary on the Heart Sutra"
+            },
+            "author": {
+                "en": "author of commentary_3"
+            }
+        },
+        "sanskrit_text": {
+            "title": {
+                "sa": "प्रज्ञापारमिताहृदय"
+            },
+            "author": "author of sanskrit"
+        }
+    }
+}
