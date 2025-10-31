@@ -6,13 +6,19 @@
 	font-weight: normal;
 	font-style: normal;
 }
-
 @font-face {
+	font-family: monlam-2;
+	src: url("/font/MonlamUniOuChan2.ttf") format("truetype");
+	font-weight: normal;
+	font-style: normal;
+}
+
+/* @font-face {
 	font-family: monlam-2;
 	src: url("/font/MonlamTBslim.woff") format("woff");
 	font-weight: normal;
 	font-style: normal;
-}
+} */
 
 @font-face {
 	font-family: google-sans;
