@@ -54,6 +54,14 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
   const handlePreviewSuccess = (newTranslationId: string) => {
     setTranslationId(newTranslationId);
   };
+  const availableMethods = [
+    { type: "empty", label: t("common.emptyText"), isDisabled: false },
+    { type: "file", label: t("common.file"), isDisabled: false },
+    { type: "openpecha", label: t("common.openpecha"), isDisabled: true },
+  ];
+  const filtered_availableMethods = availableMethods
+    .filter((d) => !d.isDisabled)
+    .map((d) => d.type);
   return (
     <BaseModal
       open={true}
@@ -69,7 +77,7 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
               <UploadMethodTabs
                 activeMethod={uploadMethod}
                 onMethodChange={setUploadMethod}
-                availableMethods={["empty", "file", "openpecha"]}
+                availableMethods={filtered_availableMethods as UploadMethod[]}
               >
                 {uploadMethod !== "openpecha" && (
                   <div className="mb-6">

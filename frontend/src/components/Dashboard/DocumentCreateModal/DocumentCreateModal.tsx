@@ -241,7 +241,7 @@ function DocumentCreateModal() {
   const availableMethods: AvailableMethodType[] = [
     { type: "empty", label: t("common.emptyText"), isDisabled: false },
     { type: "file", label: t("common.file"), isDisabled: false },
-    { type: "openpecha", label: t("common.openpecha"), isDisabled: false },
+    { type: "openpecha", label: t("common.openpecha"), isDisabled: true },
   ];
 
   const trigger = (
@@ -262,14 +262,18 @@ function DocumentCreateModal() {
             >
               <img src={PlusIcon} width={50} height={50} alt="Create project" />
             </div>
-            <p className="text-sm font-medium text-foreground">{t(`project.blank`)}</p>
+            <p className="text-sm font-medium text-foreground">
+              {t(`project.blank`)}
+            </p>
           </div>
         </button>
         <div className="space-y-0.5 px-1">
           <h3 className="text-sm font-medium text-foreground line-clamp-1">
             {t(`projects.createProject`)}
           </h3>
-          <p className="text-xs text-muted-foreground">{t(`project.startFromScratch`)}</p>
+          <p className="text-xs text-muted-foreground">
+            {t(`project.startFromScratch`)}
+          </p>
         </div>
       </div>
     </div>

@@ -58,9 +58,11 @@ export function NewPechaForm({
         metadata: metadata ?? undefined,
       });
     },
-    onSuccess: () => {
+    onSuccess: ({ data }) => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
+      const rootId = data.roots[0].id;
       closeModal();
+      window.location.href = `/documents/${rootId}`;
     },
     onError: (error: Error) => {
       setError(error.message || "Failed to create project");
@@ -202,9 +204,11 @@ export function EmptyTextForm({
         },
       });
     },
-    onSuccess: () => {
+    onSuccess: ({ data }) => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
+      const rootId = data.roots[0].id;
       closeModal();
+      window.location.href = `/documents/${rootId}`;
     },
     onError: (error: Error) => {
       setError(error.message || "Failed to create project");

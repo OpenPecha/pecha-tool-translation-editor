@@ -65,7 +65,7 @@ function Resources() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(searchQuery);
-    }, 300);
+    }, 500);
 
     return () => clearTimeout(timer);
   }, [searchQuery]);
@@ -139,45 +139,6 @@ function Resources() {
   const loading = isLoading || isFetching;
   return (
     <div className="h-full flex flex-col bg-white dark:bg-gray-900">
-      {/* Header */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-        <p className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-          {t("resources.title", "Linked Resources")}
-        </p>
-
-        {/* Search Input */}
-        <div className="relative">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={handleKeyPress}
-            placeholder={t(
-              "resources.searchPlaceholder",
-              "Search in root texts..."
-            )}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                     bg-white dark:bg-gray-800 text-gray-900 dark:text-white
-                     focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                     placeholder-gray-500 dark:placeholder-gray-400 font-monlam-2"
-          />
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-          <button
-            onClick={handleSearch}
-            disabled={loading || !searchQuery.trim()}
-            className="absolute right-2 top-1.5 px-3 py-1 bg-blue-600 hover:bg-blue-700 
-                     disabled:bg-gray-400 disabled:cursor-not-allowed
-                     text-white text-sm rounded-md transition-colors"
-          >
-            {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              t("resources.search", "Search")
-            )}
-          </button>
-        </div>
-      </div>
-
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4">
         {/* Error State */}

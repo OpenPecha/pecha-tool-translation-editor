@@ -118,6 +118,9 @@ async function createProject(name, identifier, metadata, rootId, userId) {
         },
       },
     },
+    include: {
+      roots: true,
+    },
   });
 }
 
