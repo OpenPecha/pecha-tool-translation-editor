@@ -11,6 +11,9 @@
 
 	--editor-text-color: #555;
 	--editor-text-hover-color: #222;
+
+	--editor-dark-text-color: #ccc;
+	--editor-dark-text-hover-color: #fff;
 }
 
 
@@ -74,6 +77,16 @@
 .ql-editor p>*:hover, .ql-editor p:hover{
 	color: var(--editor-text-hover-color) !important;
 }
+
+.dark .ql-editor p>* , .dark .ql-editor p{
+	color: var(--editor-dark-text-color) !important;
+}
+.dark .ql-editor p>*:hover, .dark .ql-editor p:hover{
+	color: var(--editor-dark-text-hover-color) !important;
+}
+
+
+
 .hide-line-numbers .ql-editor {
 	padding-left: 5px !important;
 }
