@@ -7,9 +7,6 @@
  * Get the base URL for the application
  * @returns {string} The workspace URL or default message
  */
-const getWorkspaceUrl = () => {
-  return process.env.WORKSPACE_URL || "the platform";
-};
 
 /**
  * Template for document sharing notification
@@ -35,7 +32,7 @@ Access Level: ${
         : "Viewer (read-only)"
     }
 
-You can access the document at: ${getWorkspaceUrl()}
+You can access the document at: ${TranslationEditorURL}
 
 Thank you for using Pecha Translation Editor!
 
@@ -74,7 +71,7 @@ A project has been shared with you${sharedByText} on Pecha Translation Editor.
 Project: "${projectName}"
 Access Level: ${accessDescription}
 
-You can access the project at: ${getWorkspaceUrl()}
+You can access the project at: ${TranslationEditorURL}
 
 Thank you for using Pecha Translation Editor!
 
@@ -190,7 +187,7 @@ New Access Level: ${
         : "Viewer (read-only)"
     }
 
-You can access the document at: ${getWorkspaceUrl()}
+You can access the document at: ${TranslationEditorURL}
 
 Thank you for using Pecha Translation Editor!
 
