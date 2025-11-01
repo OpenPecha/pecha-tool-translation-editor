@@ -36,6 +36,11 @@ const {
 } = require("../utils/model");
 const { sendProgress, progressStreams } = require("../utils/progress");
 const { sendEmail } = require("../services/utils");
+const {
+  projectSharedTemplate,
+  projectPermissionUpdatedTemplate,
+  projectPermissionRemovedTemplate,
+} = require("../utils/emailTemplates");
 
 const prisma = new PrismaClient();
 
@@ -239,6 +244,18 @@ router.post("/:id/users/email", authenticate, async (req, res) => {
         canWrite
       );
 
+      // Send email notification
+      try {
+        const accessLevel = canWrite ? "editor" : "viewer";
+        const emailMessage = projectPermissionUpdatedTemplate({
+          projectName: existingProject.name,
+          accessLevel: accessLevel,
+        });
+        await sendEmail([email], emailMessage);
+      } catch (emailError) {
+        console.error("Failed to send email notification:", emailError);
+      }
+
       return res.json({
         success: true,
         message: "User permission updated",
@@ -248,6 +265,18 @@ router.post("/:id/users/email", authenticate, async (req, res) => {
 
     // Create new permission
     const newPermission = await createPermission(id, userToAdd, canWrite);
+
+    // Send email notification for new permission
+    try {
+      const accessLevel = canWrite ? "editor" : "viewer";
+      const emailMessage = projectSharedTemplate({
+        projectName: existingProject.name,
+        accessLevel: accessLevel,
+      });
+      await sendEmail([email], emailMessage);
+    } catch (emailError) {
+      console.error("Failed to send email notification:", emailError);
+    }
 
     res.status(201).json({
       success: true,
@@ -359,8 +388,21 @@ router.delete("/:id/users/:userId", authenticate, async (req, res) => {
         .json({ error: "Not authorized to remove users from this project" });
     }
 
-    // Find the permission
-    const permission = await getPermission(id, userId);
+    // Find the permission with user details
+    const permission = await prisma.permission.findFirst({
+      where: {
+        projectId: id,
+        userId,
+      },
+      include: {
+        user: {
+          select: {
+            email: true,
+            username: true,
+          },
+        },
+      },
+    });
 
     if (!permission) {
       return res.status(404).json({ error: "Permission not found" });
@@ -368,6 +410,18 @@ router.delete("/:id/users/:userId", authenticate, async (req, res) => {
 
     // Delete the permission
     await deletePermission(permission);
+
+    // Send email notification
+    try {
+      if (permission.user && permission.user.email) {
+        const emailMessage = projectPermissionRemovedTemplate({
+          projectName: existingProject.name,
+        });
+        await sendEmail([permission.user.email], emailMessage);
+      }
+    } catch (emailError) {
+      console.error("Failed to send email notification:", emailError);
+    }
 
     res.json({
       success: true,
@@ -1363,12 +1417,13 @@ router.post("/:id/collaborators", authenticate, async (req, res) => {
       });
 
       try {
-        const message = {
-          subject: "Project shared with you",
-          text: `The project ${project.name} has been shared with you. You can access it at ${process.env.WORKSPACE_URL}`,
-        };
-        await sendEmail([userToAdd.email], message);
-      } catch (e) {
+        const emailMessage = projectPermissionUpdatedTemplate({
+          projectName: project.name,
+          accessLevel: accessLevel,
+        });
+        await sendEmail([userToAdd.email], emailMessage);
+      } catch (emailError) {
+        console.error("Failed to send email notification:", emailError);
       }
 
       return res.json({
@@ -1397,6 +1452,17 @@ router.post("/:id/collaborators", authenticate, async (req, res) => {
         },
       },
     });
+
+    // Send email notification to the new collaborator
+    try {
+      const emailMessage = projectSharedTemplate({
+        projectName: project.name,
+        accessLevel: accessLevel,
+      });
+      await sendEmail([userToAdd.email], emailMessage);
+    } catch (emailError) {
+      console.error("Failed to send email notification:", emailError);
+    }
 
     res.status(201).json({
       success: true,
@@ -1481,6 +1547,19 @@ router.patch("/:id/collaborators/:userId", authenticate, async (req, res) => {
       },
     });
 
+    // Send email notification
+    try {
+      if (updatedPermission.user && updatedPermission.user.email) {
+        const emailMessage = projectPermissionUpdatedTemplate({
+          projectName: project.name,
+          accessLevel: accessLevel,
+        });
+        await sendEmail([updatedPermission.user.email], emailMessage);
+      }
+    } catch (emailError) {
+      console.error("Failed to send email notification:", emailError);
+    }
+
     res.json({
       success: true,
       message: "Access level updated",
@@ -1529,11 +1608,19 @@ router.delete("/:id/collaborators/:userId", authenticate, async (req, res) => {
       });
     }
 
-    // Find the permission
+    // Find the permission with user details
     const permission = await prisma.permission.findFirst({
       where: {
         projectId: id,
         userId,
+      },
+      include: {
+        user: {
+          select: {
+            email: true,
+            username: true,
+          },
+        },
       },
     });
 
@@ -1545,6 +1632,18 @@ router.delete("/:id/collaborators/:userId", authenticate, async (req, res) => {
     await prisma.permission.delete({
       where: { id: permission.id },
     });
+
+    // Send email notification
+    try {
+      if (permission.user && permission.user.email) {
+        const emailMessage = projectPermissionRemovedTemplate({
+          projectName: project.name,
+        });
+        await sendEmail([permission.user.email], emailMessage);
+      }
+    } catch (emailError) {
+      console.error("Failed to send email notification:", emailError);
+    }
 
     res.json({
       success: true,

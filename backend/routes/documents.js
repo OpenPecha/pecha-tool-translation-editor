@@ -6,6 +6,11 @@ const {
 const { PrismaClient } = require("@prisma/client");
 const multer = require("multer");
 const { WSSharedDoc } = require("../services");
+const { sendEmail } = require("../services/utils");
+const {
+  documentSharedTemplate,
+  documentPermissionUpdatedTemplate,
+} = require("../utils/emailTemplates");
 const prisma = new PrismaClient();
 const router = express.Router();
 
@@ -842,8 +847,10 @@ router.post("/:id/permissions", authenticate, async (req, res) => {
       where: { docId: documentId, userEmail: email },
     });
 
+    let isUpdate = false;
     if (existingPermission) {
       // Update existing permission
+      isUpdate = true;
       await prisma.permission.update({
         where: { id: existingPermission.id },
         data: { canRead, canWrite },
@@ -890,6 +897,24 @@ router.post("/:id/permissions", authenticate, async (req, res) => {
           });
         }
       }
+    }
+
+    // Send email notification to the user
+    try {
+      const accessType = canWrite ? "edit" : "view";
+      const emailMessage = isUpdate
+        ? documentPermissionUpdatedTemplate({
+            documentName: document.name,
+            accessType: accessType,
+          })
+        : documentSharedTemplate({
+            documentName: document.name,
+            accessType: accessType,
+          });
+      await sendEmail([email], emailMessage);
+    } catch (emailError) {
+      console.error("Failed to send email notification:", emailError);
+      // Don't fail the request if email fails
     }
 
     res.json({ message: "Permission granted successfully" });
