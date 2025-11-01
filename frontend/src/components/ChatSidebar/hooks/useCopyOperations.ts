@@ -18,7 +18,7 @@ export const useCopyOperations = ({
   documentId,
   scrollToLineNumber,
 }: UseCopyOperationsProps) => {
-  const {id} = useParams()
+  const { id } = useParams();
   const [copiedItems, setCopiedItems] = useState<Set<string>>(new Set());
   // Helper function to show copy feedback
   const showCopyFeedback = (itemId: string) => {
@@ -114,9 +114,11 @@ export const useCopyOperations = ({
     translationResults: TranslationResult[]
   ) => {
     const targetEditor = quillEditors.get(documentId);
-    const sourceEditor = quillEditors.get(id??"");
+    const sourceEditor = quillEditors.get(id ?? "");
     if (!sourceEditor) {
-      alert("No source editor found for this document. Please try again after running translation on selected lines.");
+      alert(
+        "No source editor found for this document. Please try again after running translation on selected lines."
+      );
       return;
     }
 
@@ -143,9 +145,14 @@ export const useCopyOperations = ({
     }
 
     // Use the utility function to perform the overwrite with emoji placeholders by default
-    const result = overwriteAllTranslations(sourceEditor, targetEditor, currentResults, {
-      placeholderType: "emoji",
-    });
+    const result = overwriteAllTranslations(
+      sourceEditor,
+      targetEditor,
+      currentResults,
+      {
+        placeholderType: "emoji",
+      }
+    );
 
     if (result.success) {
       // Show success feedback
@@ -176,6 +183,7 @@ export const useCopyOperations = ({
 
   const insertSingleResult = (resultToInsert: TranslationResult) => {
     const targetEditor = quillEditors.get(documentId);
+    const sourceEditor = quillEditors.get(id ?? "");
     if (!targetEditor) {
       // Fallback: copy to clipboard if no editor found
       navigator.clipboard.writeText(resultToInsert.translatedText);
@@ -198,9 +206,14 @@ export const useCopyOperations = ({
     }
 
     // Use the utility function to perform the overwrite for a single result
-    const result = overwriteAllTranslations(sourceEditor, targetEditor, [resultToInsert], {
-      placeholderType: "emoji",
-    });
+    const result = overwriteAllTranslations(
+      sourceEditor,
+      targetEditor,
+      [resultToInsert],
+      {
+        placeholderType: "emoji",
+      }
+    );
 
     if (result.success) {
       // Get the line number for highlighting
