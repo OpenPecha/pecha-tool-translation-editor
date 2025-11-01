@@ -15,9 +15,7 @@ export type TextType =
   | "commentary"
   | "philosophical treatises";
 export type ModelName =
-  | "claude-3-5-sonnet-20241022"
   | "claude-3-7-sonnet-20250219"
-  | "claude-sonnet-4-20250514"
   | "claude-3-5-haiku-20241022"
   | "claude-3-opus-20240229"
   | "gemini-2.5-pro"
@@ -39,7 +37,6 @@ export const TEXT_TYPES: TextType[] = [
   "philosophical treatises",
 ];
 export const MODEL_NAMES: ModelName[] = [
-  "claude-sonnet-4-20250514",
   "claude-3-5-haiku-20241022",
   "claude-3-opus-20240229",
   "gemini-2.5-pro",

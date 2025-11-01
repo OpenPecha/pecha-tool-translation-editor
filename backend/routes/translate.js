@@ -50,7 +50,7 @@ router.post("/", authenticate, async (req, res) => {
       texts,
       target_language,
       text_type = "mantra",
-      model_name = "claude-3-5-sonnet-20241022",
+      model_name = "claude-3-5-haiku-20241022",
       batch_size = 2,
       user_rules = "do translation normally",
     } = req.body;
