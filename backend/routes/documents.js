@@ -24,7 +24,6 @@ async function checkDocumentPermission(document, userId) {
   // If the document doesn't exist, no permission
   if (!document) return false;
   // If the document's project is public, everyone has read access
-  console.log(document.rootProject);
   if (document.rootProject && document.rootProject.isPublic) return true;
 
   // If no user provided (anonymous), they can only access public documents

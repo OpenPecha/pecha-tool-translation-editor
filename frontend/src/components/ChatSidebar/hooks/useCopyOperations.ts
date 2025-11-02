@@ -184,7 +184,7 @@ export const useCopyOperations = ({
   const insertSingleResult = (resultToInsert: TranslationResult) => {
     const targetEditor = quillEditors.get(documentId);
     const sourceEditor = quillEditors.get(id ?? "");
-    if (!targetEditor) {
+    if (!targetEditor || !sourceEditor) {
       // Fallback: copy to clipboard if no editor found
       navigator.clipboard.writeText(resultToInsert.translatedText);
       showCopyFeedback("insert-fallback");
