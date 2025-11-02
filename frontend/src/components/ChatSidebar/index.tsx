@@ -98,7 +98,7 @@ const ChatSidebarContent: React.FC = () => {
   const handleClearChat = useCallback(() => {
     if (
       globalThis.confirm(
-        "Are you sure you want to clear the chat history and reset all results?"
+        "Are you sure you want to clear the chat history and reset all results? "
       )
     ) {
       clearHistory();
