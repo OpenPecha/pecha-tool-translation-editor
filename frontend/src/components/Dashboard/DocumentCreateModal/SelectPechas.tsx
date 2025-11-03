@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useQuery } from "@tanstack/react-query";
-import { SelectedPechaType } from "./Forms";
+import { SelectedPechaType } from "./types";
 
 interface PechaMetadata {
 	id: string;

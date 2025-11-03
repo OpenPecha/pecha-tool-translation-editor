@@ -1,37 +1,38 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { QueryObserverResult, useMutation } from "@tanstack/react-query";
-import { createDocument } from "@/api/document";
+import { useMutation } from "@tanstack/react-query";
+import { createDocument, deleteDocument } from "@/api/document";
 import { MAX_FILE_SIZE, MAX_FILE_SIZE_MB } from "@/utils/Constants";
 import { AlertCircle, FileText, Upload } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-const TextUploader = ({
+interface TextUploaderProps {
+	isRoot: boolean;
+	isPublic: boolean;
+	selectedLanguage: string;
+	setRootId?: (id: string) => void;
+	disable?: boolean;
+	rootId?: string;
+	previewMode?: boolean;
+	onFileLoaded?: (file: File, content: string) => void;
+	setNewDocumentId: (id: string | null) => void;
+}
+
+const TextUploader: React.FC<TextUploaderProps> = ({
 	isRoot,
 	isPublic,
 	selectedLanguage,
 	setRootId,
 	disable,
 	rootId,
-	refetchTranslations,
 	previewMode = false,
 	onFileLoaded,
 	setNewDocumentId,
-}: {
-	isRoot: boolean;
-	isPublic: boolean;
-	selectedLanguage: string;
-	setRootId: (id: string) => void;
-	disable?: boolean;
-	rootId?: string;
-	refetchTranslations?: () => Promise<QueryObserverResult<unknown, Error>>;
-	previewMode?: boolean;
-	onFileLoaded?: (file: File, content: string) => void;
-	setNewDocumentId: (id: string | null) => void;
 }) => {
 	const [file, setFile] = useState<File | null>(null);
 	const [fileContent, setFileContent] = useState<string>("");
 	const [fileSizeError, setFileSizeError] = useState<string>("");
+	const [documentId, setDocumentId] = useState<string | null>(null);
 	const { t } = useTranslation();
 
 	const uploadMutation = useMutation({
@@ -51,7 +52,9 @@ const TextUploader = ({
 				formData.append("rootId", rootId);
 			}
 			const response = await createDocument(formData);
-			setRootId(response.id);
+			if (setRootId) {
+				setRootId(response.id);
+			}
 			return response;
 		},
 		onError: (error) => {
@@ -59,10 +62,11 @@ const TextUploader = ({
 		},
 		onSuccess: (response) => {
 			setFileContent(response.textContent);
-			if (refetchTranslations) {
-				refetchTranslations();
-			}
+			setDocumentId(response.id);
 			setNewDocumentId(response.id);
+			if (previewMode && onFileLoaded && file) {
+				onFileLoaded(file, response.textContent);
+			}
 		},
 	});
 
@@ -92,29 +96,25 @@ const TextUploader = ({
 			}
 
 			setFile(selectedFile);
-
-			const reader = new FileReader();
-			reader.onload = (event) => {
-				const content = event.target?.result as string;
-
-				// In preview mode, call the callback instead of uploading
-				if (previewMode && onFileLoaded) {
-					onFileLoaded(selectedFile, content);
-				} else {
-					// Original behavior - upload immediately
-					uploadMutation.mutate(selectedFile);
-				}
-			};
-			reader.readAsText(selectedFile);
+			uploadMutation.mutate(selectedFile);
 		}
 	};
 
 	const errorMessage = (uploadMutation.error as Error)?.message;
 
-	const handleReset = () => {
+	const handleReset = async () => {
+		// Delete the document if it was created
+		if (documentId) {
+			try {
+				await deleteDocument(documentId);
+			} catch (error) {
+				console.error("Failed to delete document:", error);
+			}
+		}
 		setFile(null);
 		setFileContent("");
 		setFileSizeError(""); // Clear file size error when resetting
+		setDocumentId(null);
 		uploadMutation.reset(); // Reset mutation state
 		setNewDocumentId(null);
 	};
@@ -195,7 +195,7 @@ const TextUploader = ({
 				</div>
 			)}
 
-			{file && !previewMode && (
+			{file && (
 				<div className="space-y-3">
 					<div className="flex justify-between items-center p-3 bg-secondary-50 border border-secondary-200 rounded-lg bg-neutral-50 dark:bg-neutral-700">
 						<div className="flex items-center gap-2">
@@ -243,7 +243,7 @@ const TextUploader = ({
 						</div>
 					)}
 
-					{uploadMutation.isSuccess && (
+					{uploadMutation.isSuccess && !previewMode && (
 						<div className="space-y-3">
 							<div className="flex items-center gap-2 text-green-600 text-sm">
 								<svg

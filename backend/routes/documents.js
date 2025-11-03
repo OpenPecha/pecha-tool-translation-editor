@@ -255,8 +255,6 @@ router.post("/", authenticate, upload.single("file"), async (req, res) => {
       } else {
         return res.status(400).json({ error: "Unsupported file type: " + req.file.mimetype });
       }
-    }else{
-      return res.status(400).json({ error: "File is required" });
     }
     const doc = new WSSharedDoc(identifier, req.user.id);
     const text = doc.getText(identifier);
