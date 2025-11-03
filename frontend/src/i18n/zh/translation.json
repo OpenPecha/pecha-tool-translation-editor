@@ -46,6 +46,7 @@
   "documents.documentDeleted": "文档删除成功",
   "documents.documentSaved": "文档保存成功",
   "documents.documentTitle": "文档标题",
+    "documents.uploadText": "上传文本 (.txt 或 .docx)",
   "documents.noDocuments": "未找到文档",
   "documents.saveDocument": "保存文档",
   "documents.searchDocuments": "搜索文档",

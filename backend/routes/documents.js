@@ -13,7 +13,7 @@ const {
 } = require("../utils/emailTemplates");
 const prisma = new PrismaClient();
 const router = express.Router();
-
+const { docxToText } = require("../utils/docxToText");
 /**
  * Check if a user has permission to access a document
  * @param {Object} document - The document object with rootProject information
@@ -246,23 +246,23 @@ router.post("/", authenticate, upload.single("file"), async (req, res) => {
         .status(400)
         .json({ error: "Missing language in request body" });
     }
-
-    const doc = new WSSharedDoc(identifier, req.user.id);
-    // Update the Y.doc with file content
-    const prosemirrorText = doc.getText(identifier);
-    if (req?.file && req.file.buffer) {
-      try {
-        const textContent = req.file.buffer.toString("utf-8");
-        if (textContent) {
-          prosemirrorText.delete(0, prosemirrorText.length);
-          prosemirrorText.insert(0, textContent);
-        }
-      } catch (error) {
-        console.error("Error processing file content:", error);
-        throw new Error("Invalid file format or encoding");
+    let textContent = null;
+    if (req.file) {
+      if (req.file.mimetype === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+        textContent = await docxToText(req.file.buffer);
+      } else if (req.file.mimetype === "text/plain") {
+        textContent = req.file.buffer.toString("utf-8");
+      } else {
+        return res.status(400).json({ error: "Unsupported file type: " + req.file.mimetype });
       }
     }
-    const delta = prosemirrorText.toDelta();
+    const doc = new WSSharedDoc(identifier, req.user.id);
+    const text = doc.getText(identifier);
+    if (textContent) {
+      text.delete(0, text.length);
+      text.insert(0, textContent);
+    }
+    const delta = text.toDelta();
 
     const document = await prisma.$transaction(async (tx) => {
       let rootProjectId = null;
@@ -273,7 +273,7 @@ router.post("/", authenticate, upload.single("file"), async (req, res) => {
         });
         rootProjectId = rootDoc?.rootProjectId;
       }
-      const doc = await tx.doc.create({
+      let document = await tx.doc.create({
         data: {
           id: identifier,
           identifier,
@@ -291,7 +291,7 @@ router.post("/", authenticate, upload.single("file"), async (req, res) => {
       });
       await tx.permission.create({
         data: {
-          docId: doc.id,
+          docId: document.id,
           userId: req.user.id,
           canRead: true,
           canWrite: true,
@@ -300,20 +300,24 @@ router.post("/", authenticate, upload.single("file"), async (req, res) => {
       const version = await tx.version.create({
         data: {
           content: { ops: delta },
-          docId: doc.id,
+          docId: document.id,
           label: "initial Auto-save",
         },
       });
 
       await tx.doc.update({
-        where: { id: doc.id },
+        where: { id: document.id },
         data: {
           currentVersionId: version.id,
         },
       });
-      return doc;
-    });
 
+      const responseDocument = {
+        ...document,
+        textContent,
+      };
+      return responseDocument;
+    });
     res.status(201).json(document);
   } catch (error) {
     console.error("Error creating document:", error);

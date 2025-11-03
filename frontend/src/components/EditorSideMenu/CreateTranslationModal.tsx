@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { QueryObserverResult, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { createDocument } from "@/api/document";
+import { createDocument, deleteDocument } from "@/api/document";
 import SelectLanguage from "../Dashboard/DocumentCreateModal/SelectLanguage";
 import TextUploader from "../Dashboard/DocumentCreateModal/TextUploader";
 import { useTranslation } from "react-i18next";
@@ -27,17 +27,41 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
 }) => {
   const [language, setLanguage] = useState<string>("");
   const [uploadMethod, setUploadMethod] = useState<UploadMethod>("empty");
-  const [translationId, setTranslationId] = useState<string | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [fileContent, setFileContent] = useState<string>("");
   const [showPreview, setShowPreview] = useState(false);
+  const [newDocumentId, setNewDocumentId] = useState<string | null>(null);
+  const [isCreationComplete, setIsCreationComplete] = useState(false);
   const { t } = useTranslation();
 
-  useEffect(() => {
-    if (translationId) {
-      onClose();
+  const resetModalState = () => {
+    setLanguage("");
+    setUploadMethod("empty");
+    setUploadedFile(null);
+    setFileContent("");
+    setShowPreview(false);
+    setNewDocumentId(null);
+    setIsCreationComplete(false);
+  };
+
+  const closeAndCleanup = async () => {
+    if (newDocumentId && !isCreationComplete) {
+      try {
+        await deleteDocument(newDocumentId);
+      } catch (error) {
+        console.error("Failed to delete document:", error);
+      }
     }
-  }, [translationId, onClose]);
+    onClose();
+    resetModalState();
+  };
+
+  const handleModalOpenChange = (isOpen: boolean) => {
+    if (isOpen) {
+      return;
+    }
+    closeAndCleanup();
+  };
 
   const handleFileLoaded = (file: File, content: string) => {
     setUploadedFile(file);
@@ -45,14 +69,24 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
     setShowPreview(true);
   };
 
-  const handleBackToUpload = () => {
+  const handleBackToUpload = async () => {
+    if (newDocumentId) {
+      try {
+        await deleteDocument(newDocumentId);
+      } catch (error) {
+        console.error("Failed to delete document:", error);
+      }
+      setNewDocumentId(null);
+    }
     setShowPreview(false);
     setUploadedFile(null);
     setFileContent("");
   };
 
-  const handlePreviewSuccess = (newTranslationId: string) => {
-    setTranslationId(newTranslationId);
+  const handlePreviewSuccess = (_newTranslationId: string) => {
+    setIsCreationComplete(true);
+    refetchTranslations();
+    onClose();
   };
   const availableMethods = [
     { type: "empty", label: t("common.emptyText"), isDisabled: false },
@@ -65,7 +99,7 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
   return (
     <BaseModal
       open={true}
-      onOpenChange={(open) => !open && onClose()}
+      onOpenChange={handleModalOpenChange}
       title={t("translation.createTranslation")}
       variant="fixed"
       size="lg"
@@ -92,7 +126,10 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
                   <EmptyDocumentCreator
                     language={language}
                     rootId={rootId}
-                    onSuccess={setTranslationId}
+                    onSuccess={() => {
+                      setIsCreationComplete(true);
+                      onClose();
+                    }}
                     refetchTranslations={refetchTranslations}
                   />
                 </TabContentWrapper>
@@ -102,19 +139,21 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
                     isRoot={false}
                     isPublic={false}
                     selectedLanguage={language}
-                    setRootId={setTranslationId}
                     rootId={rootId}
-                    refetchTranslations={refetchTranslations}
                     previewMode={true}
                     onFileLoaded={handleFileLoaded}
                     disable={!language || language === ""}
+                    setNewDocumentId={setNewDocumentId}
                   />
                 </TabContentWrapper>
 
                 <TabContentWrapper value="openpecha">
                   <OpenPechaTranslationLoader
                     rootId={rootId}
-                    onSuccess={setTranslationId}
+                    onSuccess={() => {
+                      setIsCreationComplete(true);
+                      onClose();
+                    }}
                     refetchTranslations={refetchTranslations}
                   />
                 </TabContentWrapper>
@@ -135,10 +174,9 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
               file={uploadedFile!}
               fileContent={fileContent}
               language={language}
-              rootId={rootId}
               onCancel={handleBackToUpload}
               onSuccess={handlePreviewSuccess}
-              refetchTranslations={refetchTranslations}
+              translationId={newDocumentId!}
             />
           </div>
         )}

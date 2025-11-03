@@ -74,6 +74,7 @@
   "documents.documentDeleted": "Document deleted successfully",
   "documents.documentSaved": "Document saved successfully",
   "documents.documentTitle": "Document Title",
+    "documents.uploadText": "Upload Text (.txt or .docx)",
   "documents.noDocuments": "No documents found",
   "documents.saveDocument": "Save Document",
   "documents.searchDocuments": "Search documents",

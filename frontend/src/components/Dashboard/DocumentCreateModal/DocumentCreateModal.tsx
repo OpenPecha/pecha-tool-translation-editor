@@ -1,176 +1,15 @@
 import React, { useState } from "react";
 import { BaseModal } from "@/components/shared/modals/BaseModal";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { NewPechaForm, PechaFromOpenPecha, EmptyTextForm } from "./Forms";
 import { useTranslation } from "react-i18next";
 import PlusIcon from "@/assets/plus.svg";
-import { ChevronLeft, ChevronRight, File, FileText } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { TbApi } from "react-icons/tb";
-
-export type UploadMethod = "file" | "openpecha" | "empty";
-
-export type AvailableMethodType = {
-  type: UploadMethod;
-  label: string;
-  isDisabled?: boolean;
-};
-
-// Helper function for step indicator styling
-function getStepIndicatorClass(step: number, currentStep: number): string {
-  if (step === currentStep) {
-    return "bg-secondary-600 text-white border-secondary-600 shadow-lg dark:shadow-sm shadow-secondary-200";
-  } else if (step < currentStep) {
-    return "bg-green-600 text-white border-green-600 shadow-lg dark:shadow-sm shadow-green-200";
-  } else {
-    return "bg-white text-gray-400 border-gray-300";
-  }
-}
-
-// Step indicator component
-function StepIndicator({
-  currentStep,
-  totalSteps,
-}: {
-  readonly currentStep: number;
-  readonly totalSteps: number;
-}) {
-  return (
-    <div className="flex items-center justify-center mb-8">
-      {Array.from({ length: totalSteps }, (_, index) => (
-        <div key={index} className="flex items-center">
-          <div
-            className={cn(
-              "w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 border-2",
-              getStepIndicatorClass(index + 1, currentStep)
-            )}
-          >
-            {index + 1 < currentStep ? (
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            ) : (
-              index + 1
-            )}
-          </div>
-          {index < totalSteps - 1 && (
-            <div
-              className={cn(
-                "w-12 h-0.5 mx-2 transition-colors duration-300",
-                index + 1 < currentStep ? "bg-green-500" : "bg-gray-300"
-              )}
-            />
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// Method selection component
-function MethodSelection({
-  selectedMethod,
-  onMethodSelect,
-  availableMethods,
-  onDoubleClick,
-}: {
-  readonly selectedMethod: UploadMethod | null;
-  readonly onMethodSelect: (method: UploadMethod) => void;
-  readonly availableMethods: AvailableMethodType[];
-  readonly onDoubleClick: () => void;
-}) {
-  const { t } = useTranslation();
-
-  const methodConfigs = {
-    empty: {
-      icon: <FileText size={24} />,
-      title: t("documents.emptyText"),
-      description: t("documents.startEmptyDocument"),
-    },
-    file: {
-      icon: <File size={24} />,
-      title: t("common.file"),
-      description: t("projects.uploadAFileFromYourComputer"),
-    },
-    openpecha: {
-      icon: <TbApi size={24} />,
-      title: t("common.openpecha"),
-      description: t("projects.importFromOpenPechaRepository"),
-    },
-  };
-
-  return (
-    <div className="space-y-4">
-      <div className="text-center mb-6">
-        <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-400 mb-2">
-          {t(`projects.chooseInputMethod`)}
-        </h3>
-        <p className="text-sm text-neutral-600 dark:text-neutral-500">
-          {t(`projects.selectHowYouWantToCreateYourProject`)}
-        </p>
-      </div>
-
-      <div className="grid gap-4">
-        {availableMethods.map((method) => {
-          const config = methodConfigs[method.type];
-          return (
-            <button
-              key={method.type}
-              disabled={method.isDisabled}
-              type="button"
-              onClick={() => onMethodSelect(method.type)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  onMethodSelect(method.type);
-                }
-              }}
-              onDoubleClick={onDoubleClick}
-              className={cn(
-                "w-full p-6 border-2 rounded-lg text-left transition-all hover:shadow-md focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-secondary-500",
-                selectedMethod === method.type
-                  ? "border-secondary-500 bg-neutral-50 dark:bg-neutral-700"
-                  : "border-gray-200 hover:border-gray-300"
-              )}
-            >
-              <div className="flex items-start space-x-4">
-                <div
-                  className={cn(
-                    "p-3 rounded-lg",
-                    selectedMethod === method.type
-                      ? "bg-secondary-600 text-white"
-                      : "bg-gray-100 text-gray-600"
-                  )}
-                >
-                  {config.icon}
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-medium text-neutral-900 dark:text-neutral-300 mb-1">
-                    {config.title}{" "}
-                    {method.isDisabled && (
-                      <span className="text-gray-400 text-sm">
-                        (Coming Soon)
-                      </span>
-                    )}
-                  </h4>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-500">
-                    {config.description}
-                  </p>
-                </div>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { deleteDocument } from "@/api/document";
+import { StepIndicator } from "./StepIndicator";
+import { MethodSelection } from "./MethodSelection";
+import { ProjectNameStep } from "./ProjectNameStep";
+import { FormStep } from "./FormStep";
+import { AvailableMethodType, UploadMethod } from "./types";
 
 function DocumentCreateModal() {
   const [projectName, setProjectName] = useState("");
@@ -181,19 +20,45 @@ function DocumentCreateModal() {
   );
   const [isFormValid, setIsFormValid] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [newDocumentId, setNewDocumentId] = useState<string | null>(null);
   const createProjectRef = React.useRef<(() => void) | null>(null);
   const { t } = useTranslation();
 
   const totalSteps = 3;
 
-  const closeModal = () => {
-    setOpen(false);
-    setCurrentStep(1);
+  const resetModalState = () => {
     setProjectName("");
+    setCurrentStep(1);
     setSelectedMethod(null);
     setIsFormValid(false);
     setIsCreating(false);
     createProjectRef.current = null;
+    setNewDocumentId(null);
+  };
+
+  const closeAndCleanup = async () => {
+    if (newDocumentId) {
+      try {
+        await deleteDocument(newDocumentId);
+      } catch (error) {
+        console.error("Failed to delete document:", error);
+      }
+    }
+    setOpen(false);
+    resetModalState();
+  };
+
+  const closeOnSuccess = () => {
+    setOpen(false);
+    resetModalState();
+  };
+
+  const handleModalOpenChange = (isOpen: boolean) => {
+    if (isOpen) {
+      setOpen(true);
+    } else {
+      closeAndCleanup();
+    }
   };
 
   const handleOpenModal = () => {
@@ -283,32 +148,11 @@ function DocumentCreateModal() {
     switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-6">
-            <div className="text-center mb-6">
-              <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-400 mb-2">
-                {t(`projects.projectDetails`)}
-              </h3>
-              <p className="text-sm text-neutral-600 dark:text-neutral-500">
-                {t(`projects.enterProjectName`)}
-              </p>
-            </div>
-            <div className="space-y-4">
-              <Label
-                htmlFor="projectName"
-                className="text-sm font-medium text-neutral-700 dark:text-neutral-200"
-              >
-                {t(`projects.projectName`)}
-              </Label>
-              <Input
-                id="projectName"
-                value={projectName}
-                className="w-full border-gray-300 focus:border-secondary-500 focus:ring-secondary-500"
-                onChange={(e) => setProjectName(e.target.value)}
-                placeholder={t(`projects.enterProjectName`)}
-                autoFocus
-              />
-            </div>
-          </div>
+          <ProjectNameStep
+            projectName={projectName}
+            setProjectName={setProjectName}
+            onNext={handleNext}
+          />
         );
 
       case 2:
@@ -322,34 +166,15 @@ function DocumentCreateModal() {
         );
 
       case 3:
-        if (!selectedMethod) return null;
         return (
-          <div className="space-y-6">
-            {selectedMethod === "file" && (
-              <NewPechaForm
-                projectName={projectName}
-                closeModal={closeModal}
-                onValidationChange={handleValidationChange}
-                onCreateProject={createProjectRef}
-              />
-            )}
-            {selectedMethod === "openpecha" && (
-              <PechaFromOpenPecha
-                projectName={projectName}
-                closeModal={closeModal}
-                onValidationChange={handleValidationChange}
-                onCreateProject={createProjectRef}
-              />
-            )}
-            {selectedMethod === "empty" && (
-              <EmptyTextForm
-                projectName={projectName}
-                closeModal={closeModal}
-                onValidationChange={handleValidationChange}
-                onCreateProject={createProjectRef}
-              />
-            )}
-          </div>
+          <FormStep
+            selectedMethod={selectedMethod}
+            projectName={projectName}
+            closeOnSuccess={closeOnSuccess}
+            onValidationChange={handleValidationChange}
+            onCreateProject={createProjectRef}
+            setNewDocumentId={setNewDocumentId}
+          />
         );
 
       default:
@@ -360,7 +185,7 @@ function DocumentCreateModal() {
   return (
     <BaseModal
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={handleModalOpenChange}
       trigger={trigger}
       title={t(`projects.createProject`)}
       size="lg"

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { SelectedPechaType } from "./Forms";
+import { SelectedPechaType } from "./types";
 import { ModalFooter } from "@/components/shared/modals";
 
 function PechaView({

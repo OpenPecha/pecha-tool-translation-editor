@@ -1,8 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle, AlertCircle } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
-import { createDocument } from "@/api/document";
 import { ModalFooter, ErrorDisplay } from "@/components/shared/modals";
 import { useTranslation } from "react-i18next";
 
@@ -10,51 +8,20 @@ interface TextPreviewProps {
 	file: File;
 	fileContent: string;
 	language: string;
-	rootId: string;
 	onCancel: () => void;
 	onSuccess: (translationId: string) => void;
-	refetchTranslations?: () => Promise<unknown>;
+	translationId: string;
 }
 
 export function TextPreview({
-	file,
 	fileContent,
 	language,
-	rootId,
 	onCancel,
 	onSuccess,
-	refetchTranslations,
+	translationId,
 }: TextPreviewProps) {
 	const [error, setError] = useState("");
 	const { t } = useTranslation();
-
-	const createTranslationMutation = useMutation({
-		mutationFn: async () => {
-			const formData = new FormData();
-			const fileNameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
-			const uniqueIdentifier = `${fileNameWithoutExt}-${Date.now()}`;
-
-			formData.append("name", fileNameWithoutExt);
-			formData.append("identifier", uniqueIdentifier);
-			formData.append("isRoot", "false");
-			formData.append("isPublic", "false");
-			formData.append("language", language);
-			formData.append("file", file);
-			formData.append("rootId", rootId);
-
-			const response = await createDocument(formData);
-			return response;
-		},
-		onSuccess: (response) => {
-			if (refetchTranslations) {
-				refetchTranslations();
-			}
-			onSuccess(response.id);
-		},
-		onError: (error: Error) => {
-			setError(error.message || "Failed to create translation");
-		},
-	});
 
 	const handleConfirm = () => {
 		if (!fileContent.trim()) {
@@ -68,7 +35,7 @@ export function TextPreview({
 		}
 
 		setError(""); // Clear any previous errors
-		createTranslationMutation.mutate();
+		onSuccess(translationId);
 	};
 
 	return (
@@ -93,7 +60,7 @@ export function TextPreview({
 					value={fileContent}
 					rows={12}
 					readOnly
-					className="font-monlam resize-none border-gray-300 bg-gray-50 text-sm leading-relaxed"
+					className="font-monlam resize-none border-gray-300 bg-netural-100 dark:bg-netural-800 text-sm leading-relaxed"
 					placeholder={t("translation.fileContentWillAppearHere")}
 				/>
 
@@ -110,7 +77,6 @@ export function TextPreview({
 				onCancel={onCancel}
 				onConfirm={handleConfirm}
 				confirmDisabled={!fileContent.trim() || !language}
-				confirmLoading={createTranslationMutation.isPending}
 				confirmText={t("translation.createTranslation")}
 				cancelText={t("translation.backToUpload")}
 			/>

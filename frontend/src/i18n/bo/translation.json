@@ -72,6 +72,7 @@
   "documents.documentDeleted": "ཡིག་ཆ་ལེགས་གྲུབ་ཐོག་སུབ།",
   "documents.documentSaved": "ཡིག་ཆ་ལེགས་གྲུབ་ཐོག་ཉར་ཚགས་བྱས།",
   "documents.documentTitle": "ཡིག་ཆའི་ཁ་བྱང་།",
+    "documents.uploadText": "ཡིག་ཆ་ཕྱིར་ལེན། (.txt དང་ .docx)",
   "documents.noDocuments": "ཡིག་ཆ་རྙེད་མི་ཐུབ།",
   "documents.saveDocument": "ཡིག་ཆ་ཉར་ཚགས།",
   "documents.searchDocuments": "ཡིག་ཆ་འཚོལ་བཤེར།",

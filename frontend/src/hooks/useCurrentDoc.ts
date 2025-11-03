@@ -113,6 +113,8 @@ export const useCurrentDocTranslations = (docId: string | undefined) => {
     },
     enabled: !!docId,
     staleTime: 0, // Always fetch fresh data
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
   });
 
   return {
