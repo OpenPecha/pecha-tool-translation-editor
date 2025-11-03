@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertCircle, CheckCircle, Languages, Loader2 } from "lucide-react";
-import { createDocument, createDocumentWithContent } from "@/api/document";
+import { createDocumentWithContent } from "@/api/document";
 import {
   fetchExpressions,
   fetchManifestations,

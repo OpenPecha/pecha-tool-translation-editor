@@ -19,14 +19,16 @@ export type SelectedPechaType = {
 
 export function NewPechaForm({
   projectName,
-  closeModal,
+  closeOnSuccess,
   onValidationChange,
   onCreateProject,
+  setNewDocumentId,
 }: {
   readonly projectName: string;
-  readonly closeModal: () => void;
+  readonly closeOnSuccess: () => void;
   readonly onValidationChange?: (isValid: boolean) => void;
   readonly onCreateProject?: React.MutableRefObject<(() => void) | null>;
+  readonly setNewDocumentId: (id: string | null) => void;
 }) {
   const [error, setError] = useState("");
   const [selectedLanguage, setSelectedLanguage] = useState<string>(
@@ -46,6 +48,10 @@ export function NewPechaForm({
     onValidationChange?.(isValid);
   }, [isValid, onValidationChange]);
 
+  React.useEffect(() => {
+    setNewDocumentId(rootId);
+  }, [rootId, setNewDocumentId]);
+
   const createProjectMutation = useMutation({
     mutationFn: () => {
       if (!projectName) {
@@ -61,7 +67,7 @@ export function NewPechaForm({
     onSuccess: ({ data }) => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       const rootId = data.roots[0].id;
-      closeModal();
+      closeOnSuccess();
       window.location.href = `/documents/${rootId}`;
     },
     onError: (error: Error) => {
@@ -103,6 +109,7 @@ export function NewPechaForm({
             selectedLanguage={selectedLanguage}
             setRootId={setRootId}
             disable={!selectedLanguage || selectedLanguage === ""}
+            setNewDocumentId={setNewDocumentId}
           />
 
           {rootId && (
@@ -161,7 +168,6 @@ export function EmptyTextForm({
     DEFAULT_LANGUAGE_SELECTED
   );
   const queryClient = useQueryClient();
-  const { t } = useTranslation();
 
   // Valid if language is selected
   const isValid = !!(selectedLanguage && selectedLanguage !== "");

@@ -16,6 +16,7 @@ const TextUploader = ({
 	refetchTranslations,
 	previewMode = false,
 	onFileLoaded,
+	setNewDocumentId,
 }: {
 	isRoot: boolean;
 	isPublic: boolean;
@@ -26,6 +27,7 @@ const TextUploader = ({
 	refetchTranslations?: () => Promise<QueryObserverResult<unknown, Error>>;
 	previewMode?: boolean;
 	onFileLoaded?: (file: File, content: string) => void;
+	setNewDocumentId: (id: string | null) => void;
 }) => {
 	const [file, setFile] = useState<File | null>(null);
 	const [fileContent, setFileContent] = useState<string>("");
@@ -55,10 +57,12 @@ const TextUploader = ({
 		onError: (error) => {
 			console.error("Upload error:", error);
 		},
-		onSuccess: () => {
+		onSuccess: (response) => {
+			setFileContent(response.textContent);
 			if (refetchTranslations) {
 				refetchTranslations();
 			}
+			setNewDocumentId(response.id);
 		},
 	});
 
@@ -92,7 +96,6 @@ const TextUploader = ({
 			const reader = new FileReader();
 			reader.onload = (event) => {
 				const content = event.target?.result as string;
-				setFileContent(content);
 
 				// In preview mode, call the callback instead of uploading
 				if (previewMode && onFileLoaded) {
@@ -113,6 +116,7 @@ const TextUploader = ({
 		setFileContent("");
 		setFileSizeError(""); // Clear file size error when resetting
 		uploadMutation.reset(); // Reset mutation state
+		setNewDocumentId(null);
 	};
 
 	const formatFileSize = (bytes: number): string => {
@@ -156,7 +160,7 @@ const TextUploader = ({
 							}`}
 						>
 							{/* Upload {isRoot ? t(`pecha.root`) : t(`pecha.translation`)} Text (.txt) */}
-							{t("upload_text", {
+							{t("documents.uploadText", {
 								type: isRoot ? t("pecha.root") : t("pecha.translation"),
 							})}
 						</label>
@@ -171,7 +175,7 @@ const TextUploader = ({
 						<Input
 							id="text-file"
 							type="file"
-							accept=".txt"
+							accept=".txt, .docx"
 							onChange={handleFileChange}
 							disabled={isFullyDisabled}
 							className={`cursor-pointer transition-colors ${

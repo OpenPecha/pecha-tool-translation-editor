@@ -9,6 +9,7 @@ import PlusIcon from "@/assets/plus.svg";
 import { ChevronLeft, ChevronRight, File, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TbApi } from "react-icons/tb";
+import { deleteDocument } from "@/api/document";
 
 export type UploadMethod = "file" | "openpecha" | "empty";
 
@@ -92,16 +93,19 @@ function MethodSelection({
       icon: <FileText size={24} />,
       title: t("documents.emptyText"),
       description: t("documents.startEmptyDocument"),
+      isDisabled:false
     },
     file: {
       icon: <File size={24} />,
       title: t("common.file"),
       description: t("projects.uploadAFileFromYourComputer"),
+      isDisabled: false,
     },
     openpecha: {
       icon: <TbApi size={24} />,
       title: t("common.openpecha"),
       description: t("projects.importFromOpenPechaRepository"),
+      isDisabled: true,
     },
   };
 
@@ -122,7 +126,7 @@ function MethodSelection({
           return (
             <button
               key={method.type}
-              disabled={method.isDisabled}
+              disabled={config.isDisabled}
               type="button"
               onClick={() => onMethodSelect(method.type)}
               onKeyDown={(e) => {
@@ -153,7 +157,7 @@ function MethodSelection({
                 <div className="flex-1">
                   <h4 className="font-medium text-neutral-900 dark:text-neutral-300 mb-1">
                     {config.title}{" "}
-                    {method.isDisabled && (
+                    {config.isDisabled && (
                       <span className="text-gray-400 text-sm">
                         (Coming Soon)
                       </span>
@@ -181,19 +185,45 @@ function DocumentCreateModal() {
   );
   const [isFormValid, setIsFormValid] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [newDocumentId, setNewDocumentId] = useState<string | null>(null);
   const createProjectRef = React.useRef<(() => void) | null>(null);
   const { t } = useTranslation();
 
   const totalSteps = 3;
 
-  const closeModal = () => {
-    setOpen(false);
-    setCurrentStep(1);
+  const resetModalState = () => {
     setProjectName("");
+    setCurrentStep(1);
     setSelectedMethod(null);
     setIsFormValid(false);
     setIsCreating(false);
     createProjectRef.current = null;
+    setNewDocumentId(null);
+  };
+
+  const closeAndCleanup = async () => {
+    if (newDocumentId) {
+      try {
+        await deleteDocument(newDocumentId);
+      } catch (error) {
+        console.error("Failed to delete document:", error);
+      }
+    }
+    setOpen(false);
+    resetModalState();
+  };
+
+  const closeOnSuccess = () => {
+    setOpen(false);
+    resetModalState();
+  };
+
+  const handleModalOpenChange = (isOpen: boolean) => {
+    if (isOpen) {
+      setOpen(true);
+    } else {
+      closeAndCleanup();
+    }
   };
 
   const handleOpenModal = () => {
@@ -304,6 +334,11 @@ function DocumentCreateModal() {
                 value={projectName}
                 className="w-full border-gray-300 focus:border-secondary-500 focus:ring-secondary-500"
                 onChange={(e) => setProjectName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && projectName.trim().length > 0) {
+                    handleNext();
+                  }
+                }}
                 placeholder={t(`projects.enterProjectName`)}
                 autoFocus
               />
@@ -328,15 +363,16 @@ function DocumentCreateModal() {
             {selectedMethod === "file" && (
               <NewPechaForm
                 projectName={projectName}
-                closeModal={closeModal}
+                closeOnSuccess={closeOnSuccess}
                 onValidationChange={handleValidationChange}
                 onCreateProject={createProjectRef}
+                setNewDocumentId={setNewDocumentId}
               />
             )}
             {selectedMethod === "openpecha" && (
               <PechaFromOpenPecha
                 projectName={projectName}
-                closeModal={closeModal}
+                closeModal={closeOnSuccess}
                 onValidationChange={handleValidationChange}
                 onCreateProject={createProjectRef}
               />
@@ -344,7 +380,7 @@ function DocumentCreateModal() {
             {selectedMethod === "empty" && (
               <EmptyTextForm
                 projectName={projectName}
-                closeModal={closeModal}
+                closeModal={closeOnSuccess}
                 onValidationChange={handleValidationChange}
                 onCreateProject={createProjectRef}
               />
@@ -360,7 +396,7 @@ function DocumentCreateModal() {
   return (
     <BaseModal
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={handleModalOpenChange}
       trigger={trigger}
       title={t(`projects.createProject`)}
       size="lg"
