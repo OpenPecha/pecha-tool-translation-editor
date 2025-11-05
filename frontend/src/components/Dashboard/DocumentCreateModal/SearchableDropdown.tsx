@@ -118,7 +118,7 @@ export function SearchableDropdown({
 						<div className="max-h-40 overflow-y-auto">
 							{filteredOptions.length === 0 ? (
 								<div className="p-4 text-sm text-neutral-500 dark:text-neutral-400 text-center">
-									No languages found
+									No options found
 								</div>
 							) : (
 								filteredOptions.map((option) => (

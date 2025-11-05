@@ -13,43 +13,47 @@ interface FormStepProps {
   setNewDocumentId: (id: string | null) => void;
 }
 
-export function FormStep({
-  selectedMethod,
-  projectName,
-  closeOnSuccess,
-  onValidationChange,
-  onCreateProject,
-  setNewDocumentId,
-}: FormStepProps) {
-  if (!selectedMethod) return null;
+export const FormStep = React.memo(
+  ({
+    selectedMethod,
+    projectName,
+    closeOnSuccess,
+    onValidationChange,
+    onCreateProject,
+    setNewDocumentId
+  }: FormStepProps) => {
+    if (!selectedMethod) return null;
 
-  return (
-    <div className="space-y-6">
-      {selectedMethod === "file" && (
-        <FileUploadForm
-          projectName={projectName}
-          closeOnSuccess={closeOnSuccess}
-          onValidationChange={onValidationChange}
-          onCreateProject={onCreateProject}
-          setNewDocumentId={setNewDocumentId}
-        />
-      )}
-      {selectedMethod === "openpecha" && (
-        <OpenPechaForm
-          projectName={projectName}
-          closeOnSuccess={closeOnSuccess}
-          onValidationChange={onValidationChange}
-          onCreateProject={onCreateProject}
-        />
-      )}
-      {selectedMethod === "empty" && (
-        <EmptyTextForm
-          projectName={projectName}
-          closeOnSuccess={closeOnSuccess}
-          onValidationChange={onValidationChange}
-          onCreateProject={onCreateProject}
-        />
-      )}
-    </div>
-  );
-}
+    return (
+      <div className="space-y-6">
+        {selectedMethod === "file" && (
+          <FileUploadForm
+            projectName={projectName}
+            closeOnSuccess={closeOnSuccess}
+            onValidationChange={onValidationChange}
+            onCreateProject={onCreateProject}
+            setNewDocumentId={setNewDocumentId}
+          />
+        )}
+        {selectedMethod === "openpecha" && (
+          <OpenPechaForm
+            projectName={projectName}
+            closeOnSuccess={closeOnSuccess}
+            onValidationChange={onValidationChange}
+            onCreateProject={onCreateProject}
+          />
+        )}
+        {selectedMethod === "empty" && (
+          <EmptyTextForm
+            projectName={projectName}
+            closeOnSuccess={closeOnSuccess}
+            onValidationChange={onValidationChange}
+            onCreateProject={onCreateProject}
+          />
+        )}
+      </div>
+    );
+  }
+);
+
+FormStep.displayName = "FormStep";

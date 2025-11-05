@@ -50,7 +50,7 @@ model Doc {
   root                   Doc?      @relation("Root", fields: [rootId], references: [id], onDelete: Cascade)
   rootId                 String?
   translations           Doc[]     @relation("Root")
-  metadata               Json?
+  metadata               DocMetadata?
   rootProject            Project?  @relation("Roots", fields: [rootProjectId], references: [id], onDelete: Cascade)
   rootProjectId          String?
   name                   String    @default("document")
@@ -68,6 +68,13 @@ model Doc {
   @@index([rootProjectId])
 }
 
+model DocMetadata {
+  id String @id @default(uuid())
+  text_id String?
+  instance_id String?
+  docId String @unique
+  doc Doc @relation(fields: [docId], references: [id], onDelete: Cascade)
+}
 model Permission {
   id          String   @id @default(uuid())
   userId      String?
