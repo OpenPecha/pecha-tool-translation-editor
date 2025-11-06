@@ -12,7 +12,7 @@ import {
   TextPreview,
   type UploadMethod,
 } from "@/components/shared/modals";
-import { OpenPechaTranslationLoader } from "./OpenPechaTranslationLoader";
+import { OpenPechaTranslationLoader } from "@/components/OpenPecha/OpenPechaTranslationLoader";
 
 interface CreateTranslationModalProps {
   rootId: string;
@@ -91,7 +91,7 @@ const CreateTranslationModal: React.FC<CreateTranslationModalProps> = ({
   const availableMethods = [
     { type: "empty", label: t("common.emptyText"), isDisabled: false },
     { type: "file", label: t("common.file"), isDisabled: false },
-    { type: "openpecha", label: t("common.openpecha"), isDisabled: true },
+    { type: "openpecha", label: t("common.openpecha"), isDisabled: false },
   ];
   const filtered_availableMethods = availableMethods
     .filter((d) => !d.isDisabled)

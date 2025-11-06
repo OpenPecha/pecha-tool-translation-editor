@@ -1,4 +1,4 @@
-import { OpenPechaTextLoader } from "./OpenPechaTextLoader";
+import { OpenPechaTextLoader } from "@/components/OpenPecha/OpenPechaTextLoader";
 
 interface OpenPechaFormProps {
   readonly projectName: string;

@@ -2,11 +2,9 @@ import React, { useState } from "react";
 import SelectLanguage from "./SelectLanguage";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import TextUploader from "./TextUploader";
-import MetaDataInput from "./MetaDataInput";
 import { createProject } from "@/api/project";
-import { ErrorDisplay, FormSection } from "@/components/shared/modals";
+import { ErrorDisplay } from "@/components/shared/modals";
 import { DEFAULT_LANGUAGE_SELECTED } from "@/config";
-import { useTranslation } from "react-i18next";
 
 interface FileUploadFormProps {
   readonly projectName: string;
@@ -28,11 +26,7 @@ export function FileUploadForm({
     DEFAULT_LANGUAGE_SELECTED
   );
   const [rootId, setRootId] = useState<string | null>(null);
-  const [metadata, setMetadata] = useState<Record<string, unknown> | null>(
-    null
-  );
   const queryClient = useQueryClient();
-  const { t } = useTranslation();
 
   // Notify parent about validation state
   const isValid = !!(rootId && selectedLanguage && selectedLanguage !== "");
@@ -54,7 +48,6 @@ export function FileUploadForm({
         name: projectName,
         identifier: projectName.toLowerCase().replace(/\s+/g, "-"),
         rootId: rootId ?? undefined,
-        metadata: metadata ?? undefined,
       });
     },
     onSuccess: ({ data }) => {
@@ -104,20 +97,6 @@ export function FileUploadForm({
             disable={!selectedLanguage || selectedLanguage === ""}
             setNewDocumentId={setNewDocumentId}
           />
-
-          {rootId && (
-            <FormSection
-              title={t("projects.additionalInformation")}
-              description={t("projects.ExtraMetadata")}
-            >
-              <MetaDataInput
-                setMetadata={setMetadata}
-                disable={
-                  !rootId || !selectedLanguage || selectedLanguage === ""
-                }
-              />
-            </FormSection>
-          )}
         </>
       )}
     </div>

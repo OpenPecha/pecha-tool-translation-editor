@@ -370,18 +370,6 @@ router.post("/content", authenticate, async (req, res) => {
       const isRootBool =
         typeof isRoot === "boolean" ? isRoot : isRoot === "true";
 
-      // Handle metadata - parse only if provided
-      let parsedMetadata = null;
-      if (metadata) {
-        try {
-          parsedMetadata =
-            typeof metadata === "string" ? JSON.parse(metadata) : metadata;
-        } catch (e) {
-          console.error("Failed to parse metadata:", e);
-          parsedMetadata = null;
-        }
-      }
-
       const doc = await tx.doc.create({
         data: {
           id: identifier,
@@ -392,13 +380,24 @@ router.post("/content", authenticate, async (req, res) => {
           rootId: rootId ?? null,
           language,
           rootProjectId: rootProjectId,
-          metadata: parsedMetadata,
         },
         select: {
           id: true,
           name: true,
+          rootProjectId: true,
+          rootId: true,
         },
       });
+      if (metadata) {
+        const parsedMetadata = JSON.parse(metadata);
+        await tx.docMetadata.create({
+          data: {
+            docId: doc.id,
+            text_id: parsedMetadata.text_id,
+            instance_id: parsedMetadata.instance_id,
+          },
+        });
+      }
       await tx.permission.create({
         data: {
           docId: doc.id,
