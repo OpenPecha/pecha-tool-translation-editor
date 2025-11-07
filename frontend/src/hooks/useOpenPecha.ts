@@ -134,7 +134,6 @@ export function useOpenPecha() {
     setProcessedText("");
   }, [selectedTextId]);
 
-  // First useEffect: Trigger fetching of annotations when textContent is available.
 useEffect(() => {
   if (textContent?.annotations?.length) {
     const segmentation = textContent.annotations.find(
@@ -149,7 +148,6 @@ useEffect(() => {
   }
 }, [textContent]);
 
-// Second useEffect: Apply segmentation when both textContent and annotations are ready.
 useEffect(() => {
   if (textContent && annotations) {
     // Note: You might need to adjust `annotations.annotation` based on the actual API response.

@@ -1,9 +1,5 @@
 const API_ENDPOINT = process.env.OPENPECHA_ENDPOINT;
 
-/**
- * Step 1: Fetch list of root expressions (title + id)
- * GET /texts?type=root
- */
 async function getTexts(type) {
 	let url = `${API_ENDPOINT}/texts`;
 	if (type) {
@@ -24,10 +20,6 @@ async function getTexts(type) {
 	return data;
 }
 
-/**
- * Step 3: Get list of available instances for a text
- * GET /texts/{text_id}/instances
- */
 async function getTextInstances(text_id) {
 	const response = await fetch(`${API_ENDPOINT}/texts/${text_id}/instances`, {
 		headers: {
@@ -44,10 +36,6 @@ async function getTextInstances(text_id) {
 	return data;
 }
 
-/**
- * Step 4: Fetch serialized text for translation
- * GET /instances/{instance_id}
- */
 async function getInstanceContent(instanceId) {
 	const response = await fetch(`${API_ENDPOINT}/instances/${instanceId}?annotation=true`, {
 		headers: {
@@ -79,10 +67,29 @@ async function getAnnotations(annotation_id){
 	const data = await response.json();
 	return data;
 }
+
+const uploadTranslationToOpenpecha = async (instanceId, translationData) => {
+	const response = await fetch(`${API_ENDPOINT}/instances/${instanceId}/translation`, {
+		method: "POST",
+		headers: {
+			accept: "application/json",
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(translationData),
+	});
+
+	if (!response.ok) {
+		throw new Error(`Failed to upload translation to openpecha: ${response.statusText}`);
+	}
+
+	const data = await response.json();
+	return data;
+};
+
 module.exports = {
-	// New API flow functions
 	getTexts,
 	getTextInstances,
 	getInstanceContent,
 	getAnnotations,
+	uploadTranslationToOpenpecha,
 };
