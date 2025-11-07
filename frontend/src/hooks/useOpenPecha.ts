@@ -6,6 +6,11 @@ import {
   fetchTexts,
   fetchAnnotations,
 } from "@/api/openpecha";
+import {
+  useFetchInstances,
+  useFetchTextContent,
+  useFetchTexts,
+} from "@/api/queries/openpecha_api";
 
 // Types for OpenPecha data structures
 interface OpenPechaText {
@@ -20,7 +25,7 @@ interface OpenPechaText {
 
 interface OpenPechaInstance {
   id: string;
-  incipit_title:{
+  incipit_title: {
     bo?: string;
     en?: string;
     [key: string]: string | undefined;
@@ -31,9 +36,11 @@ interface OpenPechaInstance {
 
 interface TextContentType {
   content: string;
-  annotations: [{
-    [key: string]: Array<{ [key: string]: unknown }>;
-  }];
+  annotations: [
+    {
+      [key: string]: Array<{ [key: string]: unknown }>;
+    }
+  ];
   metadata: {
     [key: string]: unknown;
   };
@@ -72,33 +79,19 @@ export function useOpenPecha() {
     data: texts = [],
     isLoading: textsLoading,
     error: textsError,
-  } = useQuery({
-    queryKey: ["texts"],
-    queryFn: () => fetchTexts(),
-    staleTime: 5 * 60 * 1000,
-  });
+  } = useFetchTexts();
 
   const {
     data: instances = [],
     isLoading: instancesLoading,
     error: instancesError,
-  } = useQuery({
-    queryKey: ["instances", selectedTextId],
-    queryFn: () => fetchInstances(selectedTextId),
-    enabled: !!selectedTextId,
-    staleTime: 5 * 60 * 1000,
-  });
+  } = useFetchInstances(selectedTextId);
 
   const {
     data: textContent,
     isLoading: textContentLoading,
     error: textContentError,
-  } = useQuery<TextContentType>({
-    queryKey: ["textContent", selectedInstanceId],
-    queryFn: () => fetchTextContent(selectedInstanceId),
-    enabled: !!selectedInstanceId,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-  });
+  } = useFetchTextContent(selectedInstanceId);
 
   const {
     data: annotations,
@@ -111,23 +104,22 @@ export function useOpenPecha() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const applySegmentation = (
-    text: string,
-    segments: any
-  ): string[] => {
+  const applySegmentation = (text: string, segments: any): string[] => {
     if (typeof text !== "string" || !Array.isArray(segments)) {
-      throw new Error("Invalid arguments: expected text (string) and segments (array).");
+      throw new Error(
+        "Invalid arguments: expected text (string) and segments (array)."
+      );
     }
     return segments.map(({ span }) => {
       const { start, end } = span;
-  
+
       if (start < 0 || end > text.length || start >= end) {
         throw new Error(`Invalid span range: start=${start}, end=${end}`);
       }
-  
+
       return text.slice(start, end);
     });
-  }
+  };
   // reset data flow when text changes
   useEffect(() => {
     setSelectedInstanceId("");
@@ -135,33 +127,35 @@ export function useOpenPecha() {
   }, [selectedTextId]);
 
   // First useEffect: Trigger fetching of annotations when textContent is available.
-useEffect(() => {
-  if (textContent?.annotations?.length) {
-    const segmentation = textContent.annotations.find(
-      (anno: { [key: string]: any }) => anno.type === "segmentation"
-    );
-    if (segmentation) {
-      setSelectedAnnotationId(segmentation.annotation_id);
+  useEffect(() => {
+    if (textContent?.annotations?.length) {
+      const segmentation = textContent.annotations.find(
+        (anno: { [key: string]: any }) => anno.type === "segmentation"
+      );
+      if (segmentation) {
+        setSelectedAnnotationId(segmentation.annotation_id);
+      }
+    } else {
+      setSelectedAnnotationId("");
+      setProcessedText("");
     }
-  } else {
-    setSelectedAnnotationId("");
-    setProcessedText("");
-  }
-}, [textContent]);
+  }, [textContent]);
 
-// Second useEffect: Apply segmentation when both textContent and annotations are ready.
-useEffect(() => {
-  if (textContent && annotations) {
-    // Note: You might need to adjust `annotations.annotation` based on the actual API response.
-    // This assumes the API returns an object like { annotation: [...] }.
-    const segments = Array.isArray(annotations) ? annotations : annotations.annotation;
+  // Second useEffect: Apply segmentation when both textContent and annotations are ready.
+  useEffect(() => {
+    if (textContent && annotations) {
+      // Note: You might need to adjust `annotations.annotation` based on the actual API response.
+      // This assumes the API returns an object like { annotation: [...] }.
+      const segments = Array.isArray(annotations)
+        ? annotations
+        : annotations.annotation;
 
-    if (segments) {
+      if (segments) {
         const segmentedText = applySegmentation(textContent.content, segments);
         setProcessedText(segmentedText.join("\n"));
+      }
     }
-  }
-}, [textContent, annotations]);
+  }, [textContent, annotations]);
   // Prepare dropdown options
   const textOptions = texts.map((text: OpenPechaText) => ({
     value: text.id,

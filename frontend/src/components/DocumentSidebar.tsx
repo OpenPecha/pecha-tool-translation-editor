@@ -9,13 +9,11 @@ import {
   FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import TableOfContentSidebar from "./TableOfContentSidebar";
 import Comments from "./EditorSideMenu/Comments";
-import { useQuery } from "@tanstack/react-query";
-import { fetchDocument } from "@/api/document";
 import TableOfContent from "./TableOfContent";
 import { useTranslation } from "react-i18next";
 import Resources from "./EditorSideMenu/Resources";
+import { useFetchDocument } from "@/api/queries/documents";
 interface DocumentSidebarProps {
   documentId: string;
 }
@@ -23,15 +21,8 @@ interface DocumentSidebarProps {
 // Metadata content component for sidebar
 const MetadataContent = ({ documentId }: { documentId: string }) => {
   const { t } = useTranslation();
-  const {
-    data: document,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["document", documentId],
-    queryFn: () => fetchDocument(documentId),
-    enabled: !!documentId,
-  });
+
+  const { data: document, isLoading, error } = useFetchDocument(documentId);
 
   // Format dates
   const formatDate = (dateString: string) => {

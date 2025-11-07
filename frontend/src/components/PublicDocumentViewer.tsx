@@ -1,12 +1,10 @@
 import React, { memo, useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, AlertCircle, Globe, Eye, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { fetchPublicDocument } from "@/api/document";
 import { useAuth } from "@/auth/use-auth-hook";
 import { EditorProvider } from "@/contexts/EditorContext";
 import { CommentProvider } from "@/contexts/CommentContext";
@@ -20,8 +18,8 @@ import isMobile from "@/lib/isMobile";
 
 import DocumentEditor from "./DocumentEditor";
 import PublicSideMenu from "./PublicSideMenu";
-import SettingsButton from "./setting/SettingsButton";
 import { AnnotationProvider } from "@/contexts/AnnotationContext";
+import { useFetchPublicDocument } from "@/api/queries/documents";
 
 interface PublicDocumentViewerProps {
   documentId?: string;
@@ -69,12 +67,7 @@ const PublicDocumentViewer: React.FC<PublicDocumentViewerProps> = ({
     data: documentData,
     isLoading,
     error,
-  } = useQuery({
-    queryKey: ["publicDocument", documentId],
-    queryFn: () => fetchPublicDocument(documentId!),
-    enabled: !!documentId,
-    retry: 1,
-  });
+  } = useFetchPublicDocument(documentId!);
 
   const handleBackToApp = useCallback(() => {
     if (isAuthenticated) {

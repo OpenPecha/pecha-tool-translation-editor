@@ -25,6 +25,8 @@ interface EditorContextType {
     { from: number; to: number }
   > | null;
   scrollToLineNumber: (line_number: number, quill?: Quill | null) => boolean;
+  hoveredLineNumber: number | null;
+  setHoveredLineNumber: (lineNumber: number | null) => void;
 }
 
 const EditorContext = createContext<EditorContextType>({
@@ -41,6 +43,8 @@ const EditorContext = createContext<EditorContextType>({
   getTextByLineNumber: () => null,
   getSelectionLineNumbers: () => null,
   scrollToLineNumber: () => false,
+  hoveredLineNumber: null,
+  setHoveredLineNumber: () => {},
 });
 
 export const useEditor = () => useContext(EditorContext);
@@ -53,6 +57,7 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({
   const [quillEditors, setQuillEditors] = useState<Map<string, Quill>>(
     new Map()
   );
+  const [hoveredLineNumber, setHoveredLineNumber] = useState<number | null>(null);
   const registerQuill = (id: string, quill: Quill) => {
     setQuillEditors((prev) => {
       const next = new Map(prev);
@@ -514,6 +519,8 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({
         getTextByLineNumber,
         getSelectionLineNumbers,
         scrollToLineNumber,
+        hoveredLineNumber,
+        setHoveredLineNumber,
       }}
     >
       {children}

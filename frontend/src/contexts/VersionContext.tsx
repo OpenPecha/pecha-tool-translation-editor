@@ -1,70 +1,70 @@
 import {
-	createContext,
-	useContext,
-	useState,
-	useEffect,
-	useCallback,
-	useMemo,
-	ReactNode,
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  ReactNode,
 } from "react";
 
 import {
-	createVersion,
-	fetchVersions,
-	fetchVersion,
-	deleteVersion as deleteVersionAPI,
-	updateVersionContent,
+  createVersion,
+  fetchVersion,
+  deleteVersion as deleteVersionAPI,
+  updateVersionContent,
 } from "../api/version";
 import Quill from "quill";
 import { User } from "@/auth/types";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useFetchVersions } from "@/api/queries/versions";
 
 const AUTOSAVE_INTERVAL = 900000; // 15min
 
 interface Version {
-	id: string;
-	content: any;
-	label: string;
-	createdAt: string;
-	timestamp: string;
-	userId?: string;
-	user?: User;
-	isCurrent?: boolean;
+  id: string;
+  content: any;
+  label: string;
+  createdAt: string;
+  timestamp: string;
+  userId?: string;
+  user?: User;
+  isCurrent?: boolean;
 }
 
 interface QuillVersionContextType {
-	versions: Version[];
-	currentVersionId: string | null;
-	autoSaveEnabled: boolean;
-	autoSaveInterval: number;
-	isLoading: boolean;
-	isLoadingVersion: boolean;
-	loadingVersionId: string | null;
-	transitionPhase: "idle" | "fade-out" | "skeleton" | "fade-in";
-	// Version creation mutation states
-	isCreatingVersion: boolean;
-	createVersionError: string | null;
-	createVersionSuccess: boolean;
-	registerQuill: (quill: Quill) => void;
-	saveVersion: (label?: string) => Promise<Version | null>;
-	updateCurrentVersion: () => Promise<Version | null>;
-	loadVersion: (versionId: string) => Promise<boolean>;
-	loadVersions: () => void;
-	deleteVersion: (versionId: string) => Promise<void>;
-	createNamedSnapshot: (name: string) => Promise<Version | null>;
-	toggleAutoSave: () => void;
-	setAutoSaveInterval: (milliseconds: number) => void;
-	clearVersionCreationState: () => void;
+  versions: Version[];
+  currentVersionId: string | null;
+  autoSaveEnabled: boolean;
+  autoSaveInterval: number;
+  isLoading: boolean;
+  isLoadingVersion: boolean;
+  loadingVersionId: string | null;
+  transitionPhase: "idle" | "fade-out" | "skeleton" | "fade-in";
+  // Version creation mutation states
+  isCreatingVersion: boolean;
+  createVersionError: string | null;
+  createVersionSuccess: boolean;
+  registerQuill: (quill: Quill) => void;
+  saveVersion: (label?: string) => Promise<Version | null>;
+  updateCurrentVersion: () => Promise<Version | null>;
+  loadVersion: (versionId: string) => Promise<boolean>;
+  loadVersions: () => void;
+  deleteVersion: (versionId: string) => Promise<void>;
+  createNamedSnapshot: (name: string) => Promise<Version | null>;
+  toggleAutoSave: () => void;
+  setAutoSaveInterval: (milliseconds: number) => void;
+  clearVersionCreationState: () => void;
 }
 
 interface QuillVersionProviderProps {
-	children: ReactNode;
-	docId?: string;
-	maxVersions?: number;
-	currentVersionData?: {
-		id: string;
-		content: any;
-	};
+  children: ReactNode;
+  docId?: string;
+  maxVersions?: number;
+  currentVersionData?: {
+    id: string;
+    content: any;
+  };
 }
 
 // Create the context
@@ -72,372 +72,366 @@ const QuillVersionContext = createContext<QuillVersionContextType | null>(null);
 
 // Custom hook to use the history context
 export const useQuillVersion = (): QuillVersionContextType => {
-	const context = useContext(QuillVersionContext);
-	if (!context) {
-		throw new Error(
-			"useQuillVersion must be used within a QuillVersionProvider",
-		);
-	}
-	return context;
+  const context = useContext(QuillVersionContext);
+  if (!context) {
+    throw new Error(
+      "useQuillVersion must be used within a QuillVersionProvider"
+    );
+  }
+  return context;
 };
 
 // Provider component
 export const QuillVersionProvider = ({
-	children,
-	docId,
-	maxVersions = 50,
-	currentVersionData,
+  children,
+  docId,
+  maxVersions = 50,
+  currentVersionData,
 }: QuillVersionProviderProps) => {
-	const queryClient = useQueryClient();
-	const [quillInstance, setQuillInstance] = useState<Quill | null>(null);
-	const [currentVersionId, setCurrentVersionId] = useState<string | null>(null);
-	const [autoSaveEnabled, setAutoSaveEnabled] = useState<boolean>(false);
-	const [autoSaveInterval, setAutoSaveInterval] =
-		useState<number>(AUTOSAVE_INTERVAL);
-	const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
-	const [isLoadingVersion, setIsLoadingVersion] = useState<boolean>(false);
-	const [loadingVersionId, setLoadingVersionId] = useState<string | null>(null);
-	const [transitionPhase, setTransitionPhase] = useState<
-		"idle" | "fade-out" | "skeleton" | "fade-in"
-	>("idle");
+  const queryClient = useQueryClient();
+  const [quillInstance, setQuillInstance] = useState<Quill | null>(null);
+  const [currentVersionId, setCurrentVersionId] = useState<string | null>(null);
+  const [autoSaveEnabled, setAutoSaveEnabled] = useState<boolean>(false);
+  const [autoSaveInterval, setAutoSaveInterval] =
+    useState<number>(AUTOSAVE_INTERVAL);
+  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
+  const [isLoadingVersion, setIsLoadingVersion] = useState<boolean>(false);
+  const [loadingVersionId, setLoadingVersionId] = useState<string | null>(null);
+  const [transitionPhase, setTransitionPhase] = useState<
+    "idle" | "fade-out" | "skeleton" | "fade-in"
+  >("idle");
 
-	// Version creation feedback states
-	const [createVersionSuccess, setCreateVersionSuccess] =
-		useState<boolean>(false);
+  // Version creation feedback states
+  const [createVersionSuccess, setCreateVersionSuccess] =
+    useState<boolean>(false);
 
-	// Fetch versions using react-query
-	const {
-		data: versions = [],
-		isLoading,
-		refetch: refetchVersions,
-	} = useQuery({
-		queryKey: [`versions-${docId}`],
-		enabled: !!docId,
-		queryFn: () => fetchVersions(docId!),
-		refetchOnMount: true,
-		refetchOnWindowFocus: false,
-	});
+  // Fetch versions using react-query
+  const {
+    data: versions = [],
+    isLoading,
+    refetch: refetchVersions,
+  } = useFetchVersions(docId!);
 
-	// Note: Current version is now provided via props from document data
-	// No need for separate API call
+  // Note: Current version is now provided via props from document data
+  // No need for separate API call
 
-	// Effect to sync currentVersionId from backend data
-	useEffect(() => {
-		if (currentVersionData?.id) {
-			// Use provided current version data as the source of truth
-			setCurrentVersionId(currentVersionData.id);
-		} else if (versions.length > 0) {
-			// Find the current version from backend response or fallback to latest
-			const currentVersion =
-				versions.find((v: Version) => v.isCurrent) || versions[0];
-			if (currentVersion) {
-				setCurrentVersionId(currentVersion.id);
-			}
-		}
-	}, [currentVersionData, versions]);
+  // Effect to sync currentVersionId from backend data
+  useEffect(() => {
+    if (currentVersionData?.id) {
+      // Use provided current version data as the source of truth
+      setCurrentVersionId(currentVersionData.id);
+    } else if (versions.length > 0) {
+      // Find the current version from backend response or fallback to latest
+      const currentVersion =
+        versions.find((v: Version) => v.isCurrent) || versions[0];
+      if (currentVersion) {
+        setCurrentVersionId(currentVersion.id);
+      }
+    }
+  }, [currentVersionData, versions]);
 
-	// Create version mutation
-	const createVersionMutation = useMutation({
-		mutationFn: ({ label, content }: { label: string; content: any }) =>
-			createVersion(docId!, label, content),
-		onSuccess: (newVersion) => {
-			// Update cache with new version and set as current
-			queryClient.setQueryData(
-				[`versions-${docId}`],
-				(oldData: Version[] = []) => {
-					const updatedVersions = [newVersion, ...oldData];
-					return updatedVersions.length > maxVersions
-						? updatedVersions.slice(-maxVersions)
-						: updatedVersions;
-				},
-			);
+  // Create version mutation
+  const createVersionMutation = useMutation({
+    mutationFn: ({ label, content }: { label: string; content: any }) =>
+      createVersion(docId!, label, content),
+    onSuccess: (newVersion) => {
+      // Update cache with new version and set as current
+      queryClient.setQueryData(
+        [`versions-${docId}`],
+        (oldData: Version[] = []) => {
+          const updatedVersions = [newVersion, ...oldData];
+          return updatedVersions.length > maxVersions
+            ? updatedVersions.slice(-maxVersions)
+            : updatedVersions;
+        }
+      );
 
-			// Set current version immediately
-			setCurrentVersionId(newVersion.id);
+      // Set current version immediately
+      setCurrentVersionId(newVersion.id);
 
-			// Invalidate to sync with server, but the cache already has the correct data
-			queryClient.invalidateQueries({ queryKey: [`versions-${docId}`] });
+      // Invalidate to sync with server, but the cache already has the correct data
+      queryClient.invalidateQueries({ queryKey: [`versions-${docId}`] });
 
-			// Show success feedback
-			setCreateVersionSuccess(true);
+      // Show success feedback
+      setCreateVersionSuccess(true);
 
-			// Auto-hide success state after 2 seconds
-			setTimeout(() => {
-				setCreateVersionSuccess(false);
-			}, 2000);
-		},
-		onError: (error) => {
-			console.error("Version creation failed:", error);
-			// Error state is handled by mutation.isError
-		},
-	});
+      // Auto-hide success state after 2 seconds
+      setTimeout(() => {
+        setCreateVersionSuccess(false);
+      }, 2000);
+    },
+    onError: (error) => {
+      console.error("Version creation failed:", error);
+      // Error state is handled by mutation.isError
+    },
+  });
 
-	// Delete version mutation
-	const deleteVersionMutation = useMutation({
-		mutationFn: (versionId: string) => deleteVersionAPI(versionId),
-		onSuccess: async (_, versionId) => {
-			// Filter out the deleted version
-			const updatedVersions = versions.filter(
-				(v: Version) => v.id !== versionId,
-			);
-			// Update cache with filtered data
-			queryClient.setQueryData([`versions-${docId}`], () => updatedVersions);
-			// Invalidate current version query to sync with backend changes
+  // Delete version mutation
+  const deleteVersionMutation = useMutation({
+    mutationFn: (versionId: string) => deleteVersionAPI(versionId),
+    onSuccess: async (_, versionId) => {
+      // Filter out the deleted version
+      const updatedVersions = versions.filter(
+        (v: Version) => v.id !== versionId
+      );
+      // Update cache with filtered data
+      queryClient.setQueryData([`versions-${docId}`], () => updatedVersions);
+      // Invalidate current version query to sync with backend changes
 
-			// If deleted version was current and there are still versions left
-			if (versionId === currentVersionId && updatedVersions.length > 0) {
-				setCurrentVersionId(updatedVersions[0].id);
-			}
-		},
-	});
+      // If deleted version was current and there are still versions left
+      if (versionId === currentVersionId && updatedVersions.length > 0) {
+        setCurrentVersionId(updatedVersions[0].id);
+      }
+    },
+  });
 
-	// Load versions from API
-	const loadVersions = useCallback(() => {
-		refetchVersions();
-		// Also invalidate current version query to ensure consistency
-		queryClient.invalidateQueries({ queryKey: [`current-version-${docId}`] });
-	}, [refetchVersions, queryClient, docId]);
+  // Load versions from API
+  const loadVersions = useCallback(() => {
+    refetchVersions();
+    // Also invalidate current version query to ensure consistency
+    queryClient.invalidateQueries({ queryKey: [`current-version-${docId}`] });
+  }, [refetchVersions, queryClient, docId]);
 
-	// Register Quill instance
-	const registerQuill = useCallback(
-		(quill: Quill) => {
-			setQuillInstance(quill);
-			if (quill && versions.length > 0) {
-				// Use the current version by ID if available, otherwise fall back to latest
-				const targetVersion =
-					versions.find((v: Version) => v.id === currentVersionId) ||
-					versions[0]; // versions are ordered by timestamp desc, so [0] is latest
+  // Register Quill instance
+  const registerQuill = useCallback(
+    (quill: Quill) => {
+      setQuillInstance(quill);
+      if (quill && versions.length > 0) {
+        // Use the current version by ID if available, otherwise fall back to latest
+        const targetVersion =
+          versions.find((v: Version) => v.id === currentVersionId) ||
+          versions[0]; // versions are ordered by timestamp desc, so [0] is latest
 
-				if (targetVersion?.content) {
-					quill.setContents(targetVersion.content);
-				}
-				// Don't override currentVersionId here - let the sync effect handle it
-			}
-		},
-		[versions, currentVersionId],
-	);
+        if (targetVersion?.content) {
+          quill.setContents(targetVersion.content);
+        }
+        // Don't override currentVersionId here - let the sync effect handle it
+      }
+    },
+    [versions, currentVersionId]
+  );
 
-	// Auto-save functionality
-	useEffect(() => {
-		if (intervalId) {
-			clearInterval(intervalId);
-			setIntervalId(null);
-		}
+  // Auto-save functionality
+  useEffect(() => {
+    if (intervalId) {
+      clearInterval(intervalId);
+      setIntervalId(null);
+    }
 
-		if (autoSaveEnabled && quillInstance) {
-			const id = setInterval(() => {
-				saveVersion("Auto-save");
-			}, autoSaveInterval);
-			setIntervalId(id);
-		}
+    if (autoSaveEnabled && quillInstance) {
+      const id = setInterval(() => {
+        saveVersion("Auto-save");
+      }, autoSaveInterval);
+      setIntervalId(id);
+    }
 
-		return () => {
-			if (intervalId) {
-				clearInterval(intervalId);
-			}
-		};
-	}, [autoSaveEnabled, autoSaveInterval, quillInstance]);
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [autoSaveEnabled, autoSaveInterval, quillInstance]);
 
-	// Save a version (API)
-	const saveVersion = useCallback(
-		async (label = "Unnamed version"): Promise<Version | null> => {
-			if (!quillInstance) return null;
+  // Save a version (API)
+  const saveVersion = useCallback(
+    async (label = "Unnamed version"): Promise<Version | null> => {
+      if (!quillInstance) return null;
 
-			try {
-				const content = quillInstance.getContents();
-				const newVersion = await createVersionMutation.mutateAsync({
-					label,
-					content,
-				});
-				return newVersion;
-			} catch (error) {
-				console.error("Error saving version:", error);
-				return null;
-			}
-		},
-		[quillInstance, createVersionMutation],
-	);
+      try {
+        const content = quillInstance.getContents();
+        const newVersion = await createVersionMutation.mutateAsync({
+          label,
+          content,
+        });
+        return newVersion;
+      } catch (error) {
+        console.error("Error saving version:", error);
+        return null;
+      }
+    },
+    [quillInstance, createVersionMutation]
+  );
 
-	// Enhanced version loading with three-phase transition
-	const loadVersion = useCallback(
-		async (versionId: string): Promise<boolean> => {
-			if (!quillInstance || isLoadingVersion) return false;
+  // Enhanced version loading with three-phase transition
+  const loadVersion = useCallback(
+    async (versionId: string): Promise<boolean> => {
+      if (!quillInstance || isLoadingVersion) return false;
 
-			try {
-				// Phase 1: Start loading and fade-out
-				setIsLoadingVersion(true);
-				setLoadingVersionId(versionId);
-				setTransitionPhase("fade-out");
+      try {
+        // Phase 1: Start loading and fade-out
+        setIsLoadingVersion(true);
+        setLoadingVersionId(versionId);
+        setTransitionPhase("fade-out");
 
-				// Wait for fade-out transition
-				await new Promise((resolve) => setTimeout(resolve, 100));
+        // Wait for fade-out transition
+        await new Promise((resolve) => setTimeout(resolve, 100));
 
-				// Phase 2: Show skeleton
-				setTransitionPhase("skeleton");
+        // Phase 2: Show skeleton
+        setTransitionPhase("skeleton");
 
-				// Fetch version content (with minimum skeleton display time)
-				const [version] = await Promise.all([
-					fetchVersion(versionId),
-					new Promise((resolve) => setTimeout(resolve, 300)), // Minimum skeleton time
-				]);
+        // Fetch version content (with minimum skeleton display time)
+        const [version] = await Promise.all([
+          fetchVersion(versionId),
+          new Promise((resolve) => setTimeout(resolve, 300)), // Minimum skeleton time
+        ]);
 
-				// Phase 3: Apply content and fade-in
-				setTransitionPhase("fade-in");
-				quillInstance.setContents(version.content);
-				setCurrentVersionId(versionId);
+        // Phase 3: Apply content and fade-in
+        setTransitionPhase("fade-in");
+        quillInstance.setContents(version.content);
+        setCurrentVersionId(versionId);
 
-				// Refresh version list to update isCurrent flags from backend
-				queryClient.invalidateQueries({ queryKey: [`versions-${docId}`] });
+        // Refresh version list to update isCurrent flags from backend
+        queryClient.invalidateQueries({ queryKey: [`versions-${docId}`] });
 
-				// Wait for fade-in transition
-				await new Promise((resolve) => setTimeout(resolve, 300));
+        // Wait for fade-in transition
+        await new Promise((resolve) => setTimeout(resolve, 300));
 
-				// Reset to idle state
-				setTransitionPhase("idle");
-				setIsLoadingVersion(false);
-				setLoadingVersionId(null);
+        // Reset to idle state
+        setTransitionPhase("idle");
+        setIsLoadingVersion(false);
+        setLoadingVersionId(null);
 
-				return true;
-			} catch (error) {
-				console.error("Error loading version:", error);
+        return true;
+      } catch (error) {
+        console.error("Error loading version:", error);
 
-				// Reset states on error
-				setTransitionPhase("fade-in"); // Fade back to original content
-				await new Promise((resolve) => setTimeout(resolve, 300));
-				setTransitionPhase("idle");
-				setIsLoadingVersion(false);
-				setLoadingVersionId(null);
+        // Reset states on error
+        setTransitionPhase("fade-in"); // Fade back to original content
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        setTransitionPhase("idle");
+        setIsLoadingVersion(false);
+        setLoadingVersionId(null);
 
-				return false;
-			}
-		},
-		[quillInstance, isLoadingVersion, docId, queryClient],
-	);
+        return false;
+      }
+    },
+    [quillInstance, isLoadingVersion, docId, queryClient]
+  );
 
-	// Delete a version (API)
-	const deleteVersion = useCallback(
-		async (versionId: string): Promise<void> => {
-			try {
-				await deleteVersionMutation.mutateAsync(versionId);
-			} catch (error) {
-				console.error("Error deleting version:", error);
-			}
-		},
-		[deleteVersionMutation],
-	);
+  // Delete a version (API)
+  const deleteVersion = useCallback(
+    async (versionId: string): Promise<void> => {
+      try {
+        await deleteVersionMutation.mutateAsync(versionId);
+      } catch (error) {
+        console.error("Error deleting version:", error);
+      }
+    },
+    [deleteVersionMutation]
+  );
 
-	// Update current version with latest content from editor
-	const updateCurrentVersion =
-		useCallback(async (): Promise<Version | null> => {
-			if (!quillInstance || !currentVersionId) return null;
+  // Update current version with latest content from editor
+  const updateCurrentVersion =
+    useCallback(async (): Promise<Version | null> => {
+      if (!quillInstance || !currentVersionId) return null;
 
-			try {
-				const content = quillInstance.getContents();
-				const updatedVersion = await updateVersionContent(
-					currentVersionId,
-					content,
-				);
+      try {
+        const content = quillInstance.getContents();
+        const updatedVersion = await updateVersionContent(
+          currentVersionId,
+          content
+        );
 
-				// Update the version in the cache
-				queryClient.setQueryData(
-					[`versions-${docId}`],
-					(oldData: Version[] = []) => {
-						return oldData.map((version) =>
-							version.id === currentVersionId
-								? { ...version, ...updatedVersion, content }
-								: version,
-						);
-					},
-				);
+        // Update the version in the cache
+        queryClient.setQueryData(
+          [`versions-${docId}`],
+          (oldData: Version[] = []) => {
+            return oldData.map((version) =>
+              version.id === currentVersionId
+                ? { ...version, ...updatedVersion, content }
+                : version
+            );
+          }
+        );
 
-				// Invalidate current version query to ensure sync with backend
+        // Invalidate current version query to ensure sync with backend
 
-				return updatedVersion;
-			} catch (error) {
-				console.error("Error updating current version:", error);
-				throw error;
-			}
-		}, [quillInstance, currentVersionId, queryClient, docId]);
+        return updatedVersion;
+      } catch (error) {
+        console.error("Error updating current version:", error);
+        throw error;
+      }
+    }, [quillInstance, currentVersionId, queryClient, docId]);
 
-	// Create a named snapshot
-	const createNamedSnapshot = useCallback(
-		(name: string): Promise<Version | null> => {
-			return saveVersion(name);
-		},
-		[saveVersion],
-	);
+  // Create a named snapshot
+  const createNamedSnapshot = useCallback(
+    (name: string): Promise<Version | null> => {
+      return saveVersion(name);
+    },
+    [saveVersion]
+  );
 
-	// Toggle auto-save
-	const toggleAutoSave = useCallback(() => {
-		setAutoSaveEnabled((prev) => !prev);
-	}, []);
+  // Toggle auto-save
+  const toggleAutoSave = useCallback(() => {
+    setAutoSaveEnabled((prev) => !prev);
+  }, []);
 
-	// Set auto-save interval
-	const setAutoSaveIntervalTime = useCallback((milliseconds: number) => {
-		setAutoSaveInterval(milliseconds);
-	}, []);
+  // Set auto-save interval
+  const setAutoSaveIntervalTime = useCallback((milliseconds: number) => {
+    setAutoSaveInterval(milliseconds);
+  }, []);
 
-	// Clear version creation state
-	const clearVersionCreationState = useCallback(() => {
-		setCreateVersionSuccess(false);
-	}, []);
+  // Clear version creation state
+  const clearVersionCreationState = useCallback(() => {
+    setCreateVersionSuccess(false);
+  }, []);
 
-	// Context value
-	const value = useMemo(
-		(): QuillVersionContextType => ({
-			versions,
-			currentVersionId,
-			autoSaveEnabled,
-			autoSaveInterval,
-			isLoading,
-			isLoadingVersion,
-			loadingVersionId,
-			transitionPhase,
-			// Version creation mutation states
-			isCreatingVersion: createVersionMutation.isPending,
-			createVersionError: createVersionMutation.error?.message || null,
-			createVersionSuccess,
-			registerQuill,
-			saveVersion,
-			updateCurrentVersion,
-			loadVersion,
-			loadVersions,
-			deleteVersion,
-			createNamedSnapshot,
-			toggleAutoSave,
-			setAutoSaveInterval: setAutoSaveIntervalTime,
-			clearVersionCreationState,
-		}),
-		[
-			versions,
-			currentVersionId,
-			autoSaveEnabled,
-			autoSaveInterval,
-			isLoading,
-			isLoadingVersion,
-			loadingVersionId,
-			transitionPhase,
-			createVersionMutation.isPending,
-			createVersionMutation.error?.message,
-			createVersionSuccess,
-			registerQuill,
-			saveVersion,
-			updateCurrentVersion,
-			loadVersion,
-			loadVersions,
-			deleteVersion,
-			createNamedSnapshot,
-			toggleAutoSave,
-			setAutoSaveIntervalTime,
-			clearVersionCreationState,
-		],
-	);
+  // Context value
+  const value = useMemo(
+    (): QuillVersionContextType => ({
+      versions,
+      currentVersionId,
+      autoSaveEnabled,
+      autoSaveInterval,
+      isLoading,
+      isLoadingVersion,
+      loadingVersionId,
+      transitionPhase,
+      // Version creation mutation states
+      isCreatingVersion: createVersionMutation.isPending,
+      createVersionError: createVersionMutation.error?.message || null,
+      createVersionSuccess,
+      registerQuill,
+      saveVersion,
+      updateCurrentVersion,
+      loadVersion,
+      loadVersions,
+      deleteVersion,
+      createNamedSnapshot,
+      toggleAutoSave,
+      setAutoSaveInterval: setAutoSaveIntervalTime,
+      clearVersionCreationState,
+    }),
+    [
+      versions,
+      currentVersionId,
+      autoSaveEnabled,
+      autoSaveInterval,
+      isLoading,
+      isLoadingVersion,
+      loadingVersionId,
+      transitionPhase,
+      createVersionMutation.isPending,
+      createVersionMutation.error?.message,
+      createVersionSuccess,
+      registerQuill,
+      saveVersion,
+      updateCurrentVersion,
+      loadVersion,
+      loadVersions,
+      deleteVersion,
+      createNamedSnapshot,
+      toggleAutoSave,
+      setAutoSaveIntervalTime,
+      clearVersionCreationState,
+    ]
+  );
 
-	return (
-		<QuillVersionContext.Provider value={value}>
-			{children}
-		</QuillVersionContext.Provider>
-	);
+  return (
+    <QuillVersionContext.Provider value={value}>
+      {children}
+    </QuillVersionContext.Provider>
+  );
 };
 
 export default QuillVersionContext;

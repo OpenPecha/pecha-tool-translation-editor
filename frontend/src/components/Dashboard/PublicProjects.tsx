@@ -1,7 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { AlertCircle, Search } from "lucide-react";
-import { fetchPublicProjects } from "@/api/project";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
@@ -14,6 +12,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { useFetchPublicDocuments } from "@/api/queries/documents";
 
 // Types for OpenPecha data structures and backend API response
 
@@ -83,15 +82,10 @@ const PublicProjects = ({ showAll = false }: { showAll?: boolean }) => {
     data,
     isLoading: isLoadingTemplates,
     isError: publicProjectsError,
-  } = useQuery<ApiResponse>({
-    queryKey: ["publicProjects", currentPage, limit, searchQuery],
-    queryFn: () =>
-      fetchPublicProjects({
-        page: currentPage,
-        limit,
-        search: searchQuery,
-      }),
-    staleTime: 60 * 60 * 1000, // 1 hour
+  } = useFetchPublicDocuments({
+    currentPage,
+    limit,
+    searchQuery,
   });
 
   const publicProjectData: OpenPechaTemplateProject[] | undefined =

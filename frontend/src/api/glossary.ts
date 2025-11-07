@@ -1,10 +1,7 @@
 import type { ModelName } from "./translate";
-import { MODEL_NAMES } from "./translate";
 import { getHeaders } from "./utils";
 
 const server_url = import.meta.env.VITE_SERVER_URL;
-
-export { MODEL_NAMES };
 
 export interface GlossaryItem {
   original_text: string;

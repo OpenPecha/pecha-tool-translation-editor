@@ -18,6 +18,7 @@ const applyStandardizationRoutes = require("./routes/apply_standardization");
 const workspaceRoutes = require("./routes/workspace");
 const emailRoutes = require("./routes/email");
 const resourcesRoutes = require("./routes/resources");
+const modelsRoutes = require("./routes/models");
 
 const options = {
   info: {
@@ -106,6 +107,7 @@ app.use("/standardize", standardizeRoutes);
 app.use("/standardize", applyStandardizationRoutes);
 app.use("/workspace", workspaceRoutes);
 app.use("/resources", resourcesRoutes);
+app.use("/models", modelsRoutes);
 app.use("/", emailRoutes);
 
 const PORT = process.env.PORT || 9000;

@@ -1,8 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import DocumentCreateModal from "./DocumentCreateModal/DocumentCreateModal";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
-import { fetchProjects, Project } from "@/api/project";
+import { Project } from "@/api/project";
 import EachProject from "./EachProject";
 import { useAuth } from "@/auth/use-auth-hook";
 import { FaSpinner } from "react-icons/fa";
@@ -32,6 +31,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { INITIAL_PROJECT_LIMIT } from "@/config";
+import { useFetchProjects } from "@/api/queries/projects";
 
 const ProjectList = () => {
   const { t } = useTranslation();
@@ -94,14 +94,6 @@ interface ProjectsSectionProps {
   setView: (view: "grid" | "list") => void;
 }
 
-const getOwnerType = (selectedOwner: string | null) => {
-  if (!selectedOwner) return "both";
-  if (selectedOwner === "ownedByMe") return "User";
-  if (selectedOwner === "ownedByAnyone") return "both";
-  if (selectedOwner === "notOwnedByMe") return "shared";
-  return "both";
-};
-
 const ProjectsListSection = () => {
   const { t } = useTranslation();
   const [page, setPage] = useState(1);
@@ -121,18 +113,11 @@ const ProjectsListSection = () => {
   }, [searchQuery, selectedOwner]);
   // Get unique owners for the filter dropdown
 
-  const { data, isLoading, isError, isFetching, isPending } = useQuery({
-    queryKey: ["projects", searchQuery, page, getOwnerType(selectedOwner)],
-    initialData: { data: [], pagination: { page: 1, totalPages: 1, total: 0 } },
-    queryFn: () =>
-      fetchProjects({
-        searchQuery,
-        page: page,
-        limit: itemsPerPage,
-        owner: getOwnerType(selectedOwner),
-      }),
-    refetchOnWindowFocus: false,
-    keepPreviousData: true,
+  const { data, isLoading, isError, isFetching, isPending } = useFetchProjects({
+    searchQuery,
+    page,
+    itemsPerPage,
+    selectedOwner,
   });
 
   const showLoader = isLoading || isPending;

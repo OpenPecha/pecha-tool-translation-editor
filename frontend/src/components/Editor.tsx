@@ -1,5 +1,5 @@
 import Quill from "quill";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Toolbar from "./Toolbar/Toolbar";
 import "quill/dist/quill.snow.css";
 import "quill-footnote/dist/quill-footnote.css";
@@ -60,9 +60,12 @@ const Editor = ({
     registerQuill: registerQuill2,
     unregisterQuill: unregisterQuill2,
     getLineNumber,
+    setHoveredLineNumber,
   } = useEditor();
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const quillRef = useRef<Quill | null>(null);
+  const isInitializedRef = useRef<boolean>(false);
+  const hasContentLoadedRef = useRef<boolean>(false);
   const { t } = useTranslation();
   const { currentUser } = useAuth();
   // Get display settings
@@ -108,7 +111,11 @@ const Editor = ({
       }
 
       saveTimeoutRef.current = setTimeout(() => {
-        if (!documentId) return;
+        if (!documentId || !hasContentLoadedRef.current) return;
+        // Extra safety: Don't save if content is empty or nearly empty
+        const contentOps = content?.ops as any[];
+        if (!contentOps || contentOps.length === 0) return;
+        
         updateDocumentMutation.mutate(content);
       }, 3000); // 3 second debounce
     },
@@ -199,10 +206,15 @@ const Editor = ({
     registerQuill(quill);
     quillRef.current = quill;
     registerQuill2(editorId as string, quill);
+    isInitializedRef.current = true;
     if (yText && provider) {
       binding = new QuillBinding(yText, quill, provider.awareness);
       provider.on("sync", (data) => {
         setIsSynced(data);
+        // Mark content as loaded after sync
+        if (data) {
+          hasContentLoadedRef.current = true;
+        }
       });
     }
 
@@ -241,9 +253,12 @@ const Editor = ({
     );
     // Fetch comments when the editor loads
     quill.on("text-change", (delta, oldDelta, source) => {
-      if (source === "user") {
+      if (source === "user" && hasContentLoadedRef.current) {
         const currentContent = quill.getLength() > 1 ? quill.getContents() : "";
-        debouncedSave(currentContent);
+        // Only save if there's actual content (prevent saving empty editor)
+        if (quill.getLength() > 1) {
+          debouncedSave(currentContent);
+        }
       }
     });
     quill.on("selection-change", (range) => {
@@ -283,8 +298,12 @@ const Editor = ({
     }
 
     return () => {
-      const currentContent = quill.getContents();
-      updateDocumentMutation.mutate(currentContent);
+      // Only save on unmount if content has been loaded and editor has actual content
+      // This prevents saving empty content during hot reload
+      if (hasContentLoadedRef.current && quill.getLength() > 1) {
+        const currentContent = quill.getContents();
+        updateDocumentMutation.mutate(currentContent);
+      }
       unregisterQuill2(editorId);
       queryClient.removeQueries({
         queryKey: [`document-${documentId}`],
@@ -292,6 +311,9 @@ const Editor = ({
       signal.abort();
       quill.disable();
       binding?.destroy?.();
+      // Reset flags for next mount
+      isInitializedRef.current = false;
+      hasContentLoadedRef.current = false;
     };
   }, [isEditable, yText, provider]);
 
@@ -309,13 +331,20 @@ const Editor = ({
         requestIdleCallback(() => {
           quillRef.current?.setContents(content || []);
           setIsTibetan(checkIsTibetan(quillRef.current?.getText() || ""));
+          // Mark content as loaded after setting initial content
+          hasContentLoadedRef.current = true;
         });
       } else {
         setTimeout(() => {
           quillRef.current?.setContents(content || []);
           setIsTibetan(checkIsTibetan(quillRef.current?.getText() || ""));
+          // Mark content as loaded after setting initial content
+          hasContentLoadedRef.current = true;
         }, 0);
       }
+    } else if (quillRef.current && quillRef.current.getText().trim() !== "") {
+      // If editor already has content, mark it as loaded
+      hasContentLoadedRef.current = true;
     }
     return () => {
       if (saveTimeoutRef.current) {
@@ -323,6 +352,135 @@ const Editor = ({
       }
     };
   }, [currentDoc, yText, provider]);
+
+  // Hover synchronization between source and target editors
+  useEffect(() => {
+    if (!editorRef.current || !quillRef.current) return;
+
+    const editorElement = editorRef.current.querySelector(".ql-editor");
+    if (!editorElement) return;
+
+    const calculateLineNumber = (element: HTMLElement): number | null => {
+      const editorContainer = editorElement.closest(".editor-container");
+      const lineNumbersContainer = editorContainer?.querySelector(".line-numbers");
+      if (!lineNumbersContainer) return null;
+
+      const rect = element.getBoundingClientRect();
+      const editorRect = editorElement.getBoundingClientRect();
+      const editorScrollTop = editorElement.scrollTop;
+      const relativeTop = rect.top - editorRect.top + editorScrollTop;
+
+      // Find the closest line number
+      const lineNumberElements = Array.from(
+        lineNumbersContainer.querySelectorAll(".line-number")
+      );
+
+      let closestLineNumber: number | null = null;
+      let minDistance = Number.MAX_VALUE;
+
+      for (const lineEl of lineNumberElements) {
+        const lineTop = parseFloat((lineEl as HTMLElement).style.top);
+        const distance = Math.abs(lineTop - relativeTop);
+
+        if (distance < minDistance) {
+          minDistance = distance;
+          const spanElement = lineEl.querySelector("span");
+          closestLineNumber = spanElement ? parseInt(spanElement.textContent || "0") : null;
+        }
+      }
+
+      return closestLineNumber;
+    };
+
+    const handleMouseEnter = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (target && target.textContent?.trim()) {
+        const lineNumber = calculateLineNumber(target);
+        if (lineNumber !== null) {
+          setHoveredLineNumber(lineNumber);
+          
+          // Apply hover class to all editors' text elements with the same line number
+          const allEditorContainers = document.querySelectorAll(".editor-container");
+          allEditorContainers.forEach((container) => {
+            const lineNumberElement = container.querySelector(
+              `.line-number[id$="-line-${lineNumber}"]`
+            ) as HTMLElement;
+            
+            if (lineNumberElement) {
+              const lineTop = parseFloat(lineNumberElement.style.top);
+              const editorElement = container.querySelector(".ql-editor");
+              
+              if (editorElement) {
+                const contentElements = editorElement.querySelectorAll(
+                  "p, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15, h16, h17, h18, h19, h20"
+                );
+                
+                contentElements.forEach((element) => {
+                  const rect = element.getBoundingClientRect();
+                  const editorRect = editorElement.getBoundingClientRect();
+                  const editorScrollTop = editorElement.scrollTop;
+                  const elementTop = rect.top - editorRect.top + editorScrollTop;
+                  
+                  // Check if this element is at the same line number position
+                  if (Math.abs(elementTop - lineTop) < 5) {
+                    element.classList.add("editor-line-synced-hover");
+                  }
+                });
+              }
+            }
+          });
+        }
+      }
+    };
+
+    const handleMouseLeave = () => {
+      setHoveredLineNumber(null);
+      
+      // Remove hover class from all editors' text elements
+      const allEditorContainers = document.querySelectorAll(".editor-container");
+      allEditorContainers.forEach((container) => {
+        const editorElement = container.querySelector(".ql-editor");
+        if (editorElement) {
+          const hoveredElements = editorElement.querySelectorAll(".editor-line-synced-hover");
+          hoveredElements.forEach((element) => {
+            element.classList.remove("editor-line-synced-hover");
+          });
+        }
+      });
+    };
+
+    // Add event listeners to all content elements
+    const contentElements = editorElement.querySelectorAll("p, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15, h16, h17, h18, h19, h20");
+    contentElements.forEach((element) => {
+      element.addEventListener("mouseenter", handleMouseEnter);
+      element.addEventListener("mouseleave", handleMouseLeave);
+    });
+
+    // Use MutationObserver to handle dynamically added content
+    const observer = new MutationObserver(() => {
+      const newElements = editorElement.querySelectorAll("p, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15, h16, h17, h18, h19, h20");
+      newElements.forEach((element) => {
+        element.removeEventListener("mouseenter", handleMouseEnter);
+        element.removeEventListener("mouseleave", handleMouseLeave);
+        element.addEventListener("mouseenter", handleMouseEnter);
+        element.addEventListener("mouseleave", handleMouseLeave);
+      });
+    });
+
+    observer.observe(editorElement, {
+      childList: true,
+      subtree: true,
+    });
+
+    return () => {
+      contentElements.forEach((element) => {
+        element.removeEventListener("mouseenter", handleMouseEnter);
+        element.removeEventListener("mouseleave", handleMouseLeave);
+      });
+      observer.disconnect();
+      setHoveredLineNumber(null);
+    };
+  }, [documentId, setHoveredLineNumber]);
 
   function addComment() {
     if (!currentRange || currentRange?.length === 0) return;

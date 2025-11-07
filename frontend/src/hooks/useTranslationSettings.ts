@@ -26,7 +26,7 @@ const DEFAULT_CONFIG: TranslationConfig = {
   targetLanguage: "english",
   textType: "commentary",
   modelName: "claude-3-5-haiku-20241022",
-  batchSize: 2,
+  batchSize: 5,
   userRules: "do translation normally",
   extractGlossary: false,
 };

@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Home, Globe2Icon, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
-import { fetchTools } from "@/api/workspace/tools";
 import { useTranslation } from "react-i18next";
+import { useFetchTools } from "@/api/queries/other";
 const NavSidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { t } = useTranslation();
@@ -27,11 +26,7 @@ const NavSidebar = () => {
     document.addEventListener("keydown", handleEscape, signal);
     return () => signal.abort();
   }, [isOpen]);
-  const { data: toolList = [] } = useQuery({
-    queryKey: ["tools"],
-    queryFn: fetchTools,
-    staleTime: 1000 * 60 * 5, // 5 minutes (stays "fresh" for this duration)
-  });
+  const { data: toolList = [] } = useFetchTools();
 
   // Prevent body scrolling when sidebar is open on mobile
   useEffect(() => {

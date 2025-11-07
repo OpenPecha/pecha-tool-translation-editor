@@ -36,13 +36,6 @@ export const TEXT_TYPES: TextType[] = [
   "commentary",
   "philosophical treatises",
 ];
-export const MODEL_NAMES: ModelName[] = [
-  "claude-3-5-haiku-20241022",
-  "claude-3-opus-20240229",
-  "gemini-2.5-pro",
-  "gemini-2.5-flash-thinking",
-  "gemini-2.5-flash",
-];
 
 export interface StreamTranslationParams {
   texts: string[];

@@ -44,10 +44,7 @@ export function EmptyTextForm({
         isRoot: true,
         language: selectedLanguage,
         content: "",
-        metadata: {
-          source: "empty",
-          createdAt: new Date().toISOString(),
-        },
+        // Don't send metadata for empty documents
       };
 
       const documentResponse = await createDocumentWithContent(documentData);

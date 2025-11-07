@@ -28,7 +28,7 @@ const LineNumberVirtualized = ({
 }: LineNumberVirtualizedProps) => {
   const { t } = useTranslation();
   const lineNumbersRef = useRef<HTMLDivElement>(null);
-  const { getQuill, activeEditor } = useEditor();
+  const { getQuill, activeEditor, hoveredLineNumber } = useEditor();
   const observerRef = useRef<IntersectionObserver | null>(null);
 
   const [lineNumbers, setLineNumbers] = useState<
@@ -341,6 +341,8 @@ const LineNumberVirtualized = ({
               className={
                 bookmarks.includes(lineNum.number)
                   ? "bg-amber-100 font-medium text-amber-900 border-l-2 text-right w-full border-amber-500"
+                  : hoveredLineNumber === lineNum.number
+                  ? "bg-gray-100 text-right w-full dark:bg-neutral-700"
                   : "hover:bg-gray-100 text-right w-full dark:hover:bg-neutral-700"
               }
             >
