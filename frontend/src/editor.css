@@ -558,3 +558,90 @@ a.footnote-number {
   .ql-annotation:hover {
 	background-color: rgba(78, 180, 163, 0.726);
   }
+
+/* Bubble Menu Styles */
+.bubble-menu {
+	animation: bubble-menu-appear 0.15s ease-out;
+}
+
+@keyframes bubble-menu-appear {
+	from {
+		opacity: 0;
+		transform: translateY(5px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.bubble-menu-content {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	background: white;
+	border: 1px solid #e5e7eb;
+	border-radius: 8px;
+	padding: 4px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.dark .bubble-menu-content {
+	background: #1f2937;
+	border-color: #374151;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.bubble-menu-button {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	border: none;
+	background: transparent;
+	border-radius: 6px;
+	cursor: pointer;
+	color: #4b5563;
+	transition: all 0.15s ease;
+	padding: 0;
+}
+
+.dark .bubble-menu-button {
+	color: #9ca3af;
+}
+
+.bubble-menu-button:hover {
+	background: #f3f4f6;
+	color: #1f2937;
+}
+
+.dark .bubble-menu-button:hover {
+	background: #374151;
+	color: #f3f4f6;
+}
+
+.bubble-menu-button.active {
+	background: #dbeafe;
+	color: #1e40af;
+}
+
+.dark .bubble-menu-button.active {
+	background: #1e3a8a;
+	color: #93c5fd;
+}
+
+.bubble-menu-button:active {
+	transform: scale(0.95);
+}
+
+.bubble-menu-divider {
+	width: 1px;
+	height: 24px;
+	background: #e5e7eb;
+	margin: 0 4px;
+}
+
+.dark .bubble-menu-divider {
+	background: #374151;
+}

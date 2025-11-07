@@ -30,6 +30,7 @@ import SkeletonLoader from "./SkeletonLoader";
 import AnnotationList from "./Annotation/AnnotationList";
 import { handleAnnotationVote } from "./quill_func";
 import DocumentSidebar from "./DocumentSidebar";
+import BubbleMenu from "./BubbleMenu";
 
 quill_import();
 
@@ -568,6 +569,11 @@ const Editor = ({
           )}
           <AnnotationList onVote={handleAnnotationVote} />
           <CommentBubble documentId={documentId} isEditable={isEditable} />
+          <BubbleMenu 
+            quill={quillRef.current} 
+            isEditable={isEditable}
+            onAddComment={addComment}
+          />
         </div>
         {/* <OverlayLoading isLoading={!isSynced} /> */}
       </div>
