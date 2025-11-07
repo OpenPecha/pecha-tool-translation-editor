@@ -1,11 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  fetchInstances,
-  fetchTextContent,
-  fetchTexts,
-  fetchAnnotations,
-} from "@/api/openpecha";
+import { fetchAnnotations } from "@/api/openpecha";
 import {
   useFetchInstances,
   useFetchTextContent,
@@ -32,18 +27,6 @@ interface OpenPechaInstance {
   };
   annotation: { [key: string]: any };
   type: string;
-}
-
-interface TextContentType {
-  content: string;
-  annotations: [
-    {
-      [key: string]: Array<{ [key: string]: unknown }>;
-    }
-  ];
-  metadata: {
-    [key: string]: unknown;
-  };
 }
 
 interface AnnotationContentType {
@@ -126,7 +109,6 @@ export function useOpenPecha() {
     setProcessedText("");
   }, [selectedTextId]);
 
-  // First useEffect: Trigger fetching of annotations when textContent is available.
   useEffect(() => {
     if (textContent?.annotations?.length) {
       const segmentation = textContent.annotations.find(
@@ -141,7 +123,6 @@ export function useOpenPecha() {
     }
   }, [textContent]);
 
-  // Second useEffect: Apply segmentation when both textContent and annotations are ready.
   useEffect(() => {
     if (textContent && annotations) {
       // Note: You might need to adjust `annotations.annotation` based on the actual API response.

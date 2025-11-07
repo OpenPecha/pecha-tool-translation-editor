@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { createPortal } from "react-dom";
 import { IoIosArrowForward } from "react-icons/io";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import Split from "react-split";
 import { EditorProvider } from "@/contexts/EditorContext";
 import LiveBlockProvider, {
@@ -9,13 +9,14 @@ import LiveBlockProvider, {
 } from "@/contexts/LiveBlockProvider";
 import { useCurrentDoc } from "@/hooks/useCurrentDoc";
 import { useDevToolsStatus } from "@/hooks/useDevToolStatus";
+import { useOpenPechaUpload } from "@/hooks/useOpenPechaUpload";
 import { useTranslationSidebarParams } from "@/hooks/useQueryParams";
 import isMobile from "@/lib/isMobile";
 import ChatSidebar from "./ChatSidebar";
 import DocumentEditor from "./DocumentEditor";
 import SideMenu from "./EditorSideMenu/Sidemenu";
 import Navbar from "./Navbar";
-import SettingsButton from "./setting/SettingsButton";
+import { UploadToOpenPecha } from "./OpenPecha/UploadToOpenPecha";
 
 export type { Translation } from "@/hooks/useCurrentDoc";
 
@@ -113,6 +114,7 @@ function DocumentsWrapper() {
               <TranslationEditor
                 selectedTranslationId={selectedTranslationId}
                 isEditable={!!isEditable}
+                sourceDocId={id}
               />
             )}
           </div>
@@ -142,18 +144,25 @@ function DocumentsWrapper() {
 function TranslationEditor({
   selectedTranslationId,
   isEditable,
+  sourceDocId,
 }: {
   readonly selectedTranslationId: string;
   readonly isEditable: boolean;
+  readonly sourceDocId: string;
 }) {
-  const { currentDoc } = useCurrentDoc(selectedTranslationId);
-  const isLiveEnabled = useLiveBlockActive(currentDoc);
+  const { currentDoc: translationDoc } = useCurrentDoc(selectedTranslationId);
+  const { currentDoc: sourceDoc } = useCurrentDoc(sourceDocId);
+  const isLiveEnabled = useLiveBlockActive(translationDoc);
+  const { onUpload, isUploading, error, isUploadable } = useOpenPechaUpload({
+    sourceDoc,
+    translationDoc,
+  });
 
   return (
     <div className="h-full flex w-full">
       {/* Translation Editor */}
-      <div className="flex-1 h-full translation-editor-container">
-        {currentDoc && (
+      <div className="flex-1 h-full translation-editor-container relative">
+        {translationDoc && (
           <LiveBlockProvider
             roomId={selectedTranslationId}
             enabled={isLiveEnabled}
@@ -162,18 +171,26 @@ function TranslationEditor({
               liveEnabled={isLiveEnabled}
               docId={selectedTranslationId}
               isEditable={isEditable}
-              currentDoc={currentDoc}
+              currentDoc={translationDoc}
             />
           </LiveBlockProvider>
         )}
+        <div className="absolute bottom-4 right-4 z-10">
+          <UploadToOpenPecha
+            isUploadable={isUploadable}
+            onUpload={onUpload}
+            isUploading={isUploading}
+            error={error}
+            translationLanguage={translationDoc?.language || ""}
+            translationTitle={translationDoc?.name || ""}
+          />
+        </div>
       </div>
 
       {/* Chat Sidebar - Sticky */}
-      {!isMobile && (
-        <div className="h-full sticky top-0">
-          <ChatSidebar documentId={selectedTranslationId!} />
-        </div>
-      )}
+      <div className="h-full sticky top-0 flex flex-col">
+        {!isMobile && <ChatSidebar documentId={selectedTranslationId!} />}
+      </div>
     </div>
   );
 }
