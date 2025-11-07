@@ -1,10 +1,16 @@
+const PERSON_ID = process.env.PERSON_ID;
 const express = require("express");
 const {
   getTexts,
   getInstanceContent,
   getTextInstances,
   getAnnotations,
-} = require("../apis/openpecha_api");
+  uploadTranslationToOpenpecha,
+  } = require("../apis/openpecha_api");
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
+
+
 const router = express.Router();
 
 /**
@@ -173,4 +179,99 @@ router.get("/annotations/:id", async (req, res) => {
     }); 
   }
 });
+
+/**
+ * POST /openpecha/instances/{instance_id}/translation
+ * @summary Upload translation to OpenPecha
+ * @tags Pecha - OpenPecha integration
+ * @param {string} instance_id.path.required - Instance ID
+ * @param {object} request.body.required - Translation information
+ * @param {string} request.body.language - Language of the translation
+ * @param {string} request.body.content - Content of the translation
+ * @param {string} request.body.title - Title of the translation
+ * @param {array<object>} request.body.segmentation - Segmentation of the translation
+ * @param {array<object>} request.body.target_annotation - Target annotation spans
+ * @param {array<object>} request.body.alignment_annotation - Alignment annotation spans
+ * @return {object} 200 - Translation uploaded successfully
+ * @return {object} 400 - Bad request - Instance ID, root document ID, and translation document ID are required
+ * @return {object} 500 - Server error
+ * @example request - Upload translation request
+ * {
+ *   "language": "en",
+ *   "content": "This is a translation of the root text",
+ *   "title": "Translation of the root text",
+ *   "segmentation": [{"start": 0, "end": 20}],
+ *   "target_annotation": [{"span": {"start": 0, "end": 20}, "index": 0}],
+ *   "alignment_annotation": [{"span": {"start": 0, "end": 20}, "index": 0, "alignment_index": [0]}]
+ * }
+ * @example response - 200 - Success response
+ * {
+ *   "success": true,
+ *   "message": "Translation uploaded successfully",
+ *   "translation_id": "title-1234567890"
+ * }
+ */
+
+
+router.post("/instances/:instance_id/translation/:translation_doc_id", async (req, res) => {
+  const { instance_id, translation_doc_id } = req.params;
+  if (!instance_id) {
+    return res.status(400).json({
+      error: "Instance ID is required",
+      details: "Missing instance_id parameter",
+    });
+  }
+  
+  if (!translation_doc_id) {
+    return res.status(400).json({
+      error: "Translation document ID is required",
+      details: "Missing translation_doc_id parameter",
+    });
+  }
+  const requiredFields = [
+    "language",
+    "content",
+    "title",
+    "segmentation",
+    "target_annotation",
+    "alignment_annotation",
+  ];
+  const missingField = requiredFields.find(field => !req.body[field]);
+  if (missingField) {
+    return res.status(400).json({
+      error: `${missingField.replace(/_/g, " ")} is required`,
+      instance_id,
+      details: `Missing required field: ${missingField}`,
+    });
+  }
+  const translationData = {
+    ...req.body,
+    author: {
+      "person_id": PERSON_ID,
+    },
+  };
+  try {
+    const translation = await uploadTranslationToOpenpecha(instance_id, translationData);
+    await prisma.docMetadata.create({
+      data: {
+        docId: translation_doc_id,
+        instance_id: translation.instance_id,
+        text_id: translation.text_id,
+      },
+    });
+    res.json({
+      success: true,
+      message: "Translation uploaded successfully",
+      data: translation,
+    });
+  } catch (error) {
+    console.error("Error uploading translation:", error);
+    res.status(500).json({
+      error: "Failed to upload translation",
+      instance_id,
+      details: error.message,
+    });
+  }
+});
+
 module.exports = router;

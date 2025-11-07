@@ -44,3 +44,33 @@ export const fetchAnnotations = async (annotationId: string) => {
     return data;
   }
 };
+
+export interface TranslationPayload {
+  language: string;
+  content: string;
+  title: string;
+  segmentation: any;
+  target_annotation: any;
+  alignment_annotation: any;
+}
+
+export const uploadTranslationToOpenpecha = async (
+  instance_id: string,
+  payload: TranslationPayload,
+  translation_doc_id: string,
+) => {
+  const response = await fetch(
+    `${server_url}/openpecha/instances/${instance_id}/translation/${translation_doc_id}`,
+    {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(payload),
+    },
+  );
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || "Failed to upload translation");
+  }
+  return response.json();
+};
+
