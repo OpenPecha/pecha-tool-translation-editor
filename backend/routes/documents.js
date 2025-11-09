@@ -393,8 +393,8 @@ router.post("/content", authenticate, async (req, res) => {
         await tx.docMetadata.create({
           data: {
             docId: doc.id,
-            text_id: parsedMetadata.text_id,
-            instance_id: parsedMetadata.instance_id,
+            textId: parsedMetadata.text_id,
+            instanceId: parsedMetadata.instance_id,
           },
         });
       }
@@ -846,7 +846,7 @@ router.post("/:id/permissions", authenticate, async (req, res) => {
 
     // Check if the user already has permissions
     const existingPermission = await prisma.permission.findFirst({
-      where: { docId: documentId, userEmail: email },
+      where: { docId: documentId, userId },
     });
 
     let isUpdate = false;
@@ -864,7 +864,6 @@ router.post("/:id/permissions", authenticate, async (req, res) => {
           data: {
             docId: documentId,
             userId,
-            userEmail: email,
             canRead,
             canWrite,
           },
@@ -879,7 +878,7 @@ router.post("/:id/permissions", authenticate, async (req, res) => {
     if (document.isRoot && document.translations.length > 0) {
       for (const translation of document.translations) {
         const existingTransPermission = await prisma.permission.findFirst({
-          where: { docId: translation.id, userEmail: email },
+          where: { docId: translation.id, userId },
         });
 
         if (existingTransPermission) {
@@ -892,7 +891,6 @@ router.post("/:id/permissions", authenticate, async (req, res) => {
             data: {
               docId: translation.id,
               userId,
-              userEmail: email,
               canRead,
               canWrite,
             },

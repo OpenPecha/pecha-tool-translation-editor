@@ -15,16 +15,23 @@ interface Position {
   left: number;
 }
 
-interface Comment {
+export interface Comment {
   id: string;
   docId: string;
   threadId: string;
-  initial_start_offset: number;
-  initial_end_offset: number;
-  user: { id: string; username: string };
+  userId: string;
+  user: { 
+    id: string; 
+    username: string; 
+    email: string;
+    picture?: string;
+  };
   content: string;
   createdAt: string;
-  suggested_text?: string;
+  updatedAt: string;
+  isSuggestion: boolean;
+  suggestedText?: string;
+  isSystemGenerated: boolean;
 }
 
 interface CommentContextType {

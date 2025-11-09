@@ -4,7 +4,7 @@ import { fetchInstances, fetchTextContent, fetchTexts } from "../openpecha";
 export const useFetchTexts = () => {
   return useQuery({
     queryKey: ["texts"],
-    queryFn: () => fetchTexts(),
+    queryFn: () => fetchTexts({ limit: 200 }),
     staleTime: 5 * 60 * 1000,
   });
 };

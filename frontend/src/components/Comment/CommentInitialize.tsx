@@ -1,4 +1,5 @@
 import { createComment } from "@/api/comment";
+import { createThread } from "@/api/thread";
 import { useAuth } from "@/auth/use-auth-hook";
 
 import { useEditor } from "@/contexts/EditorContext";
@@ -53,43 +54,57 @@ function CommentInitialize({
   }, [setShowCommentModal]);
 
   const commentMutation = useMutation({
-    mutationFn: (data: {
+    mutationFn: async (data: {
       comment: string;
       suggestion: string;
-      threadId: string;
       start: number;
       end: number;
-    }) =>
-      createComment(
+      selectedText: string;
+    }) => {
+      // First, create the thread
+      const thread = await createThread(
         documentId,
-        currentUser?.id,
-        data.comment,
         data.start,
         data.end,
-        data.threadId,
-        isSuggestion,
-        data.suggestion,
-        currentRangeText
-      ),
-    onSuccess: (createdComment) => {
-      if (createdComment?.id) {
-        // Track comment creation
+        data.selectedText,
+        false // isSystemGenerated
+      );
 
+      if (!thread) {
+        throw new Error("Failed to create thread");
+      }
+
+      // Then, create the first comment in the thread
+      const createdComment = await createComment(
+        documentId,
+        currentUser!.id,
+        data.comment,
+        thread.id, // threadId from newly created thread
+        isSuggestion,
+        data.suggestion || undefined,
+        false // isSystemGenerated
+      );
+
+      return { thread, comment: createdComment };
+    },
+    onSuccess: (result) => {
+      if (result.thread && result.comment) {
         // Update the Quill editor to highlight the text
         quill?.formatText(
           currentRange!.index,
           currentRange!.length,
           "comment",
           {
-            id: createdComment.threadId,
+            id: result.thread.id,
           },
           "user"
         );
 
         setShowCommentModal(false);
 
-        // Invalidate and refetch comments
+        // Invalidate and refetch comments and threads
         queryClient.invalidateQueries({ queryKey: ["comments", documentId] });
+        queryClient.invalidateQueries({ queryKey: ["threads", documentId] });
       }
     },
     onError: (error) => {
@@ -107,15 +122,15 @@ function CommentInitialize({
       return;
     }
     if (isSuggestion && !suggestion) return;
+    
     const end = currentRange.index + currentRange.length;
-    const threadId = crypto.randomUUID();
 
     commentMutation.mutate({
       comment,
       suggestion,
-      threadId,
       start: currentRange.index,
       end,
+      selectedText: currentRangeText || "",
     });
   }
 

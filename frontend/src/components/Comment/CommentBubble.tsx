@@ -19,12 +19,14 @@ export interface Comment {
 	id: string;
 	docId: string;
 	threadId: string;
-	initial_start_offset: number;
-	initial_end_offset: number;
+	userId: string;
 	user: User;
 	content: string;
-	suggested_text?: string;
+	isSuggestion: boolean;
+	suggestedText?: string;
+	isSystemGenerated: boolean;
 	createdAt: string;
+	updatedAt: string;
 }
 
 interface StyleProps {
@@ -80,23 +82,19 @@ const CommentBubble = ({
 			docId: string;
 			userId: string;
 			content: string;
-			startOffset: number;
-			endOffset: number;
 			threadId: string;
 			isSuggestion: boolean;
-			suggestedText: string | undefined;
-			commentedOn?: string;
+			suggestedText?: string;
+			isSystemGenerated?: boolean;
 		}) =>
 			createComment(
 				commentData.docId,
 				commentData.userId,
 				commentData.content,
-				commentData.startOffset,
-				commentData.endOffset,
 				commentData.threadId,
 				commentData.isSuggestion,
 				commentData.suggestedText,
-				commentData.commentedOn,
+				commentData.isSystemGenerated,
 			),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["comments"] });
@@ -130,18 +128,15 @@ const CommentBubble = ({
 		}
 
 		const thread = commentThread?.[0];
-		const commented_on = thread?.comment_on;
 		if (!thread || !currentUser) return;
 		commentMutation.mutate({
 			docId: thread.docId,
 			userId: currentUser.id,
 			content: comment,
-			startOffset: thread.initial_start_offset,
-			endOffset: thread.initial_end_offset,
 			threadId: thread.threadId,
 			isSuggestion: isSuggestion,
 			suggestedText: isSuggestion ? suggestion : undefined,
-			commentedOn: commented_on,
+			isSystemGenerated: false,
 		});
 	};
 

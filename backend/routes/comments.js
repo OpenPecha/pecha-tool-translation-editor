@@ -17,14 +17,14 @@ router.get("/", authenticate, async (req, res) => {
 		if (docId) {
 			comments = await prisma.comment.findMany({
 				where: { docId },
-				include: { user: true, childComments: true },
+				include: { user: true },
 				orderBy: {
 					createdAt: "desc",
 				},
 			});
 		} else {
 			comments = await prisma.comment.findMany({
-				include: { user: true, childComments: true },
+				include: { user: true },
 			});
 		}
 
@@ -42,7 +42,7 @@ router.get("/:docId", optionalAuthenticate, async (req, res) => {
 
 		const comments = await prisma.comment.findMany({
 			where: { docId },
-			include: { user: true, childComments: true },
+			include: { user: true },
 		});
 		res.json(comments);
 	} catch (error) {
@@ -55,7 +55,7 @@ router.get("/thread/:threadId", optionalAuthenticate, async (req, res) => {
 	const { threadId } = req.params;
 	const comments = await prisma.comment.findMany({
 		where: { threadId },
-		include: { user: true, childComments: true },
+		include: { user: true },
 		orderBy: {
 			createdAt: "desc",
 		},
@@ -69,28 +69,18 @@ router.post("/", authenticate, async (req, res) => {
 			docId,
 			userId,
 			content,
-			parentCommentId,
-			initial_start_offset,
-			initial_end_offset,
 			threadId,
-			is_suggestion,
-			suggested_text,
-			comment_on,
+			isSuggestion,
+			suggestedText,
+			isSystemGenerated,
 		} = req.body;
 
-		if (
-			!docId ||
-			!userId ||
-			!content ||
-			!comment_on ||
-			initial_start_offset == null ||
-			initial_end_offset == null
-		) {
+		if (!docId || !userId || !content) {
 			return res.status(400).json({ error: "Missing required fields" });
 		}
 
-		// Validate suggestion data if is_suggestion is true
-		if (is_suggestion === true && !suggested_text) {
+		// Validate suggestion data if isSuggestion is true
+		if (isSuggestion === true && !suggestedText) {
 			return res
 				.status(400)
 				.json({ error: "Suggested text is required for suggestions" });
@@ -99,13 +89,10 @@ router.post("/", authenticate, async (req, res) => {
 			docId,
 			userId,
 			content,
-			parentCommentId,
-			initial_start_offset,
-			initial_end_offset,
-			threadId,
-			comment_on,
-			is_suggestion: is_suggestion || false,
-			suggested_text,
+			threadId: threadId || null,
+			isSuggestion: isSuggestion || false,
+			suggestedText: suggestedText || null,
+			isSystemGenerated: isSystemGenerated || false,
 		};
 		const newComment = await prisma.comment.create({
 			data: data,
@@ -123,7 +110,7 @@ router.post("/", authenticate, async (req, res) => {
 router.put("/:id", authenticate, async (req, res) => {
 	try {
 		const { id } = req.params;
-		const { content, is_suggestion, suggested_text } = req.body;
+		const { content, isSuggestion, suggestedText } = req.body;
 
 		const existingComment = await prisma.comment.findUnique({
 			where: { id },
@@ -133,11 +120,11 @@ router.put("/:id", authenticate, async (req, res) => {
 			return res.status(404).json({ error: "Comment not found" });
 		}
 
-		// Validate suggestion data if is_suggestion is being updated to true
+		// Validate suggestion data if isSuggestion is being updated to true
 		if (
-			is_suggestion === true &&
-			!suggested_text &&
-			!existingComment.suggested_text
+			isSuggestion === true &&
+			!suggestedText &&
+			!existingComment.suggestedText
 		) {
 			return res
 				.status(400)
@@ -148,14 +135,14 @@ router.put("/:id", authenticate, async (req, res) => {
 			where: { id },
 			data: {
 				content,
-				is_suggestion:
-					is_suggestion !== undefined
-						? is_suggestion
-						: existingComment.is_suggestion,
-				suggested_text:
-					suggested_text !== undefined
-						? suggested_text
-						: existingComment.suggested_text,
+				isSuggestion:
+					isSuggestion !== undefined
+						? isSuggestion
+						: existingComment.isSuggestion,
+				suggestedText:
+					suggestedText !== undefined
+						? suggestedText
+						: existingComment.suggestedText,
 				updatedAt: new Date(),
 			},
 		});

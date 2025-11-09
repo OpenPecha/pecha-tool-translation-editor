@@ -108,12 +108,12 @@ function EachComment({
 					{comment.content}
 				</div>
 
-				{comment.suggested_text && (
-					<div className="font-semibold text-sm text-[#2563eb] bg-[#eff6ff] px-2 py-1 rounded-md mb-2 border border-[#bfdbfe]">
-						<span style={{ fontWeight: 500 }}>Suggestion:</span> "
-						{comment.suggested_text}"
-					</div>
-				)}
+			{comment.suggestedText && (
+				<div className="font-semibold text-sm text-[#2563eb] bg-[#eff6ff] px-2 py-1 rounded-md mb-2 border border-[#bfdbfe]">
+					<span style={{ fontWeight: 500 }}>Suggestion:</span> "
+					{comment.suggestedText}"
+				</div>
+			)}
 			</div>
 		</div>
 	);

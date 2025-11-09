@@ -59,25 +59,20 @@ export const fetchCommentsByThreadId = async (threadId: string) => {
  * @param {string} docId - The document ID
  * @param {string} userId - The user ID
  * @param {string} content - The comment text
- * @param {number} startOffset - The initial start offset
- * @param {number} endOffset - The initial end offset
- * @param {boolean} [is_suggestion] - Whether this is a suggestion
- * @param {string} [suggested_text] - The suggested text (required if is_suggestion is true)
- * @param {string} [parentCommentId] - Optional parent comment ID (for replies)
- * @param {string} [comment_on] - The comment ID that this comment is replying to
+ * @param {string} threadId - The thread ID this comment belongs to
+ * @param {boolean} [isSuggestion] - Whether this is a suggestion
+ * @param {string} [suggestedText] - The suggested text (required if isSuggestion is true)
+ * @param {boolean} [isSystemGenerated] - Whether this comment was system-generated
  * @returns {Promise<any>} - The created comment
  */
 export const createComment = async (
 	docId: string,
 	userId: string,
 	content: string,
-	startOffset: number,
-	endOffset: number,
 	threadId: string,
-	is_suggestion?: boolean,
-	suggested_text?: string,
-	comment_on?: string,
-	parentCommentId?: string,
+	isSuggestion?: boolean,
+	suggestedText?: string,
+	isSystemGenerated?: boolean,
 ) => {
 	try {
 		const response = await fetch(`${server_url}/comments`, {
@@ -87,13 +82,10 @@ export const createComment = async (
 				docId,
 				userId,
 				content,
-				initial_start_offset: startOffset,
-				initial_end_offset: endOffset,
 				threadId,
-				is_suggestion,
-				suggested_text,
-				parentCommentId,
-				comment_on,
+				isSuggestion: isSuggestion || false,
+				suggestedText: suggestedText || null,
+				isSystemGenerated: isSystemGenerated || false,
 			}),
 		});
 
@@ -102,6 +94,7 @@ export const createComment = async (
 		return await response.json();
 	} catch (error) {
 		console.error("Error creating comment:", error);
+		throw error;
 	}
 };
 
@@ -109,15 +102,15 @@ export const createComment = async (
  * Update an existing comment
  * @param {string} commentId - The comment ID
  * @param {string} content - The updated content
- * @param {boolean} [is_suggestion] - Whether this is a suggestion
- * @param {string} [suggested_text] - The suggested text
+ * @param {boolean} [isSuggestion] - Whether this is a suggestion
+ * @param {string} [suggestedText] - The suggested text
  * @returns {Promise<any>} - The updated comment
  */
 export const updateComment = async (
 	commentId: string,
 	content: string,
-	is_suggestion?: boolean,
-	suggested_text?: string,
+	isSuggestion?: boolean,
+	suggestedText?: string,
 ) => {
 	try {
 		const response = await fetch(`${server_url}/comments/${commentId}`, {
@@ -125,8 +118,8 @@ export const updateComment = async (
 			headers: getHeaders(),
 			body: JSON.stringify({
 				content,
-				is_suggestion,
-				suggested_text,
+				isSuggestion,
+				suggestedText,
 			}),
 		});
 
@@ -135,6 +128,7 @@ export const updateComment = async (
 		return await response.json();
 	} catch (error) {
 		console.error("Error updating comment:", error);
+		throw error;
 	}
 };
 

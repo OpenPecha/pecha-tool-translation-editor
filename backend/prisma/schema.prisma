@@ -20,6 +20,7 @@ model User {
   permissions Permission[]
   project     Project[]
   version     Version[]
+  threads     Thread[] @relation("ThreadCreatedBy")
 }
 
 model Project {
@@ -62,6 +63,7 @@ model Doc {
   footnotes        Footnote[] // A document can have multiple footnotes
   currentVersionId String?      @unique
   currentVersion   Version?     @relation("CurrentVersion", fields: [currentVersionId], references: [id])
+  threads Thread[] @relation("ThreadDocuments")
 
   @@index([ownerId])
   @@index([rootId])
@@ -70,8 +72,8 @@ model Doc {
 
 model DocMetadata {
   id String @id @default(uuid())
-  text_id String?
-  instance_id String?
+  textId String?
+  instanceId String?
   docId String @unique
   doc Doc @relation(fields: [docId], references: [id], onDelete: Cascade)
 }
@@ -95,23 +97,34 @@ model Permission {
   @@index([projectId])
 }
 
+model Thread {
+  id String @id @default(uuid())
+  documentId String
+  isSystemGenerated        Boolean   @default(false)
+  initialStartOffset Int
+  initialEndOffset   Int
+  selectedText       String?
+  createdByUserId        String
+  createdByUser        User     @relation("ThreadCreatedBy", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  document             Doc      @relation("ThreadDocuments", fields: [documentId], references: [id], onDelete: Cascade)
+  comments             Comment[] @relation("ThreadComments")
+}
+
 model Comment {
   id                   String    @id @default(uuid())
   docId                String
   userId               String
-  content              String
-  parentCommentId      String?
+  isSystemGenerated        Boolean   @default(false)
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
-  initial_start_offset Int
-  initial_end_offset   Int
-  is_suggestion        Boolean   @default(false)
-  suggested_text       String?
+  content              String
+  isSuggestion        Boolean   @default(false)
+  suggestedText       String?
   threadId             String?
-  comment_on           String?
+  thread Thread? @relation("ThreadComments", fields: [threadId], references: [id])
   doc                  Doc       @relation(fields: [docId], references: [id], onDelete: Cascade)
-  parentComment        Comment?  @relation("parentComment", fields: [parentCommentId], references: [id])
-  childComments        Comment[] @relation("parentComment")
   user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -123,9 +136,9 @@ model Footnote {
   content              String
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
-  note_on              String?
-  initial_start_offset Int
-  initial_end_offset   Int
+  noteOn              String?
+  initialStartOffset Int
+  initialEndOffset   Int
   order                Int      @default(0)
   doc                  Doc      @relation(fields: [docId], references: [id], onDelete: Cascade)
   user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)

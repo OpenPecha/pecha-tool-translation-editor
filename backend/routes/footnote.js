@@ -84,19 +84,19 @@ router.post("/", authenticate, async (req, res) => {
 			docId,
 			userId,
 			content,
-			initial_start_offset,
-			initial_end_offset,
+			initialStartOffset,
+			initialEndOffset,
 			threadId,
-			note_on,
+			noteOn,
 		} = req.body;
 
 		if (
 			!docId ||
 			!userId ||
 			!content ||
-			!note_on ||
-			initial_start_offset == null ||
-			initial_end_offset == null
+			!noteOn ||
+			initialStartOffset == null ||
+			initialEndOffset == null
 		) {
 			return res.status(400).json({ error: "Missing required fields" });
 		}
@@ -106,10 +106,10 @@ router.post("/", authenticate, async (req, res) => {
 			docId,
 			userId,
 			content,
-			initial_start_offset,
-			initial_end_offset,
-			threadId,
-			note_on,
+			initialStartOffset,
+			initialEndOffset,
+			threadId: threadId || null,
+			noteOn,
 			order: 999999, // Temporary high order number
 		};
 
@@ -118,11 +118,11 @@ router.post("/", authenticate, async (req, res) => {
 			include: { user: true },
 		});
 
-		// Get all footnotes for this document ordered by initial_start_offset
+		// Get all footnotes for this document ordered by initialStartOffset
 		const allFootnotes = await prisma.footnote.findMany({
 			where: { docId },
 			orderBy: {
-				initial_start_offset: "asc",
+				initialStartOffset: "asc",
 			},
 		});
 

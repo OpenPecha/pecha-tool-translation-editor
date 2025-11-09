@@ -1167,26 +1167,29 @@ async function createPageViewDocxBuffer(docName, delta) {
 						const footnoteNumber = footnoteMap.size + 1;
 						// Fetch actual footnote content from database
 						let actualContent = `Footnote ${footnoteNumber}`;
-						let deltaContent = "";
-						if (op.attributes.footnoteContent) {
-							deltaContent = op.attributes.footnoteContent;
-						}
-						if (op.attributes.footnoteText) {
-							deltaContent = op.attributes.footnoteText;
-						}
-						if (op.attributes.note_on) {
-							deltaContent = op.attributes.note_on;
-						}
-						if (op.attributes.content) {
-							deltaContent = op.attributes.content;
-						}
-						if (op.attributes.text) {
-							deltaContent = op.attributes.text;
-						}
-						if (op.attributes.footnote_content) {
-							deltaContent = op.attributes.footnote_content;
-						}
-						if (op.attributes.footnote_text) {
+					let deltaContent = "";
+					if (op.attributes.footnoteContent) {
+						deltaContent = op.attributes.footnoteContent;
+					}
+					if (op.attributes.footnoteText) {
+						deltaContent = op.attributes.footnoteText;
+					}
+					if (op.attributes.noteOn) {
+						deltaContent = op.attributes.noteOn;
+					}
+					if (op.attributes.note_on) {
+						deltaContent = op.attributes.note_on;
+					}
+					if (op.attributes.content) {
+						deltaContent = op.attributes.content;
+					}
+					if (op.attributes.text) {
+						deltaContent = op.attributes.text;
+					}
+					if (op.attributes.footnote_content) {
+						deltaContent = op.attributes.footnote_content;
+					}
+					if (op.attributes.footnote_text) {
 							deltaContent = op.attributes.footnote_text;
 						}
 						try {

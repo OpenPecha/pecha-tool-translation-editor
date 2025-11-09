@@ -5,29 +5,22 @@ import { useParams } from "react-router-dom";
 import { useState } from "react";
 import Quill from "quill";
 import CommentBlot from "../quillExtension/commentBlot";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ScrollArea } from "../ui/scroll-area";
 import AvatarWrapper from "../ui/custom-avatar";
-import { groupBy } from "lodash";
 import { useTranslation } from "react-i18next";
-import {
-  useFetchComments,
-  useFetchCommentsByThreadId,
-} from "@/api/queries/documents";
+import { useFetchCommentsByThreadId } from "@/api/queries/documents";
 interface Comment {
   id: string;
   threadId: string;
   docId: string;
   userId: string;
   content: string;
-  parentCommentId: string | null;
   createdAt: string;
   updatedAt: string;
-  comment_on: string;
-  initial_start_offset: number;
-  initial_end_offset: number;
-  is_suggestion: boolean;
-  suggested_text?: string;
+  isSuggestion: boolean;
+  suggestedText?: string;
+  isSystemGenerated: boolean;
   user: {
     id: string;
     username: string;
@@ -35,7 +28,25 @@ interface Comment {
     picture: string;
     createdAt: string;
   };
-  childComments: Comment[];
+}
+
+interface Thread {
+  id: string;
+  documentId: string;
+  isSystemGenerated: boolean;
+  initialStartOffset: number;
+  initialEndOffset: number;
+  selectedText: string | null;
+  createdByUserId: string;
+  createdAt: string;
+  updatedAt: string;
+  createdByUser: {
+    id: string;
+    username: string;
+    email: string;
+    picture?: string;
+  };
+  comments: Comment[];
 }
 
 function Comments() {
@@ -48,21 +59,42 @@ function Comments() {
   // Add a query for fetching thread comments when a thread is selected
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
 
-  // Create a query for fetching specific thread comments if needed - must be before any conditional returns
+  // Fetch threads instead of comments
+  const { data: threads = [], isLoading, error } = useQuery({
+    queryKey: ["threads", id],
+    queryFn: async () => {
+      const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/threads/document/${id}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      if (!response.ok) throw new Error("Failed to fetch threads");
+      return response.json() as Promise<Thread[]>;
+    },
+    enabled: !!id,
+  });
+
+  // Create a query for fetching specific thread comments if needed
   const { data: selectedThreadComments = [] } = useFetchCommentsByThreadId(
     selectedThreadId!
   );
-  const { data: commentsThread = [], isLoading, error } = useFetchComments(id!);
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteComment(id),
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ["comments"] });
+      queryClient.invalidateQueries({ queryKey: ["threads"] });
 
-      const onlyComment = commentsThread?.length === 1;
-      if (onlyComment) {
+      // Find the thread that contains this comment
+      const thread = threads?.find(t => 
+        t.comments?.some(c => c.id === id)
+      );
+      
+      // If this was the only comment, remove the highlight
+      if (thread && thread.comments?.length === 1) {
         const suggestionSpan = document.querySelector<HTMLSpanElement>(
-          `span.comments[data-id="${commentsThread[0].threadId}"]`
+          `span.comments[data-id="${thread.id}"]`
         );
 
         if (suggestionSpan) {
@@ -82,24 +114,18 @@ function Comments() {
     deleteMutation.mutate(commentId);
   };
 
-  if (isLoading) return <Message text="Loading comments..." />;
+  if (isLoading) return <Message text="Loading threads..." />;
   if (error)
     return (
       <Message
-        text={`Error loading comments: ${
+        text={`Error loading threads: ${
           error instanceof Error ? error.message : "Unknown error"
         }`}
         error
       />
     );
-  if (!commentsThread.length)
+  if (!threads || threads.length === 0)
     return <Message text={t(`common.noCommentsYet`)} />;
-
-  // Group comments by threadId for better organization
-  const groupedThreads = groupBy(
-    commentsThread,
-    (comment) => comment?.threadId || comment?.id
-  );
 
   // Handle thread selection
   const handleThreadSelect = (threadId: string) => {
@@ -124,32 +150,26 @@ function Comments() {
   return (
     <ScrollArea className="px-4 h-[calc(100vh-100px)] overflow-y-auto">
       <div className="flow-root -mb-8">
-        {Object.entries(groupedThreads).map(([threadId, threadComments]) => {
-          // Make sure we have valid thread comments
-          if (!threadComments || threadComments.length === 0) {
-            return null; // Skip rendering this thread if no comments
-          }
-
-          // Get the first comment to use as the thread header
-          const firstComment = threadComments[0];
-          const isSelected = selectedThreadId === threadId;
+        {threads.map((thread) => {
+          const isSelected = selectedThreadId === thread.id;
           const commentsToShow =
             isSelected && selectedThreadComments.length > 0
               ? selectedThreadComments
-              : threadComments;
+              : thread.comments || [];
 
           // Ensure user data exists to prevent errors
-          const userName = firstComment?.user?.username || "Unknown User";
-          const userPicture = firstComment?.user?.picture || "";
+          const userName = thread.createdByUser?.username || "Unknown User";
+          const userPicture = thread.createdByUser?.picture || "";
+          const firstComment = thread.comments?.[0];
 
           return (
-            <div key={threadId} className=" border-b ">
+            <div key={thread.id} className=" border-b ">
               {/* Thread header */}
               <div
                 className={`cursor-pointer p-2 mb-2 rounded ${
                   isSelected ? "bg-secondary-50" : "hover:bg-gray-50"
                 }`}
-                onClick={() => handleThreadSelect(threadId)}
+                onClick={() => handleThreadSelect(thread.id)}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -161,14 +181,17 @@ function Comments() {
                     <p className="text-sm font-medium">{userName}</p>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {firstComment?.createdAt
-                      ? new Date(firstComment.createdAt).toLocaleDateString()
+                    {thread.createdAt
+                      ? new Date(thread.createdAt).toLocaleDateString()
                       : "Unknown date"}
                   </p>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1 truncate">
-                  {firstComment?.is_suggestion ? "Suggestion" : "Comment"} on: "
-                  {firstComment?.comment_on || "Unknown text"}"
+                  {firstComment?.isSuggestion ? "Suggestion" : "Comment"} on: "
+                  {thread.selectedText || "Unknown text"}"
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {thread.comments?.length || 0} {thread.comments?.length === 1 ? 'reply' : 'replies'}
                 </p>
               </div>
 
@@ -260,14 +283,12 @@ function CommentCard({ comment, deleteComment, quill }: CommentCardProps) {
           </button>
         </div>
         <div className="p-3 pt-2">
-          {comment.is_suggestion ? (
-            <div className="text-sm">
+          {comment.isSuggestion && comment.suggestedText ? (
+            <div className="text-sm mb-2">
               <span className="text-muted-foreground">Suggested </span>
               <span className="font-medium bg-yellow-50 px-1 rounded">
-                "{comment.suggested_text}"
+                "{comment.suggestedText}"
               </span>
-              <span className="text-muted-foreground"> for </span>
-              <span className="italic">"{comment.comment_on}"</span>
             </div>
           ) : null}
           <p className="text-sm  pl-2 ">{comment.content}</p>

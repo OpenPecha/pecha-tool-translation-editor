@@ -4,6 +4,79 @@
  * route files to complete the API documentation.
  */
 
+// ==================== THREADS ROUTES ====================
+
+/**
+ * GET /threads
+ * @summary Get all threads with optional document filter
+ * @tags Threads - Thread management operations
+ * @security BearerAuth
+ * @param {string} documentId.query - Optional document ID to filter threads
+ * @return {array<object>} 200 - List of threads
+ * @return {object} 500 - Server error
+ */
+
+/**
+ * GET /threads/document/{documentId}
+ * @summary Get all threads for a specific document
+ * @tags Threads - Thread management operations
+ * @param {string} documentId.path.required - Document ID
+ * @return {array<object>} 200 - List of threads for the document
+ * @return {object} 500 - Server error
+ */
+
+/**
+ * GET /threads/{id}
+ * @summary Get a specific thread by ID
+ * @tags Threads - Thread management operations
+ * @param {string} id.path.required - Thread ID
+ * @return {object} 200 - Thread details with comments
+ * @return {object} 404 - Thread not found
+ * @return {object} 500 - Server error
+ */
+
+/**
+ * POST /threads
+ * @summary Create a new thread
+ * @tags Threads - Thread management operations
+ * @security BearerAuth
+ * @param {object} request.body.required - Thread information
+ * @param {string} request.body.documentId.required - Document ID
+ * @param {integer} request.body.initialStartOffset.required - Start offset in the document
+ * @param {integer} request.body.initialEndOffset.required - End offset in the document
+ * @param {string} request.body.selectedText - Selected text for the thread
+ * @param {boolean} request.body.isSystemGenerated - Whether this thread was system-generated
+ * @return {object} 201 - Created thread
+ * @return {object} 400 - Bad request - Missing required fields
+ * @return {object} 500 - Server error
+ */
+
+/**
+ * PUT /threads/{id}
+ * @summary Update a thread
+ * @tags Threads - Thread management operations
+ * @security BearerAuth
+ * @param {string} id.path.required - Thread ID
+ * @param {object} request.body.required - Updated thread information
+ * @param {string} request.body.selectedText - Updated selected text
+ * @return {object} 200 - Updated thread
+ * @return {object} 403 - Forbidden - Not the thread creator
+ * @return {object} 404 - Thread not found
+ * @return {object} 500 - Server error
+ */
+
+/**
+ * DELETE /threads/{id}
+ * @summary Delete a thread
+ * @tags Threads - Thread management operations
+ * @security BearerAuth
+ * @param {string} id.path.required - Thread ID
+ * @return {object} 200 - Success message
+ * @return {object} 403 - Forbidden - Not the thread creator
+ * @return {object} 404 - Thread not found
+ * @return {object} 500 - Server error
+ */
+
 // ==================== COMMENTS ROUTES ====================
 
 /**
@@ -45,13 +118,10 @@
  * @param {string} request.body.docId.required - Document ID
  * @param {string} request.body.userId.required - User ID
  * @param {string} request.body.content.required - Comment content
- * @param {string} request.body.parentCommentId - Parent comment ID for nested comments
- * @param {integer} request.body.initial_start_offset.required - Start offset in the document
- * @param {integer} request.body.initial_end_offset.required - End offset in the document
  * @param {string} request.body.threadId - Thread ID for grouped comments
- * @param {string} request.body.comment_on.required - What the comment is on (e.g., "text", "translation")
- * @param {boolean} request.body.is_suggestion - Whether this is a suggestion
- * @param {string} request.body.suggested_text - Suggested text if is_suggestion is true
+ * @param {boolean} request.body.isSuggestion - Whether this is a suggestion
+ * @param {string} request.body.suggestedText - Suggested text if isSuggestion is true
+ * @param {boolean} request.body.isSystemGenerated - Whether this comment was system-generated
  * @return {object} 201 - Created comment
  * @return {object} 400 - Bad request - Missing required fields
  * @return {object} 500 - Server error
@@ -65,8 +135,8 @@
  * @param {string} id.path.required - Comment ID
  * @param {object} request.body.required - Updated comment information
  * @param {string} request.body.content - Updated comment content
- * @param {boolean} request.body.is_suggestion - Whether this is a suggestion
- * @param {string} request.body.suggested_text - Updated suggested text
+ * @param {boolean} request.body.isSuggestion - Whether this is a suggestion
+ * @param {string} request.body.suggestedText - Updated suggested text
  * @return {object} 200 - Updated comment
  * @return {object} 404 - Comment not found
  * @return {object} 400 - Bad request - Missing required fields for suggestions

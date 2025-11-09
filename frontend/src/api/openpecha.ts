@@ -2,11 +2,20 @@ import { getHeaders } from "./utils";
 const server_url = import.meta.env.VITE_SERVER_URL;
 
 // New OpenPecha API functions for the text loader
-export const fetchTexts = async (type?: string) => {
-  const url = type
-    ? `${server_url}/openpecha/texts?type=${type}`
-    : `${server_url}/openpecha/texts`;
-  const response = await fetch(url, {
+export const fetchTexts = async ({
+  type,
+  limit,
+}: {
+  type?: string;
+  limit?: number;
+}) => {
+  const getUrl = () => {
+    const params = new URLSearchParams();
+    if (type) params.append("type", type);
+    if (limit) params.append("limit", limit.toString());
+    return `${server_url}/openpecha/texts?${params.toString()}`;
+  };
+  const response = await fetch(getUrl(), {
     headers: getHeaders(),
   });
   if (response.ok) {
@@ -36,9 +45,12 @@ export const fetchTextContent = async (textId: string) => {
 };
 
 export const fetchAnnotations = async (annotationId: string) => {
-  const response = await fetch(`${server_url}/openpecha/annotations/${annotationId}`, {
-    headers: getHeaders(),
-  });
+  const response = await fetch(
+    `${server_url}/openpecha/annotations/${annotationId}`,
+    {
+      headers: getHeaders(),
+    }
+  );
   if (response.ok) {
     const data = await response.json();
     return data;
@@ -57,7 +69,7 @@ export interface TranslationPayload {
 export const uploadTranslationToOpenpecha = async (
   instance_id: string,
   payload: TranslationPayload,
-  translation_doc_id: string,
+  translation_doc_id: string
 ) => {
   const response = await fetch(
     `${server_url}/openpecha/instances/${instance_id}/translation/${translation_doc_id}`,
@@ -65,7 +77,7 @@ export const uploadTranslationToOpenpecha = async (
       method: "POST",
       headers: getHeaders(),
       body: JSON.stringify(payload),
-    },
+    }
   );
   if (!response.ok) {
     const errorData = await response.json();
@@ -73,4 +85,3 @@ export const uploadTranslationToOpenpecha = async (
   }
   return response.json();
 };
-
