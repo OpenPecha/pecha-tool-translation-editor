@@ -6,8 +6,27 @@ const { authenticate } = require("../middleware/authenticate"); // Assuming auth
 const prisma = new PrismaClient();
 
 /**
- * @route GET /versions/:docId
- * @desc Get all versions for a specific document with current version marked
+ * GET /versions/{docId}
+ * @summary Get all versions for a specific document
+ * @tags Versions - Document version management
+ * @security BearerAuth
+ * @param {string} docId.path.required - Document ID - eg: doc-123
+ * @return {array<object>} 200 - List of versions with current version marked
+ * @return {object} 500 - Server error
+ * @example response - 200 - Success response
+ * [
+ *   {
+ *     "id": "version-123",
+ *     "label": "Auto-save v1",
+ *     "createdAt": "2024-01-01T00:00:00.000Z",
+ *     "updatedAt": "2024-01-01T00:00:00.000Z",
+ *     "isCurrent": true,
+ *     "user": {
+ *       "id": "user-456",
+ *       "username": "John Doe"
+ *     }
+ *   }
+ * ]
  */
 router.get("/:docId", authenticate, async (req, res) => {
 	try {
@@ -45,8 +64,23 @@ router.get("/:docId", authenticate, async (req, res) => {
 });
 
 /**
- * @route POST /versions
- * @desc Create a new version
+ * POST /versions
+ * @summary Create a new version
+ * @tags Versions - Document version management
+ * @security BearerAuth
+ * @param {object} request.body.required - Version information - application/json
+ * @param {string} request.body.docId.required - Document ID - eg: doc-123
+ * @param {string} request.body.label.required - Version label - eg: Manual save v2
+ * @param {object} request.body.content.required - Document content (Delta format) - eg: {"ops":[{"insert":"Hello world"}]}
+ * @return {object} 201 - Created version
+ * @return {object} 400 - Bad request - Missing required fields
+ * @return {object} 500 - Server error
+ * @example request - Example request body
+ * {
+ *   "docId": "doc-123",
+ *   "label": "Manual save v2",
+ *   "content": {"ops": [{"insert": "Hello world\n"}]}
+ * }
  */
 router.post("/", authenticate, async (req, res) => {
 	try {
@@ -79,8 +113,14 @@ router.post("/", authenticate, async (req, res) => {
 });
 
 /**
- * @route GET /versions/version/:id
- * @desc Get a specific version by ID and update document's currentVersionId
+ * GET /versions/version/{id}
+ * @summary Get a specific version by ID
+ * @tags Versions - Document version management
+ * @security BearerAuth
+ * @param {string} id.path.required - Version ID - eg: version-123
+ * @return {object} 200 - Version details with content
+ * @return {object} 404 - Version not found
+ * @return {object} 500 - Server error
  */
 router.get("/version/:id", authenticate, async (req, res) => {
 	try {
@@ -109,8 +149,14 @@ router.get("/version/:id", authenticate, async (req, res) => {
 });
 
 /**
- * @route DELETE /versions/version/:id
- * @desc Delete a specific version
+ * DELETE /versions/version/{id}
+ * @summary Delete a specific version
+ * @tags Versions - Document version management
+ * @security BearerAuth
+ * @param {string} id.path.required - Version ID - eg: version-123
+ * @return {object} 200 - Success message
+ * @return {object} 404 - Version not found
+ * @return {object} 500 - Server error
  */
 router.delete("/version/:id", authenticate, async (req, res) => {
 	try {
@@ -157,8 +203,16 @@ router.delete("/version/:id", authenticate, async (req, res) => {
 });
 
 /**
- * @route PATCH /versions/version/:id
- * @desc Update a version label
+ * PATCH /versions/version/{id}
+ * @summary Update a version label
+ * @tags Versions - Document version management
+ * @security BearerAuth
+ * @param {string} id.path.required - Version ID - eg: version-123
+ * @param {object} request.body.required - Updated version information - application/json
+ * @param {string} request.body.label.required - New version label - eg: Updated label
+ * @return {object} 200 - Updated version
+ * @return {object} 400 - Bad request - Label is required
+ * @return {object} 500 - Server error
  */
 router.patch("/version/:id", authenticate, async (req, res) => {
 	try {
@@ -193,8 +247,17 @@ router.patch("/version/:id", authenticate, async (req, res) => {
 });
 
 /**
- * @route PUT /versions/version/:id
- * @desc Update a version's content
+ * PUT /versions/version/{id}
+ * @summary Update version content
+ * @tags Versions - Document version management
+ * @security BearerAuth
+ * @param {string} id.path.required - Version ID - eg: version-123
+ * @param {object} request.body.required - Updated version content - application/json
+ * @param {object} request.body.content.required - New document content (Delta format) - eg: {"ops":[{"insert":"Updated content"}]}
+ * @return {object} 200 - Updated version
+ * @return {object} 400 - Bad request - Content is required
+ * @return {object} 404 - Version not found
+ * @return {object} 500 - Server error
  */
 router.put("/version/:id", authenticate, async (req, res) => {
 	try {

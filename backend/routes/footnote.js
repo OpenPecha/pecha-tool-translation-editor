@@ -8,7 +8,15 @@ const {
 const prisma = new PrismaClient();
 const router = express.Router();
 
-// Get all footnotes (optional: filter by document)
+/**
+ * GET /footnotes
+ * @summary Get all footnotes with optional document filter
+ * @tags Footnotes - Footnote management operations
+ * @security BearerAuth
+ * @param {string} docId.query - Optional document ID to filter footnotes - eg: doc-123
+ * @return {array<object>} 200 - List of footnotes ordered by position
+ * @return {object} 500 - Server error
+ */
 router.get("/", authenticate, async (req, res) => {
 	try {
 		const { docId } = req.query;
@@ -36,7 +44,14 @@ router.get("/", authenticate, async (req, res) => {
 	}
 });
 
-// Get footnotes for a specific document
+/**
+ * GET /footnotes/{docId}
+ * @summary Get all footnotes for a specific document
+ * @tags Footnotes - Footnote management operations
+ * @param {string} docId.path.required - Document ID - eg: doc-123
+ * @return {array<object>} 200 - List of footnotes for the document
+ * @return {object} 500 - Server error
+ */
 router.get("/:docId", optionalAuthenticate, async (req, res) => {
 	try {
 		const { docId } = req.params;
@@ -59,7 +74,15 @@ router.get("/:docId", optionalAuthenticate, async (req, res) => {
 	}
 });
 
-// Get footnotes for a specific thread
+/**
+ * GET /footnotes/thread/{threadId}
+ * @summary Get all footnotes for a specific thread
+ * @tags Footnotes - Footnote management operations
+ * @security BearerAuth
+ * @param {string} threadId.path.required - Thread ID - eg: thread-123
+ * @return {array<object>} 200 - List of footnotes for the thread
+ * @return {object} 500 - Server error
+ */
 router.get("/thread/:threadId", authenticate, async (req, res) => {
 	try {
 		const { threadId } = req.params;
@@ -77,7 +100,33 @@ router.get("/thread/:threadId", authenticate, async (req, res) => {
 	}
 });
 
-// Create a new footnote
+/**
+ * POST /footnotes
+ * @summary Create a new footnote
+ * @tags Footnotes - Footnote management operations
+ * @security BearerAuth
+ * @param {object} request.body.required - Footnote information - application/json
+ * @param {string} request.body.docId.required - Document ID - eg: doc-123
+ * @param {string} request.body.userId.required - User ID - eg: user-456
+ * @param {string} request.body.content.required - Footnote content - eg: This is a footnote
+ * @param {integer} request.body.initialStartOffset.required - Start offset in document - eg: 100
+ * @param {integer} request.body.initialEndOffset.required - End offset in document - eg: 150
+ * @param {string} request.body.threadId - Thread ID (optional) - eg: thread-789
+ * @param {string} request.body.noteOn.required - What the note is about - eg: Selected text
+ * @return {object} 201 - Created footnote with auto-generated order
+ * @return {object} 400 - Bad request - Missing required fields
+ * @return {object} 500 - Server error
+ * @example request - Example request body
+ * {
+ *   "docId": "doc-123",
+ *   "userId": "user-456",
+ *   "content": "This is an explanatory footnote",
+ *   "initialStartOffset": 100,
+ *   "initialEndOffset": 150,
+ *   "threadId": "thread-789",
+ *   "noteOn": "Selected text that needs explanation"
+ * }
+ */
 router.post("/", authenticate, async (req, res) => {
 	try {
 		const {
@@ -147,7 +196,18 @@ router.post("/", authenticate, async (req, res) => {
 	}
 });
 
-// Update a footnote
+/**
+ * PUT /footnotes/{id}
+ * @summary Update a footnote content
+ * @tags Footnotes - Footnote management operations
+ * @security BearerAuth
+ * @param {string} id.path.required - Footnote ID - eg: footnote-123
+ * @param {object} request.body.required - Updated footnote information - application/json
+ * @param {string} request.body.content.required - Updated footnote content - eg: Updated footnote text
+ * @return {object} 200 - Updated footnote
+ * @return {object} 404 - Footnote not found
+ * @return {object} 500 - Server error
+ */
 router.put("/:id", authenticate, async (req, res) => {
 	try {
 		const { id } = req.params;
@@ -176,7 +236,16 @@ router.put("/:id", authenticate, async (req, res) => {
 	}
 });
 
-// Delete a footnote
+/**
+ * DELETE /footnotes/{id}
+ * @summary Delete a footnote
+ * @tags Footnotes - Footnote management operations
+ * @security BearerAuth
+ * @param {string} id.path.required - Footnote ID - eg: footnote-123
+ * @return {object} 200 - Success message
+ * @return {object} 404 - Footnote not found
+ * @return {object} 500 - Server error
+ */
 router.delete("/:id", authenticate, async (req, res) => {
 	try {
 		const { id } = req.params;
