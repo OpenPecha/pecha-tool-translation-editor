@@ -1,19 +1,21 @@
-import { useState } from "react";
-import { Button } from "./ui/button";
-import { ScrollArea } from "./ui/scroll-area";
 import {
   ChevronLeft,
   Info,
   MessageCircle,
   BookOpen,
   FileText,
+  ArrowLeft
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import Comments from "./EditorSideMenu/Comments";
 import TableOfContent from "./TableOfContent";
 import { useTranslation } from "react-i18next";
 import Resources from "./EditorSideMenu/Resources";
 import { useFetchDocument } from "@/api/queries/documents";
+import { useDocumentSidebarStore } from "@/stores/documentSidebarStore";
+import CommentSidebar from "./Comment/CommentSidebar";
+import { Button } from "./ui/button";
+import { ScrollArea } from "./ui/scroll-area";
+import { useCommentStore } from "@/stores/commentStore";
 interface DocumentSidebarProps {
   documentId: string;
 }
@@ -249,11 +251,9 @@ const MetadataContent = ({ documentId }: { documentId: string }) => {
 };
 
 const DocumentSidebar: React.FC<DocumentSidebarProps> = ({ documentId }) => {
-  const [activeTab, setActiveTab] = useState<string | null>(null);
+  const { activeTab, toggleTab, setActiveTab } = useDocumentSidebarStore();
   const { t } = useTranslation();
-  const toggleTab = (tabValue: string) => {
-    setActiveTab(activeTab === tabValue ? null : tabValue);
-  };
+  const { sidebarView, showListView } = useCommentStore();
 
   const tabs = [
     {
@@ -317,14 +317,35 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({ documentId }) => {
         <div className="w-80 border-r bg-white dark:bg-gray-900 flex flex-col transition-all duration-300">
           {/* Header */}
           <div className="flex items-center justify-between p-3 border-b bg-gray-50/50 dark:bg-gray-800/50">
-            <h3 className="font-medium text-sm text-gray-800 dark:text-gray-200">
-              {tabs.find((tab) => tab.id === activeTab)?.label}
-            </h3>
+            <div className="flex items-center gap-2">
+              {activeTab === "comments" &&
+              (sidebarView === "thread" || sidebarView === "new") ? (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={showListView}
+                    className="h-6 w-6 p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    title="Back to threads"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                  <h3 className="font-medium text-sm text-gray-800 dark:text-gray-200">
+                    Thread
+                  </h3>
+                </>
+              ) : (
+                <h3 className="font-medium text-sm text-gray-800 dark:text-gray-200">
+                  {tabs.find((tab) => tab.id === activeTab)?.label}
+                </h3>
+              )}
+            </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setActiveTab(null)}
               className="h-6 w-6 p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
+              title="Close sidebar"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -346,13 +367,8 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({ documentId }) => {
               </ScrollArea>
             )}
 
-            {activeTab === "comments" && (
-              <ScrollArea className="h-full">
-                <div className="h-full">
-                  <Comments />
-                </div>
-              </ScrollArea>
-            )}
+            {activeTab === "comments" && <CommentSidebar documentId={documentId} />}
+            
             {activeTab === "resources" && (
               <ScrollArea className="h-full">
                 <div className="h-full">

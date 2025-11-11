@@ -5,14 +5,20 @@ const server_url = import.meta.env.VITE_SERVER_URL;
 export const fetchTexts = async ({
   type,
   limit,
+  offset,
+  language,
 }: {
   type?: string;
   limit?: number;
+  offset?: number;
+  language?: string;
 }) => {
   const getUrl = () => {
     const params = new URLSearchParams();
     if (type) params.append("type", type);
     if (limit) params.append("limit", limit.toString());
+    if (offset) params.append("offset", offset.toString());
+    if (language) params.append("language", language);
     return `${server_url}/openpecha/texts?${params.toString()}`;
   };
   const response = await fetch(getUrl(), {

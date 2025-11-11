@@ -29,9 +29,7 @@ async function generateMessagesFromThread(threadId, selectedText) {
     // Convert comments to messages format
     const messages = comments.map((comment) => ({
       role: comment.isSystemGenerated ? "assistant" : "user",
-      content: comment.isSystemGenerated
-        ? comment.content
-        : `${comment.user.username}: ${comment.content}`,
+      content: comment.content,
     }));
 
     return messages;
@@ -42,12 +40,17 @@ async function generateMessagesFromThread(threadId, selectedText) {
 }
 
 // AI Comment function
-async function getAIComment(threadId, selectedText, res, model_name) {
+async function getAIComment(threadId, selectedText, res, model_name, content) {
   try {
     // Generate messages from thread history
     const messages = await generateMessagesFromThread(threadId, selectedText);
 
-    // Generate references
+    if (content) {
+      messages.push({
+        role: "user",
+        content: content.replace(/@ai/g, "@Comment").trim(),
+      });
+    }
     const references = selectedText
       ? [
           {
@@ -61,15 +64,21 @@ async function getAIComment(threadId, selectedText, res, model_name) {
       messages,
       references,
       options: {
-        model_name,
+        // model_name,
         require_full_justification: true,
         mention_scope: "last",
         max_mentions: 5,
       },
     };
-
     const url = process.env.TRANSLATE_API_URL + "/editor/comment/stream";
-    const response = await fetch(url, requestBody);
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        accept: "application/json",
+      },
+      body: JSON.stringify(requestBody),
+    });
 
     if (!response.ok) {
       throw new Error(`AI API request failed: ${response.status}`);
@@ -78,10 +87,12 @@ async function getAIComment(threadId, selectedText, res, model_name) {
     // Set headers for Server-Sent Events
     res.writeHead(200, {
       "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
+      "Cache-Control": "no-cache, no-transform",
       Connection: "keep-alive",
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Headers": "Cache-Control",
+      "X-Accel-Buffering": "no", // Disable nginx buffering
+      "Content-Encoding": "none", // Disable compression
     });
 
     const reader = response.body.getReader();
@@ -95,27 +106,40 @@ async function getAIComment(threadId, selectedText, res, model_name) {
 
       buffer += decoder.decode(value, { stream: true });
       const lines = buffer.split("\n");
-      buffer = lines.pop(); // Keep incomplete line in buffer
-
+      buffer = lines.pop(); 
       for (const line of lines) {
-        if (line.startsWith("data: ")) {
-          const data = line.slice(6);
-          if (data.trim()) {
-            try {
-              const parsed = JSON.parse(data);
-              if (parsed.type === "comment_delta") {
-                finalCommentText += parsed.text || "";
-              } else if (parsed.type === "completion") {
-                finalCommentText = parsed.comment_text || finalCommentText;
-              }
-            } catch (e) {
-              // If not valid JSON, treat as plain text
-            }
-          }
-          // Forward the data to client
-          res.write(`data: ${data}\n\n`);
-        }
-      }
+				if (line.startsWith("data:")) {
+					const jsonStartIndex = line.indexOf("{");
+					if (jsonStartIndex !== -1) {
+						const jsonString = line.substring(jsonStartIndex);
+						try {
+							const parsed = JSON.parse(jsonString);
+							if (parsed.type === "comment_delta") {
+								finalCommentText += parsed.text || "";
+							} else if(parsed.type === "completion"){
+                finalCommentText = parsed.comment_text || parsed.text;
+                // Trim "@Comment " prefix if present
+                if (finalCommentText && finalCommentText.startsWith("@Comment ")) {
+                  finalCommentText = finalCommentText.substring(9); // Remove "@Comment " (9 characters)
+                }
+              } else if (parsed.type === "error") {
+								console.error("Error:", parsed.message || "An unknown error occurred");
+							}
+							// Properly serialize JSON to avoid escaping issues with special characters
+							const responseData = {
+								type: parsed?.type,
+								text: parsed?.text || parsed?.comment_text || parsed?.message
+							};
+							const dataString = `data: ${JSON.stringify(responseData)}\n\n`;
+							res.write(dataString);
+							// Force flush to ensure immediate delivery
+							if (res.flush) res.flush();
+						} catch (e) {
+							console.error("Failed to parse stream data:", e);	
+						}
+					}
+				}
+			}
     }
 
     // Return the final comment text for database storage
@@ -123,7 +147,7 @@ async function getAIComment(threadId, selectedText, res, model_name) {
   } catch (error) {
     console.error("Error calling AI comment API:", error);
     res.write(
-      `data: {"type": "error", "message": "Failed to get AI comment"}\n\n`
+      `data: ${JSON.stringify({ type: "error", message: "Failed to get AI comment" })}\n\n`
     );
     throw error;
   }
@@ -142,37 +166,43 @@ function extractMentions(content) {
 
 // Function to send mention notifications
 async function sendMentionNotifications(
-  mentions,
+  mentionedUserIds,
   content,
   selectedText,
   currentUser
 ) {
-  for (const mention of mentions) {
-    if (mention === "ai_comment") continue; // Skip AI mentions
+
+  const currentUserInfo = await prisma.user.findUnique({
+    where: { id: currentUser.id },
+  });
+  for (const userId of mentionedUserIds) {
+    if (userId === "ai") continue; // Skip AI mentions
 
     try {
       // Find user by username
-      const mentionedUser = await prisma.user.findFirst({
-        where: { username: mention },
+      const mentionedUser = await prisma.user.findUnique({
+        where: { id: userId },
       });
 
       if (mentionedUser) {
         const emailContent = {
-          subject: `You were mentioned in a comment by ${currentUser.username}`,
-          html: `
-						<h3>You were mentioned in a comment</h3>
-						<p><strong>By:</strong> ${currentUser.username}</p>
-						<p><strong>Comment:</strong> ${content}</p>
-						${selectedText ? `<p><strong>On text:</strong> "${selectedText}"</p>` : ""}
-						<p>Click here to view the comment in the document.</p>
-					`,
-        };
+          subject: `You were mentioned in a comment - Pecha Translation Editor`,
+          text: `Hello ${mentionedUser.username || ""},\n\nYou were mentioned in a comment by ${currentUserInfo.username} on Pecha Translation Editor.\n\n
+Comment: "${content}"
+${selectedText ? `Selected text: "${selectedText}"\n\n` : ""}You can view and respond to this comment in the document editor.
 
+Thank you for using Pecha Translation Editor!
+
+---
+This is an automated message. Please do not reply to this email.`,
+        };
+      
         await sendEmail([mentionedUser.email], emailContent);
       }
+      
     } catch (error) {
       console.error(
-        `Error sending mention notification to @${mention}:`,
+        `Error sending mention notification to @${userId}:`,
         error
       );
     }
@@ -324,13 +354,13 @@ router.post("/", authenticate, async (req, res) => {
       docId,
       userId,
       content,
-      threadId,
+      threadId = null,
       isSuggestion,
       suggestedText,
       isSystemGenerated,
       selectedText,
+      mentionedUserIds,
     } = req.body;
-
     if (!docId || !userId || !content) {
       return res.status(400).json({ error: "Missing required fields" });
     }
@@ -342,82 +372,87 @@ router.post("/", authenticate, async (req, res) => {
         .json({ error: "Suggested text is required for suggestions" });
     }
 
-    // Extract mentions from content
-    const mentions = extractMentions(content);
-
-    // Check if this is an AI comment request
-    if (mentions.includes("ai_comment")) {
-      try {
-        // Stream AI response to client
-        const aiCommentText = await getAIComment(threadId, selectedText, res);
-
-        // After streaming is complete, save the AI comment to database
-        const aiCommentData = {
-          docId,
-          userId,
-          content: aiCommentText,
-          threadId: threadId || null,
-          isSuggestion: false,
-          suggestedText: null,
-          isSystemGenerated: true,
-        };
-
-        const aiComment = await prisma.comment.create({
-          data: aiCommentData,
-          include: { user: true },
-        });
-
-        // Send final completion event with saved comment
-        res.write(
-          `data: {"type": "comment_saved", "comment": ${JSON.stringify(
-            aiComment
-          )}}\n\n`
-        );
-        res.end();
-        return;
-      } catch (error) {
-        console.error("Error processing AI comment:", error);
-        res.write(
-          `data: {"type": "error", "message": "Failed to process AI comment"}\n\n`
-        );
-        res.end();
-        return;
-      }
-    }
-
-    // Regular comment processing
-    const data = {
-      docId,
-      userId,
-      content,
-      threadId: threadId || null,
-      isSuggestion: isSuggestion || false,
-      suggestedText: suggestedText || null,
-      isSystemGenerated: isSystemGenerated || false,
-    };
-
+    // Always create the user's comment first
     const newComment = await prisma.comment.create({
-      data: data,
+      data: {
+        docId,
+        userId,
+        content,
+        threadId: threadId || null,
+        isSuggestion: isSuggestion || false,
+        suggestedText: suggestedText || null,
+        isSystemGenerated: isSystemGenerated || false,
+      },
       include: { user: true },
     });
 
     // Send mention notifications (excluding AI mentions)
-    const regularMentions = mentions.filter(
-      (mention) => mention !== "ai_comment"
-    );
-    if (regularMentions.length > 0) {
-      await sendMentionNotifications(
-        regularMentions,
-        content,
-        selectedText,
-        req.user
+    if (mentionedUserIds && mentionedUserIds.length > 0) {
+      const regularMentions = mentionedUserIds.filter(
+        (id) => id !== "ai"
       );
+      if (regularMentions.length > 0) {
+        await sendMentionNotifications(
+          regularMentions,
+          content,
+          selectedText,
+          req.user
+        );
+      }
     }
 
-    res.status(201).json(newComment);
+    // Check if this is an AI comment request AFTER saving the user's comment
+    if (content.includes("@ai")) {
+      try {
+        // Stream AI response to client
+        const aiCommentText = await getAIComment(
+          newComment.threadId,
+          selectedText,
+          res,
+          null,
+          content
+        );
+        // After streaming is complete, save the AI comment to the database
+        const aiComment = await prisma.comment.create({
+          data: {
+            docId,
+            userId, // This should ideally be a dedicated AI user ID
+            content: aiCommentText,
+            threadId: newComment.threadId,
+            isSuggestion: false,
+            suggestedText: null,
+            isSystemGenerated: true,
+          },
+          include: { user: true },
+        });
+
+        // Send final completion event with the saved AI comment
+        res.write(
+          `data: ${JSON.stringify({ type: "saved_comment", comment: aiComment })}\n\n`
+        );
+        res.end();
+      } catch (error) {
+        console.error("Error processing AI comment:", error);
+        // Still end the response stream properly on error
+        if (!res.headersSent) {
+          res.writeHead(500, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Failed to process AI comment" }));
+        } else {
+          res.write(
+            `data: ${JSON.stringify({ type: "error", message: "Failed to process AI comment" })}\n\n`
+          );
+          res.end();
+        }
+      }
+    } else {
+      // If not an AI comment, send the created comment back as JSON
+      res.status(201).json(newComment);
+    }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error creating comment" });
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Error creating comment" });
+    }
   }
 });
 

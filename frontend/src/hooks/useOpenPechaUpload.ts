@@ -10,11 +10,11 @@ interface UseOpenPechaUploadProps {
 }
 interface Metadata {
   docId?: string;
-  instance_id?: string;
-  text_id?: string;
+  instanceId?: string;
+  textId?: string;
 }
 const isMetadataAvailable = (metadata: Metadata | undefined) => {
-  return metadata?.instance_id && metadata?.text_id && metadata?.docId;
+  return metadata?.instanceId && metadata?.textId && metadata?.docId;
 }
 export function useOpenPechaUpload({
   sourceDoc,
@@ -24,8 +24,10 @@ export function useOpenPechaUpload({
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const instance_id = sourceDoc?.metadata?.instance_id as string | undefined;
+  const instance_id = sourceDoc?.metadata?.instanceId as string | undefined;
   const isUploadable =(() => {
+    console.log("isUploadable sourceDoc?.metadata", sourceDoc?.metadata);
+    console.log("isUploadable translationDoc?.metadata", translationDoc?.metadata);
     if (isMetadataAvailable(sourceDoc?.metadata) && !isMetadataAvailable(translationDoc?.metadata)) {
       return true;
     }

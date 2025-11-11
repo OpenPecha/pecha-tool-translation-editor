@@ -12,8 +12,13 @@
   },
   "dependencies": {
     "@types/lodash": "^4.17.20",
+    "@types/react-mentions": "^4.4.1",
+    "@types/uuid": "^10.0.0",
+    "date-fns": "^4.1.0",
     "express-jsdoc-swagger": "^1.8.0",
     "lodash": "^4.17.21",
-    "sonner": "^2.0.7"
+    "react-mentions": "^4.4.10",
+    "sonner": "^2.0.7",
+    "uuid": "^13.0.0"
   }
 }

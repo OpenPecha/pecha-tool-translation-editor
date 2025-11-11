@@ -21,27 +21,50 @@ export interface Thread {
 	comments?: any[];
 }
 
-/**
- * Fetch all threads for a specific document
- * @param {string} documentId - The document ID
- * @returns {Promise<Thread[]>} - The list of threads
- */
-export const fetchThreads = async (documentId: string): Promise<Thread[]> => {
-	try {
-		const response = await fetch(
-			`${server_url}/threads/document/${documentId}`,
-			{
-				headers: getHeaders(),
-			},
-		);
+export const fetchThreadsByDocumentId = async (documentId: string) => {
+  try {
+    const response = await fetch(`${server_url}/threads?documentId=${documentId}`, {
+      headers: getHeaders(),
+    });
 
-		if (!response.ok) throw new Error("Failed to fetch threads");
+    if (!response.ok) {
+      throw new Error("Failed to fetch threads");
+    }
 
-		return await response.json();
-	} catch (error) {
-		console.error("Error fetching threads:", error);
-		return [];
-	}
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching threads:", error);
+    throw error;
+  }
+};
+
+export const createThread = async (
+  documentId: string,
+  initialStartOffset: number,
+  initialEndOffset: number,
+  selectedText: string
+) => {
+  try {
+    const response = await fetch(`${server_url}/threads`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify({
+        documentId,
+        initialStartOffset,
+        initialEndOffset,
+        selectedText,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to create thread");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error creating thread:", error);
+    throw error;
+  }
 };
 
 /**
@@ -60,44 +83,6 @@ export const fetchThread = async (threadId: string): Promise<Thread | null> => {
 		return await response.json();
 	} catch (error) {
 		console.error("Error fetching thread:", error);
-		return null;
-	}
-};
-
-/**
- * Create a new thread
- * @param {string} documentId - The document ID
- * @param {number} initialStartOffset - The start offset in the document
- * @param {number} initialEndOffset - The end offset in the document
- * @param {string} selectedText - The selected text
- * @param {boolean} [isSystemGenerated] - Whether this thread was system-generated
- * @returns {Promise<Thread>} - The created thread
- */
-export const createThread = async (
-	documentId: string,
-	initialStartOffset: number,
-	initialEndOffset: number,
-	selectedText: string,
-	isSystemGenerated?: boolean,
-): Promise<Thread | null> => {
-	try {
-		const response = await fetch(`${server_url}/threads`, {
-			method: "POST",
-			headers: getHeaders(),
-			body: JSON.stringify({
-				documentId,
-				initialStartOffset,
-				initialEndOffset,
-				selectedText,
-				isSystemGenerated: isSystemGenerated || false,
-			}),
-		});
-
-		if (!response.ok) throw new Error("Failed to create thread");
-
-		return await response.json();
-	} catch (error) {
-		console.error("Error creating thread:", error);
 		return null;
 	}
 };
