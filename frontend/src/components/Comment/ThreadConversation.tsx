@@ -11,22 +11,10 @@ import { useAIComment } from "@/hooks/useAIComment";
 import { useProjectCollaborators } from "@/hooks/useProjectCollaborators";
 import "./mentions.css";
 import SelectedText from "./SelectedText";
+import { TypingAnimation } from "./TypingAnimation";
 
 const MentionsInputComponent = MentionsInput as any;
 const MentionComponent = Mention as any;
-
-const TypingAnimation = ({ text }: { text: string }) => {
-  return (
-    <div className="flex items-center gap-1">
-      <span>{text}</span>
-      <div className="flex gap-0.5">
-        <span className="animate-[bounce_1s_ease-in-out_0s_infinite]">.</span>
-        <span className="animate-[bounce_1s_ease-in-out_0.2s_infinite]">.</span>
-        <span className="animate-[bounce_1s_ease-in-out_0.4s_infinite]">.</span>
-      </div>
-    </div>
-  );
-};
 
 const ThreadConversation = ({
   documentId,
@@ -186,7 +174,7 @@ const ThreadConversation = ({
                 >
                   {!isCurrentUser && (
                     <Avatar className="w-5 h-5">
-                      <AvatarImage src={comment.user.picture} />
+                      {isSystem && <AvatarImage src={comment.user.picture} />}
                       <AvatarFallback className="text-sm">
                         {isSystem
                           ? "AI"

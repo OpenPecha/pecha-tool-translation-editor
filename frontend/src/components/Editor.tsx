@@ -21,7 +21,6 @@ import {
   editor_config,
 } from "@/utils/editorConfig";
 import { useQuillVersion } from "../contexts/VersionContext";
-import CommentBubble from "./Comment/CommentBubble";
 import LineNumberVirtualized from "./LineNumbers";
 import quill_import from "./quillExtension";
 import type { CustomFootnoteModule } from "./quillExtension/CustomFootnote";
@@ -642,16 +641,7 @@ const Editor = ({
             </div>,
             document.getElementById("counter")!
           )}
-
-          {/* {showCommentModal && (
-            <CommentInitialize
-              documentId={documentId}
-              setShowCommentModal={setShowCommentModal}
-              currentRange={currentRange}
-            />
-          )} */}
           <AnnotationList onVote={handleAnnotationVote} />
-          <CommentBubble documentId={documentId!} isEditable={isEditable} />
           <BubbleMenu 
             quill={quillRef.current} 
             isEditable={isEditable}
