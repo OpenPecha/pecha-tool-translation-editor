@@ -553,6 +553,14 @@ const Editor = ({
     };
   }, [documentId, setHoveredLineNumber]);
 
+  const pulseText = useCallback((index: number, length: number  | undefined) => {
+    if (!quillRef.current || !length) return;
+    quillRef.current.formatText(index, length, { background: 'rgba(255, 230, 0, 0.6)' });
+    setTimeout(() => {
+      quillRef.current.formatText(index, length, { background: false });
+    }, 5000);
+  }, [quillRef]);
+
   function addComment() {
     if (!currentRange || currentRange?.length === 0 || !quillRef.current) return;
 
@@ -560,7 +568,7 @@ const Editor = ({
       currentRange.index,
       currentRange.length
     );
-
+    pulseText(currentRange.index, currentRange.length);
     setNewCommentRange({
       index: currentRange.index,
       length: currentRange.length,

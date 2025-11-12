@@ -3,9 +3,12 @@ import { useEffect } from "react";
 import { useFetchThreads } from "@/hooks/useComment";
 import SkeletonLoader from "@/components/SkeletonLoader";
 import { Button } from "@/components/ui/button";
+import { useEditor } from "@/contexts/EditorContext";
 
 const ThreadList = ({ documentId }: { documentId: string }) => {
   const { openSidebar, setThreads } = useCommentStore();
+  const { getQuill } = useEditor();
+  const quill = getQuill(documentId);
 
   const {
     data: fetchedThreads,
@@ -34,6 +37,17 @@ const ThreadList = ({ documentId }: { documentId: string }) => {
   }
 
   const handleThreadClick = (threadId: string) => {
+    const editor = quill?.root
+    const targetElement = editor?.querySelector(`[data-thread-id="${threadId}"]`);
+    if (targetElement) {
+      targetElement.scrollIntoView({ behavior: "smooth", block: "center" });
+      setTimeout(() => {
+        targetElement.classList.add('animate-pulse');
+        setTimeout(() => {
+          targetElement.classList.remove('animate-pulse');
+        }, 3000);
+      }, 100);
+    }
     openSidebar("thread", threadId);
   };
 
@@ -44,6 +58,7 @@ const ThreadList = ({ documentId }: { documentId: string }) => {
           <Button
             key={thread.id}
             variant="ghost"
+            data-thread-id={thread.id}
             className="cursor-pointer w-full flex items-center justify-between border border-neutral-200 rounded-lg p-2"
             onClick={() => handleThreadClick(thread.id)}
           >
