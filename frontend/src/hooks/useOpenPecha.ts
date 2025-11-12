@@ -93,8 +93,8 @@ export function useOpenPecha() {
         "Invalid arguments: expected text (string) and segments (array)."
       );
     }
-    return segments.map(({ span }) => {
-      const { start, end } = span;
+    return segments.map(( segment ) => {
+      const { start, end } = segment.span;
 
       if (start < 0 || end > text.length || start >= end) {
         throw new Error(`Invalid span range: start=${start}, end=${end}`);
@@ -127,9 +127,7 @@ export function useOpenPecha() {
     if (textContent && annotations) {
       // Note: You might need to adjust `annotations.annotation` based on the actual API response.
       // This assumes the API returns an object like { annotation: [...] }.
-      const segments = Array.isArray(annotations)
-        ? annotations
-        : annotations.annotation;
+      const segments = annotations.data
 
       if (segments) {
         const segmentedText = applySegmentation(textContent.content, segments);
