@@ -18,12 +18,15 @@ const router = express.Router();
  * @summary Get list of texts from OpenPecha
  * @tags Pecha - OpenPecha integration
  * @param {string} type.query - Filter by type (root, commentary, translations)
+ * @param {number} limit.query - Limit number of texts returned
+ * @param {number} offset.query - Offset for pagination
+ * @param {string} language.query - Filter by language
  * @return {array<object>} 200 - List of texts
  * @return {object} 400 - Bad request - Invalid type parameter
  * @return {object} 500 - Server error
  */
 router.get("/texts", async (req, res) => {
-  const { type } = req.query;
+  const { type, limit, offset, language } = req.query;
 
   // Validate type parameter
   const allowedTypes = ["root", "commentary", "translations"];
@@ -36,10 +39,7 @@ router.get("/texts", async (req, res) => {
   }
 
   try {
-    let texts;
-
-    // Use getRootExpressions for root type
-    texts = await getTexts(type);
+    const texts = await getTexts(type, limit, offset, language);
     res.json(texts);
   } catch (error) {
     console.error("Error fetching texts:", error);
@@ -255,8 +255,8 @@ router.post("/instances/:instance_id/translation/:translation_doc_id", async (re
     await prisma.docMetadata.create({
       data: {
         docId: translation_doc_id,
-        instance_id: translation.instance_id,
-        text_id: translation.text_id,
+        instanceId: translation.instance_id,
+        textId: translation.text_id,
       },
     });
     res.json({

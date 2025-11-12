@@ -325,6 +325,91 @@ router.get("/:id/permissions", authenticate, async (req, res) => {
   }
 });
 
+/**
+ * GET /projects/{id}/accessible-users
+ * @summary Get all users who have access to a project (owner and collaborators)
+ * @tags Projects - Collaboration
+ * @security BearerAuth
+ * @param {string} id.path.required - Project ID
+ * @return {object} 200 - List of accessible users
+ * @return {object} 403 - Forbidden - Not authorized
+ * @return {object} 404 - Project not found
+ * @return {object} 500 - Server error
+ */
+router.get("/:id/accessible-users", authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const project = await prisma.project.findUnique({
+      where: { id },
+      include: {
+        owner: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            picture: true
+          }
+        },
+        permissions: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                email: true,
+                picture: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!project) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    const hasPermission =
+      project.ownerId === req.user.id ||
+      project.permissions.some((p) => p.userId === req.user.id);
+
+    if (!hasPermission) {
+      return res
+        .status(403)
+        .json({ error: "Not authorized to view this project's users" });
+    }
+
+    const accessibleUsers = [];
+
+    // Add owner
+    if (project.owner) {
+      accessibleUsers.push({
+        ...project.owner,
+        accessLevel: "owner"
+      });
+    }
+
+    // Add collaborators
+    project.permissions.forEach((permission) => {
+      if (permission.user) {
+        accessibleUsers.push({
+          ...permission.user,
+          accessLevel: permission.accessLevel
+        });
+      }
+    });
+
+    res.json({
+      success: true,
+      data: accessibleUsers
+    });
+  } catch (error) {
+    console.error("Error fetching accessible users:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Update user permissions in project
 router.patch("/:id/users/:userId", authenticate, async (req, res) => {
   try {
@@ -1188,7 +1273,7 @@ router.post("/:id/share", authenticate, async (req, res) => {
           where: { isRoot: true },
           select: {
             id: true,
-            name: true,
+            username: true,
           },
         },
       },

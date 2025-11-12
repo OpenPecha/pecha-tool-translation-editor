@@ -1,10 +1,25 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchInstances, fetchTextContent, fetchTexts } from "../openpecha";
 
-export const useFetchTexts = () => {
+
+interface useFetchTextsParams {
+  type?: string;
+  limit?: number;
+  offset?: number;
+  language?: string;
+}
+
+export const useFetchTexts = (
+  {
+    type,
+    limit,
+    offset,
+    language
+  }:useFetchTextsParams
+) => {
   return useQuery({
-    queryKey: ["texts"],
-    queryFn: () => fetchTexts({ limit: 200 }),
+    queryKey: ["texts", type, limit, offset, language],
+    queryFn: () => fetchTexts({ type, limit, offset, language }),
     staleTime: 5 * 60 * 1000,
   });
 };

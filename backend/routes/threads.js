@@ -57,6 +57,9 @@ router.get("/", authenticate, async (req, res) => {
             include: {
               user: true,
             },
+            orderBy: {
+              createdAt: "asc",
+            },
           },
         },
         orderBy: {
@@ -76,6 +79,9 @@ router.get("/", authenticate, async (req, res) => {
           comments: {
             include: {
               user: true,
+            },
+            orderBy: {
+              createdAt: "asc",
             },
           },
         },
@@ -117,6 +123,9 @@ router.get("/document/:documentId", optionalAuthenticate, async (req, res) => {
         comments: {
           include: {
             user: true,
+          },
+          orderBy: {
+            createdAt: "asc",
           },
         },
       },

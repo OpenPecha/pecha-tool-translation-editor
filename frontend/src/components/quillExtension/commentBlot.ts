@@ -15,35 +15,24 @@ class CommentBlot extends Inline {
 		if (existingSuggestionId === value.id) {
 			// If it does, remove the suggestion formatting
 			node.removeAttribute("data-id");
+			// @ts-ignore
 			node.removeEventListener("click", this.handleClick);
 			return node;
 		}
 
-		// Otherwise add the new suggestion
-		node.setAttribute("data-id", value.id);
-		node.addEventListener("click", (event) => {
-			// Positioning logic
-			const bubbleWidth = 250;
-			const bubbleHeight = 200;
-			let left = event.pageX + 5;
-			let top = event.pageY + 5;
+		// Add attributes for both functionalities
+		if (value.id) {
+			node.setAttribute("data-id", value.id);
+		}
+		if (value.threadId) {
+			node.setAttribute("data-thread-id", value.threadId);
+		}
 
-			// Ensure bubble stays within the viewport
-			if (left + bubbleWidth > window.innerWidth) {
-				left = window.innerWidth - bubbleWidth - 10;
+		node.addEventListener("click", () => {
+			// Sidebar functionality (new)
+			if (value.threadId) {
+				emitter.emit("open-comment-thread", { threadId: value.threadId });
 			}
-			if (top + bubbleHeight > window.innerHeight) {
-				top = window.innerHeight - bubbleHeight - 10;
-			}
-
-			const __data = {
-				id: value.id,
-				position: {
-					top: top,
-					left: left,
-				},
-			};
-			emitter.emit("showCommentBubble", __data);
 		});
 
 		return node;
@@ -52,6 +41,7 @@ class CommentBlot extends Inline {
 	static formats(node) {
 		return {
 			id: node.getAttribute("data-id"),
+			threadId: node.getAttribute("data-thread-id"),
 		};
 	}
 

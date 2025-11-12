@@ -532,6 +532,14 @@ export interface ProjectShareInfo {
   };
 }
 
+export type CollaboratorUsers = {
+  id: string;
+  username: string;
+  email: string;
+  picture: string;
+  accessLevel: "owner" | "editor" | "viewer" | "admin";
+};
+
 // Get project sharing information
 export const getProjectShareInfo = async (
   projectId: string
@@ -550,6 +558,34 @@ export const getProjectShareInfo = async (
     return await response.json();
   } catch (error) {
     console.error("Error getting project sharing info:", error);
+    throw error;
+  }
+};
+
+export const getPorjectCollaborators = async (
+  projectId: string
+): Promise<CollaboratorUsers[]> => {
+  try {
+    const response = await fetch(
+      `${server_url}/projects/${projectId}/accessible-users`,
+      {
+        headers: getHeaders()
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to get accessible users for project ${projectId}: ${response.statusText}`
+      );
+    }
+
+    const result = await response.json();
+    return result.data;
+  } catch (error) {
+    console.error(
+      `Error fetching accessible users for project ${projectId}:`,
+      error
+    );
     throw error;
   }
 };

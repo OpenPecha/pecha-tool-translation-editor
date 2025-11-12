@@ -21,8 +21,6 @@ import {
   editor_config,
 } from "@/utils/editorConfig";
 import { useQuillVersion } from "../contexts/VersionContext";
-import CommentBubble from "./Comment/CommentBubble";
-import CommentInitialize from "./Comment/CommentInitialize";
 import LineNumberVirtualized from "./LineNumbers";
 import quill_import from "./quillExtension";
 import type { CustomFootnoteModule } from "./quillExtension/CustomFootnote";
@@ -31,8 +29,21 @@ import AnnotationList from "./Annotation/AnnotationList";
 import { handleAnnotationVote } from "./quill_func";
 import DocumentSidebar from "./DocumentSidebar";
 import BubbleMenu from "./BubbleMenu";
+import { useCommentStore, type Thread } from "@/stores/commentStore";
+import { useDocumentSidebarStore } from "@/stores/documentSidebarStore";
+import { useQuery } from "@tanstack/react-query";
+import { fetchThreadsByDocumentId } from "@/api/thread";
+import emitter from "@/services/eventBus";
 
 quill_import();
+
+interface CustomRange {
+  index: number;
+  length: number;
+  left: number;
+  top: number;
+  lineNumber: number | null;
+}
 
 const Editor = ({
   documentId,
@@ -52,9 +63,8 @@ const Editor = ({
     "toolbar-container" + "-" + Math.random().toString(36).slice(2, 6);
   const counterId =
     "counter-container" + "-" + Math.random().toString(36).slice(2, 6);
-  const [currentRange, setCurrentRange] = useState<Range | null>(null);
+  const [currentRange, setCurrentRange] = useState<CustomRange | null>(null);
   const [isSynced, setIsSynced] = useState(false);
-  const [showCommentModal, setShowCommentModal] = useState(false);
   const { registerQuill, transitionPhase } = useQuillVersion();
   const [isTibetan, setIsTibetan] = useState(false);
   const {
@@ -69,6 +79,22 @@ const Editor = ({
   const hasContentLoadedRef = useRef<boolean>(false);
   const { t } = useTranslation();
   const { currentUser } = useAuth();
+  const { setThreads, openSidebar: openCommentSidebar, setNewCommentRange } =
+    useCommentStore();
+  const { setActiveTab } = useDocumentSidebarStore();
+
+  const { data: threads } = useQuery<Thread[]>({
+    queryKey: ["threads", documentId],
+    queryFn: () => fetchThreadsByDocumentId(documentId as string),
+    enabled: !!documentId,
+  });
+
+  useEffect(() => {
+    if (threads) {
+      setThreads(threads);
+    }
+  }, [threads, setThreads]);
+
   // Get display settings
   const { showLineNumbers } = useDisplaySettings();
   useEffect(() => {
@@ -92,7 +118,7 @@ const Editor = ({
   const updateDocumentMutation = useMutation({
     mutationFn: (content: Record<string, unknown>) =>
       updateContentDocument(documentId as string, {
-        content: content.ops,
+        content: content.ops as any,
       }),
     onError: (error) => {
       console.error("Error updating document content:", error);
@@ -131,7 +157,7 @@ const Editor = ({
     if (!editorRef.current || !tool) return;
 
     // Initialize the Yjs document and text with awareness
-    const quill = new Quill(editorRef.current, {
+    const quill = new Quill(editorRef.current as HTMLDivElement, {
       theme: "snow",
       modules: {
         history: editor_config.HISTORY_CONFIG,
@@ -164,7 +190,7 @@ const Editor = ({
             footnote: () => {
               const quill = quillRef.current;
               if (!quill) return;
-              const module = quill.getModule("footnote");
+              const module = quill.getModule("footnote") as any;
               module.addFootnote("");
             },
           },
@@ -210,7 +236,7 @@ const Editor = ({
     isInitializedRef.current = true;
     if (yText && provider) {
       binding = new QuillBinding(yText, quill, provider.awareness);
-      provider.on("sync", (data) => {
+      provider.on("sync", (data: boolean) => {
         setIsSynced(data);
         // Mark content as loaded after sync
         if (data) {
@@ -253,17 +279,23 @@ const Editor = ({
       signal
     );
     // Fetch comments when the editor loads
-    quill.on("text-change", (delta, oldDelta, source) => {
+    quill.on("text-change", (_delta, _oldDelta, source) => {
+
       if (source === "user" && hasContentLoadedRef.current) {
+
+
         const currentContent = quill.getLength() > 1 ? quill.getContents() : "";
         // Only save if there's actual content (prevent saving empty editor)
-        if (quill.getLength() > 1) {
-          debouncedSave(currentContent);
+        if (currentContent?.length || 0 > 1) {
+          debouncedSave(currentContent as any);
         }
       }
     });
     quill.on("selection-change", (range) => {
-      if (!range) return;
+      if (!range) {
+        setCurrentRange(null);
+        return;
+      }
       const selection = document.getSelection();
       if (selection && selection.rangeCount > 0) {
         const domrange = selection.getRangeAt(0);
@@ -271,7 +303,7 @@ const Editor = ({
         const { left, top } = rect;
 
         const lineNumber = getLineNumber(quill);
-        const newRange = {
+        const newRange: CustomRange = {
           ...range,
           left,
           top,
@@ -279,8 +311,33 @@ const Editor = ({
         };
         // You can use left and top coordinates for positioning elements
         setCurrentRange(newRange);
+      } else {
+        setCurrentRange(null);
       }
     });
+
+    if (quillRef.current && threads) {
+      threads.forEach((thread) => {
+        quillRef.current!.formatText(
+          thread.initialStartOffset,
+          thread.initialEndOffset - thread.initialStartOffset,
+          "comment",
+          {
+            id: thread.comments.length > 0 ? thread.comments[0].id : null,
+            threadId: thread.id,
+          }
+        );
+      });
+    }
+
+    const handleCommentClick = ({ threadId }: { threadId: string }) => {
+      if (threadId) {
+        setActiveTab("comments");
+        openCommentSidebar("thread", threadId);
+      }
+    };
+
+    emitter.on("open-comment-thread", handleCommentClick);
 
     function handleFormatChange(type: string) {
       const range = quill.getSelection();
@@ -303,9 +360,12 @@ const Editor = ({
       // This prevents saving empty content during hot reload
       if (hasContentLoadedRef.current && quill.getLength() > 1) {
         const currentContent = quill.getContents();
-        updateDocumentMutation.mutate(currentContent);
+        updateDocumentMutation.mutate(currentContent as any);
       }
-      unregisterQuill2(editorId);
+      emitter.off("open-comment-thread", handleCommentClick);
+      if (editorId) {
+        unregisterQuill2(editorId);
+      }
       queryClient.removeQueries({
         queryKey: [`document-${documentId}`],
       });
@@ -315,8 +375,18 @@ const Editor = ({
       // Reset flags for next mount
       isInitializedRef.current = false;
       hasContentLoadedRef.current = false;
+      if (quillRef.current && threads) {
+        threads.forEach((thread) => {
+          quillRef.current!.formatText(
+            thread.initialStartOffset,
+            thread.initialEndOffset - thread.initialStartOffset,
+            "comment",
+            false // Remove format on unmount
+          );
+        });
+      }
     };
-  }, [isEditable, yText, provider]);
+  }, [isEditable, yText, provider, threads]); // Add threads to dependency array
 
   //for non-realtime editor only
 
@@ -483,11 +553,31 @@ const Editor = ({
     };
   }, [documentId, setHoveredLineNumber]);
 
-  function addComment() {
-    if (!currentRange || currentRange?.length === 0) return;
+  const pulseText = useCallback((index: number, length: number  | undefined) => {
+    if (!quillRef.current || !length) return;
+    quillRef.current.formatText(index, length, { background: 'rgba(255, 230, 0, 0.6)' });
+    setTimeout(() => {
+      quillRef.current.formatText(index, length, { background: false });
+    }, 5000);
+  }, [quillRef]);
 
-    setShowCommentModal(true);
+  function addComment() {
+    if (!currentRange || currentRange?.length === 0 || !quillRef.current) return;
+
+    const selectedText = quillRef.current.getText(
+      currentRange.index,
+      currentRange.length
+    );
+    pulseText(currentRange.index, currentRange.length);
+    setNewCommentRange({
+      index: currentRange.index,
+      length: currentRange.length,
+      selectedText,
+    });
+    setActiveTab("comments");
+    openCommentSidebar("new");
   }
+
   const characterCount = quillRef.current?.getContents().length() || 0;
   if (!documentId) return null;
   return (
@@ -559,16 +649,7 @@ const Editor = ({
             </div>,
             document.getElementById("counter")!
           )}
-
-          {showCommentModal && (
-            <CommentInitialize
-              documentId={documentId}
-              setShowCommentModal={setShowCommentModal}
-              currentRange={currentRange}
-            />
-          )}
           <AnnotationList onVote={handleAnnotationVote} />
-          <CommentBubble documentId={documentId} isEditable={isEditable} />
           <BubbleMenu 
             quill={quillRef.current} 
             isEditable={isEditable}
