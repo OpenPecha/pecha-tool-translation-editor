@@ -18,9 +18,9 @@ const ThreadList = ({ documentId }: { documentId: string }) => {
 
   useEffect(() => {
     if (fetchedThreads) {
-      setThreads(fetchedThreads as any);
+      setThreads(documentId, fetchedThreads as any);
     }
-  }, [fetchedThreads, setThreads]);
+  }, [fetchedThreads, setThreads, documentId]);
 
   if (isLoading) {
     return (
@@ -48,7 +48,7 @@ const ThreadList = ({ documentId }: { documentId: string }) => {
         }, 3000);
       }, 100);
     }
-    openSidebar("thread", threadId);
+    openSidebar(documentId, "thread", threadId);
   };
 
   return (

@@ -1,16 +1,34 @@
 import { create } from "zustand";
 
 type DocumentSidebarState = {
-  activeTab: string | null;
-  setActiveTab: (tabId: string | null) => void;
-  toggleTab: (tabId: string) => void;
+  // Map of documentId -> activeTab
+  activeTabs: Record<string, string | null>;
+  setActiveTab: (documentId: string, tabId: string | null) => void;
+  toggleTab: (documentId: string, tabId: string) => void;
+  getActiveTab: (documentId: string) => string | null;
 };
 
 export const useDocumentSidebarStore = create<DocumentSidebarState>((set, get) => ({
-  activeTab: null,
-  setActiveTab: (tabId) => set({ activeTab: tabId }),
-  toggleTab: (tabId: string) => {
-    const { activeTab } = get();
-    set({ activeTab: activeTab === tabId ? null : tabId });
+  activeTabs: {},
+  getActiveTab: (documentId: string) => {
+    return get().activeTabs[documentId] ?? null;
+  },
+  setActiveTab: (documentId: string, tabId: string | null) => {
+    set((state) => ({
+      activeTabs: {
+        ...state.activeTabs,
+        [documentId]: tabId,
+      },
+    }));
+  },
+  toggleTab: (documentId: string, tabId: string) => {
+    const { activeTabs } = get();
+    const currentTab = activeTabs[documentId] ?? null;
+    set({
+      activeTabs: {
+        ...activeTabs,
+        [documentId]: currentTab === tabId ? null : tabId,
+      },
+    });
   },
 }));
