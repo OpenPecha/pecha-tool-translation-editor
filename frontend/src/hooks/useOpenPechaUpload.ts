@@ -26,8 +26,6 @@ export function useOpenPechaUpload({
 
   const instance_id = sourceDoc?.metadata?.instanceId as string | undefined;
   const isUploadable =(() => {
-    console.log("isUploadable sourceDoc?.metadata", sourceDoc?.metadata);
-    console.log("isUploadable translationDoc?.metadata", translationDoc?.metadata);
     if (isMetadataAvailable(sourceDoc?.metadata) && !isMetadataAvailable(translationDoc?.metadata)) {
       return true;
     }

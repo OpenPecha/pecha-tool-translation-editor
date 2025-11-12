@@ -39,7 +39,7 @@ async function getTextInstances(text_id) {
 }
 
 async function getInstanceContent(instanceId) {
-	const response = await fetch(`${API_ENDPOINT}/instances/${instanceId}?annotation=true`, {
+	const response = await fetch(`${API_ENDPOINT}/instances/${instanceId}?annotation=true&content=true`, {
 		headers: {
 			accept: "application/json",
 			"Content-Type": "application/json",
