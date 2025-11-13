@@ -24,11 +24,15 @@ const ThreadConversation = ({
   projectId?: string;
 }) => {
   const {
-    activeThreadId,
-    threads,
-    sidebarView,
-    newCommentRange,
+    getActiveThreadId,
+    getThreads,
+    getSidebarView,
+    getNewCommentRange,
   } = useCommentStore();
+  const activeThreadId = getActiveThreadId(documentId);
+  const threads = getThreads(documentId);
+  const sidebarView = getSidebarView(documentId);
+  const newCommentRange = getNewCommentRange(documentId);
 
   const { currentUser } = useAuth();
   const [replyContent, setReplyContent] = useState("");

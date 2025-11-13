@@ -5,7 +5,8 @@ const {
   optionalAuthenticate,
 } = require("../middleware/authenticate");
 const { sendEmail } = require("../services/utils");
-
+const { getSegmentsContent } = require("../apis/openpecha_api");
+const { getSegmentRelated } = require("../apis/openpecha_api");
 const prisma = new PrismaClient();
 const router = express.Router();
 
@@ -19,18 +20,36 @@ async function generateMessagesFromThread(threadId, selectedText) {
   }
 
   try {
-    // Fetch all comments in the thread ordered by createdAt
-    const comments = await prisma.comment.findMany({
-      where: { threadId },
-      include: { user: true },
-      orderBy: { createdAt: "asc" },
+
+    // Fetch thread with comments in a single query
+    const thread = await prisma.thread.findFirst({
+      where: { id: threadId },
+      select: {
+        selectedText: true,
+        comments: {
+          include: { user: true },
+          orderBy: { createdAt: "asc" },
+        },
+      },
     });
 
+    let messages = [];
+    
+    // Add selected text as initial message if it exists
+    if (thread?.selectedText) {
+      messages.push({
+        role: "user",
+        content: thread.selectedText,
+      });
+    }
+
     // Convert comments to messages format
-    const messages = comments.map((comment) => ({
-      role: comment.isSystemGenerated ? "assistant" : "user",
-      content: comment.content,
-    }));
+    if (thread?.comments) {
+      messages.push(...thread.comments.map((comment) => ({
+        role: comment.isSystemGenerated ? "assistant" : "user",
+        content: comment.content,
+      })));
+    }
 
     return messages;
   } catch (error) {
@@ -40,7 +59,7 @@ async function generateMessagesFromThread(threadId, selectedText) {
 }
 
 // AI Comment function
-async function getAIComment(threadId, selectedText, res, model_name, content) {
+async function getAIComment(threadId, selectedText, res, model_name, content, references) {
   try {
     // Generate messages from thread history
     const messages = await generateMessagesFromThread(threadId, selectedText);
@@ -51,15 +70,6 @@ async function getAIComment(threadId, selectedText, res, model_name, content) {
         content: content.replace(/@ai/g, "@Comment").trim(),
       });
     }
-    const references = selectedText
-      ? [
-          {
-            type: "commentary",
-            content: selectedText,
-          },
-        ]
-      : [];
-
     const requestBody = {
       messages,
       references,
@@ -354,7 +364,7 @@ router.post("/", authenticate, async (req, res) => {
       docId,
       userId,
       content,
-      threadId = null,
+      threadId,
       isSuggestion,
       suggestedText,
       isSystemGenerated,
@@ -378,7 +388,7 @@ router.post("/", authenticate, async (req, res) => {
         docId,
         userId,
         content,
-        threadId: threadId || null,
+        threadId: threadId,
         isSuggestion: isSuggestion || false,
         suggestedText: suggestedText || null,
         isSystemGenerated: isSystemGenerated || false,
@@ -403,14 +413,40 @@ router.post("/", authenticate, async (req, res) => {
 
     // Check if this is an AI comment request AFTER saving the user's comment
     if (content.includes("@ai")) {
+      const offset = await prisma.thread.findFirst({
+        where : {id:threadId}
+      })
+      const instance = await prisma.docMetadata.findFirst({
+        where:{docId:docId},
+        select:{
+          instanceId:true
+        }
+      })
+      const relatedSegments = await getSegmentRelated(instance.instanceId, offset.initialStartOffset, offset.initialEndOffset);
+      let references = [];
+      const segmentDetails = relatedSegments.map(item => {
+        return {
+        type: item.text.type,
+        instance_id: item.instance.id,
+        seg_ids: item.segments.map(seg => seg.id).join(',')}
+      });
+
+      for (const segmentDetail of segmentDetails) {
+        const segmentContent = await getSegmentsContent(segmentDetail.instance_id, segmentDetail.seg_ids);
+        references.push({
+          type: segmentDetail.type,
+          content: segmentContent.map(item => item.content).join('')
+        })
+      }
       try {
         // Stream AI response to client
         const aiCommentText = await getAIComment(
-          newComment.threadId,
+          threadId,
           selectedText,
           res,
           null,
-          content
+          content,
+          references
         );
         // After streaming is complete, save the AI comment to the database
         const aiComment = await prisma.comment.create({

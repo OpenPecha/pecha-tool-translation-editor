@@ -88,10 +88,45 @@ const uploadTranslationToOpenpecha = async (instanceId, translationData) => {
 	return data;
 };
 
+async function getSegmentRelated(instanceId, spanStart, spanEnd, transfer = false) {
+	const response = await fetch(`${API_ENDPOINT}/instances/${instanceId}/segment-related?span_start=${spanStart}&span_end=${spanEnd}&transfer=${transfer}`, {
+		headers: {
+			accept: "application/json",
+			"Content-Type": "application/json",
+		},
+	});
+
+	if (!response.ok) {
+		throw new Error(`Failed to fetch segment related from openpecha: ${response.statusText}`);
+	}
+
+	const data = await response.json();
+	return data;
+}
+
+async function getSegmentsContent(instanceId, seg_ids) {
+	const url = `${API_ENDPOINT}/instances/${instanceId}/segment-content?segment_id=${seg_ids}`;
+	const response = await fetch(url, {
+		headers: {
+			accept: "application/json",
+			"Content-Type": "application/json",
+		},
+	});
+
+	if (!response.ok) {
+		throw new Error(`Failed to fetch segment content from openpecha: ${response.statusText}`);
+	}
+
+	const data = await response.json();
+	return data;
+}
+
 module.exports = {
 	getTexts,
 	getTextInstances,
 	getInstanceContent,
 	getAnnotations,
 	uploadTranslationToOpenpecha,
+	getSegmentRelated,
+	getSegmentsContent,
 };
