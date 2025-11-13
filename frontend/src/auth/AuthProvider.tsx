@@ -9,6 +9,7 @@ import { Auth0Provider, useAuth0 } from "@auth0/auth0-react";
 import { setAuthTokenGetter } from "../lib/auth";
 import { AuthContext } from "./auth-context";
 import type { User } from "./types";
+import { createUser } from "@/api/user";
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -28,11 +29,20 @@ const AuthContextProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Track if silent auth was attempted to prevent infinite loops
   const [silentAuthAttempted, setSilentAuthAttempted] = useState(false);
-
   // Set up API token getter when authenticated
   useEffect(() => {
     if (isAuthenticated) {
       setAuthTokenGetter(getAccessTokenSilently);
+      async function createUserInDatabase() {
+      const userData = {
+        id: user?.sub || "",
+        email: user?.email || "",
+        username: user?.nickname || "",
+        picture: user?.picture || "",
+        };
+        await createUser(userData);
+      }
+      createUserInDatabase();
     }
   }, [isAuthenticated, getAccessTokenSilently]);
 
