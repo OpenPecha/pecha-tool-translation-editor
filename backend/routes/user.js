@@ -57,7 +57,7 @@ router.get("/me", authenticate, async (req, res) => {
  */
 router.post("/", async (req, res) => {
 	try {
-		const { username, email, picture } = req.body;
+		const { id,username, email, picture } = req.body;
 
 		if (!email) {
 			return res.status(400).json({
@@ -67,13 +67,13 @@ router.post("/", async (req, res) => {
 
 		// Check if user already exists
 		let user = await prisma.user.findUnique({
-			where: { email },
+			where: { id },
 		});
 
 		if (user) {
 			// Update existing user if needed
 			user = await prisma.user.update({
-				where: { id: user.id },
+				where: { id },
 				data: {
 					username: username || user.username,
 					picture: picture || user.picture,
@@ -83,6 +83,7 @@ router.post("/", async (req, res) => {
 			// Create new user
 			user = await prisma.user.create({
 				data: {
+					id:id,
 					username: username || email.split("@")[0],
 					email,
 					picture,

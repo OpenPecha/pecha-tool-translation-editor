@@ -337,9 +337,7 @@ const Editor = ({
       const threads = getThreads(documentId);
       const threadExists = threads.some(thread => thread.id === threadId);
       
-      if (!threadExists) return; // Ignore if thread doesn't belong to this document
-      
-      console.log("handleCommentClick", threadId, documentId);
+      if (!threadExists) return; 
       setActiveTab(documentId, "comments");
       openCommentSidebar(documentId, "thread", threadId);
     };

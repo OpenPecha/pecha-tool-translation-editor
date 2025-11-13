@@ -458,6 +458,7 @@ router.post("/", authenticate, async (req, res) => {
             isSuggestion: false,
             suggestedText: null,
             isSystemGenerated: true,
+            references: references,
           },
           include: { user: true },
         });
