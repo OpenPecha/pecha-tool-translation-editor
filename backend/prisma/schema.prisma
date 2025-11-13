@@ -123,6 +123,7 @@ model Comment {
   isSuggestion        Boolean   @default(false)
   suggestedText       String?
   threadId             String?
+  references           Json?
   thread Thread? @relation("ThreadComments", fields: [threadId], references: [id])
   doc                  Doc       @relation(fields: [docId], references: [id], onDelete: Cascade)
   user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
