@@ -79,7 +79,7 @@ const Editor = ({
   const hasContentLoadedRef = useRef<boolean>(false);
   const { t } = useTranslation();
   const { currentUser } = useAuth();
-  const { setThreads, openSidebar: openCommentSidebar, setNewCommentRange } =
+  const { getThreads, setThreads, openSidebar: openCommentSidebar, setNewCommentRange } =
     useCommentStore();
   const { setActiveTab } = useDocumentSidebarStore();
 
@@ -331,11 +331,17 @@ const Editor = ({
     }
 
     const handleCommentClick = ({ threadId }: { threadId: string }) => {
+      if (!threadId || !documentId) return;
+      
+      // Check if this thread belongs to this document
+      const threads = getThreads(documentId);
+      const threadExists = threads.some(thread => thread.id === threadId);
+      
+      if (!threadExists) return; // Ignore if thread doesn't belong to this document
+      
       console.log("handleCommentClick", threadId, documentId);
-      if (threadId && documentId) {
-        setActiveTab(documentId, "comments");
-        openCommentSidebar(documentId, "thread", threadId);
-      }
+      setActiveTab(documentId, "comments");
+      openCommentSidebar(documentId, "thread", threadId);
     };
 
     emitter.on("open-comment-thread", handleCommentClick);
