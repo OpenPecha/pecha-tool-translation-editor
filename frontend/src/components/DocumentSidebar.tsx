@@ -16,6 +16,7 @@ import CommentSidebar from "./Comment/CommentSidebar";
 import { Button } from "./ui/button";
 import { ScrollArea } from "./ui/scroll-area";
 import { useCommentStore } from "@/stores/commentStore";
+
 interface DocumentSidebarProps {
   documentId: string;
 }
@@ -251,9 +252,11 @@ const MetadataContent = ({ documentId }: { documentId: string }) => {
 };
 
 const DocumentSidebar: React.FC<DocumentSidebarProps> = ({ documentId }) => {
-  const { activeTab, toggleTab, setActiveTab } = useDocumentSidebarStore();
+  const { getActiveTab, toggleTab, setActiveTab } = useDocumentSidebarStore();
+  const activeTab = getActiveTab(documentId);
   const { t } = useTranslation();
-  const { sidebarView, showListView } = useCommentStore();
+  const { getSidebarView, showListView } = useCommentStore();
+  const sidebarView = getSidebarView(documentId);
 
   const tabs = [
     {
@@ -296,7 +299,7 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({ documentId }) => {
                 key={tab.id}
                 variant={isActive ? "default" : "ghost"}
                 size="sm"
-                onClick={() => toggleTab(tab.id)}
+                onClick={() => toggleTab(documentId, tab.id)}
                 className={cn(
                   "h-8 w-8 p-0 flex items-center justify-center",
                   isActive
@@ -324,7 +327,7 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({ documentId }) => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={showListView}
+                    onClick={() => showListView(documentId)}
                     className="h-6 w-6 p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
                     title="Back to threads"
                   >
@@ -343,7 +346,7 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({ documentId }) => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setActiveTab(null)}
+              onClick={() => setActiveTab(documentId, null)}
               className="h-6 w-6 p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
               title="Close sidebar"
             >

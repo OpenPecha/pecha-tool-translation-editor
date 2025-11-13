@@ -10,8 +10,12 @@ export const useAIComment = (documentId: string) => {
 	const [streamStatus, setStreamStatus] = useState<'thinking' | 'streaming' | 'completed' | 'saved' | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const { currentUser } = useAuth();
-	const { addCommentToThread, updateCommentContent, removeComment, replaceComment } =
-		useCommentStore();
+	const {
+		addCommentToThread,
+		updateCommentContent,
+		removeComment,
+		replaceComment,
+	} = useCommentStore();
 	const queryClient = useQueryClient();
 
 	const generateAIComment = async (
@@ -41,7 +45,7 @@ export const useAIComment = (documentId: string) => {
 		isSystemGenerated: false,
 		threadId,
 	};
-	addCommentToThread(threadId, userTempComment);
+	addCommentToThread(documentId, threadId, userTempComment);
 
 
 	// Step 2: Optimistically add the AI placeholder and start the stream
@@ -66,7 +70,7 @@ export const useAIComment = (documentId: string) => {
 		threadId: threadId
 	};
 
-	addCommentToThread(threadId, aiTempComment);
+	addCommentToThread(documentId, threadId, aiTempComment);
 
 	let fullContent = "";
 	let hasReceivedFirstDelta = false;
@@ -82,18 +86,18 @@ export const useAIComment = (documentId: string) => {
 					hasReceivedFirstDelta = true;
 				}
 				fullContent += delta;
-				updateCommentContent(threadId, aiTempId, fullContent);
+				updateCommentContent(documentId, threadId, aiTempId, fullContent);
 			},
 			onCompletion: (finalText) => {
 				// AI finished generating the response
 				setStreamStatus('completed');
-				updateCommentContent(threadId, aiTempId, finalText);
+				updateCommentContent(documentId, threadId, aiTempId, finalText);
 			},
 			onSave: (finalComment) => {
 				// Comment saved to database, replace with real record
 				if (finalComment) {
 					setStreamStatus('saved');
-					replaceComment(threadId, aiTempId, finalComment);
+					replaceComment(documentId, threadId, aiTempId, finalComment);
 				}
 				setIsStreaming(false);
 				setStreamStatus(null);
@@ -103,8 +107,8 @@ export const useAIComment = (documentId: string) => {
 			onError: (errorMessage) => {
 				console.error("AI Error:", errorMessage);
 				// Remove both optimistic comments on error
-				removeComment(threadId, userTempId);
-				removeComment(threadId, aiTempId);
+				removeComment(documentId, threadId, userTempId);
+				removeComment(documentId, threadId, aiTempId);
 				setError(errorMessage);
 				setIsStreaming(false);
 				setStreamStatus(null);
@@ -113,8 +117,8 @@ export const useAIComment = (documentId: string) => {
 	} catch (e) {
 		console.error("Failed to generate AI comment:", e);
 		// Remove both optimistic comments on error
-		removeComment(threadId, userTempId);
-		removeComment(threadId, aiTempId);
+		removeComment(documentId, threadId, userTempId);
+		removeComment(documentId, threadId, aiTempId);
 		setError("Failed to generate AI comment.");
 		setIsStreaming(false);
 		setStreamStatus(null);

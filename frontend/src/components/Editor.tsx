@@ -79,7 +79,7 @@ const Editor = ({
   const hasContentLoadedRef = useRef<boolean>(false);
   const { t } = useTranslation();
   const { currentUser } = useAuth();
-  const { setThreads, openSidebar: openCommentSidebar, setNewCommentRange } =
+  const { getThreads, setThreads, openSidebar: openCommentSidebar, setNewCommentRange } =
     useCommentStore();
   const { setActiveTab } = useDocumentSidebarStore();
 
@@ -90,10 +90,10 @@ const Editor = ({
   });
 
   useEffect(() => {
-    if (threads) {
-      setThreads(threads);
+    if (threads && documentId) {
+      setThreads(documentId, threads);
     }
-  }, [threads, setThreads]);
+  }, [threads, setThreads, documentId]);
 
   // Get display settings
   const { showLineNumbers } = useDisplaySettings();
@@ -331,10 +331,17 @@ const Editor = ({
     }
 
     const handleCommentClick = ({ threadId }: { threadId: string }) => {
-      if (threadId) {
-        setActiveTab("comments");
-        openCommentSidebar("thread", threadId);
-      }
+      if (!threadId || !documentId) return;
+      
+      // Check if this thread belongs to this document
+      const threads = getThreads(documentId);
+      const threadExists = threads.some(thread => thread.id === threadId);
+      
+      if (!threadExists) return; // Ignore if thread doesn't belong to this document
+      
+      console.log("handleCommentClick", threadId, documentId);
+      setActiveTab(documentId, "comments");
+      openCommentSidebar(documentId, "thread", threadId);
     };
 
     emitter.on("open-comment-thread", handleCommentClick);
@@ -375,18 +382,18 @@ const Editor = ({
       // Reset flags for next mount
       isInitializedRef.current = false;
       hasContentLoadedRef.current = false;
-      if (quillRef.current && threads) {
-        threads.forEach((thread) => {
-          quillRef.current!.formatText(
-            thread.initialStartOffset,
-            thread.initialEndOffset - thread.initialStartOffset,
-            "comment",
-            false // Remove format on unmount
-          );
-        });
-      }
+      // if (quillRef.current && threads) {
+      //   threads.forEach((thread) => {
+      //     quillRef.current!.formatText(
+      //       thread.initialStartOffset,
+      //       thread.initialEndOffset - thread.initialStartOffset,
+      //       "comment",
+      //       false // Remove format on unmount
+      //     );
+      //   });
+      // }
     };
-  }, [isEditable, yText, provider, threads]); // Add threads to dependency array
+  }, [isEditable, yText, provider]); // Add threads to dependency array
 
   //for non-realtime editor only
 
@@ -558,7 +565,7 @@ const Editor = ({
     quillRef.current.formatText(index, length, { background: 'rgba(255, 230, 0, 0.6)' });
     setTimeout(() => {
       quillRef.current.formatText(index, length, { background: false });
-    }, 5000);
+    }, 10000);
   }, [quillRef]);
 
   function addComment() {
@@ -569,13 +576,15 @@ const Editor = ({
       currentRange.length
     );
     pulseText(currentRange.index, currentRange.length);
-    setNewCommentRange({
-      index: currentRange.index,
-      length: currentRange.length,
-      selectedText,
-    });
-    setActiveTab("comments");
-    openCommentSidebar("new");
+    if (documentId) {
+      setNewCommentRange(documentId, {
+        index: currentRange.index,
+        length: currentRange.length,
+        selectedText,
+      });
+      setActiveTab(documentId, "comments");
+      openCommentSidebar(documentId, "new");
+    }
   }
 
   const characterCount = quillRef.current?.getContents().length() || 0;

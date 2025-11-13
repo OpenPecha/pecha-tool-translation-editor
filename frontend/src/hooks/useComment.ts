@@ -4,6 +4,7 @@ import { createComment } from "@/api/comment";
 import { useAuth } from "@/auth/use-auth-hook";
 import { useEditor } from "@/contexts/EditorContext";
 import { useCommentStore } from "@/stores/commentStore";
+import { useAIComment } from "./useAIComment";
 
 export const useFetchThreads = (documentId: string) => {
   return useQuery<Thread[]>({
@@ -17,11 +18,17 @@ export const useCreateThread = (documentId: string) => {
   const queryClient = useQueryClient();
   const { currentUser } = useAuth();
   const { getQuill } = useEditor();
-  const { newCommentRange, setNewCommentRange, openSidebar, setActiveThreadId } =
-    useCommentStore();
+  const { generateAIComment } = useAIComment(documentId);
+  const {
+    getNewCommentRange,
+    setNewCommentRange,
+    openSidebar,
+    setActiveThreadId,
+  } = useCommentStore();
 
   return useMutation({
     mutationFn: async (content: string) => {
+      const newCommentRange = getNewCommentRange(documentId);
       if (!newCommentRange || !currentUser) {
         throw new Error("User or selection range is missing.");
       }
@@ -32,16 +39,20 @@ export const useCreateThread = (documentId: string) => {
       const newThread = await createThread(
         documentId,
         newCommentRange.index,
-        newCommentRange.length,
+        newCommentRange.index + newCommentRange.length,
         selectedText
       );
 
-      await createComment(documentId, currentUser.id, content, newThread.id, {
-        isSuggestion: false,
-        suggestedText: "",
-        isSystemGenerated: false,
-        selectedText: selectedText,
-      });
+      if(content.includes("@ai")) {
+        await generateAIComment(content, newThread.id, newThread);
+      } else {
+        await createComment(documentId, currentUser.id, content, newThread.id, {
+          isSuggestion: false,
+          suggestedText: "",
+          isSystemGenerated: false,
+          selectedText: selectedText,
+        });
+      }
 
       return { newThread, newCommentRange };
     },
@@ -60,9 +71,9 @@ export const useCreateThread = (documentId: string) => {
         );
       }
       queryClient.invalidateQueries({ queryKey: ["threads", documentId] });
-      openSidebar("thread", newThread.id);
-      setActiveThreadId(newThread.id);
-      setNewCommentRange(null);
+      openSidebar(documentId, "thread", newThread.id);
+      setActiveThreadId(documentId, newThread.id);
+      setNewCommentRange(documentId, null);
     },
   });
 };
@@ -70,7 +81,7 @@ export const useCreateThread = (documentId: string) => {
 export const useAddComment = (documentId: string) => {
   const queryClient = useQueryClient();
   const { currentUser } = useAuth();
-  const { threads } = useCommentStore();
+  const { getThreads } = useCommentStore();
 
   return useMutation({
     mutationFn: ({
@@ -83,6 +94,7 @@ export const useAddComment = (documentId: string) => {
       mentionedUserIds?: string[];
     }) => {
       if (!currentUser) throw new Error("User is not authenticated.");
+      const threads = getThreads(documentId);
       const activeThread = threads.find((t) => t.id === threadId);
       return createComment(documentId, currentUser.id, content, threadId, {
         selectedText: activeThread?.selectedText || "",
