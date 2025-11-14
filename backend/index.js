@@ -31,6 +31,12 @@ const options = {
       name: "MIT",
     },
   },
+  servers: [
+    {
+      url: `http://localhost:${process.env.PORT || 9000}`,
+      description: "Development server",
+    },
+  ],
   security: {
     BearerAuth: {
       type: "http",

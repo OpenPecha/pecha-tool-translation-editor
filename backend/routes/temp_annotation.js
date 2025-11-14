@@ -6,18 +6,18 @@ const router = express.Router();
 
 /**
  * @typedef {object} TempSearchSegmentRequest
- * @property {string} textId - Text ID (optional)
- * @property {string} instanceId - Instance ID (optional)
- * @property {string} annoatationId - Annotation ID (optional)
- * @property {string} createdBy - User ID who created this segment (optional)
+ * @property {string} textId - Text ID (optional) - eg: text-123
+ * @property {string} instanceId - Instance ID (optional) - eg: instance-456
+ * @property {string} annoatationId - Annotation ID (optional) - eg: annotation-789
+ * @property {string} createdBy - User ID who created this segment (optional) - eg: user-123
  */
 
 /**
  * POST /temp_annotation
  * @summary Create a new temp search segment
- * @tags Temp Search Segments - Temporary search segment management operations
+ * @tags Pecha - Temp Annotation
  * @param {TempSearchSegmentRequest} request.body.required - Temp search segment information - application/json
- * @return {object} 201 - Created temp search segment
+ * @return {object} 201 - Temp search segment created successfully
  * @return {object} 500 - Server error
  * @example request - Example request body
  * {
@@ -34,6 +34,7 @@ const router = express.Router();
  *     "textId": "text-123",
  *     "instanceId": "instance-456",
  *     "annoatationId": "annotation-789",
+ *     "createdBy": "user-123",
  *     "createdAt": "2023-12-01T10:00:00.000Z",
  *     "updatedAt": "2023-12-01T10:00:00.000Z"
  *   }
