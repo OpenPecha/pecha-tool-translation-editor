@@ -20,7 +20,7 @@ const workspaceRoutes = require("./routes/workspace");
 const emailRoutes = require("./routes/email");
 const resourcesRoutes = require("./routes/resources");
 const modelsRoutes = require("./routes/models");
-
+const tempAnnotationRoutes = require("./routes/temp_annotation");
 const options = {
   info: {
     version: "1.0.0",
@@ -111,6 +111,7 @@ app.use("/workspace", workspaceRoutes);
 app.use("/resources", resourcesRoutes);
 app.use("/models", modelsRoutes);
 app.use("/", emailRoutes);
+app.use("/temp_annotation", tempAnnotationRoutes);
 
 const PORT = process.env.PORT || 9000;
 server.listen(PORT, () => {
