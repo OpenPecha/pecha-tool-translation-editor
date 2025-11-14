@@ -22,6 +22,7 @@ const resourcesRoutes = require("./routes/resources");
 const modelsRoutes = require("./routes/models");
 const tempAnnotationRoutes = require("./routes/temp_annotation");
 const options = {
+  openapi: "3.0.0",
   info: {
     version: "1.0.0",
     title: "Pecha Translation Editor API",
