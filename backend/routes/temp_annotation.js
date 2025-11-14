@@ -8,7 +8,7 @@ const router = express.Router();
  * @typedef {object} TempSearchSegmentRequest
  * @property {string} textId - Text ID (optional) - eg: text-123
  * @property {string} instanceId - Instance ID (optional) - eg: instance-456
- * @property {string} annoatationId - Annotation ID (optional) - eg: annotation-789
+ * @property {string} annotationId - Annotation ID (optional) - eg: annotation-789
  * @property {string} createdBy - User ID who created this segment (optional) - eg: user-123
  */
 
@@ -23,7 +23,7 @@ const router = express.Router();
  * {
  *   "textId": "text-123",
  *   "instanceId": "instance-456",
- *   "annoatationId": "annotation-789",
+ *   "annotationId": "annotation-789",
  *   "createdBy": "user-123"
  * }
  * @example response - 201 - Success response
@@ -33,7 +33,7 @@ const router = express.Router();
  *     "id": "uuid-123",
  *     "textId": "text-123",
  *     "instanceId": "instance-456",
- *     "annoatationId": "annotation-789",
+ *     "annotationId": "annotation-789",
  *     "createdBy": "user-123",
  *     "createdAt": "2023-12-01T10:00:00.000Z",
  *     "updatedAt": "2023-12-01T10:00:00.000Z"
@@ -48,14 +48,14 @@ const router = express.Router();
  */
 router.post("", async (req, res) => {
   try {
-    const { textId, instanceId, annoatationId, createdBy } = req.body;
+    const { textId, instanceId, annotationId, createdBy } = req.body;
 
     // Create temp search segment
     const tempSearchSegment = await prisma.tempSearchSegments.create({
       data: {
         textId: textId || null,
         instanceId: instanceId || null,
-        annoatationId: annoatationId || null,
+        annotationId: annotationId || null,
         createdBy: createdBy || null,
       },
     });

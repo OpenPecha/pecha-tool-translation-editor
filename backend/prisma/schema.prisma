@@ -176,13 +176,13 @@ model TempSearchSegments{
   id String @id @default(uuid())
   textId String?
   instanceId String?
-  annoatationId String?
+  annotationId String?
   createdBy String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([textId])
   @@index([instanceId])
-  @@index([annoatationId])
+  @@index([annotationId])
 
 }
