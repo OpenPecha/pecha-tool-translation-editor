@@ -9,6 +9,7 @@ const router = express.Router();
  * @property {string} textId - Text ID (optional)
  * @property {string} instanceId - Instance ID (optional)
  * @property {string} annoatationId - Annotation ID (optional)
+ * @property {string} createdBy - User ID who created this segment (optional)
  */
 
 /**
