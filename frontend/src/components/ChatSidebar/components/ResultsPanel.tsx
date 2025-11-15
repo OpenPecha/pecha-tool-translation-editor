@@ -132,7 +132,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({
           <div className="flex items-center justify-between px-1 py-1 bg-blue-50 dark:bg-blue-950/20">
             <Button
               variant="ghost"
-              className="flex-1 justify-start font-medium hover:bg-blue-100 dark:hover:bg-blue-900/30"
+              className="justify-start font-medium hover:bg-blue-100 dark:hover:bg-blue-900/30"
               onClick={() => togglePanel("translation")}
             >
               <div className="flex items-center gap-2">
@@ -149,7 +149,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({
               </div>
             </Button>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
               {hasTranslationResults &&
                 !isTranslating &&
                 inputMode === "selection" && (
@@ -159,7 +159,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({
                         onClick={overwriteAllResults}
                         variant="ghost"
                         size="sm"
-                        className="h-7 px-2 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                        className="h-5 w-5 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30"
                       >
                         <TbReplaceFilled className="w-3 h-3 " />
                       </Button>
@@ -175,7 +175,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({
                       onClick={startGlossaryExtraction}
                       variant="ghost"
                       size="sm"
-                      className="h-7 px-2 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                      className="h-5 w-5 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30"
                     >
                       <BookText className="w-3 h-3" />
                     </Button>
@@ -191,7 +191,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({
                       onClick={resetTranslations}
                       variant="ghost"
                       size="sm"
-                      className="h-7 px-2 text-blue-600 dark:text-blue-400 hover:bg-red-100 dark:hover:bg-red-900/30"
+                      className="h-5 w-5 text-blue-600 dark:text-blue-400 hover:bg-red-100 dark:hover:bg-red-900/30"
                     >
                       <X className="w-3 h-3" />
                     </Button>

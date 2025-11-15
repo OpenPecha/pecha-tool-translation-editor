@@ -21,10 +21,18 @@ export interface Thread {
 	comments?: any[];
 }
 
-export const fetchThreadsByDocumentId = async (documentId: string) => {
+export const fetchThreadsByDocumentId = async (
+  documentId: string,
+  startIndex?: number,
+  endIndex?: number
+) => {
   try {
-    const response = await fetch(`${server_url}/threads?documentId=${documentId}`, {
-      headers: getHeaders(),
+    let url = `${server_url}/threads?documentId=${documentId}`;
+    if (startIndex !== undefined && endIndex !== undefined) {
+      url += `&startIndex=${startIndex}&endIndex=${endIndex}`;
+    }
+    const response = await fetch(url, {
+      headers: getHeaders()
     });
 
     if (!response.ok) {

@@ -39,57 +39,37 @@ const router = express.Router();
  */
 router.get("/", authenticate, async (req, res) => {
   try {
-    const { documentId } = req.query;
+    const { documentId, startIndex, endIndex } = req.query;
 
-    let threads;
+    let whereClause = {};
     if (documentId) {
-      threads = await prisma.thread.findMany({
-        where: { documentId },
-        include: {
-          createdByUser: {
-            select: {
-              id: true,
-              username: true,
-              email: true,
-            },
-          },
-          comments: {
-            include: {
-              user: true,
-            },
-            orderBy: {
-              createdAt: "asc",
-            },
-          },
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-      });
-    } else {
-      threads = await prisma.thread.findMany({
-        include: {
-          createdByUser: {
-            select: {
-              id: true,
-              username: true,
-              email: true,
-            },
-          },
-          comments: {
-            include: {
-              user: true,
-            },
-            orderBy: {
-              createdAt: "asc",
-            },
-          },
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-      });
+      whereClause.documentId = documentId;
     }
+
+    if (startIndex !== undefined && endIndex !== undefined) {
+      whereClause.initialStartOffset = { gte: parseInt(startIndex, 10) };
+      whereClause.initialEndOffset = { lte: parseInt(endIndex, 10) };
+    }
+    const threads = await prisma.thread.findMany({
+      where: whereClause,
+      include: {
+        createdByUser: {
+          select: {
+            id: true,
+            username: true,
+            email: true
+          }
+        },
+        comments: {
+          include: {
+            user: true
+          },
+          orderBy: {
+            createdAt: "asc"
+          }
+        }
+      },
+    });
 
     res.json(threads);
   } catch (error) {

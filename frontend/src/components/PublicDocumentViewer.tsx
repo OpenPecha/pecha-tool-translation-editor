@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/auth/use-auth-hook";
-import { EditorProvider } from "@/contexts/EditorContext";
+// import { EditorProvider } from "@/contexts/EditorContext";
 import { CommentProvider } from "@/contexts/CommentContext";
 import { FootNoteProvider } from "@/contexts/FootNoteContext";
 import { useCurrentDoc } from "@/hooks/useCurrentDoc";
@@ -161,7 +161,7 @@ const PublicDocumentViewer: React.FC<PublicDocumentViewerProps> = ({
   }
 
   return (
-    <EditorProvider>
+    // <EditorProvider>
       <CommentProvider>
         <AnnotationProvider>
           <FootNoteProvider>
@@ -253,7 +253,7 @@ const PublicDocumentViewer: React.FC<PublicDocumentViewerProps> = ({
           </FootNoteProvider>
         </AnnotationProvider>
       </CommentProvider>
-    </EditorProvider>
+    // </EditorProvider>
   );
 };
 

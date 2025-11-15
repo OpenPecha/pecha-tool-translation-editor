@@ -35,8 +35,8 @@ const EditorContext = createContext<EditorContextType>({
   activeQuill: null,
   setActiveQuill: () => {},
   quillEditors: new Map(),
-  registerQuill: (id: string) => {},
-  unregisterQuill: (id: string) => {},
+  registerQuill: (_id: string, _quill: Quill) => {},
+  unregisterQuill: (_id: string) => {},
   getQuill: () => null,
   getLineNumber: () => null,
   getElementWithLinenumber: () => null,
@@ -65,13 +65,18 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({
       return next;
     });
 
-    // Set up focus tracking
-    setActiveEditor(id);
+    // Set up focus tracking - only set active editor on actual user interaction
+    // Set the first editor as active if no editor is currently active
+    setActiveEditor((currentActive) => {
+      if (currentActive === null && quillEditors.size === 0) {
+        return id;
+      }
+      return currentActive;
+    });
+    
     quill.on("selection-change", (range) => {
-      if (range) {
         setActiveEditor(id);
         setActiveQuill(quill);
-      }
     });
   };
 
@@ -111,7 +116,6 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const domRange = selection.getRangeAt(0);
     const clickedElement = domRange.startContainer.parentElement;
-
     // Check if the clicked element is empty or is a div
     if (
       clickedElement &&
