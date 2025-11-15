@@ -36,6 +36,17 @@ export const fetchTexts = async ({
   return response.json();
 };
 
+export const fetchText = async (textId: string) => {
+  const response = await fetch(`${server_url}/openpecha/texts/${textId}`, {
+    headers: getHeaders(),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to fetch text");
+  }
+  return response.json();
+};
+
 /**
  * Fetch text instances for a specific text ID
  * @param textId - Text ID
@@ -151,9 +162,7 @@ export const fetchSegmentsWithContent = async (
   );
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(
-      errorData.error || "Failed to fetch segments with content"
-    );
+    throw new Error(errorData.error || "Failed to fetch segments with content");
   }
   return response.json();
 };

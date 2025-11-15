@@ -7,11 +7,11 @@ const {
   getAnnotations,
   uploadTranslationToOpenpecha,
   getSegmentRelated,
+  getText,
   getSegmentsContent,
-  } = require("../apis/openpecha_api");
+} = require("../apis/openpecha_api");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-
 
 const router = express.Router();
 
@@ -22,7 +22,7 @@ const router = express.Router();
  */
 function extractSegmentInfo(segmentRelatedData) {
   const segments = [];
-  
+
   for (const item of segmentRelatedData) {
     if (item.segments && Array.isArray(item.segments)) {
       for (const segment of item.segments) {
@@ -36,7 +36,7 @@ function extractSegmentInfo(segmentRelatedData) {
       }
     }
   }
-  
+
   return segments;
 }
 
@@ -56,7 +56,7 @@ function combineSegmentData(segmentInfo, segmentContent) {
       }
     }
   }
-  
+
   // Combine segment info with content
   return segmentInfo.map((segment) => ({
     segment_id: segment.segment_id,
@@ -92,6 +92,12 @@ router.get("/texts", async (req, res) => {
       details: error.message,
     });
   }
+});
+
+router.get("/texts/:id", async (req, res) => {
+  const textId = req.params.id;
+  const text = await getText(textId);
+  res.json(text);
 });
 
 /**
@@ -201,7 +207,7 @@ router.get("/instances/:id", async (req, res) => {
  * @return {object} 400 - Bad request - Annotation ID is required
  * @return {object} 404 - Annotation not found
  * @return {object} 500 - Server error
- * 
+ *
  */
 router.get("/annotations/:id", async (req, res) => {
   const annotationId = req.params.id;
@@ -219,7 +225,7 @@ router.get("/annotations/:id", async (req, res) => {
       error: "Failed to fetch annotations",
       id: annotationId,
       details: error.message,
-    }); 
+    });
   }
 });
 
@@ -255,67 +261,72 @@ router.get("/annotations/:id", async (req, res) => {
  * }
  */
 
+router.post(
+  "/instances/:instance_id/translation/:translation_doc_id",
+  async (req, res) => {
+    const { instance_id, translation_doc_id } = req.params;
+    if (!instance_id) {
+      return res.status(400).json({
+        error: "Instance ID is required",
+        details: "Missing instance_id parameter",
+      });
+    }
 
-router.post("/instances/:instance_id/translation/:translation_doc_id", async (req, res) => {
-  const { instance_id, translation_doc_id } = req.params;
-  if (!instance_id) {
-    return res.status(400).json({
-      error: "Instance ID is required",
-      details: "Missing instance_id parameter",
-    });
-  }
-  
-  if (!translation_doc_id) {
-    return res.status(400).json({
-      error: "Translation document ID is required",
-      details: "Missing translation_doc_id parameter",
-    });
-  }
-  const requiredFields = [
-    "language",
-    "content",
-    "title",
-    "segmentation",
-    "target_annotation",
-    "alignment_annotation",
-  ];
-  const missingField = requiredFields.find(field => !req.body[field]);
-  if (missingField) {
-    return res.status(400).json({
-      error: `${missingField.replace(/_/g, " ")} is required`,
-      instance_id,
-      details: `Missing required field: ${missingField}`,
-    });
-  }
-  const translationData = {
-    ...req.body,
-    author: {
-      "person_id": PERSON_ID,
-    },
-  };
-  try {
-    const translation = await uploadTranslationToOpenpecha(instance_id, translationData);
-    await prisma.docMetadata.create({
-      data: {
-        docId: translation_doc_id,
-        instanceId: translation.instance_id,
-        textId: translation.text_id,
+    if (!translation_doc_id) {
+      return res.status(400).json({
+        error: "Translation document ID is required",
+        details: "Missing translation_doc_id parameter",
+      });
+    }
+    const requiredFields = [
+      "language",
+      "content",
+      "title",
+      "segmentation",
+      "target_annotation",
+      "alignment_annotation",
+    ];
+    const missingField = requiredFields.find((field) => !req.body[field]);
+    if (missingField) {
+      return res.status(400).json({
+        error: `${missingField.replace(/_/g, " ")} is required`,
+        instance_id,
+        details: `Missing required field: ${missingField}`,
+      });
+    }
+    const translationData = {
+      ...req.body,
+      author: {
+        person_id: PERSON_ID,
       },
-    });
-    res.json({
-      success: true,
-      message: "Translation uploaded successfully",
-      data: translation,
-    });
-  } catch (error) {
-    console.error("Error uploading translation:", error);
-    res.status(500).json({
-      error: "Failed to upload translation",
-      instance_id,
-      details: error.message,
-    });
+    };
+    try {
+      const translation = await uploadTranslationToOpenpecha(
+        instance_id,
+        translationData
+      );
+      await prisma.docMetadata.create({
+        data: {
+          docId: translation_doc_id,
+          instanceId: translation.instance_id,
+          textId: translation.text_id,
+        },
+      });
+      res.json({
+        success: true,
+        message: "Translation uploaded successfully",
+        data: translation,
+      });
+    } catch (error) {
+      console.error("Error uploading translation:", error);
+      res.status(500).json({
+        error: "Failed to upload translation",
+        instance_id,
+        details: error.message,
+      });
+    }
   }
-});
+);
 
 /**
  * GET /openpecha/instances/{instanceId}/segment-related
@@ -356,7 +367,12 @@ router.get("/instances/:instanceId/segment-related", async (req, res) => {
       });
     }
 
-    const data = await getSegmentRelated(instanceId, spanStart, spanEnd, transferFlag);
+    const data = await getSegmentRelated(
+      instanceId,
+      spanStart,
+      spanEnd,
+      transferFlag
+    );
     res.json(data);
   } catch (error) {
     console.error("Error fetching segment-related data:", error);
