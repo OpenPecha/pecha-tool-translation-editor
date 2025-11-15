@@ -33,7 +33,6 @@ export function useQuillSelection({
       }
       if (!range) return;
       if (range.length === 0){ 
-        console.log("range :: ", range);
         onLineFocus(range)
       }else {
       const text = quill.getText(range.index, range.length);

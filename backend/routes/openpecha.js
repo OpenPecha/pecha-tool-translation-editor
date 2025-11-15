@@ -80,17 +80,6 @@ function combineSegmentData(segmentInfo, segmentContent) {
  */
 router.get("/texts", async (req, res) => {
   const { type, limit, offset, language } = req.query;
-  console.log("type :: ", type);
-  // Validate type parameter
-  const allowedTypes = ["root", "commentary", "translations"];
-  // if (type && !allowedTypes.includes(type)) {
-  //   console.log("invalid type :: ", type);
-  //   return res.status(400).json({
-  //     error: "Invalid type parameter",
-  //     allowedTypes: allowedTypes,
-  //     provided: type,
-  //   });
-  // }
 
   try {
     const texts = await getTexts(type, limit, offset, language);

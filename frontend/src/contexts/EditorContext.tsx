@@ -116,7 +116,6 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const domRange = selection.getRangeAt(0);
     const clickedElement = domRange.startContainer.parentElement;
-    console.log('clicked',selection)
     // Check if the clicked element is empty or is a div
     if (
       clickedElement &&

@@ -216,7 +216,7 @@ const ThreadConversation = ({
                           : "bg-gray-200"
                       }`}
                     >
-                      <div className="text-sm" onClick={() => console.log("comment ;;;", comment)}>
+                      <div className="text-sm">
                         <ReferenceRenderer
                           content={comment.content}
                           references={comment.references}

@@ -131,7 +131,6 @@ const Editor = ({
       });
     },
     onLineFocus: (range) => {
-      console.log("range :: ", range);
       if (!quillRef.current) return;
       function background_cleaner(){
         const allParagraphs = document.querySelectorAll(".ql-editor p");
