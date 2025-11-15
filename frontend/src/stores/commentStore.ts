@@ -1,4 +1,11 @@
 import { create } from "zustand";
+export interface CommentReference {
+  name: string;
+  type: string;
+  content: string;
+  id: string;
+}
+
 export interface Comment {
   id: string;
   content: string;
@@ -13,6 +20,7 @@ export interface Comment {
   };
   threadId: string | null;
   isSystemGenerated: boolean;
+  references?: CommentReference[];
 }
 
 export interface Thread {
@@ -163,7 +171,7 @@ export const useCommentStore = create<CommentStoreState & CommentStoreActions>(
           [documentId]: range,
         },
       })),
-    addCommentToThread: (documentId: string, threadId: string, comment: Comment) =>
+    addCommentToThread: (documentId: string, threadId: string, comment: Comment) =>{
       set((state) => ({
         threadsByDocument: {
           ...state.threadsByDocument,
@@ -174,7 +182,7 @@ export const useCommentStore = create<CommentStoreState & CommentStoreActions>(
                 : thread
           ),
         },
-      })),
+      }))},
     updateCommentContent: (
       documentId: string,
       threadId: string,

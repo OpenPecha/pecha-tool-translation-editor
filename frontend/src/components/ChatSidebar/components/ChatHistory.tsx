@@ -38,7 +38,7 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
   // Show empty state when no messages
   if (messages.length === 0) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+      <div className="flex-1 flex flex-col items-center justify-center text-center">
         <div className="bg-gray-100 dark:bg-gray-800 rounded-full p-4 mb-4">
           <MessageSquare className="w-8 h-8 text-gray-400" />
         </div>

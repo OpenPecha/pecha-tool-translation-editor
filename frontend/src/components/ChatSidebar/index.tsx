@@ -126,27 +126,11 @@ const ChatSidebarContent: React.FC = () => {
   }
 
   return (
-    <div className="h-full w-96 flex flex-col bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700">
+    <div className="h-full w-full flex flex-col bg-white dark:bg-gray-900">
       {/* Header */}
-      <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-        <Button
-          onClick={() => setIsCollapsed(true)}
-          variant="ghost"
-          size="icon"
-          className="w-6 h-6 hover:bg-gray-100 dark:hover:bg-gray-700"
-          title="Collapse chat"
-        >
-          <ChevronRight className="w-3 h-3" />
-        </Button>
+      <div className="flex items-center justify-end p-1 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
 
-        <div className="flex items-center gap-2">
-          <MessageSquare className="w-4 h-4 text-blue-500" />
-          <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
-            {t("translation.aiTranslation")}
-          </h3>
-        </div>
-
-        <div>
+        <div className="">
           {messageCount > 0 && (
             <Button
               onClick={handleClearChat}

@@ -1,5 +1,6 @@
 const express = require("express");
 const { PrismaClient } = require("@prisma/client");
+const { v4: uuidv4 } = require('uuid');
 const {
   authenticate,
   optionalAuthenticate,
@@ -422,21 +423,28 @@ router.post("/", authenticate, async (req, res) => {
           instanceId:true
         }
       })
+      if(!instance) {
+        return res.status(404).json({ error: "Instance not found" });
+      }
       const relatedSegments = await getSegmentRelated(instance.instanceId, offset.initialStartOffset, offset.initialEndOffset);
       let references = [];
       const segmentDetails = relatedSegments.map(item => {
         return {
-        type: item.text.type,
-        instance_id: item.instance.id,
-        seg_ids: item.segments.map(seg => seg.id).join(',')}
+        type: item.text_metadata.type,
+        instance_id: item.instance_metadata.id,
+        seg_ids: item.segments.map(seg => seg.segment_id).join(',')}
       });
-
+      let count = 1;
       for (const segmentDetail of segmentDetails) {
+        let name = `ref-${segmentDetail.type}-${count}`;
         const segmentContent = await getSegmentsContent(segmentDetail.instance_id, segmentDetail.seg_ids);
         references.push({
-          type: segmentDetail.type,
-          content: segmentContent.map(item => item.content).join('')
-        })
+            id: uuidv4(),
+            name: name,
+            type: segmentDetail.type,
+            content: segmentContent.map(item => item.content).join('')
+          })  
+        count++;
       }
       try {
         // Stream AI response to client

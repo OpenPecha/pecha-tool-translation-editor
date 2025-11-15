@@ -9,18 +9,18 @@ import LiveBlockProvider, {
 } from "@/contexts/LiveBlockProvider";
 import { useCurrentDoc } from "@/hooks/useCurrentDoc";
 import { useDevToolsStatus } from "@/hooks/useDevToolStatus";
-import { useOpenPechaUpload } from "@/hooks/useOpenPechaUpload";
 import { useTranslationSidebarParams } from "@/hooks/useQueryParams";
 import isMobile from "@/lib/isMobile";
-import ChatSidebar from "./ChatSidebar";
 import DocumentEditor from "./DocumentEditor";
 import SideMenu from "./EditorSideMenu/Sidemenu";
 import Navbar from "./Navbar";
-import { UploadToOpenPecha } from "./OpenPecha/UploadToOpenPecha";
+import { useSelectionStore, Selection, EditorType } from "@/stores/selectionStore";
+import { useEditor } from "@/contexts/EditorContext";
+import Quill from "quill";
 
 export type { Translation } from "@/hooks/useCurrentDoc";
 
-function DocumentsWrapper() {
+function DocumentsWrapperContent() {
   const { id } = useParams();
   useDevToolsStatus();
 
@@ -28,6 +28,54 @@ function DocumentsWrapper() {
   const { selectedTranslationId, clearSelectedTranslationId } =
     useTranslationSidebarParams();
   const [splitPosition, setSplitPosition] = useState<number>(40);
+  const { setManualSelection, setLineFocus } = useSelectionStore();
+  const { getQuill, getTextByLineNumber } = useEditor();
+
+  const getFullLineSelection = (
+    quill: Quill | null,
+    lineNumber: number,
+    documentId: string
+  ): Selection | null => {
+    if (!quill) return null;
+    const text = getTextByLineNumber(quill, lineNumber);
+    if (text === null) return null;
+
+    // This is an approximation. A more precise way would be to find the
+    // exact blot for the line number and get its index.
+    const lines = quill.getLines();
+    if (lineNumber < 1 || lineNumber > lines.length) return null;
+    const lineBlot = lines[lineNumber - 1];
+    const index = quill.getIndex(lineBlot);
+
+    return {
+      startLine: lineNumber,
+      range: {
+        index: index,
+        length: text.length,
+      },
+      text: text,
+      documentId,
+    };
+  };
+
+  const handleManualSelect = (
+    editorType: EditorType,
+    selection: Selection
+  ) => {
+    setManualSelection(editorType, selection);
+  };
+
+  const handleLineFocus = (lineNumber: number, _editorType: EditorType) => {
+    const sourceQuill = getQuill(id!);
+    const translationQuill = selectedTranslationId
+      ? getQuill(selectedTranslationId)
+      : null;
+    const sourceSelection = getFullLineSelection(sourceQuill, lineNumber, id!);
+    const translationSelection = selectedTranslationId
+      ? getFullLineSelection(translationQuill, lineNumber, selectedTranslationId)
+      : null;
+    setLineFocus(sourceSelection, translationSelection);
+  };
 
   const project = {
     id: currentDoc?.rootProjectId || currentDoc?.rootProject?.id || "",
@@ -97,10 +145,13 @@ function DocumentsWrapper() {
               {currentDoc && (
                 <LiveBlockProvider roomId={id} enabled={isLiveEnabled}>
                   <DocumentEditor
+                    isTranslationEditor={false}
                     liveEnabled={isLiveEnabled}
                     docId={id}
                     isEditable={isEditable}
                     currentDoc={currentDoc}
+                    onManualSelect={handleManualSelect}
+                    onLineFocus={handleLineFocus}
                   />
                 </LiveBlockProvider>
               )}
@@ -115,6 +166,8 @@ function DocumentsWrapper() {
                 selectedTranslationId={selectedTranslationId}
                 isEditable={!!isEditable}
                 sourceDocId={id}
+                onManualSelect={handleManualSelect}
+                onLineFocus={handleLineFocus}
               />
             )}
           </div>
@@ -124,7 +177,7 @@ function DocumentsWrapper() {
   };
 
   return (
-    <EditorProvider>
+    <>
       {/* Portals for elements that need to be rendered outside the main container */}
       {createPortal(
         <Navbar project={project} />,
@@ -137,6 +190,14 @@ function DocumentsWrapper() {
           {renderContent()}
         </div>
       </div>
+    </>
+  );
+}
+
+function DocumentsWrapper() {
+  return (
+    <EditorProvider>
+      <DocumentsWrapperContent />
     </EditorProvider>
   );
 }
@@ -144,19 +205,18 @@ function DocumentsWrapper() {
 function TranslationEditor({
   selectedTranslationId,
   isEditable,
-  sourceDocId,
+  sourceDocId: _sourceDocId,
+  onManualSelect,
+  onLineFocus,
 }: {
   readonly selectedTranslationId: string;
   readonly isEditable: boolean;
   readonly sourceDocId: string;
+  onManualSelect: (editorType: EditorType, selection: Selection) => void;
+  onLineFocus: (lineNumber: number, editorType: EditorType) => void;
 }) {
   const { currentDoc: translationDoc } = useCurrentDoc(selectedTranslationId);
-  const { currentDoc: sourceDoc } = useCurrentDoc(sourceDocId);
   const isLiveEnabled = useLiveBlockActive(translationDoc);
-  const { onUpload, isUploading, error, isUploadable } = useOpenPechaUpload({
-    sourceDoc,
-    translationDoc,
-  });
 
   return (
     <div className="h-full flex w-full">
@@ -168,28 +228,16 @@ function TranslationEditor({
             enabled={isLiveEnabled}
           >
             <DocumentEditor
+              isTranslationEditor={true}
               liveEnabled={isLiveEnabled}
               docId={selectedTranslationId}
               isEditable={isEditable}
               currentDoc={translationDoc}
+              onManualSelect={onManualSelect}
+              onLineFocus={onLineFocus}
             />
           </LiveBlockProvider>
         )}
-        <div className="absolute bottom-4 right-4 z-10">
-          <UploadToOpenPecha
-            isUploadable={isUploadable}
-            onUpload={onUpload}
-            isUploading={isUploading}
-            error={error}
-            translationLanguage={translationDoc?.language || ""}
-            translationTitle={translationDoc?.name || ""}
-          />
-        </div>
-      </div>
-
-      {/* Chat Sidebar - Sticky */}
-      <div className="h-full sticky top-0 flex flex-col">
-        {!isMobile && <ChatSidebar documentId={selectedTranslationId!} />}
       </div>
     </div>
   );

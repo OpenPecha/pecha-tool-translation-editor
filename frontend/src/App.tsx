@@ -14,6 +14,7 @@ import { AuthProvider } from "./auth/AuthProvider";
 import { TooltipProvider } from "./components/ui/tooltip";
 import "./i18n";
 import { useTranslation } from "react-i18next";
+import { EditorProvider } from "./contexts/EditorContext";
 
 const ProjectList = lazy(() => import("./components/Dashboard/ProjectList"));
 const QuillVersionProvider = lazy(() =>
@@ -67,7 +68,9 @@ function AppContent() {
           element={
             <SuspenceWithLoadingFallback>
               <QuillVersionProvider>
+                <EditorProvider>
                 <DocumentsWrapper />
+                </EditorProvider>
               </QuillVersionProvider>
             </SuspenceWithLoadingFallback>
           }

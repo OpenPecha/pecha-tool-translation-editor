@@ -39,7 +39,7 @@ export default function quill_import() {
   Quill.register(fonts, true);
   Quill.register(Block, true);
   Quill.register(CustomParagraph);
-  Quill.register(CommentBlot);
+  // Quill.register(CommentBlot);
   Quill.register("modules/footnote", CustomFootnoteModule);
   Quill.register("modules/cursors", QuillCursors);
   Quill.register(CollapsibleFootnoteSection, true);

@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
 import { MentionsInput, Mention } from "react-mentions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useCreateThread, useAddComment } from "@/hooks/useComment";
+import { useCreateThread, useAddComment, useFetchThreads } from "@/hooks/useComment";
 import { useAIComment } from "@/hooks/useAIComment";
 import { useProjectCollaborators } from "@/hooks/useProjectCollaborators";
 import "./mentions.css";
 import SelectedText from "./SelectedText";
 import { TypingAnimation } from "./TypingAnimation";
+import { ReferenceRenderer } from "./ReferenceRenderer";
 
 const MentionsInputComponent = MentionsInput as any;
 const MentionComponent = Mention as any;
@@ -25,12 +26,11 @@ const ThreadConversation = ({
 }) => {
   const {
     getActiveThreadId,
-    getThreads,
     getSidebarView,
     getNewCommentRange,
   } = useCommentStore();
   const activeThreadId = getActiveThreadId(documentId);
-  const threads = getThreads(documentId);
+  const { data: threads = [] } = useFetchThreads(documentId);
   const sidebarView = getSidebarView(documentId);
   const newCommentRange = getNewCommentRange(documentId);
 
@@ -56,7 +56,6 @@ const ThreadConversation = ({
   }, [collaborators, currentUser?.id]);
 
   const activeThread = threads.find((t) => t.id === activeThreadId);
-
   const scrollToBottom = (behavior: "smooth" | "auto" = "auto") => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scroll({
@@ -93,7 +92,7 @@ const ThreadConversation = ({
     if (isAtBottomRef.current) {
       setTimeout(() => scrollToBottom("smooth"), 100);
     }
-  }, [activeThread?.comments.length]);
+  }, [activeThread?.comments?.length]);
 
   useEffect(() => {
     if (
@@ -136,7 +135,13 @@ const ThreadConversation = ({
     if (content.includes("@ai")) {
       const threadId = activeThreadId as string;
       setReplyContent("");
-      generateAIComment(content, threadId, activeThread || null);
+      // Convert API Thread to store Thread format for generateAIComment
+      const storeThread = activeThread ? {
+        ...activeThread,
+        comments: activeThread.comments || [],
+        isResolved: false,
+      } : null;
+      generateAIComment(content, threadId, storeThread);
     } else {
       setReplyContent("");
       if (activeThreadId) {
@@ -165,7 +170,7 @@ const ThreadConversation = ({
         {sidebarView === "thread" && activeThread ? (
           <>
             <SelectedText text={activeThread.selectedText || ""} />
-            {activeThread.comments.map((comment) => {
+            {(activeThread.comments || []).map((comment) => {
               const isCurrentUser =
                 comment.user.id === currentUser?.id && !comment.isSystemGenerated;
               const isSystem = comment.isSystemGenerated;
@@ -211,7 +216,12 @@ const ThreadConversation = ({
                           : "bg-gray-200"
                       }`}
                     >
-                      <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
+                      <div className="text-sm" onClick={() => console.log("comment ;;;", comment)}>
+                        <ReferenceRenderer
+                          content={comment.content}
+                          references={comment.references}
+                        />
+                      </div>
                       {isSystem && comment.id.startsWith('temp-ai-') && streamStatus && (
                         <div className="text-xs opacity-70">
                           {streamStatus === 'thinking' && (

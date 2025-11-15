@@ -6,7 +6,6 @@ async function getTexts(type, limit, offset, language) {
 	if (limit) url.searchParams.append("limit", limit);
 	if (offset) url.searchParams.append("offset", offset);
 	if (language) url.searchParams.append("language", language);
-
 	const response = await fetch(url.toString(), {
 		headers: {
 			accept: "application/json",

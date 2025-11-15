@@ -10,15 +10,22 @@ import { FootNoteProvider } from "@/contexts/FootNoteContext";
 import { QuillVersionProvider } from "@/contexts/VersionContext";
 import type { Document } from "@/hooks/useCurrentDoc";
 import { AnnotationProvider } from "@/contexts/AnnotationContext";
+import type { Selection, EditorType } from "@/stores/selectionStore";
 
 export const RealtimeDocumentEditor = ({
   docId,
   isEditable,
   currentDoc,
+  isTranslationEditor,
+  onManualSelect,
+  onLineFocus,
 }: {
   docId: string | undefined;
   isEditable: boolean;
   currentDoc: Document;
+  isTranslationEditor: boolean;
+  onManualSelect: (editorType: EditorType, selection: Selection) => void;
+  onLineFocus: (lineNumber: number, editorType: EditorType) => void;
 }) => {
   const room = useRoom();
   const yProvider = getYjsProviderForRoom(room);
@@ -90,11 +97,14 @@ export const RealtimeDocumentEditor = ({
                 <LoadingScreen />
               ) : (
                 <Editor
+                  isTranslationEditor={isTranslationEditor}
                   documentId={docId}
                   isEditable={isEditable}
                   currentDoc={currentDoc}
                   yText={yText}
                   provider={yProvider}
+                  onManualSelect={onManualSelect}
+                  onLineFocus={onLineFocus}
                 />
               )}
             </ClientSideSuspense>
@@ -106,13 +116,19 @@ export const RealtimeDocumentEditor = ({
 };
 
 export const NormalDocumentEditor = ({
+  isTranslationEditor,
   docId,
   isEditable,
   currentDoc,
+  onManualSelect,
+  onLineFocus,
 }: {
+  isTranslationEditor: boolean;
   docId: string | undefined;
   isEditable: boolean;
   currentDoc: Document;
+  onManualSelect: (editorType: EditorType, selection: Selection) => void;
+  onLineFocus: (lineNumber: number, editorType: EditorType) => void;
 }) => {
   const currentVersionData = currentDoc?.currentVersion
     ? {
@@ -132,11 +148,14 @@ export const NormalDocumentEditor = ({
           <FootNoteProvider>
             <ClientSideSuspense fallback={<div>Loading…</div>}>
               <Editor
+                isTranslationEditor={isTranslationEditor}
                 documentId={docId}
                 isEditable={isEditable}
                 currentDoc={currentDoc}
                 yText={undefined}
                 provider={undefined}
+                onManualSelect={onManualSelect}
+                onLineFocus={onLineFocus}
               />
             </ClientSideSuspense>
           </FootNoteProvider>
@@ -147,30 +166,42 @@ export const NormalDocumentEditor = ({
 };
 
 const DocumentEditor = ({
+  isTranslationEditor,
   liveEnabled,
   docId,
   isEditable,
   currentDoc,
+  onManualSelect,
+  onLineFocus,
 }: {
+  isTranslationEditor: boolean;
   liveEnabled: boolean;
   docId: string;
   isEditable: boolean;
   currentDoc: Document;
+  onManualSelect: (editorType: EditorType, selection: Selection) => void;
+  onLineFocus: (lineNumber: number, editorType: EditorType) => void;
 }) => {
   if (liveEnabled) {
     return (
       <RealtimeDocumentEditor
+        isTranslationEditor={isTranslationEditor}
         docId={docId}
         isEditable={isEditable}
         currentDoc={currentDoc}
+        onManualSelect={onManualSelect}
+        onLineFocus={onLineFocus}
       />
     );
   }
   return (
     <NormalDocumentEditor
+      isTranslationEditor={isTranslationEditor}
       docId={docId}
       isEditable={isEditable}
       currentDoc={currentDoc}
+      onManualSelect={onManualSelect}
+      onLineFocus={onLineFocus}
     />
   );
 };

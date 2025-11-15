@@ -62,7 +62,7 @@ export function useOpenPecha() {
     data: texts = [],
     isLoading: textsLoading,
     error: textsError,
-  } = useFetchTexts({ type: "root", limit: 100});
+  } = useFetchTexts({limit: 50});
 
   const {
     data: instances = [],

@@ -26,11 +26,13 @@ export interface Document {
   name: string;
   identifier: string;
   language?: string;
+  rootId?: string;
   metadata?: {
     [key: string]: unknown;
     instance_id?: string;
     text_id?: string;
     docId?: string;
+    instanceId?: string;
   };
   created_at?: string;
   updated_at?: string;

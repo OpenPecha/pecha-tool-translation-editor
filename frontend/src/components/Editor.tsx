@@ -28,12 +28,17 @@ import SkeletonLoader from "./SkeletonLoader";
 import AnnotationList from "./Annotation/AnnotationList";
 import { handleAnnotationVote } from "./quill_func";
 import DocumentSidebar from "./DocumentSidebar";
-import BubbleMenu from "./BubbleMenu";
 import { useCommentStore, type Thread } from "@/stores/commentStore";
 import { useDocumentSidebarStore } from "@/stores/documentSidebarStore";
 import { useQuery } from "@tanstack/react-query";
 import { fetchThreadsByDocumentId } from "@/api/thread";
 import emitter from "@/services/eventBus";
+import { useQuillSelection } from "@/hooks/useQuillSelection";
+import {
+  useSelectionStore,
+  type Selection,
+  type EditorType,
+} from "@/stores/selectionStore";
 
 quill_import();
 
@@ -46,17 +51,23 @@ interface CustomRange {
 }
 
 const Editor = ({
+  isTranslationEditor,
   documentId,
   isEditable,
   currentDoc,
   yText,
   provider,
+  onManualSelect,
+  onLineFocus,
 }: {
+  isTranslationEditor: boolean;
   documentId?: string;
   isEditable: boolean;
   currentDoc: Document;
   yText: Y.Text | undefined;
   provider: any | undefined;
+  onManualSelect: (editorType: EditorType, selection: Selection) => void;
+  onLineFocus: (lineNumber: number, editorType: EditorType) => void;
 }) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const toolbarId =
@@ -70,8 +81,8 @@ const Editor = ({
   const {
     registerQuill: registerQuill2,
     unregisterQuill: unregisterQuill2,
-    getLineNumber,
     setHoveredLineNumber,
+    getLineNumber,
   } = useEditor();
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const quillRef = useRef<Quill | null>(null);
@@ -79,21 +90,79 @@ const Editor = ({
   const hasContentLoadedRef = useRef<boolean>(false);
   const { t } = useTranslation();
   const { currentUser } = useAuth();
-  const { getThreads, setThreads, openSidebar: openCommentSidebar, setNewCommentRange } =
+  const { openSidebar: openCommentSidebar, setNewCommentRange } =
     useCommentStore();
   const { setActiveTab } = useDocumentSidebarStore();
+  const selection = useSelectionStore(
+    (state) => state[isTranslationEditor ? "translation" : "source"]
+  );
+
+  useEffect(() => {
+    if (selection) {
+      const bounds = quillRef.current?.getBounds(
+        selection.range.index,
+        selection.range.length
+      );
+      setCurrentRange({
+        index: selection.range.index,
+        length: selection.range.length,
+        left: bounds?.left || 0,
+        top: bounds?.top || 0,
+        lineNumber: selection.startLine,
+      });
+    } else {
+      setCurrentRange(null);
+    }
+  }, [selection]);
+
+  useQuillSelection({
+    quill: quillRef.current || undefined,
+    editorType: isTranslationEditor ? "translation" : "source",
+    onManualSelect: (editorType, range) => {
+      if (!quillRef.current || !documentId) return;
+      const startLine = getLineNumber(quillRef.current);
+      if (startLine === null) return;
+      const text = quillRef.current.getText(range.index, range.length);
+      onManualSelect(editorType, {
+        startLine,
+        range,
+        text,
+        documentId,
+      });
+    },
+    onLineFocus: (range) => {
+      console.log("range :: ", range);
+      if (!quillRef.current) return;
+      function background_cleaner(){
+        const allParagraphs = document.querySelectorAll(".ql-editor p");
+        allParagraphs.forEach((p) => {
+          p.classList.remove('focused_p');
+        });
+      }
+
+      // Temporarily set selection to get line number, then restore
+      const lineNumber = getLineNumber(quillRef.current);
+     
+      background_cleaner();
+      if (lineNumber === null) return;
+    
+      onLineFocus(lineNumber, isTranslationEditor ? "translation" : "source");
+
+      // Select the 3rd <a> tag within its parent and style it
+      
+      const selector = `.ql-editor p:nth-child(${lineNumber})`;
+      const elements = document.querySelectorAll(selector);
+      elements.forEach((el) => {
+      el.classList.add('focused_p');
+      });
+    },
+  });
 
   const { data: threads } = useQuery<Thread[]>({
     queryKey: ["threads", documentId],
     queryFn: () => fetchThreadsByDocumentId(documentId as string),
     enabled: !!documentId,
   });
-
-  useEffect(() => {
-    if (threads && documentId) {
-      setThreads(documentId, threads);
-    }
-  }, [threads, setThreads, documentId]);
 
   // Get display settings
   const { showLineNumbers } = useDisplaySettings();
@@ -291,30 +360,6 @@ const Editor = ({
         }
       }
     });
-    quill.on("selection-change", (range) => {
-      if (!range) {
-        setCurrentRange(null);
-        return;
-      }
-      const selection = document.getSelection();
-      if (selection && selection.rangeCount > 0) {
-        const domrange = selection.getRangeAt(0);
-        const rect = domrange.getBoundingClientRect();
-        const { left, top } = rect;
-
-        const lineNumber = getLineNumber(quill);
-        const newRange: CustomRange = {
-          ...range,
-          left,
-          top,
-          lineNumber,
-        };
-        // You can use left and top coordinates for positioning elements
-        setCurrentRange(newRange);
-      } else {
-        setCurrentRange(null);
-      }
-    });
 
     if (quillRef.current && threads) {
       threads.forEach((thread) => {
@@ -333,16 +378,15 @@ const Editor = ({
     const handleCommentClick = ({ threadId }: { threadId: string }) => {
       if (!threadId || !documentId) return;
       
-      // Check if this thread belongs to this document
-      const threads = getThreads(documentId);
-      const threadExists = threads.some(thread => thread.id === threadId);
+      // Check if this thread belongs to this document using React Query data
+      const threadExists = threads?.some(thread => thread.id === threadId);
       
       if (!threadExists) return; 
       setActiveTab(documentId, "comments");
       openCommentSidebar(documentId, "thread", threadId);
     };
 
-    emitter.on("open-comment-thread", handleCommentClick);
+    emitter.on("open-comment-thread", handleCommentClick as any);
 
     function handleFormatChange(type: string) {
       const range = quill.getSelection();
@@ -367,7 +411,7 @@ const Editor = ({
         const currentContent = quill.getContents();
         updateDocumentMutation.mutate(currentContent as any);
       }
-      emitter.off("open-comment-thread", handleCommentClick);
+      emitter.off("open-comment-thread", handleCommentClick as any);
       if (editorId) {
         unregisterQuill2(editorId);
       }
@@ -380,16 +424,6 @@ const Editor = ({
       // Reset flags for next mount
       isInitializedRef.current = false;
       hasContentLoadedRef.current = false;
-      // if (quillRef.current && threads) {
-      //   threads.forEach((thread) => {
-      //     quillRef.current!.formatText(
-      //       thread.initialStartOffset,
-      //       thread.initialEndOffset - thread.initialStartOffset,
-      //       "comment",
-      //       false // Remove format on unmount
-      //     );
-      //   });
-      // }
     };
   }, [isEditable, yText, provider]); // Add threads to dependency array
 
@@ -557,32 +591,28 @@ const Editor = ({
       setHoveredLineNumber(null);
     };
   }, [documentId, setHoveredLineNumber]);
-
-  const pulseText = useCallback((index: number, length: number  | undefined) => {
-    if (!quillRef.current || !length) return;
-    quillRef.current.formatText(index, length, { background: 'rgba(255, 230, 0, 0.6)' });
-    setTimeout(() => {
-      quillRef.current.formatText(index, length, { background: false });
-    }, 10000);
-  }, [quillRef]);
-
+  const selectionStore = useSelectionStore((state) => {
+    if (state.source?.documentId === documentId) return state.source;
+    if (state.translation?.documentId === documentId) return state.translation;
+    return null;
+  });
   function addComment() {
-    if (!currentRange || currentRange?.length === 0 || !quillRef.current) return;
-
-    const selectedText = quillRef.current.getText(
-      currentRange.index,
-      currentRange.length
-    );
-    pulseText(currentRange.index, currentRange.length);
-    if (documentId) {
-      setNewCommentRange(documentId, {
-        index: currentRange.index,
-        length: currentRange.length,
-        selectedText,
-      });
-      setActiveTab(documentId, "comments");
-      openCommentSidebar(documentId, "new");
+    // Get the active editor's selection from selectionStore
+    // Prioritize the current editor's selection, then fall back to the other editor
+    const activeSelection = selectionStore;
+    const activeDocumentId = documentId;
+    
+    if (!activeSelection || !activeSelection.range || activeSelection.range.length === 0 || !activeDocumentId) {
+      return;
     }
+
+    setNewCommentRange(activeDocumentId, {
+      index: activeSelection.range.index,
+      length: activeSelection.range.length,
+      selectedText: activeSelection.text,
+    });
+    setActiveTab(activeDocumentId, "comments");
+    openCommentSidebar(activeDocumentId, "new");
   }
 
   const characterCount = quillRef.current?.getContents().length() || 0;
@@ -601,13 +631,13 @@ const Editor = ({
         />,
         document.getElementById("toolbar-container")!
       )}
-      <div className="relative w-full flex flex-1 h-full overflow-hidden px-4 ">
-        <DocumentSidebar documentId={documentId} />
+      <div className={`relative w-full flex flex-1 h-full overflow-hidden ${isTranslationEditor ? "flex-row-reverse" : ""}`}>
+        <DocumentSidebar documentId={documentId} isTranslationEditor={isTranslationEditor} />
 
         <div className="editor-container w-full h-full flex flex-1  relative max-w-6xl mx-auto  ">
           {showLineNumbers && (
             <LineNumberVirtualized
-              editorRef={editorRef}
+              editorRef={editorRef as React.RefObject<HTMLDivElement>}
               documentId={documentId}
             />
           )}
@@ -657,11 +687,6 @@ const Editor = ({
             document.getElementById("counter")!
           )}
           <AnnotationList onVote={handleAnnotationVote} />
-          <BubbleMenu 
-            quill={quillRef.current} 
-            isEditable={isEditable}
-            onAddComment={addComment}
-          />
         </div>
         {/* <OverlayLoading isLoading={!isSynced} /> */}
       </div>

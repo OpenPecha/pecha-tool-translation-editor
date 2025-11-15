@@ -4,7 +4,13 @@ import ThreadConversation from "./ThreadConversation";
 import { cn } from "@/lib/utils";
 import { useFetchDocument } from "@/api/queries/documents";
 
-const CommentSidebar = ({ documentId }: { documentId: string }) => {
+const CommentSidebar = ({
+  documentId,
+  isOpen
+}: {
+  documentId: string;
+  isOpen: boolean;
+}) => {
   const { getSidebarView } = useCommentStore();
   const sidebarView = getSidebarView(documentId);
   const { data: document } = useFetchDocument(documentId);
@@ -12,7 +18,9 @@ const CommentSidebar = ({ documentId }: { documentId: string }) => {
 
   return (
     <div className={cn("w-full h-full flex flex-col overflow-y-auto")}>
-      {sidebarView === "list" && <ThreadList documentId={documentId} />}
+      {sidebarView === "list" && (
+        <ThreadList documentId={documentId} isOpen={isOpen} />
+      )}
       {(sidebarView === "thread" || sidebarView === "new") && (
         <ThreadConversation documentId={documentId} projectId={projectId} />
       )}

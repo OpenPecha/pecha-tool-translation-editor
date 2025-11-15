@@ -14,6 +14,7 @@ import useLocalStorage from "@/hooks/useLocalStorage";
 import { FaBookmark, FaChevronUp, FaChevronDown } from "react-icons/fa";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
+import { useSelectionStore } from "@/stores/selectionStore";
 
 const offsetTop = 0;
 
@@ -28,6 +29,7 @@ const LineNumberVirtualized = ({
 }: LineNumberVirtualizedProps) => {
   const { t } = useTranslation();
   const lineNumbersRef = useRef<HTMLDivElement>(null);
+  const { source } = useSelectionStore();
   const { getQuill, activeEditor, hoveredLineNumber } = useEditor();
   const observerRef = useRef<IntersectionObserver | null>(null);
 
@@ -341,8 +343,6 @@ const LineNumberVirtualized = ({
               className={
                 bookmarks.includes(lineNum.number)
                   ? "bg-amber-100 font-medium text-amber-900 border-l-2 text-right w-full border-amber-500"
-                  : hoveredLineNumber === lineNum.number
-                  ? "bg-gray-100 text-right w-full dark:bg-neutral-700"
                   : "hover:bg-gray-100 text-right w-full dark:hover:bg-neutral-700"
               }
             >
