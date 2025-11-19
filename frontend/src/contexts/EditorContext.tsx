@@ -75,8 +75,10 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({
     });
     
     quill.on("selection-change", (range) => {
+      if(activeEditor !== id && range){
         setActiveEditor(id);
         setActiveQuill(quill);
+      }
     });
   };
 

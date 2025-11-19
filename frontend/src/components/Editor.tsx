@@ -28,16 +28,13 @@ import SkeletonLoader from "./SkeletonLoader";
 import AnnotationList from "./Annotation/AnnotationList";
 import { handleAnnotationVote } from "./quill_func";
 import DocumentSidebar from "./DocumentSidebar";
+import { useEditorSidebarStore } from "@/stores/editorSidebarStore";
 import { useCommentStore, type Thread } from "@/stores/commentStore";
-import { useDocumentSidebarStore } from "@/stores/documentSidebarStore";
-import { useQuery } from "@tanstack/react-query";
-import { fetchThreadsByDocumentId } from "@/api/thread";
-import emitter from "@/services/eventBus";
 import { useQuillSelection } from "@/hooks/useQuillSelection";
 import {
   useSelectionStore,
   type Selection,
-  type EditorType,
+  type EditorId,
 } from "@/stores/selectionStore";
 
 quill_import();
@@ -66,8 +63,8 @@ const Editor = ({
   currentDoc: Document;
   yText: Y.Text | undefined;
   provider: any | undefined;
-  onManualSelect: (editorType: EditorType, selection: Selection) => void;
-  onLineFocus: (lineNumber: number, editorType: EditorType) => void;
+  onManualSelect: (editorId: EditorId, selection: Selection) => void;
+  onLineFocus: (lineNumber: number, editorId: EditorId) => void;
 }) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const toolbarId =
@@ -90,13 +87,10 @@ const Editor = ({
   const hasContentLoadedRef = useRef<boolean>(false);
   const { t } = useTranslation();
   const { currentUser } = useAuth();
-  const { openSidebar: openCommentSidebar, setNewCommentRange } =
+  const { setSidebarView, setActiveThreadId } =
     useCommentStore();
-  const { setActiveTab } = useDocumentSidebarStore();
-  const selection = useSelectionStore(
-    (state) => state[isTranslationEditor ? "translation" : "source"]
-  );
-
+  const selection = useSelectionStore((state) => state.selections[documentId!]);
+  const { setTabs } = useEditorSidebarStore();
   useEffect(() => {
     if (selection) {
       const bounds = quillRef.current?.getBounds(
@@ -117,20 +111,24 @@ const Editor = ({
 
   useQuillSelection({
     quill: quillRef.current || undefined,
-    editorType: isTranslationEditor ? "translation" : "source",
-    onManualSelect: (editorType, range) => {
+    editorId: documentId!,
+    onManualSelect: () => {
       if (!quillRef.current || !documentId) return;
-      const startLine = getLineNumber(quillRef.current);
-      if (startLine === null) return;
+      const range = quillRef.current.getSelection();
+      if (!range) return;
+      const lineNumber = getLineNumber(quillRef.current);
+
       const text = quillRef.current.getText(range.index, range.length);
-      onManualSelect(editorType, {
-        startLine,
-        range,
+      onManualSelect(documentId!, {
+        startLine: lineNumber,
+        range: {  
+          index: range.index,
+          length: range.length,
+        },
         text,
-        documentId,
       });
     },
-    onLineFocus: (range) => {
+    onLineFocus: () => {
       if (!quillRef.current) return;
       function background_cleaner(){
         const allParagraphs = document.querySelectorAll(".ql-editor p");
@@ -145,7 +143,7 @@ const Editor = ({
       background_cleaner();
       if (lineNumber === null) return;
     
-      onLineFocus(lineNumber, isTranslationEditor ? "translation" : "source");
+      onLineFocus(lineNumber, documentId!);
 
       // Select the 3rd <a> tag within its parent and style it
       
@@ -155,12 +153,6 @@ const Editor = ({
       el.classList.add('focused_p');
       });
     },
-  });
-
-  const { data: threads } = useQuery<Thread[]>({
-    queryKey: ["threads", documentId],
-    queryFn: () => fetchThreadsByDocumentId(documentId as string),
-    enabled: !!documentId,
   });
 
   // Get display settings
@@ -360,33 +352,6 @@ const Editor = ({
       }
     });
 
-    if (quillRef.current && threads) {
-      threads.forEach((thread) => {
-        quillRef.current!.formatText(
-          thread.initialStartOffset,
-          thread.initialEndOffset - thread.initialStartOffset,
-          "comment",
-          {
-            id: thread.comments.length > 0 ? thread.comments[0].id : null,
-            threadId: thread.id,
-          }
-        );
-      });
-    }
-
-    const handleCommentClick = ({ threadId }: { threadId: string }) => {
-      if (!threadId || !documentId) return;
-      
-      // Check if this thread belongs to this document using React Query data
-      const threadExists = threads?.some(thread => thread.id === threadId);
-      
-      if (!threadExists) return; 
-      setActiveTab(documentId, "comments");
-      openCommentSidebar(documentId, "thread", threadId);
-    };
-
-    emitter.on("open-comment-thread", handleCommentClick as any);
-
     function handleFormatChange(type: string) {
       const range = quill.getSelection();
       if (range) {
@@ -410,7 +375,6 @@ const Editor = ({
         const currentContent = quill.getContents();
         updateDocumentMutation.mutate(currentContent as any);
       }
-      emitter.off("open-comment-thread", handleCommentClick as any);
       if (editorId) {
         unregisterQuill2(editorId);
       }
@@ -424,7 +388,7 @@ const Editor = ({
       isInitializedRef.current = false;
       hasContentLoadedRef.current = false;
     };
-  }, [isEditable, yText, provider]); // Add threads to dependency array
+  }, [isEditable, yText, provider]);
 
   //for non-realtime editor only
 
@@ -463,155 +427,138 @@ const Editor = ({
   }, [currentDoc, yText, provider]);
 
   // Hover synchronization between source and target editors
-  useEffect(() => {
-    if (!editorRef.current || !quillRef.current) return;
+  // useEffect(() => {
+  //   if (!editorRef.current || !quillRef.current) return;
 
-    const editorElement = editorRef.current.querySelector(".ql-editor");
-    if (!editorElement) return;
+  //   const editorElement = editorRef.current.querySelector(".ql-editor");
+  //   if (!editorElement) return;
 
-    const calculateLineNumber = (element: HTMLElement): number | null => {
-      const editorContainer = editorElement.closest(".editor-container");
-      const lineNumbersContainer = editorContainer?.querySelector(".line-numbers");
-      if (!lineNumbersContainer) return null;
+  //   const calculateLineNumber = (element: HTMLElement): number | null => {
+  //     const editorContainer = editorElement.closest(".editor-container");
+  //     const lineNumbersContainer = editorContainer?.querySelector(".line-numbers");
+  //     if (!lineNumbersContainer) return null;
 
-      const rect = element.getBoundingClientRect();
-      const editorRect = editorElement.getBoundingClientRect();
-      const editorScrollTop = editorElement.scrollTop;
-      const relativeTop = rect.top - editorRect.top + editorScrollTop;
+  //     const rect = element.getBoundingClientRect();
+  //     const editorRect = editorElement.getBoundingClientRect();
+  //     const editorScrollTop = editorElement.scrollTop;
+  //     const relativeTop = rect.top - editorRect.top + editorScrollTop;
 
-      // Find the closest line number
-      const lineNumberElements = Array.from(
-        lineNumbersContainer.querySelectorAll(".line-number")
-      );
+  //     // Find the closest line number
+  //     const lineNumberElements = Array.from(
+  //       lineNumbersContainer.querySelectorAll(".line-number")
+  //     );
 
-      let closestLineNumber: number | null = null;
-      let minDistance = Number.MAX_VALUE;
+  //     let closestLineNumber: number | null = null;
+  //     let minDistance = Number.MAX_VALUE;
 
-      for (const lineEl of lineNumberElements) {
-        const lineTop = parseFloat((lineEl as HTMLElement).style.top);
-        const distance = Math.abs(lineTop - relativeTop);
+  //     for (const lineEl of lineNumberElements) {
+  //       const lineTop = parseFloat((lineEl as HTMLElement).style.top);
+  //       const distance = Math.abs(lineTop - relativeTop);
 
-        if (distance < minDistance) {
-          minDistance = distance;
-          const spanElement = lineEl.querySelector("span");
-          closestLineNumber = spanElement ? parseInt(spanElement.textContent || "0") : null;
-        }
-      }
+  //       if (distance < minDistance) {
+  //         minDistance = distance;
+  //         const spanElement = lineEl.querySelector("span");
+  //         closestLineNumber = spanElement ? parseInt(spanElement.textContent || "0") : null;
+  //       }
+  //     }
 
-      return closestLineNumber;
-    };
+  //     return closestLineNumber;
+  //   };
 
-    const handleMouseEnter = (e: Event) => {
-      const target = e.target as HTMLElement;
-      if (target && target.textContent?.trim()) {
-        const lineNumber = calculateLineNumber(target);
-        if (lineNumber !== null) {
-          setHoveredLineNumber(lineNumber);
+  //   const handleMouseEnter = (e: Event) => {
+  //     const target = e.target as HTMLElement;
+  //     if (target && target.textContent?.trim()) {
+  //       const lineNumber = calculateLineNumber(target);
+  //       if (lineNumber !== null) {
+  //         setHoveredLineNumber(lineNumber);
           
-          // Apply hover class to all editors' text elements with the same line number
-          const allEditorContainers = document.querySelectorAll(".editor-container");
-          allEditorContainers.forEach((container) => {
-            const lineNumberElement = container.querySelector(
-              `.line-number[id$="-line-${lineNumber}"]`
-            ) as HTMLElement;
+  //         // Apply hover class to all editors' text elements with the same line number
+  //         const allEditorContainers = document.querySelectorAll(".editor-container");
+  //         allEditorContainers.forEach((container) => {
+  //           const lineNumberElement = container.querySelector(
+  //             `.line-number[id$="-line-${lineNumber}"]`
+  //           ) as HTMLElement;
             
-            if (lineNumberElement) {
-              const lineTop = parseFloat(lineNumberElement.style.top);
-              const editorElement = container.querySelector(".ql-editor");
+  //           if (lineNumberElement) {
+  //             const lineTop = parseFloat(lineNumberElement.style.top);
+  //             const editorElement = container.querySelector(".ql-editor");
               
-              if (editorElement) {
-                const contentElements = editorElement.querySelectorAll(
-                  "p, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15, h16, h17, h18, h19, h20"
-                );
+  //             if (editorElement) {
+  //               const contentElements = editorElement.querySelectorAll(
+  //                 "p, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15, h16, h17, h18, h19, h20"
+  //               );
                 
-                contentElements.forEach((element) => {
-                  const rect = element.getBoundingClientRect();
-                  const editorRect = editorElement.getBoundingClientRect();
-                  const editorScrollTop = editorElement.scrollTop;
-                  const elementTop = rect.top - editorRect.top + editorScrollTop;
+  //               contentElements.forEach((element) => {
+  //                 const rect = element.getBoundingClientRect();
+  //                 const editorRect = editorElement.getBoundingClientRect();
+  //                 const editorScrollTop = editorElement.scrollTop;
+  //                 const elementTop = rect.top - editorRect.top + editorScrollTop;
                   
-                  // Check if this element is at the same line number position
-                  if (Math.abs(elementTop - lineTop) < 5) {
-                    element.classList.add("editor-line-synced-hover");
-                  }
-                });
-              }
-            }
-          });
-        }
-      }
-    };
+  //                 // Check if this element is at the same line number position
+  //                 if (Math.abs(elementTop - lineTop) < 5) {
+  //                   element.classList.add("editor-line-synced-hover");
+  //                 }
+  //               });
+  //             }
+  //           }
+  //         });
+  //       }
+  //     }
+  //   };
 
-    const handleMouseLeave = () => {
-      setHoveredLineNumber(null);
+  //   const handleMouseLeave = () => {
+  //     setHoveredLineNumber(null);
       
-      // Remove hover class from all editors' text elements
-      const allEditorContainers = document.querySelectorAll(".editor-container");
-      allEditorContainers.forEach((container) => {
-        const editorElement = container.querySelector(".ql-editor");
-        if (editorElement) {
-          const hoveredElements = editorElement.querySelectorAll(".editor-line-synced-hover");
-          hoveredElements.forEach((element) => {
-            element.classList.remove("editor-line-synced-hover");
-          });
-        }
-      });
-    };
+  //     // Remove hover class from all editors' text elements
+  //     const allEditorContainers = document.querySelectorAll(".editor-container");
+  //     allEditorContainers.forEach((container) => {
+  //       const editorElement = container.querySelector(".ql-editor");
+  //       if (editorElement) {
+  //         const hoveredElements = editorElement.querySelectorAll(".editor-line-synced-hover");
+  //         hoveredElements.forEach((element) => {
+  //           element.classList.remove("editor-line-synced-hover");
+  //         });
+  //       }
+  //     });
+  //   };
 
-    // Add event listeners to all content elements
-    const contentElements = editorElement.querySelectorAll("p, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15, h16, h17, h18, h19, h20");
-    contentElements.forEach((element) => {
-      element.addEventListener("mouseenter", handleMouseEnter);
-      element.addEventListener("mouseleave", handleMouseLeave);
-    });
+  //   // Add event listeners to all content elements
+  //   const contentElements = editorElement.querySelectorAll("p, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15, h16, h17, h18, h19, h20");
+  //   contentElements.forEach((element) => {
+  //     element.addEventListener("mouseenter", handleMouseEnter);
+  //     element.addEventListener("mouseleave", handleMouseLeave);
+  //   });
 
-    // Use MutationObserver to handle dynamically added content
-    const observer = new MutationObserver(() => {
-      const newElements = editorElement.querySelectorAll("p, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15, h16, h17, h18, h19, h20");
-      newElements.forEach((element) => {
-        element.removeEventListener("mouseenter", handleMouseEnter);
-        element.removeEventListener("mouseleave", handleMouseLeave);
-        element.addEventListener("mouseenter", handleMouseEnter);
-        element.addEventListener("mouseleave", handleMouseLeave);
-      });
-    });
+  //   // Use MutationObserver to handle dynamically added content
+  //   const observer = new MutationObserver(() => {
+  //     const newElements = editorElement.querySelectorAll("p, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15, h16, h17, h18, h19, h20");
+  //     newElements.forEach((element) => {
+  //       element.removeEventListener("mouseenter", handleMouseEnter);
+  //       element.removeEventListener("mouseleave", handleMouseLeave);
+  //       element.addEventListener("mouseenter", handleMouseEnter);
+  //       element.addEventListener("mouseleave", handleMouseLeave);
+  //     });
+  //   });
 
-    observer.observe(editorElement, {
-      childList: true,
-      subtree: true,
-    });
+  //   observer.observe(editorElement, {
+  //     childList: true,
+  //     subtree: true,
+  //   });
 
-    return () => {
-      contentElements.forEach((element) => {
-        element.removeEventListener("mouseenter", handleMouseEnter);
-        element.removeEventListener("mouseleave", handleMouseLeave);
-      });
-      observer.disconnect();
-      setHoveredLineNumber(null);
-    };
-  }, [documentId, setHoveredLineNumber]);
-  const selectionStore = useSelectionStore((state) => {
-    if (state.source?.documentId === documentId) return state.source;
-    if (state.translation?.documentId === documentId) return state.translation;
-    return null;
-  });
+  //   return () => {
+  //     contentElements.forEach((element) => {
+  //       element.removeEventListener("mouseenter", handleMouseEnter);
+  //       element.removeEventListener("mouseleave", handleMouseLeave);
+  //     });
+  //     observer.disconnect();
+  //     setHoveredLineNumber(null);
+  //   };
+  // }, [documentId, setHoveredLineNumber]);
+
   function addComment() {
-    // Get the active editor's selection from selectionStore
-    // Prioritize the current editor's selection, then fall back to the other editor
-    const activeSelection = selectionStore;
-    const activeDocumentId = documentId;
-    
-    if (!activeSelection || !activeSelection.range || activeSelection.range.length === 0 || !activeDocumentId) {
-      return;
-    }
-
-    setNewCommentRange(activeDocumentId, {
-      index: activeSelection.range.index,
-      length: activeSelection.range.length,
-      selectedText: activeSelection.text,
-    });
-    setActiveTab(activeDocumentId, "comments");
-    openCommentSidebar(activeDocumentId, "new");
+    setTabs(documentId, "comments");
+    setSidebarView(documentId, "new");
+    setActiveThreadId(documentId, null);
   }
 
   const characterCount = quillRef.current?.getContents().length() || 0;

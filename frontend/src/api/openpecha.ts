@@ -166,3 +166,25 @@ export const fetchSegmentsWithContent = async (
   }
   return response.json();
 };
+
+export const searchTextByTitle = async (title: string) => {
+  if (!title.trim()) {
+    throw new Error("Title is required");
+  }
+  try {
+    const url = new URL(`${server_url}/openpecha/texts/title-search`);
+    url.searchParams.append("title", title);
+    console.log("url in searchTextByTitle ::", url.toString());
+    const response = await fetch(url.toString(), {
+      headers: getHeaders(),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || "Failed to search text by title");
+    }
+    return response.json();
+  } catch (error) {
+    console.error("Error searching text by title:", error);
+    throw new Error(`Failed to search text by title: ${error.message}`);
+  }
+};

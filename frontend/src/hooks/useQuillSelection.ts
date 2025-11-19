@@ -1,21 +1,21 @@
 import { useEffect, useRef } from "react";
 import type Quill from "quill";
 import type { Range } from "quill/core";
-import { useSelectionStore, EditorType } from "@/stores/selectionStore";
+import { useSelectionStore, EditorId } from "@/stores/selectionStore";
 interface UseQuillSelectionProps {
   quill: Quill | undefined;
-  editorType: EditorType;
-  onManualSelect: (editorType: EditorType, range: Range, text: string) => void;
-  onLineFocus: (range: Range) => void;
+  editorId: EditorId;
+  onManualSelect: (editorId: EditorId, selection: Selection) => void;
+  onLineFocus: () => void;
 }
 
 export function useQuillSelection({
   quill,
-  editorType,
+  editorId,
   onManualSelect,
   onLineFocus,
 }: UseQuillSelectionProps) {
-  const selection = useSelectionStore((state) => state[editorType]);
+  const selection = useSelectionStore((state) => state.selections[editorId]);
   const isInternalUpdate = useRef(false);
   useEffect(() => {
     if (!quill) return;
@@ -33,10 +33,10 @@ export function useQuillSelection({
       }
       if (!range) return;
       if (range.length === 0){ 
-        onLineFocus(range)
+        onLineFocus()
       }else {
       const text = quill.getText(range.index, range.length);
-      onManualSelect(editorType, range, text);}
+      onManualSelect(editorId, range, text);}
     };
 
     quill.on("selection-change", handleSelectionChange);
@@ -44,7 +44,7 @@ export function useQuillSelection({
     return () => {
       quill.off("selection-change", handleSelectionChange);
     };
-  }, [quill, onManualSelect, onLineFocus, editorType]);
+  }, [quill, onManualSelect, onLineFocus, editorId]);
 
   useEffect(() => {
     if (!quill) return;

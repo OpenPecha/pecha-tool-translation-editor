@@ -11,6 +11,7 @@ import {
   fetchTextContent,
   fetchAnnotations,
 } from "@/api/openpecha";
+import { useTitleSearch } from "@/hooks/useTitleSearch";
 
 export function OpenPechaTextLoader({
   projectName,
@@ -25,7 +26,7 @@ export function OpenPechaTextLoader({
 }) {
   const [error, setError] = useState("");
   const queryClient = useQueryClient();
-  const [bdrcSearchQuery, setBdrcSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [showBdrcResults, setShowBdrcResults] = useState(false);
   const [selectedBdrcResult, setSelectedBdrcResult] =
     useState<BdrcSearchResult | null>(null);
@@ -46,7 +47,13 @@ export function OpenPechaTextLoader({
     results: bdrcResults,
     isLoading: isLoadingBdrc,
     error: bdrcError,
-  } = useBdrcSearch(bdrcSearchQuery, "Instance", 1000);
+  } = useBdrcSearch(searchQuery, "Instance", 1000);
+
+  const { 
+    data: titleSearchResults, 
+    isLoading: isLoadingTitleSearch, 
+    error: titleSearchError 
+  } = useTitleSearch(searchQuery, 1000);
 
   // Validation state
   const isValid = !!(
@@ -373,7 +380,7 @@ export function OpenPechaTextLoader({
       );
     }
 
-    if (bdrcSearchQuery.trim()) {
+    if (searchQuery.trim()) {
       return (
         <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg p-4">
           <p className="text-sm text-gray-600">No BDRC texts found</p>
@@ -403,9 +410,9 @@ export function OpenPechaTextLoader({
           <input
             id="bdrc-search"
             type="text"
-            value={bdrcSearchQuery}
+            value={searchQuery}
             onChange={(e) => {
-              setBdrcSearchQuery(e.target.value);
+              setSearchQuery(e.target.value);
               setShowBdrcResults(true);
             }}
             placeholder="Search BDRC texts..."
@@ -414,7 +421,7 @@ export function OpenPechaTextLoader({
         </div>
 
         {/* BDRC Search Results */}
-        {showBdrcResults && bdrcSearchQuery && (
+        {showBdrcResults && searchQuery && (
           <div className="relative bdrc-results-container">
             {renderBdrcSearchResults()}
           </div>

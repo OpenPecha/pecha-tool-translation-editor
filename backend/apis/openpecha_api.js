@@ -140,12 +140,16 @@ async function getSegmentRelated(
 }
 
 async function getSegmentsContent(instanceId, seg_ids) {
-  const url = `${API_ENDPOINT}/instances/${instanceId}/segment-content?segment_id=${seg_ids}`;
+  const url = `${API_ENDPOINT}/instances/${instanceId}/segment-content`;
   const response = await fetch(url, {
+    method: "POST",
     headers: {
       accept: "application/json",
       "Content-Type": "application/json",
     },
+    body: JSON.stringify({
+      segment_ids: seg_ids,
+    }),
   });
 
   if (!response.ok) {
@@ -158,6 +162,23 @@ async function getSegmentsContent(instanceId, seg_ids) {
   return data;
 }
 
+async function searchTextByTitle(title) {
+  console.log("title in openpecha_api.js ::", title);
+  const url = new URL(`${API_ENDPOINT}/texts/title-search`);
+  url.searchParams.append("title", title);
+  const response = await fetch(url.toString(), {
+    headers: {
+      accept: "application/json",
+    },
+  });
+  if (!response.ok) {
+    throw new Error(
+      `Failed to search text by title from openpecha: ${response.statusText}`
+    );
+  }
+
+  return response.json();
+}
 module.exports = {
   getTexts,
   getText,
@@ -167,4 +188,5 @@ module.exports = {
   uploadTranslationToOpenpecha,
   getSegmentRelated,
   getSegmentsContent,
+  searchTextByTitle,
 };

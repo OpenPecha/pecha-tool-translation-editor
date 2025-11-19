@@ -14,7 +14,7 @@ import isMobile from "@/lib/isMobile";
 import DocumentEditor from "./DocumentEditor";
 import SideMenu from "./EditorSideMenu/Sidemenu";
 import Navbar from "./Navbar";
-import { useSelectionStore, Selection, EditorType } from "@/stores/selectionStore";
+import { useSelectionStore, Selection, EditorId } from "@/stores/selectionStore";
 import { useEditor } from "@/contexts/EditorContext";
 import Quill from "quill";
 
@@ -33,8 +33,7 @@ function DocumentsWrapperContent() {
 
   const getFullLineSelection = (
     quill: Quill | null,
-    lineNumber: number,
-    documentId: string
+    lineNumber: number
   ): Selection | null => {
     if (!quill) return null;
     const text = getTextByLineNumber(quill, lineNumber);
@@ -54,27 +53,20 @@ function DocumentsWrapperContent() {
         length: text.length,
       },
       text: text,
-      documentId,
     };
   };
 
   const handleManualSelect = (
-    editorType: EditorType,
+    editorId: EditorId,
     selection: Selection
   ) => {
-    setManualSelection(editorType, selection);
+    setManualSelection(editorId, selection);
   };
 
-  const handleLineFocus = (lineNumber: number, _editorType: EditorType) => {
-    const sourceQuill = getQuill(id!);
-    const translationQuill = selectedTranslationId
-      ? getQuill(selectedTranslationId)
-      : null;
-    const sourceSelection = getFullLineSelection(sourceQuill, lineNumber, id!);
-    const translationSelection = selectedTranslationId
-      ? getFullLineSelection(translationQuill, lineNumber, selectedTranslationId)
-      : null;
-    setLineFocus(sourceSelection, translationSelection);
+  const handleLineFocus = (lineNumber: number, editorId: EditorId) => {
+    const quill = getQuill(editorId);
+    const selection = getFullLineSelection(quill, lineNumber);
+    setLineFocus(editorId, selection);
   };
 
   const project = {

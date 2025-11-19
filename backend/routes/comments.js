@@ -361,18 +361,21 @@ router.get("/thread/:threadId", optionalAuthenticate, async (req, res) => {
  */
 router.post("/", authenticate, async (req, res) => {
   try {
+
+    const user = req.user
+    if(!user){
+      return res.status(400).json({error:"missing user"})
+    }
     const {
       docId,
-      userId,
       content,
       threadId,
       isSuggestion,
       suggestedText,
       isSystemGenerated,
-      selectedText,
-      mentionedUserIds,
+      selectedText
     } = req.body;
-    if (!docId || !userId || !content) {
+    if (!docId || !content) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
@@ -387,7 +390,7 @@ router.post("/", authenticate, async (req, res) => {
     const newComment = await prisma.comment.create({
       data: {
         docId,
-        userId,
+        userId:user.id,
         content,
         threadId: threadId,
         isSuggestion: isSuggestion || false,
@@ -397,20 +400,22 @@ router.post("/", authenticate, async (req, res) => {
       include: { user: true },
     });
 
+    const mentionedUserIds = extractMentions(content);
+    console.log("mentionedUserIds :::",mentionedUserIds)
     // Send mention notifications (excluding AI mentions)
-    if (mentionedUserIds && mentionedUserIds.length > 0) {
-      const regularMentions = mentionedUserIds.filter(
-        (id) => id !== "ai"
-      );
-      if (regularMentions.length > 0) {
-        await sendMentionNotifications(
-          regularMentions,
-          content,
-          selectedText,
-          req.user
-        );
-      }
-    }
+    // if (mentionedUserIds && mentionedUserIds.length > 0) {
+    //   const regularMentions = mentionedUserIds.filter(
+    //     (id) => id !== "ai"
+    //   );
+    //   if (regularMentions.length > 0) {
+    //     await sendMentionNotifications(
+    //       regularMentions,
+    //       content,
+    //       selectedText,
+    //       user
+    //     );
+    //   }
+    // }
 
     // Check if this is an AI comment request AFTER saving the user's comment
     if (content.includes("@ai")) {
@@ -427,6 +432,7 @@ router.post("/", authenticate, async (req, res) => {
         return res.status(404).json({ error: "Instance not found" });
       }
       const relatedSegments = await getSegmentRelated(instance.instanceId, offset.initialStartOffset, offset.initialEndOffset);
+      console.log("relatedSegments ", relatedSegments);
       let references = [];
       const segmentDetails = relatedSegments.map(item => {
         return {
@@ -491,6 +497,7 @@ router.post("/", authenticate, async (req, res) => {
       }
     } else {
       // If not an AI comment, send the created comment back as JSON
+      console.log("new comment created :::",newComment);
       res.status(201).json(newComment);
     }
   } catch (error) {

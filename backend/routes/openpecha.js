@@ -9,6 +9,7 @@ const {
   getSegmentRelated,
   getText,
   getSegmentsContent,
+  searchTextByTitle,
 } = require("../apis/openpecha_api");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
@@ -502,6 +503,38 @@ router.get("/instances/:instanceId/segments-with-content", async (req, res) => {
     res.status(500).json({
       error: "Failed to fetch segments with content",
       instanceId,
+      details: error.message,
+    });
+  }
+});
+
+/**
+ * GET /openpecha/texts/title-search
+ * @summary Search text by title
+ * @tags Pecha - OpenPecha integration
+ * @param {string} title.query.required - Title of the text
+ * @return {array<object>} 200 - Array of texts
+ * @return {object} 400 - Bad request - Title is required
+ * @return {object} 500 - Server error
+ */
+router.get("/texts/title-search", async (req, res) => {
+  const { title } = req.query;
+  console.log("title in openpecha.js ::", title);
+  if (!title || !title.trim()) {
+    return res.status(400).json({
+      error: "Title is required",
+    });
+  }
+  try {
+    const texts = await searchTextByTitle(title.trim());
+    console.log("texts in openpecha.js ::", texts);
+
+    res.json([texts]);
+  } catch (error) {
+    console.error("Error searching text by title:", error);
+    res.status(500).json({
+      error: "Failed to search text by title",
+      title,
       details: error.message,
     });
   }

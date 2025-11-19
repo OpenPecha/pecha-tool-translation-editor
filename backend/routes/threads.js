@@ -10,11 +10,12 @@ const router = express.Router();
 
 /**
  * GET /threads
- * @summary Get all threads with optional document filter
+ * @summary Get all threads with optional document and range filters
  * @tags Threads - Thread management operations
- * @security BearerAuth
  * @param {string} documentId.query - Optional document ID to filter threads - eg: doc-123
- * @return {array<object>} 200 - List of threads with creator and comments
+ * @param {integer} startOffset.query - Optional start offset to filter threads (must be used with endOffset) - eg: 100
+ * @param {integer} endOffset.query - Optional end offset to filter threads (must be used with startOffset) - eg: 150
+ * @return {array<Thread>} 200 - List of threads with creator and comments
  * @return {object} 500 - Server error
  * @example response - 200 - Success response
  * [
@@ -32,26 +33,69 @@ const router = express.Router();
  *       "id": "user-789",
  *       "username": "John Doe",
  *       "email": "john@example.com"
- *     },
- *     "comments": []
  *   }
  * ]
  */
-router.get("/", authenticate, async (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const { documentId, startIndex, endIndex } = req.query;
+    const { documentId, startOffset, endOffset } = req.query;
 
     let whereClause = {};
     if (documentId) {
       whereClause.documentId = documentId;
     }
 
-    if (startIndex !== undefined && endIndex !== undefined) {
-      whereClause.initialStartOffset = { gte: parseInt(startIndex, 10) };
-      whereClause.initialEndOffset = { lte: parseInt(endIndex, 10) };
+    if (startOffset !== undefined && endOffset !== undefined) {
+      whereClause.initialStartOffset = { gte: parseInt(startOffset, 10) };
+      whereClause.initialEndOffset = { lte: parseInt(endOffset, 10) };
     }
     const threads = await prisma.thread.findMany({
       where: whereClause,
+      include: {
+        createdByUser: {
+          select: {
+            id: true,
+            username: true,
+            email: true
+          }
+        },
+        // comments: {
+        //   include: {
+        //     user: true
+        //   },
+        //   orderBy: {
+        //     createdAt: "asc"
+        //   }
+        // }
+      },
+    });
+
+    res.json(threads);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error while fetching threads" });
+  }
+});
+
+
+/**
+ * GET /threads/{id}
+ * @summary Get a specific thread by ID with all comments
+ * @tags Threads - Thread management operations
+ * @param {string} id.path.required - Thread ID - eg: thread-123
+ * @return {object} 200 - Thread details with comments and creator info
+ * @return {object} 404 - Thread not found
+ * @return {object} 500 - Server error
+ */
+router.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if(!id) {
+      return res.status(400).json({ error: "Thread ID is required" });
+    }
+    const thread = await prisma.thread.findUnique({
+      where: { id: id },
       include: {
         createdByUser: {
           select: {
@@ -70,89 +114,8 @@ router.get("/", authenticate, async (req, res) => {
         }
       },
     });
-
-    res.json(threads);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Server error while fetching threads" });
-  }
-});
-
-/**
- * GET /threads/document/{documentId}
- * @summary Get all threads for a specific document
- * @tags Threads - Thread management operations
- * @param {string} documentId.path.required - Document ID - eg: doc-123
- * @return {array<object>} 200 - List of threads for the document
- * @return {object} 500 - Server error
- */
-router.get("/document/:documentId", optionalAuthenticate, async (req, res) => {
-  try {
-    const { documentId } = req.params;
-
-    const threads = await prisma.thread.findMany({
-      where: { documentId },
-      include: {
-        createdByUser: {
-          select: {
-            id: true,
-            username: true,
-            email: true,
-          },
-        },
-        comments: {
-          include: {
-            user: true,
-          },
-          orderBy: {
-            createdAt: "asc",
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-    res.json(threads);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Error fetching document threads" });
-  }
-});
-
-/**
- * GET /threads/{id}
- * @summary Get a specific thread by ID with all comments
- * @tags Threads - Thread management operations
- * @param {string} id.path.required - Thread ID - eg: thread-123
- * @return {object} 200 - Thread details with comments and creator info
- * @return {object} 404 - Thread not found
- * @return {object} 500 - Server error
- */
-router.get("/:id", optionalAuthenticate, async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const thread = await prisma.thread.findUnique({
-      where: { id },
-      include: {
-        createdByUser: {
-          select: {
-            id: true,
-            username: true,
-            email: true,
-          },
-        },
-        comments: {
-          include: {
-            user: true,
-          },
-          orderBy: {
-            createdAt: "asc",
-          },
-        },
-      },
-    });
+    
+    
 
     if (!thread) {
       return res.status(404).json({ error: "Thread not found" });
@@ -220,11 +183,10 @@ router.post("/", authenticate, async (req, res) => {
             username: true,
             email: true,
           },
-        },
-        comments: true,
+        }
       },
     });
-
+    console.log("new thread created :::",newThread);
     res.status(201).json(newThread);
   } catch (error) {
     console.error(error);
@@ -337,7 +299,7 @@ router.delete("/:id", authenticate, async (req, res) => {
       where: { id },
     });
 
-    res.json({ message: "Thread deleted successfully" });
+    res.json({ success: true, message: "Thread deleted successfully" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error deleting thread" });
