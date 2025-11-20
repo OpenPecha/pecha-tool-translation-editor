@@ -186,7 +186,6 @@ router.post("/", authenticate, async (req, res) => {
         }
       },
     });
-    console.log("new thread created :::",newThread);
     res.status(201).json(newThread);
   } catch (error) {
     console.error(error);

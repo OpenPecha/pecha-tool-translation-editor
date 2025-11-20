@@ -131,33 +131,29 @@ export interface SegmentWithContent {
   segment_id: string;
   initialStartOffset: number;
   initialEndOffset: number;
-  selectedText: string;
+  content: string;
 }
 
 /**
  * Fetch segment-related data with content combined in a single call
  * This function combines getSegmentRelated and getSegmentsContent into one API call
- * @param instanceId - Instance ID
+ * @param textId - Text ID
  * @param spanStart - Start position of the span
  * @param spanEnd - End position of the span
  * @param transfer - Transfer parameter (default: false)
  * @returns Array of segments with segment_id, offsets, and content
  */
 export const fetchSegmentsWithContent = async (
-  instanceId: string,
+  textId: string,
   spanStart: number,
   spanEnd: number,
-  transfer: boolean = false
 ): Promise<SegmentWithContent[]> => {
-  const params = new URLSearchParams({
-    span_start: spanStart.toString(),
-    span_end: spanEnd.toString(),
-    transfer: transfer.toString(),
-  });
   const response = await fetch(
-    `${server_url}/openpecha/instances/${instanceId}/segments-with-content?${params.toString()}`,
+    `${server_url}/openpecha/webhook`,
     {
+      method: "POST",
       headers: getHeaders(),
+      body: JSON.stringify({ text_id: textId, span_start: spanStart, span_end: spanEnd }),
     }
   );
   if (!response.ok) {
@@ -172,9 +168,8 @@ export const searchTextByTitle = async (title: string) => {
     throw new Error("Title is required");
   }
   try {
-    const url = new URL(`${server_url}/openpecha/texts/title-search`);
+    const url = new URL(`${server_url}/openpecha/title-search`);
     url.searchParams.append("title", title);
-    console.log("url in searchTextByTitle ::", url.toString());
     const response = await fetch(url.toString(), {
       headers: getHeaders(),
     });

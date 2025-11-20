@@ -95,17 +95,6 @@ async function getAIComment(threadId, selectedText, res, model_name, content, re
       throw new Error(`AI API request failed: ${response.status}`);
     }
 
-    // Set headers for Server-Sent Events
-    res.writeHead(200, {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache, no-transform",
-      Connection: "keep-alive",
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "Cache-Control",
-      "X-Accel-Buffering": "no", // Disable nginx buffering
-      "Content-Encoding": "none", // Disable compression
-    });
-
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
@@ -158,7 +147,7 @@ async function getAIComment(threadId, selectedText, res, model_name, content, re
   } catch (error) {
     console.error("Error calling AI comment API:", error);
     res.write(
-      `data: ${JSON.stringify({ type: "error", message: "Failed to get AI comment" })}\n\n`
+      `data: ${JSON.stringify({ type: "error", message: error.message || "Failed to get AI comment" })}\n\n`
     );
     throw error;
   }
@@ -401,21 +390,20 @@ router.post("/", authenticate, async (req, res) => {
     });
 
     const mentionedUserIds = extractMentions(content);
-    console.log("mentionedUserIds :::",mentionedUserIds)
     // Send mention notifications (excluding AI mentions)
-    // if (mentionedUserIds && mentionedUserIds.length > 0) {
-    //   const regularMentions = mentionedUserIds.filter(
-    //     (id) => id !== "ai"
-    //   );
-    //   if (regularMentions.length > 0) {
-    //     await sendMentionNotifications(
-    //       regularMentions,
-    //       content,
-    //       selectedText,
-    //       user
-    //     );
-    //   }
-    // }
+    if (mentionedUserIds && mentionedUserIds.length > 0) {
+      const regularMentions = mentionedUserIds.filter(
+        (id) => id !== "ai"
+      );
+      if (regularMentions.length > 0) {
+        await sendMentionNotifications(
+          regularMentions,
+          content,
+          selectedText,
+          user
+        );
+      }
+    }
 
     // Check if this is an AI comment request AFTER saving the user's comment
     if (content.includes("@ai")) {
@@ -431,18 +419,42 @@ router.post("/", authenticate, async (req, res) => {
       if(!instance) {
         return res.status(404).json({ error: "Instance not found" });
       }
-      const relatedSegments = await getSegmentRelated(instance.instanceId, offset.initialStartOffset, offset.initialEndOffset);
-      console.log("relatedSegments ", relatedSegments);
-      let references = [];
-      const segmentDetails = relatedSegments.map(item => {
-        return {
-        type: item.text_metadata.type,
-        instance_id: item.instance_metadata.id,
-        seg_ids: item.segments.map(seg => seg.segment_id).join(',')}
+      // STATUS UPDATE 1: Start
+      // Set headers for Server-Sent Events
+      res.writeHead(200, {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache, no-transform",
+        Connection: "keep-alive",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Cache-Control",
+        "X-Accel-Buffering": "no", // Disable nginx buffering
+        "Content-Encoding": "none", // Disable compression
       });
+      res.write(`data: ${JSON.stringify({ type: "status", message: "Finding related segments..." })}\n\n`);
+
+      const relatedSegments = await getSegmentRelated(instance.instanceId, offset.initialStartOffset, offset.initialEndOffset);
+      let references = [];
+      const segmentDetails = [];
+      for (const item of relatedSegments) {
+        if(item.text_metadata.type === "commentary") {
+          segmentDetails.push({
+            type: item.text_metadata.type,
+            instance_id: item.instance_metadata.id,
+            seg_ids: item.segments.map(seg => seg.segment_id)
+          });
+        }
+      }
+
+      // STATUS UPDATE 2: After finding segments
+      res.write(`data: ${JSON.stringify({ type: "status", message: `Found ${segmentDetails.length} related commentary segments.` })}\n\n`);
+
       let count = 1;
       for (const segmentDetail of segmentDetails) {
         let name = `ref-${segmentDetail.type}-${count}`;
+
+        // STATUS UPDATE 3: Before fetching each reference content
+        res.write(`data: ${JSON.stringify({ type: "status", message: `Fetching content for reference ${count}...` })}\n\n`);
+
         const segmentContent = await getSegmentsContent(segmentDetail.instance_id, segmentDetail.seg_ids);
         references.push({
             id: uuidv4(),
@@ -452,6 +464,10 @@ router.post("/", authenticate, async (req, res) => {
           })  
         count++;
       }
+
+      // STATUS UPDATE 4: Before calling AI
+      res.write(`data: ${JSON.stringify({ type: "status", message: "Generating AI comment..." })}\n\n`);
+
       try {
         // Stream AI response to client
         const aiCommentText = await getAIComment(
@@ -466,7 +482,7 @@ router.post("/", authenticate, async (req, res) => {
         const aiComment = await prisma.comment.create({
           data: {
             docId,
-            userId, // This should ideally be a dedicated AI user ID
+            userId: user.id, // This should ideally be a dedicated AI user ID
             content: aiCommentText,
             threadId: newComment.threadId,
             isSuggestion: false,
@@ -487,7 +503,7 @@ router.post("/", authenticate, async (req, res) => {
         // Still end the response stream properly on error
         if (!res.headersSent) {
           res.writeHead(500, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ error: "Failed to process AI comment" }));
+          res.end(JSON.stringify({ type: "error", message : "Failed to process AI comment" }));
         } else {
           res.write(
             `data: ${JSON.stringify({ type: "error", message: "Failed to process AI comment" })}\n\n`
@@ -496,14 +512,18 @@ router.post("/", authenticate, async (req, res) => {
         }
       }
     } else {
-      // If not an AI comment, send the created comment back as JSON
-      console.log("new comment created :::",newComment);
       res.status(201).json(newComment);
     }
   } catch (error) {
     console.error(error);
     if (!res.headersSent) {
-      res.status(500).json({ error: "Error creating comment" });
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ type: "error", message : "Failed to add comment" }));
+    } else {
+      res.write(
+        `data: ${JSON.stringify({ type: "error", message: "Failed to process AI comment" })}\n\n`
+      );
+      res.end();
     }
   }
 });

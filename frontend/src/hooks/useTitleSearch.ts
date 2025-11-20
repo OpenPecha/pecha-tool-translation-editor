@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 
 export const useTitleSearch = (searchQuery: string, debounceMs: number = 1000) => {
-    console.log("searchQuery in useTitleSearch ::", searchQuery);
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
     useEffect(() => {
         const timer = setTimeout(() => {

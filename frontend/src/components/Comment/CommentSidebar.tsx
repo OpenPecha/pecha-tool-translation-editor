@@ -19,7 +19,7 @@ const CommentSidebar = ({
   return (
     <div className={cn("w-full h-full flex flex-col overflow-y-auto")}>
       {sidebarView === "list" && (
-        <ThreadList documentId={documentId} isOpen={isOpen} />
+        <ThreadList documentId={documentId} />
       )}
       {(sidebarView === "thread" || sidebarView === "new") && (
         <ThreadConversation documentId={documentId} projectId={projectId} />

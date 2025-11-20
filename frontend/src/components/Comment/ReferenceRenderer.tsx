@@ -65,13 +65,13 @@ export const ReferenceRenderer = ({
     return segments;
   };
 
-  const toggleReference = (refName: string) => {
+  const toggleReference = (uniqueKey: string) => {
     setExpandedRefs((prev) => {
       const newSet = new Set(prev);
-      if (newSet.has(refName)) {
-        newSet.delete(refName);
+      if (newSet.has(uniqueKey)) {
+        newSet.delete(uniqueKey);
       } else {
-        newSet.add(refName);
+        newSet.add(uniqueKey);
       }
       return newSet;
     });
@@ -79,6 +79,11 @@ export const ReferenceRenderer = ({
 
   const getReference = (refName: string): CommentReference | undefined => {
     return references.find((ref) => ref.name === refName);
+  };
+
+  const truncateText = (text: string, maxLength: number): string => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + "...";
   };
 
   const segments = parseContent(content);
@@ -90,58 +95,40 @@ export const ReferenceRenderer = ({
           return <span key={index}>{segment.content}</span>;
         }
 
-        // Render reference group
         return (
-          <span key={index} className="inline-block align-top">
-            <span className="inline">
-              [
-              {segment.references?.map((refName, refIndex) => {
-                const isExpanded = expandedRefs.has(refName);
-                const displayName = refName; // Display as ref-{type}-{count}
+          <span key={index} className="inline">
+            {segment.references?.map((refName, refIndex) => {
+              const ref = getReference(refName);
+              if (!ref) return null;
 
-                return (
-                  <span key={refIndex} className="inline">
-                    <button
-                      type="button"
-                      onClick={() => toggleReference(refName)}
-                      className={`${isExpanded ? "text-primary-300" : "underline"} cursor-pointer hover:opacity-70 transition-opacity text-inherit`}
-                      aria-expanded={isExpanded}
-                      aria-label={`Toggle reference ${displayName}`}
-                    >
-                      {displayName}
-                    </button>
-                    {refIndex < (segment.references?.length || 0) - 1 && (
-                      <span className="mx-1">; </span>
-                    )}
-                  </span>
-                );
-              })}
-              ]
-            </span>
-            {/* Render expanded references below, stacked vertically */}
-            {segment.references && segment.references.some((refName) => expandedRefs.has(refName)) && (
-              <div className="block w-full mt-2 space-y-2">
-                {segment.references
-                  .filter((refName) => expandedRefs.has(refName))
-                  .map((refName) => {
-                    const ref = getReference(refName);
-                    if (!ref) return null;
-                    return (
-                      <div
-                        key={refName}
-                        className="border border-gray-300 rounded p-2 bg-gray-50 text-xs"
-                      >
-                        <div className="font-semibold mb-1 text-gray-700">
-                          {ref.name}
-                        </div>
-                        <div className="text-gray-800 whitespace-pre-wrap">
-                          {ref.content}
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
-            )}
+              // Create unique key for each reference instance
+              const uniqueKey = `${index}-${refIndex}`;
+              const isExpanded = expandedRefs.has(uniqueKey);
+              const displayContent = isExpanded
+                ? ref.content
+                : truncateText(ref.content, 50);
+
+              return (
+                <span key={refIndex}>
+                  {refIndex > 0 && <br />}
+                  <button
+                    type="button"
+                    onClick={() => toggleReference(uniqueKey)}
+                    className={`${
+                      isExpanded
+                        ? "bg-blue-100 hover:bg-blue-200"
+                        : "bg-yellow-100 hover:bg-yellow-200"
+                    } px-1 mt-1 rounded cursor-pointer transition-colors text-left`}
+                    aria-expanded={isExpanded}
+                    aria-label={`${isExpanded ? "Collapse" : "Expand"} reference`}
+                  >
+                    <span className="text-left">
+                      {displayContent}
+                    </span>
+                  </button>
+                </span>
+              );
+            })}
           </span>
         );
       })}

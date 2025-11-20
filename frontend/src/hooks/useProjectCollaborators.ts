@@ -5,8 +5,9 @@ export const useProjectCollaborators = (
   projectId: string,
 ) => {
   return useQuery({
-    queryKey: ["project", projectId, "accessible-users"],
+    queryKey: ["project", projectId],
     queryFn: () => getPorjectCollaborators(projectId),
-    enabled: !!projectId
+    enabled: !!projectId,
+    staleTime: 5 * 60 * 1000,
   });
 };
