@@ -3,11 +3,11 @@ import { getPorjectCollaborators } from "../api/project";
 
 export const useProjectCollaborators = (
   projectId: string,
-  enabled: boolean
 ) => {
   return useQuery({
-    queryKey: ["project", projectId, "accessible-users"],
+    queryKey: ["project", projectId],
     queryFn: () => getPorjectCollaborators(projectId),
-    enabled
+    enabled: !!projectId,
+    staleTime: 5 * 60 * 1000,
   });
 };

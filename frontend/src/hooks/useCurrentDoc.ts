@@ -94,7 +94,7 @@ export const useCurrentDoc = (
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
     enabled: !!docId,
-    staleTime: 0,
+    staleTime: 5*60*1000,
   });
   return {
     currentDoc: data,
@@ -121,7 +121,7 @@ export const useCurrentDocTranslations = (docId: string | undefined) => {
       return await fetchDocumentTranslations(docId);
     },
     enabled: !!docId,
-    staleTime: 0, // Always fetch fresh data
+    staleTime: 5*60*1000, // Always fetch fresh data
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
   });

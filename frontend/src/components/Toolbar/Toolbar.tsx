@@ -41,7 +41,7 @@ const Toolbar = ({
   const [openHistory, setOpenHistory] = useState(false);
   const { getQuill, activeEditor, quillEditors, getElementWithLinenumber } =
     useEditor();
-
+    
   const [showVersionDiff, setShowVersionDiff] = useState(false);
   const [currentHeader, setCurrentHeader] = useState<string | number>("");
   const quill = getQuill(documentId);

@@ -21,20 +21,19 @@ export interface Thread {
 	comments?: any[];
 }
 
-export const fetchThreadsByDocumentId = async (
+export const fetchThreads = async (
   documentId: string,
-  startIndex?: number,
-  endIndex?: number
+  startOffset?: number,
+  endOffset?: number
 ) => {
   try {
     let url = `${server_url}/threads?documentId=${documentId}`;
-    if (startIndex !== undefined && endIndex !== undefined) {
-      url += `&startIndex=${startIndex}&endIndex=${endIndex}`;
+    if (startOffset !== undefined && endOffset !== undefined) {
+      url += `&startOffset=${startOffset}&endOffset=${endOffset}`;
     }
     const response = await fetch(url, {
       headers: getHeaders()
     });
-
     if (!response.ok) {
       throw new Error("Failed to fetch threads");
     }

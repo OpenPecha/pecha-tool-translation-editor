@@ -9,7 +9,7 @@ import {
 import { useTranslation } from "react-i18next";
 import TableOfContent from "../TableOfContent";
 import Resources from "../EditorSideMenu/Resources";
-import { useDocumentSidebarStore } from "@/stores/documentSidebarStore";
+import { useEditorSidebarStore } from "@/stores/editorSidebarStore";
 import CommentSidebar from "../Comment/CommentSidebar";
 import { ScrollArea } from "../ui/scroll-area";
 import { useCommentStore } from "@/stores/commentStore";
@@ -25,10 +25,10 @@ interface DocumentSidebarProps {
 }
 
 const DocumentSidebar: React.FC<DocumentSidebarProps> = ({ documentId, isTranslationEditor = false }) => {
-  const { getActiveTab, toggleTab, setActiveTab } = useDocumentSidebarStore();
-  const activeTab = getActiveTab(documentId);
+  const { tabs: editorTabs, setTabs, toggleTab } = useEditorSidebarStore();
+  const activeTab = editorTabs[documentId];
   const { t } = useTranslation();
-  const { getSidebarView, showListView } = useCommentStore();
+  const { getSidebarView, setSidebarView } = useCommentStore();
   const sidebarView = getSidebarView(documentId);
 
   const tabs = [
@@ -94,10 +94,10 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({ documentId, isTransla
             tabs={tabs}
             activeTab={activeTab}
             onTabClick={(tabId) => toggleTab(documentId, tabId)}
-            onClose={() => setActiveTab(documentId, null)}
+            onClose={() => setTabs(documentId, null)}
             isTranslationEditor={isTranslationEditor}
             sidebarView={sidebarView}
-            onBack={() => showListView(documentId)}
+            onBack={() => setSidebarView(documentId, "list")}
           />
 
           {/* Content */}

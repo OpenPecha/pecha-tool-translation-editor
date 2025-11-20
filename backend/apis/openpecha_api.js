@@ -117,17 +117,17 @@ async function getSegmentRelated(
   instanceId,
   spanStart,
   spanEnd,
-  transfer = false
+  transform = false
 ) {
-  const response = await fetch(
-    `${API_ENDPOINT}/instances/${instanceId}/segment-related?span_start=${spanStart}&span_end=${spanEnd}&transfer=${transfer}`,
-    {
-      headers: {
-        accept: "application/json",
-        "Content-Type": "application/json",
-      },
-    }
-  );
+  const url = new URL(`${API_ENDPOINT}/instances/${instanceId}/segment-related`);
+  url.searchParams.append("span_start", spanStart);
+  url.searchParams.append("span_end", spanEnd);
+  url.searchParams.append("transform", transform);
+  const response = await fetch(url.toString(), {
+    headers: {
+      accept: "application/json",
+    },
+  });
 
   if (!response.ok) {
     throw new Error(
@@ -135,17 +135,22 @@ async function getSegmentRelated(
     );
   }
 
+
   const data = await response.json();
   return data;
 }
 
 async function getSegmentsContent(instanceId, seg_ids) {
-  const url = `${API_ENDPOINT}/instances/${instanceId}/segment-content?segment_id=${seg_ids}`;
+  const url = `${API_ENDPOINT}/instances/${instanceId}/segment-content`;
   const response = await fetch(url, {
+    method: "POST",
     headers: {
       accept: "application/json",
       "Content-Type": "application/json",
     },
+    body: JSON.stringify({
+      segment_ids: seg_ids,
+    }),
   });
 
   if (!response.ok) {
@@ -158,6 +163,22 @@ async function getSegmentsContent(instanceId, seg_ids) {
   return data;
 }
 
+async function searchTextByTitle(title) {
+  const url = new URL(`${API_ENDPOINT}/texts/title-search`);
+  url.searchParams.append("title", title);
+  const response = await fetch(url.toString(), {
+    headers: {
+      accept: "application/json",
+    },
+  });
+  if (!response.ok) {
+    throw new Error(
+      `Failed to search text by title from openpecha: ${response.statusText}`
+    );
+  }
+
+  return response.json();
+}
 module.exports = {
   getTexts,
   getText,
@@ -167,4 +188,5 @@ module.exports = {
   uploadTranslationToOpenpecha,
   getSegmentRelated,
   getSegmentsContent,
+  searchTextByTitle,
 };

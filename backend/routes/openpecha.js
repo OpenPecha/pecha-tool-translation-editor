@@ -9,62 +9,12 @@ const {
   getSegmentRelated,
   getText,
   getSegmentsContent,
+  searchTextByTitle,
 } = require("../apis/openpecha_api");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 const router = express.Router();
-
-/**
- * Helper function to extract segment IDs and spans from segment-related response
- * @param {Array} segmentRelatedData - Response from getSegmentRelated
- * @returns {Array} Array of objects with segment_id, initialStartOffset, initialEndOffset
- */
-function extractSegmentInfo(segmentRelatedData) {
-  const segments = [];
-
-  for (const item of segmentRelatedData) {
-    if (item.segments && Array.isArray(item.segments)) {
-      for (const segment of item.segments) {
-        if (segment.segment_id && segment.span) {
-          segments.push({
-            segment_id: segment.segment_id,
-            initialStartOffset: segment.span.start,
-            initialEndOffset: segment.span.end,
-          });
-        }
-      }
-    }
-  }
-
-  return segments;
-}
-
-/**
- * Helper function to combine segment info with content
- * @param {Array} segmentInfo - Array with segment_id and offsets
- * @param {Array} segmentContent - Response from getSegmentsContent
- * @returns {Array} Combined array with segment_id, offsets, and content
- */
-function combineSegmentData(segmentInfo, segmentContent) {
-  // Create a map of segment_id to content for quick lookup
-  const contentMap = new Map();
-  if (Array.isArray(segmentContent)) {
-    for (const item of segmentContent) {
-      if (item.segment_id && item.content !== undefined) {
-        contentMap.set(item.segment_id, item.content);
-      }
-    }
-  }
-
-  // Combine segment info with content
-  return segmentInfo.map((segment) => ({
-    segment_id: segment.segment_id,
-    initialStartOffset: segment.initialStartOffset,
-    initialEndOffset: segment.initialEndOffset,
-    selectedText: contentMap.get(segment.segment_id) || "",
-  }));
-}
 
 /**
  * GET /openpecha/texts
@@ -423,85 +373,107 @@ router.get("/instances/:instanceId/segment-content", async (req, res) => {
   }
 });
 
-/**
- * GET /openpecha/instances/{instanceId}/segments-with-content
- * @summary Get segment-related data with content combined for a specific instance and span
- * @tags Pecha - OpenPecha integration
- * @param {string} instanceId.path.required - Instance ID
- * @param {number} span_start.query.required - Start position of the span
- * @param {number} span_end.query.required - End position of the span
- * @param {boolean} transfer.query - Transfer parameter (default: false)
- * @return {array<object>} 200 - Array of segments with segment_id, offsets, and content
- * @return {object} 400 - Bad request - Instance ID, span_start, and span_end are required
- * @return {object} 500 - Server error
- * @example response - 200 - Success response
- * [
- *   {
- *     "segment_id": "iq140qPWdNVTTpqQUs0DC",
- *     "initialStartOffset": 431,
- *     "initialEndOffset": 504,
- *     "selectedText": "ལྷ་སོགས་འཇིག་རྟེན་ན་ཡང་དྲི་དང་ནི། །སྤོས་དང་དཔག་བསམ་ཤིང་དང་རིན་ཆེན་ཤིང་། །"
- *   }
- * ]
- */
-router.get("/instances/:instanceId/segments-with-content", async (req, res) => {
-  const { instanceId } = req.params;
-  const { span_start, span_end, transfer } = req.query;
 
-  if (!instanceId) {
+
+/**
+ * GET /openpecha/title-search
+ * @summary Search text by title
+ * @tags Pecha - OpenPecha integration
+ * @param {string} title.query.required - Title of the text
+ * @return {array<object>} 200 - Array of texts
+ * @return {object} 400 - Bad request - Title is required
+ * @return {object} 500 - Server error
+ */
+router.get("/title-search", async (req, res) => {
+  const { title } = req.query;
+  if (!title || !title.trim()) {
     return res.status(400).json({
-      error: "Instance ID is required",
+      error: "Title is required",
+    });
+  }
+  try {
+    const texts = await searchTextByTitle(title.trim());
+    res.json(texts);
+  } catch (error) {
+    console.error("Error searching text by title:", error);
+    res.status(500).json({
+      error: "Failed to search text by title",
+      title,
+      details: error.message,
+    });
+  }
+});
+
+/**
+ * POST /openpecha/webhook
+ * @summary Forward request to n8n webhook
+ * @tags Pecha - OpenPecha integration
+ * @param {object} request.body.required - Request body with text_id, span_start, and span_end
+ * @param {string} request.body.text_id.required - Text ID
+ * @param {number} request.body.span_start.required - Start position of the span
+ * @param {number} request.body.span_end.required - End position of the span
+ * @return {object} 200 - Success response from webhook
+ * @return {object} 400 - Bad request - Missing required fields
+ * @return {object} 500 - Server error
+ * @example request - Webhook request
+ * {
+ *   "text_id": "FedFIyi0p4SuJDiJdg80S",
+ *   "span_start": 1,
+ *   "span_end": 1000
+ * }
+ */
+router.post("/webhook", async (req, res) => {
+  const { text_id, span_start, span_end } = req.body;
+
+  if (!text_id) {
+    return res.status(400).json({
+      error: "text_id is required",
     });
   }
 
   if (span_start === undefined || span_end === undefined) {
     return res.status(400).json({
-      error: "span_start and span_end query parameters are required",
+      error: "span_start and span_end are required",
+    });
+  }
+
+  const spanStart = parseInt(span_start, 10);
+  const spanEnd = parseInt(span_end, 10);
+
+  if (isNaN(spanStart) || isNaN(spanEnd)) {
+    return res.status(400).json({
+      error: "span_start and span_end must be valid numbers",
     });
   }
 
   try {
-    const spanStart = parseInt(span_start, 10);
-    const spanEnd = parseInt(span_end, 10);
-    const transferFlag = transfer === "true" || transfer === true;
+    const webhookUrl = process.env.WORKFLOW_ENDPOINT;
+    
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        accept: "application/json",
+      },
+      body: JSON.stringify({
+        text_id,
+        span_start: spanStart,
+        span_end: spanEnd,
+      }),
+    });
 
-    if (isNaN(spanStart) || isNaN(spanEnd)) {
-      return res.status(400).json({
-        error: "span_start and span_end must be valid numbers",
-      });
+    if (!response.ok) {
+      throw new Error(
+        `Webhook request failed: ${response.status} ${response.statusText}`
+      );
     }
 
-    // Step 1: Get segment-related data
-    const segmentRelatedData = await getSegmentRelated(
-      instanceId,
-      spanStart,
-      spanEnd,
-      transferFlag
-    );
-
-    // Step 2: Extract segment IDs and spans
-    const segmentInfo = extractSegmentInfo(segmentRelatedData);
-
-    // If no segments found, return empty array
-    if (segmentInfo.length === 0) {
-      return res.json([]);
-    }
-
-    // Step 3: Get segment IDs as comma-separated string
-    const segmentIds = segmentInfo.map((seg) => seg.segment_id).join(",");
-
-    // Step 4: Fetch segment content
-    const segmentContent = await getSegmentsContent(instanceId, segmentIds);
-
-    // Step 5: Combine segment info with content
-    const combinedData = combineSegmentData(segmentInfo, segmentContent);
-
-    res.json(combinedData);
+    const data = await response.json();
+    res.json(data);
   } catch (error) {
-    console.error("Error fetching segments with content:", error);
+    console.error("Error calling webhook:", error);
     res.status(500).json({
-      error: "Failed to fetch segments with content",
-      instanceId,
+      error: "Failed to call webhook",
       details: error.message,
     });
   }

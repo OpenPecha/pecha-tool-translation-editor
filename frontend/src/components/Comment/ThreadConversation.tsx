@@ -1,18 +1,21 @@
 import { useCommentStore } from "@/stores/commentStore";
 import { useAuth } from "@/auth/use-auth-hook";
 import { useState, useRef, useEffect, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
 import { MentionsInput, Mention } from "react-mentions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useCreateThread, useAddComment, useFetchThreads } from "@/hooks/useComment";
-import { useAIComment } from "@/hooks/useAIComment";
 import { useProjectCollaborators } from "@/hooks/useProjectCollaborators";
 import "./mentions.css";
 import SelectedText from "./SelectedText";
 import { TypingAnimation } from "./TypingAnimation";
 import { ReferenceRenderer } from "./ReferenceRenderer";
+import { useFetchThread } from "./hooks/useFetchThread";
+import { useSelectionStore } from "@/stores/selectionStore";
+import { useCreateThread } from "./hooks/useCreateThread";
+import { useAddComment } from "./hooks/useAddComment";
 
 const MentionsInputComponent = MentionsInput as any;
 const MentionComponent = Mention as any;
@@ -24,23 +27,26 @@ const ThreadConversation = ({
   documentId: string;
   projectId?: string;
 }) => {
+  const queryClient = useQueryClient();
   const {
     getActiveThreadId,
     getSidebarView,
-    getNewCommentRange,
+    setActiveThreadId,
+    setSidebarView,
   } = useCommentStore();
   const activeThreadId = getActiveThreadId(documentId);
-  const { data: threads = [] } = useFetchThreads(documentId);
   const sidebarView = getSidebarView(documentId);
-  const newCommentRange = getNewCommentRange(documentId);
-
+  const selection = useSelectionStore((state) => state.selections[documentId]);
+  const { data: thread = null } = useFetchThread({ threadId: activeThreadId as string });
+  const createThreadMutation = useCreateThread();
+  const addCommentMutation = useAddComment();
   const { currentUser } = useAuth();
   const [replyContent, setReplyContent] = useState("");
+  const [aiResponseStatus, setAiResponseStatus] = useState("");
   const replyInputRef = useRef<HTMLTextAreaElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isAtBottomRef = useRef(true);
-
-  const { data: collaborators } = useProjectCollaborators(projectId || "", !!projectId);
+  const { data: collaborators } = useProjectCollaborators(projectId || "");
   const users = useMemo(() => {
     const baseUsers = [{ id: "ai", display: "ai" }];
     if (collaborators) {
@@ -55,7 +61,6 @@ const ThreadConversation = ({
     return baseUsers;
   }, [collaborators, currentUser?.id]);
 
-  const activeThread = threads.find((t) => t.id === activeThreadId);
   const scrollToBottom = (behavior: "smooth" | "auto" = "auto") => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scroll({
@@ -92,7 +97,7 @@ const ThreadConversation = ({
     if (isAtBottomRef.current) {
       setTimeout(() => scrollToBottom("smooth"), 100);
     }
-  }, [activeThread?.comments?.length]);
+  }, [thread?.comments?.length]);
 
   useEffect(() => {
     if (
@@ -103,53 +108,139 @@ const ThreadConversation = ({
     }
   }, [activeThreadId, sidebarView]);
 
-  const createThreadMutation = useCreateThread(documentId);
-  const addCommentMutation = useAddComment(documentId);
-  const {
-    isStreaming,
-    streamStatus,
-    error: _aiError,
-    generateAIComment
-  } = useAIComment(documentId);
+  const onProcessing = (message: string) => {
+    setAiResponseStatus(message);
+  }
+  const onDelta = (delta: string) => {
+    queryClient.setQueryData(["thread", activeThreadId], (old: any) => {
+      if (!old || !old.comments) return old;
+      const newComments = [...old.comments];
+      let aiCommentIndex = -1;
+      for (let i = newComments.length - 1; i >= 0; i--) {
+        if (newComments[i].isSystemGenerated) {
+          aiCommentIndex = i;
+          break;
+        }
+      }
+      if (aiCommentIndex !== -1) {
+        const aiComment = newComments[aiCommentIndex];
+        newComments[aiCommentIndex] = {
+          ...aiComment,
+          content: (aiComment.content || "") + delta,
+        };
+        return { ...old, comments: newComments };
+      }
+      return old;
+    });
+  }
 
-  const handleSubmitReply = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!replyContent.trim() || isStreaming) return;
+  const onCompletion = (finalText: string) => {
+    queryClient.setQueryData(["thread", activeThreadId], (old: any) => {
+      if (!old || !old.comments) return old;
+      const newComments = [...old.comments];
+      let aiCommentIndex = -1;
+      for (let i = newComments.length - 1; i >= 0; i--) {
+        if (newComments[i].isSystemGenerated) {
+          aiCommentIndex = i;
+          break;
+        }
+      }
+      if (aiCommentIndex !== -1) {
+        const aiComment = newComments[aiCommentIndex];
+        newComments[aiCommentIndex] = {
+          ...aiComment,
+          content: finalText.substring(9), // Remove "@Comment " prefix
+        };
+        return { ...old, comments: newComments };
+      }
+      return old;
+    });
+  }
 
-    // extract mentions from replyContent
-    const mentions = replyContent.match(/@(\w+)/g) || [];
-    const mentionedUserIds = mentions.map((mention) => {
-      const username = mention.substring(1); // Remove the @ symbol
-      // Find the user ID by username
-      const user = users.find(u => u.display === username);
-      return user ? user.id : "";
-    }).filter(id => id !== ""); // Filter out empty IDs
-    const content = replyContent;
+  const onSave = (comment: any) => {
+    queryClient.setQueryData(["thread", activeThreadId], (old: any) => {
+      return {
+        ...old,
+        comments: old?.comments?.map((c: any) => c.user.id === "ai-assistant" ? comment : c)
+      };
+    });
+  }
 
-    if (sidebarView === "new") {
-      setReplyContent("");
-      createThreadMutation.mutate(content);
-      return;
-    }
+  const onError = (message: string) => {
+    console.error("AI stream error:", message);
+    queryClient.setQueryData(["thread", activeThreadId], (old: any) => {
+      if (!old || !old.comments) return old;
+      const newComments = [...old.comments];
+      const aiCommentIndex = newComments.findLastIndex(
+        (c) => c.isSystemGenerated && !c.content
+      );
 
-    if (content.includes("@ai")) {
-      const threadId = activeThreadId as string;
-      setReplyContent("");
-      // Convert API Thread to store Thread format for generateAIComment
-      const storeThread = activeThread ? {
-        ...activeThread,
-        comments: activeThread.comments || [],
-        isResolved: false,
-      } : null;
-      generateAIComment(content, threadId, storeThread);
-    } else {
-      setReplyContent("");
-      if (activeThreadId) {
+      if (aiCommentIndex !== -1) {
+        newComments[aiCommentIndex] = {
+          ...newComments[aiCommentIndex],
+          content: `${message}`,
+          hasError: true
+        };
+        return { ...old, comments: newComments };
+      }
+      return old;
+    });
+  }
+
+  const handleSubmitReply = async () => {
+    if(!selection) return;
+    if (replyContent.trim()) {
+      // Clear previous AI errors from the thread
+      queryClient.setQueryData(["thread", activeThreadId], (old: any) => {
+        if (!old || !old.comments) return old;
+        return {
+          ...old,
+          comments: old.comments.filter((c: any) => !(c.isSystemGenerated && c.hasError))
+        };
+      });
+      if (sidebarView === "thread") {
         addCommentMutation.mutate({
-          content,
+          docId: documentId,
+          content: replyContent.trim(),
           threadId: activeThreadId,
-          mentionedUserIds
+          options: {
+            selectedText: thread?.selectedText || "",
+            onProcessing: onProcessing,
+            onDelta: onDelta,
+            onCompletion: onCompletion,
+            onSave: onSave,
+            onError: onError,
+          },
         });
+        setReplyContent("");
+      } else {
+        const thread = await createThreadMutation.mutateAsync({
+          documentId,
+          initialStartOffset: selection?.range.index || 0,
+          initialEndOffset:
+            (selection?.range.index || 0) + (selection?.range.length || 0),
+          selectedText: selection?.text || "",
+        });
+        if (thread) {
+          setActiveThreadId(documentId, thread.id);
+          setSidebarView(documentId, "thread");
+          addCommentMutation.mutate({
+            docId: documentId,
+            content: replyContent.trim(),
+            threadId: thread.id,
+            options: {
+              selectedText: thread?.selectedText || "",
+              onProcessing: onProcessing,
+              onDelta: onDelta,
+              onCompletion: onCompletion,
+              onSave: onSave,
+              onError: onError,
+            },
+          });
+          setReplyContent("");
+        } else {
+          console.error("Failed to create thread :::", thread);
+        }
       }
     }
   };
@@ -157,23 +248,23 @@ const ThreadConversation = ({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSubmitReply(e);
+      handleSubmitReply();
     }
   };
-
   return (
     <div className="p-2 flex flex-col h-full">
       <div
         ref={scrollContainerRef}
         className="flex-1 overflow-y-auto pr-2 space-y-4"
       >
-        {sidebarView === "thread" && activeThread ? (
+        {sidebarView === "thread" && thread ? (
           <>
-            <SelectedText text={activeThread.selectedText || ""} />
-            {(activeThread.comments || []).map((comment) => {
+            <SelectedText text={thread.selectedText || ""} />
+            {(thread.comments || []).map((comment) => {
               const isCurrentUser =
                 comment.user.id === currentUser?.id && !comment.isSystemGenerated;
               const isSystem = comment.isSystemGenerated;
+              const hasError = comment.hasError;
               return (
                 <div
                   key={comment.id}
@@ -213,28 +304,21 @@ const ThreadConversation = ({
                       className={`px-2 py-1 rounded-lg mt-1 ${
                         isCurrentUser
                           ? "bg-blue-500 text-white"
+                          : isSystem 
+                          ? hasError ? "bg-red-100" : "bg-gray-100"
                           : "bg-gray-200"
                       }`}
                     >
-                      <div className="text-sm">
-                        <ReferenceRenderer
-                          content={comment.content}
-                          references={comment.references}
-                        />
+                      <div className={`text-sm ${hasError ? "text-red-700" : ""}`}>
+                        {isSystem && !comment.content ? (
+                          <TypingAnimation message={aiResponseStatus} />
+                        ) : (
+                          <ReferenceRenderer
+                            content={comment.content}
+                            references={comment.references}
+                          />
+                        )}
                       </div>
-                      {isSystem && comment.id.startsWith('temp-ai-') && streamStatus && (
-                        <div className="text-xs opacity-70">
-                          {streamStatus === 'thinking' && (
-                            <TypingAnimation text="Thinking" />
-                          )}
-                          {streamStatus === 'streaming' && (
-                            <TypingAnimation text="Generating response" />
-                          )}
-                          {streamStatus === 'completed' && (
-                            <TypingAnimation text="Saving" />
-                          )}
-                        </div>
-                      )}
                     </div>
                   </div>
                   {isCurrentUser && (
@@ -251,7 +335,7 @@ const ThreadConversation = ({
           </>
         ) : (
           <SelectedText
-            text={newCommentRange?.selectedText || "Starting a new thread..."}
+            text={selection?.text || "Starting a new thread..."}
           />
         )}
       </div>
@@ -278,11 +362,6 @@ const ThreadConversation = ({
             type="submit"
             size="icon"
             className="absolute right-2 top-1/2 -translate-y-1/2 bg-transparent hover:bg-transparent text-blue-500 hover:text-blue-600"
-            disabled={
-              addCommentMutation.isPending ||
-              createThreadMutation.isPending ||
-              isStreaming
-            }
           >
             <Send size={18} />
           </Button>
