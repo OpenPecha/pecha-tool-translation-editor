@@ -5,7 +5,7 @@ export type FetchThreadProps = {
 }
 
 export type FetchSegmentsProps = {
-    instanceId: string;
+    textId: string;
     startOffset: number;
     endOffset: number;
 }
@@ -26,6 +26,7 @@ export type AddCommentProps = {
         suggestedText?: string | null;
         isSystemGenerated?: boolean;
         selectedText?: string;
+        onProcessing?: (message: string) => void;
         onDelta?: (delta: string) => void;
         onCompletion?: (finalText: string) => void;
         onSave?: (comment: any) => void;

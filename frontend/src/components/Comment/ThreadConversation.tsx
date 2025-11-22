@@ -1,6 +1,7 @@
 import { useCommentStore } from "@/stores/commentStore";
 import { useAuth } from "@/auth/use-auth-hook";
 import { useState, useRef, useEffect, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
@@ -15,6 +16,7 @@ import { useFetchThread } from "./hooks/useFetchThread";
 import { useSelectionStore } from "@/stores/selectionStore";
 import { useCreateThread } from "./hooks/useCreateThread";
 import { useAddComment } from "./hooks/useAddComment";
+
 const MentionsInputComponent = MentionsInput as any;
 const MentionComponent = Mention as any;
 
@@ -25,6 +27,7 @@ const ThreadConversation = ({
   documentId: string;
   projectId?: string;
 }) => {
+  const queryClient = useQueryClient();
   const {
     getActiveThreadId,
     getSidebarView,
@@ -39,6 +42,7 @@ const ThreadConversation = ({
   const addCommentMutation = useAddComment();
   const { currentUser } = useAuth();
   const [replyContent, setReplyContent] = useState("");
+  const [aiResponseStatus, setAiResponseStatus] = useState("");
   const replyInputRef = useRef<HTMLTextAreaElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isAtBottomRef = useRef(true);
@@ -103,24 +107,97 @@ const ThreadConversation = ({
       setTimeout(() => replyInputRef.current?.focus(), 100); // Small timeout to ensure focus after render/animation
     }
   }, [activeThreadId, sidebarView]);
+
+  const onProcessing = (message: string) => {
+    setAiResponseStatus(message);
+  }
   const onDelta = (delta: string) => {
-    console.log("delta :::",delta);
+    queryClient.setQueryData(["thread", activeThreadId], (old: any) => {
+      if (!old || !old.comments) return old;
+      const newComments = [...old.comments];
+      let aiCommentIndex = -1;
+      for (let i = newComments.length - 1; i >= 0; i--) {
+        if (newComments[i].isSystemGenerated) {
+          aiCommentIndex = i;
+          break;
+        }
+      }
+      if (aiCommentIndex !== -1) {
+        const aiComment = newComments[aiCommentIndex];
+        newComments[aiCommentIndex] = {
+          ...aiComment,
+          content: (aiComment.content || "") + delta,
+        };
+        return { ...old, comments: newComments };
+      }
+      return old;
+    });
   }
 
   const onCompletion = (finalText: string) => {
-    console.log("finalText :::",finalText);
+    queryClient.setQueryData(["thread", activeThreadId], (old: any) => {
+      if (!old || !old.comments) return old;
+      const newComments = [...old.comments];
+      let aiCommentIndex = -1;
+      for (let i = newComments.length - 1; i >= 0; i--) {
+        if (newComments[i].isSystemGenerated) {
+          aiCommentIndex = i;
+          break;
+        }
+      }
+      if (aiCommentIndex !== -1) {
+        const aiComment = newComments[aiCommentIndex];
+        newComments[aiCommentIndex] = {
+          ...aiComment,
+          content: finalText.substring(9), // Remove "@Comment " prefix
+        };
+        return { ...old, comments: newComments };
+      }
+      return old;
+    });
   }
 
   const onSave = (comment: any) => {
-    console.log("comment :::",comment);
+    queryClient.setQueryData(["thread", activeThreadId], (old: any) => {
+      return {
+        ...old,
+        comments: old?.comments?.map((c: any) => c.user.id === "ai-assistant" ? comment : c)
+      };
+    });
   }
 
   const onError = (message: string) => {
-    console.log("message :::",message);
+    console.error("AI stream error:", message);
+    queryClient.setQueryData(["thread", activeThreadId], (old: any) => {
+      if (!old || !old.comments) return old;
+      const newComments = [...old.comments];
+      const aiCommentIndex = newComments.findLastIndex(
+        (c) => c.isSystemGenerated && !c.content
+      );
+
+      if (aiCommentIndex !== -1) {
+        newComments[aiCommentIndex] = {
+          ...newComments[aiCommentIndex],
+          content: `${message}`,
+          hasError: true
+        };
+        return { ...old, comments: newComments };
+      }
+      return old;
+    });
   }
 
   const handleSubmitReply = async () => {
+    if(!selection) return;
     if (replyContent.trim()) {
+      // Clear previous AI errors from the thread
+      queryClient.setQueryData(["thread", activeThreadId], (old: any) => {
+        if (!old || !old.comments) return old;
+        return {
+          ...old,
+          comments: old.comments.filter((c: any) => !(c.isSystemGenerated && c.hasError))
+        };
+      });
       if (sidebarView === "thread") {
         addCommentMutation.mutate({
           docId: documentId,
@@ -128,6 +205,7 @@ const ThreadConversation = ({
           threadId: activeThreadId,
           options: {
             selectedText: thread?.selectedText || "",
+            onProcessing: onProcessing,
             onDelta: onDelta,
             onCompletion: onCompletion,
             onSave: onSave,
@@ -152,6 +230,7 @@ const ThreadConversation = ({
             threadId: thread.id,
             options: {
               selectedText: thread?.selectedText || "",
+              onProcessing: onProcessing,
               onDelta: onDelta,
               onCompletion: onCompletion,
               onSave: onSave,
@@ -185,6 +264,7 @@ const ThreadConversation = ({
               const isCurrentUser =
                 comment.user.id === currentUser?.id && !comment.isSystemGenerated;
               const isSystem = comment.isSystemGenerated;
+              const hasError = comment.hasError;
               return (
                 <div
                   key={comment.id}
@@ -224,14 +304,20 @@ const ThreadConversation = ({
                       className={`px-2 py-1 rounded-lg mt-1 ${
                         isCurrentUser
                           ? "bg-blue-500 text-white"
+                          : isSystem 
+                          ? hasError ? "bg-red-100" : "bg-gray-100"
                           : "bg-gray-200"
                       }`}
                     >
-                      <div className="text-sm">
-                        <ReferenceRenderer
-                          content={comment.content}
-                          references={comment.references}
-                        />
+                      <div className={`text-sm ${hasError ? "text-red-700" : ""}`}>
+                        {isSystem && !comment.content ? (
+                          <TypingAnimation message={aiResponseStatus} />
+                        ) : (
+                          <ReferenceRenderer
+                            content={comment.content}
+                            references={comment.references}
+                          />
+                        )}
                       </div>
                     </div>
                   </div>

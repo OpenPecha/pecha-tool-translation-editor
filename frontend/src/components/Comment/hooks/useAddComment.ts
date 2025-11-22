@@ -12,7 +12,7 @@ export const useAddComment = () => {
       const previousThreads = queryClient.getQueryData(["thread", comment.threadId]);
       queryClient.setQueryData(["thread", comment.threadId], (old: any) => {
         const newComment = {
-          id: Date.now().toString(),
+          id: `user-${Date.now().toString()}`,
           content: comment.content,
           user: currentUser,
           createdAt: new Date().toISOString(),
@@ -23,7 +23,7 @@ export const useAddComment = () => {
         let aiComment = null;
         if(comment.content.includes("@ai")) {
           aiComment = {
-            id: Date.now().toString(),
+            id: `ai-${Date.now().toString()}`,
             content: "",
             user: {
               id: "ai-assistant",
@@ -46,9 +46,6 @@ export const useAddComment = () => {
     },
     mutationFn: (comment: AddCommentProps) => {
       return addComment(comment);
-    },
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["thread", variables.threadId] });
     },
     onError: (_err, _variables, context) => {
       if (context?.previousThreads) {

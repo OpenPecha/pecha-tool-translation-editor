@@ -27,7 +27,7 @@ function DocumentsWrapperContent() {
   const { currentDoc, isEditable } = useCurrentDoc(id);
   const { selectedTranslationId, clearSelectedTranslationId } =
     useTranslationSidebarParams();
-  const [splitPosition, setSplitPosition] = useState<number>(40);
+  const [splitPosition, setSplitPosition] = useState<number>(50);
   const { setManualSelection, setLineFocus } = useSelectionStore();
   const { getQuill, getTextByLineNumber } = useEditor();
 

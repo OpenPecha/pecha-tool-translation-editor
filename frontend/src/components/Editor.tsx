@@ -556,6 +556,7 @@ const Editor = ({
   // }, [documentId, setHoveredLineNumber]);
 
   function addComment() {
+    if(!selection) return;
     setTabs(documentId, "comments");
     setSidebarView(documentId, "new");
     setActiveThreadId(documentId, null);

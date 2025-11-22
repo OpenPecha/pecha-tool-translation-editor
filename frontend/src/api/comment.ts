@@ -88,8 +88,8 @@ export const addComment = async (comment: AddCommentProps) => {
 		// Check if the response is a stream for an AI comment
 		const contentType = response.headers.get("content-type");
 		if (contentType && contentType.includes("text/event-stream")) {
-			if (comment.options.onDelta && comment.options.onSave && comment.options.onError) {
-				await handleStreamedResponse(response, comment.options.onDelta, comment.options.onCompletion, comment.options.onSave, comment.options.onError);
+			if (comment.options.onProcessing && comment.options.onDelta && comment.options.onSave && comment.options.onError) {
+				await handleStreamedResponse(response, comment.options.onProcessing, comment.options.onDelta, comment.options.onCompletion, comment.options.onSave, comment.options.onError);
 			}
 			return; // Streaming is handled, no JSON to return
 		}
@@ -105,6 +105,7 @@ export const addComment = async (comment: AddCommentProps) => {
 
 const handleStreamedResponse = async (
 	response: Response,
+	onProcessing: (message: string) => void,
 	onDelta: (delta: string) => void,
 	onCompletion: ((finalText: string) => void) | undefined,
 	onSave: (comment: any) => void,
@@ -132,22 +133,30 @@ const handleStreamedResponse = async (
 					const jsonString = line.substring(jsonStartIndex);
 					try {
 						const parsed = JSON.parse(jsonString);
-						
-						if (parsed.type === "comment_delta") {
-							onDelta(parsed.text || "");
-						} else if (parsed.type === "completion") {
-							if (onCompletion && parsed.text) {
-								onCompletion(parsed.text);
-							}
-						} else if (parsed.type === "saved_comment") {
-							if (parsed.comment) {
-								onSave(parsed.comment);
-							}
-						} else if (parsed.type === "error") {
-							console.error("❌ Error:", parsed.message);
-							onError(parsed.message || "An unknown error occurred");
-						} else {
-							console.warn("⚠️ Unknown event type:", parsed.type);
+						switch (parsed.type) {
+							case "status":
+								onProcessing(parsed.message);
+								break;
+							case "comment_delta":
+								onDelta(parsed.text || "");
+								break;
+							case "completion":
+								if (onCompletion && parsed.text) {
+									onCompletion(parsed.text);
+								}
+								break;
+							case "saved_comment":
+								if (parsed.comment) {
+									onSave(parsed.comment);
+								}
+								break;
+							case "error":
+								console.error("❌ Error:", parsed.message);
+								onError(parsed.message || "An unknown error occurred");
+								break;
+							default:
+								console.warn("⚠️ Unknown event type:", parsed.type);
+								break;
 						}
 					} catch (e) {
 						console.error("Failed to parse stream data:", e, "Raw data:", jsonString);

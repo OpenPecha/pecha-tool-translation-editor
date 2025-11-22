@@ -30,6 +30,16 @@ const queryClient = new QueryClient({
     },
   },
 });
+declare global {
+  interface Window {
+    __TANSTACK_QUERY_CLIENT__?: import("@tanstack/query-core").QueryClient;
+  }
+}
+
+// Only expose in development
+if (import.meta.env.MODE === "development") {
+  (window as any).__TANSTACK_QUERY_CLIENT__ = queryClient;
+}
 
 function AppContent() {
   const { i18n } = useTranslation();
