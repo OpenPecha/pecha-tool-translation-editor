@@ -509,17 +509,17 @@ router.get("/instances/:instanceId/segments-with-content", async (req, res) => {
 });
 
 /**
- * GET /openpecha/texts/title-search
+ * GET /openpecha/title-search
  * @summary Search text by title
  * @tags Pecha - OpenPecha integration
- * @param {string} title.query.required - Title of the text
+ * @param {string} title.query - Title of the text
  * @return {array<object>} 200 - Array of texts
  * @return {object} 400 - Bad request - Title is required
  * @return {object} 500 - Server error
  */
-router.get("/texts/title-search", async (req, res) => {
+router.get("/title-search", async (req, res) => {
   const { title } = req.query;
-  console.log("title in openpecha.js ::", title);
+
   if (!title || !title.trim()) {
     return res.status(400).json({
       error: "Title is required",
@@ -527,8 +527,6 @@ router.get("/texts/title-search", async (req, res) => {
   }
   try {
     const texts = await searchTextByTitle(title.trim());
-    console.log("texts in openpecha.js ::", texts);
-
     res.json([texts]);
   } catch (error) {
     console.error("Error searching text by title:", error);
