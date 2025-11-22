@@ -27,6 +27,7 @@ const router = express.Router();
 router.post("/", async (req, res) => {
   try {
     const { email, question, response, threadId } = req.body;
+    console.info("email in webuddhist.js ::", email);
 
     if (!email || !question) {
       return res.status(400).json({ error: "Email and question are required" });
@@ -61,7 +62,7 @@ router.post("/", async (req, res) => {
           email,
           question,
           response: response || [],
-          webuddhistThreadId: {
+          webuddhistThread: {
             connect: { id: thread.id },
           },
         },
@@ -71,7 +72,7 @@ router.post("/", async (req, res) => {
       const updatedThread = await tx.webuddhistThread.findUnique({
         where: { id: thread.id },
         include: {
-          webuddhistResponseId: true,
+          webuddhistResponses: true,
         },
       });
 
@@ -79,7 +80,7 @@ router.post("/", async (req, res) => {
       const updatedWebuddhist = await tx.webuddhist.findUnique({
         where: { id: webuddhist.id },
         include: {
-          webuddhistThreadId: true,
+          webuddhistThread: true,
         },
       });
 

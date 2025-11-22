@@ -189,7 +189,7 @@ model TempSearchSegments{
 
 model WebuddhistThread {
   id String @id @default(uuid())
-  webuddhistResponseId Webuddhist[] @relation("WebuddhistResponse")
+  webuddhistResponses Webuddhist[] @relation("WebuddhistResponse")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -201,5 +201,6 @@ model Webuddhist {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   question String
-  webuddhistThreadId WebuddhistThread[] @relation("WebuddhistResponse")
+  webuddhistThread  WebuddhistThread? @relation("WebuddhistResponse", fields: [webuddhistThreadId], references: [id])
+  webuddhistThreadId String? 
 }
