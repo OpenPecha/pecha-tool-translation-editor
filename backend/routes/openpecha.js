@@ -373,19 +373,18 @@ router.get("/instances/:instanceId/segment-content", async (req, res) => {
   }
 });
 
-
-
 /**
  * GET /openpecha/title-search
  * @summary Search text by title
  * @tags Pecha - OpenPecha integration
- * @param {string} title.query.required - Title of the text
+ * @param {string} title.query - Title of the text
  * @return {array<object>} 200 - Array of texts
  * @return {object} 400 - Bad request - Title is required
  * @return {object} 500 - Server error
  */
 router.get("/title-search", async (req, res) => {
   const { title } = req.query;
+
   if (!title || !title.trim()) {
     return res.status(400).json({
       error: "Title is required",
@@ -448,7 +447,7 @@ router.post("/webhook", async (req, res) => {
 
   try {
     const webhookUrl = process.env.WORKFLOW_ENDPOINT;
-    
+
     const response = await fetch(webhookUrl, {
       method: "POST",
       headers: {

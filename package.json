@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "predev": "npx cross-port-killer 3000 9000",
+    "predev": "npx cross-port-killer 3000 8000",
     "dev": "concurrently \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\"",
     "format": "biome format --write --changed"
   },
