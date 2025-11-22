@@ -6,7 +6,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { useEditor } from "@/contexts/EditorContext";
 import { useSelectionStore } from "@/stores/selectionStore";
@@ -18,7 +18,13 @@ import { useCurrentDoc } from "@/hooks/useCurrentDoc";
 import { useFetchThreads } from "./hooks/useFetchThreads";
 import { useFetchSegments } from "./hooks/useFetchSegments";
 import { useDeleteThread } from "./hooks/useDeleteThread";
-import { Trash2, MessageSquare, AlertCircle, RefreshCw, Sparkles } from "lucide-react";
+import {
+  Trash2,
+  MessageSquare,
+  AlertCircle,
+  RefreshCw,
+  Sparkles,
+} from "lucide-react";
 
 // Loading skeleton components
 const ThreadLoadingSkeleton = () => (
@@ -56,12 +62,12 @@ const SegmentLoadingSkeleton = () => (
 );
 
 // Error components
-const ErrorState = ({ 
-  message, 
-  onRetry, 
-  icon: Icon = AlertCircle 
-}: { 
-  message: string; 
+const ErrorState = ({
+  message,
+  onRetry,
+  icon: Icon = AlertCircle,
+}: {
+  message: string;
   onRetry: () => void;
   icon?: React.ElementType;
 }) => (
@@ -84,14 +90,12 @@ const ErrorState = ({
   </div>
 );
 
-const ThreadList = ({
-  documentId,
-}: {
-  documentId: string;
-}) => {
+const ThreadList = ({ documentId }: { documentId: string }) => {
   const { setSidebarView, setActiveThreadId } = useCommentStore();
   const deleteThreadMutation = useDeleteThread();
-  const [threadPendingDelete, setThreadPendingDelete] = useState<Thread | null>(null);
+  const [threadPendingDelete, setThreadPendingDelete] = useState<Thread | null>(
+    null
+  );
   const isDeletingThread = deleteThreadMutation.isPending;
   const { getQuill } = useEditor();
   const quill = getQuill(documentId);
@@ -100,7 +104,7 @@ const ThreadList = ({
   });
   const { currentDoc } = useCurrentDoc(documentId);
   const debouncedSelection = useDebounce(selection, 300);
-  const { 
+  const {
     data: threadsInSelection = [],
     isLoading: threadsLoading,
     error: threadsError,
@@ -108,9 +112,11 @@ const ThreadList = ({
   } = useFetchThreads({
     documentId,
     startOffset: debouncedSelection?.range?.index,
-    endOffset: debouncedSelection?.range?.index !== undefined && debouncedSelection?.range?.length !== undefined 
-      ? debouncedSelection.range.index + debouncedSelection.range.length 
-      : undefined,
+    endOffset:
+      debouncedSelection?.range?.index !== undefined &&
+      debouncedSelection?.range?.length !== undefined
+        ? debouncedSelection.range.index + debouncedSelection.range.length
+        : undefined,
   });
 
   const {
@@ -121,16 +127,20 @@ const ThreadList = ({
   } = useFetchSegments({
     textId: String(currentDoc?.metadata?.textId || ""),
     startOffset: debouncedSelection?.range?.index || undefined,
-    endOffset: debouncedSelection?.range?.index !== undefined && debouncedSelection?.range?.length !== undefined 
-      ? debouncedSelection.range.index + debouncedSelection.range.length 
-      : undefined,
+    endOffset:
+      debouncedSelection?.range?.index !== undefined &&
+      debouncedSelection?.range?.length !== undefined
+        ? debouncedSelection.range.index + debouncedSelection.range.length
+        : undefined,
   });
 
   const handleThreadClick = (threadId: string) => {
     setSidebarView(documentId, "thread");
     setActiveThreadId(documentId, threadId);
     const editor = quill?.root;
-    const targetElement = editor?.querySelector(`[data-thread-id="${threadId}"]`);
+    const targetElement = editor?.querySelector(
+      `[data-thread-id="${threadId}"]`
+    );
     if (targetElement) {
       targetElement.scrollIntoView({ behavior: "smooth", block: "center" });
       setTimeout(() => {
@@ -150,15 +160,16 @@ const ThreadList = ({
     deleteThreadMutation.mutate(threadPendingDelete, {
       onSuccess: () => {
         setThreadPendingDelete(null);
-      }
+      },
     });
   };
 
   const handleSuggestionClick = (segment: SegmentWithContent) => {
-    console.log("segment in ThreadList.tsx ::", segment);
+    console.info("segment in ThreadList.tsx ::", segment);
   };
 
-  const hasNoData = threadsInSelection.length === 0 && relatedSegments.length === 0;
+  const hasNoData =
+    threadsInSelection.length === 0 && relatedSegments.length === 0;
   const isLoading = threadsLoading || relatedSegmentsLoading;
   const hasError = threadsError || relatedSegmentsError;
 
@@ -172,7 +183,9 @@ const ThreadList = ({
           </div>
         </div>
         <div className="space-y-1">
-          <p className="text-sm font-medium text-neutral-700">No comments or suggestions</p>
+          <p className="text-sm font-medium text-neutral-700">
+            No comments or suggestions
+          </p>
           <p className="text-xs text-neutral-500">
             Select text to see related comments and suggestions
           </p>
@@ -188,7 +201,7 @@ const ThreadList = ({
         {threadsLoading ? (
           <ThreadLoadingSkeleton />
         ) : threadsError ? (
-          <ErrorState 
+          <ErrorState
             message="Failed to load comments. Please try again."
             onRetry={() => refetchThreads()}
             icon={MessageSquare}
@@ -207,7 +220,10 @@ const ThreadList = ({
                   onClick={() => handleThreadClick(thread.id)}
                 >
                   <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <MessageSquare size={16} className="text-neutral-400 flex-shrink-0" />
+                    <MessageSquare
+                      size={16}
+                      className="text-neutral-400 flex-shrink-0"
+                    />
                     <p className="truncate text-left">{thread.selectedText}</p>
                   </div>
                   <div
@@ -225,20 +241,23 @@ const ThreadList = ({
               </div>
             ))}
           </>
-        ) : <div className="p-4 text-center text-gray-500">
-          <p>No comments for this selection.</p>
-        </div>}
+        ) : (
+          <div className="p-4 text-center text-gray-500">
+            <p>No comments for this selection.</p>
+          </div>
+        )}
 
         {/* Divider between threads and segments */}
-        {threadsInSelection.length > 0 && (relatedSegmentsLoading || relatedSegments.length > 0) && (
-          <hr className="my-3 border-neutral-200" />
-        )}
+        {threadsInSelection.length > 0 &&
+          (relatedSegmentsLoading || relatedSegments.length > 0) && (
+            <hr className="my-3 border-neutral-200" />
+          )}
 
         {/* Segments Section */}
         {relatedSegmentsLoading ? (
           <SegmentLoadingSkeleton />
         ) : relatedSegmentsError ? (
-          <ErrorState 
+          <ErrorState
             message="Failed to load suggestions. Please try again."
             onRetry={() => refetchSegments()}
             icon={Sparkles}
@@ -256,16 +275,20 @@ const ThreadList = ({
                   className="cursor-pointer w-full flex items-center gap-2 border border-dashed border-neutral-300 rounded-lg p-2 hover:border-neutral-400 hover:bg-neutral-50 transition-all"
                   onClick={() => handleSuggestionClick(segment)}
                 >
-                  <Sparkles size={16} className="text-amber-500 flex-shrink-0" />
+                  <Sparkles
+                    size={16}
+                    className="text-amber-500 flex-shrink-0"
+                  />
                   <p className="truncate text-left flex-1">{segment.content}</p>
                 </Button>
               </div>
             ))}
           </>
-        ) : 
-        <div className="p-4 text-center text-gray-500">
-          <p>No suggestions in this selection.</p>
-        </div>}
+        ) : (
+          <div className="p-4 text-center text-gray-500">
+            <p>No suggestions in this selection.</p>
+          </div>
+        )}
       </div>
 
       <Dialog
